@@ -1,0 +1,131 @@
+{
+	"info": {
+		"_postman_id": "0a39ca58-494f-4928-a51a-70fbcaef0c1e",
+		"name": "ModuloCollection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26870563"
+	},
+	"item": [
+		{
+			"name": "POST-new-modulo",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"nome\": \"Módulo de Teste\",\r\n    \"descricao\": \"Descrição do módulo\",\r\n    \"id_quiz\": 1,\r\n    \"campos\": [\r\n        1,\r\n        2\r\n    ],\r\n    \"ativo\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/modulo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"api",
+						"modulo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET-modulos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/modulo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"api",
+						"modulo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET-modulo",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/modulo/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"api",
+						"modulo",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PUT-modulo",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"nome\": \"Módulo Atualizado\",\r\n    \"descricao\": \"Nova descrição\",\r\n    \"campos\": [\r\n        1,\r\n        3\r\n    ],\r\n    \"ativo\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3001/api/modulo/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"api",
+						"modulo",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DEL-modulo-inativa-ativa",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3001/api/modulo/4",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3001",
+					"path": [
+						"api",
+						"modulo",
+						"4"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,178 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
+
+:root{
+  --bg:#000;
+  --card:#fff;
+  --text:#000;
+  --muted:#8c8c8c;
+  --line:#dcdcdc;
+  --pill:#0b0b0b;
+}
+*{ box-sizing:border-box; }
+html, body, #root { height:100%; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:#fff;
+  font-family: "Montserrat", sans-serif;
+}
+
+.pfu-main{
+  min-height: calc(100vh - 220px);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding: 2.5rem 1rem 4rem;
+}
+.pfu-title{
+  margin:0 0 1.8rem;
+  font-weight:800;
+  font-size: clamp(1.8rem, 3.4vw, 2.4rem);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-align: center;
+}
+
+.pfu-card{
+  width:min(980px, 92vw);
+  background:var(--card);
+  color:var(--text);
+  border-radius:12px;
+  padding: 2rem 2.2rem 2.6rem;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);
+}
+
+.pfu-row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.2rem;
+  margin-bottom:1.25rem;
+}
+.pfu-row.single{ grid-template-columns: 1fr; }
+
+.pfu-field{ width:100%; }
+.pfu-label{
+  display:block;
+  font-weight:700;
+  font-size:.95rem;
+  margin-bottom:.55rem;
+}
+
+.pfu-input,
+.pfu-select{
+  width:100%;
+  background:transparent;
+  border:none;
+  border-bottom:2px solid var(--line);
+  padding:.6rem 0 .5rem;
+  color:var(--text);
+  font-size: .95rem;
+  outline:none;
+}
+.pfu-input::placeholder{ color:var(--muted); }
+.pfu-select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #8c8c8c 50%),
+    linear-gradient(135deg, #8c8c8c 50%, transparent 50%);
+  background-position: calc(100% - 14px) calc(1.05em), calc(100% - 9px) calc(1.05em);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.pfu-textarea{
+  width:100%;
+  min-height:110px;
+  resize:vertical;
+  background:transparent;
+  border:none;
+  border-bottom:2px solid var(--line);
+  padding:.6rem 0 .5rem;
+  font-size:.95rem;
+  color:var(--text);
+  outline:none;
+}
+.pfu-textarea::placeholder{ color:var(--muted); }
+
+.pfu-actions{
+  margin-top:1.6rem;
+  display:flex;
+  justify-content:center;
+}
+.pfu-save{
+  width:min(540px, 92%);
+  border:none;
+  border-radius:999px;
+  background:var(--pill);
+  color:#fff;
+  font-weight:700;
+  padding:.9rem 2rem;
+  cursor:pointer;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.pfu-save:hover{ transform: translateY(-1px); opacity:.95; }
+
+.pfu-modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.pfu-modal{
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  color: #111;
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0,0,0,.35);
+  padding: 18px 22px 16px;
+}
+
+.pfu-modal-title{
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.pfu-modal-text{
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #444;
+  text-align: center;
+}
+
+.pfu-modal-actions{
+  display: flex;
+  justify-content: center;
+}
+
+.pfu-btn{
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 120px;
+}
+
+.pfu-btn-primary{
+  background: #111;
+  color: #fff;
+}
+
+.pfu-btn-primary:hover{
+  filter: brightness(1.05);
+}
+
+@media (max-width: 820px){
+  .pfu-row{ grid-template-columns: 1fr; gap:1rem; }
+  .pfu-card{ padding:1.6rem 1.2rem 2rem; }
+}

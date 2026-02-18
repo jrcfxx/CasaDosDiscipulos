@@ -1,0 +1,622 @@
+/**
+ * GerirUser Styles
+ * Branding: Casa dos Discípulos
+ * Tema: Elegante Dark
+ */
+
+:root {
+  --primary-dark: #00444c;
+  --primary-teal: #02869b;
+  --primary-gray: #2b2f30;
+  --primary-light: #ebebeb;
+  --secondary-gold: #f4b002;
+  --secondary-cyan: #00b5d2;
+}
+
+.gerir-container {
+  min-height: 100vh;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  font-family: "Montserrat", "Segoe UI", sans-serif;
+}
+
+.gerir-main {
+  flex: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+.gerir-main h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Tabs */
+.tabs-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.tab {
+  padding: 0.85rem 2.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(2, 134, 155, 0.3);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tab.active {
+  background: var(--primary-teal);
+  border-color: var(--primary-teal);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 134, 155, 0.3);
+}
+
+/* Busca e Criar */
+.busca-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.busca-container input {
+  width: 400px;
+  max-width: 70%;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  outline: none;
+  font-size: 0.95rem;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.2s;
+}
+
+.busca-container input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.busca-container input:focus {
+  border-color: var(--primary-teal);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+}
+
+.filtro-nivel {
+  min-width: 200px;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  outline: none;
+  font-size: 0.95rem;
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filtro-nivel:focus {
+  border-color: var(--primary-teal);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+}
+
+.filtro-nivel option {
+  background: #1a1a1a;
+  color: #ffffff;
+  padding: 0.5rem;
+}
+
+.btn-add {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: var(--primary-teal);
+  color: white;
+  font-size: 24px;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(2, 134, 155, 0.3);
+}
+
+.btn-add:hover {
+  background: #03a3bd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2, 134, 155, 0.5);
+}
+
+/* Cards Container */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .cards-container {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* User Card */
+.user-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.75rem 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.user-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(2, 134, 155, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.user-card.inativo {
+  opacity: 0.5;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.user-card img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.user-card .nivel {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+}
+
+.user-card .nivel {
+  background: rgba(2, 134, 155, 0.2);
+  color: #02869b;
+  border: 1px solid rgba(2, 134, 155, 0.3);
+}
+
+.user-card.inativo .nivel {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.user-card .badge-nivel {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  background: rgba(244, 176, 2, 0.15);
+  color: #f4b002;
+  border: 1px solid rgba(244, 176, 2, 0.25);
+  letter-spacing: 0.3px;
+}
+
+.user-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.user-card .email {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  word-break: break-word;
+}
+
+/* Card Buttons */
+.card-buttons {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editar-btn,
+.inativar-btn {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.editar-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.editar-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.editar-btn:disabled {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.inativar-btn {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.inativar-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-1px);
+}
+
+.inativar-btn.reativar {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.inativar-btn.reativar:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* Modal */
+.modal-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 480px;
+  max-width: calc(100% - 2rem);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+.modal h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-content {
+  margin-bottom: 1.5rem;
+}
+
+.modal label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modal input[type="text"],
+.modal input[type="email"],
+.modal input[type="password"],
+.modal select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.2s;
+}
+
+.modal input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.modal input:focus,
+.modal select:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+}
+
+.modal select {
+  cursor: pointer;
+}
+
+.modal select option {
+  background: #1a1a1a;
+  color: #ffffff;
+}
+
+.modal p {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.modal p strong {
+  color: var(--primary-teal);
+}
+
+/* Modal Buttons */
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 0.85rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-buttons button:first-child {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgb(0, 0, 0);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.modal-buttons button:first-child:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.modal-buttons button:last-child {
+  background: var(--primary-teal);
+  color: white;
+}
+
+.modal-buttons button:last-child:hover {
+  background: #03a3bd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2, 134, 155, 0.4);
+}
+
+/* Toast/Notification */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--primary-teal);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(2, 134, 155, 0.4);
+  font-weight: 600;
+  z-index: 10000;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Loading State */
+.loading-message {
+  text-align: center;
+  color: var(--primary-teal);
+  font-size: 1.1rem;
+  padding: 3rem;
+  font-weight: 600;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Tabela de Níveis */
+.niveis-table-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.niveis-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.niveis-table thead {
+  background: rgba(2, 134, 155, 0.15);
+}
+
+.niveis-table th {
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary-teal);
+  border-bottom: 2px solid rgba(2, 134, 155, 0.3);
+}
+
+.niveis-table td {
+  padding: 1.25rem 1.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.95rem;
+}
+
+.niveis-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.niveis-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.niveis-table .acoes {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.niveis-table .btn-edit,
+.niveis-table .btn-delete {
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "Montserrat", sans-serif;
+}
+
+.niveis-table .btn-edit {
+  background: rgba(2, 134, 155, 0.2);
+  color: var(--primary-teal);
+  border: 1px solid rgba(2, 134, 155, 0.3);
+}
+
+.niveis-table .btn-edit:hover {
+  background: rgba(2, 134, 155, 0.3);
+  transform: translateY(-1px);
+}
+
+.niveis-table .btn-delete {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.niveis-table .btn-delete:hover {
+  background: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Modal - Textarea */
+.modal-content textarea {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  outline: none;
+  font-size: 0.95rem;
+  font-family: "Montserrat", sans-serif;
+  resize: vertical;
+  transition: all 0.2s;
+}
+
+.modal-content textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.modal-content textarea:focus {
+  border-color: var(--primary-teal);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+}

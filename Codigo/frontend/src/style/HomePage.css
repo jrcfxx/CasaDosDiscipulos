@@ -1,0 +1,681 @@
+/**
+ * HomePage Styles
+ */
+
+@import "./tokens.css";
+
+/* ==================== CONTAINER PRINCIPAL ==================== */
+
+.home-page {
+  min-height: 100vh;
+  background-color: #000;
+  padding-top: 0px;
+}
+
+.home-content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ==================== LOGO SECTION ==================== */
+
+.home-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0rem 1rem 1rem;
+  background-color: #000;
+}
+
+.home-logo__image {
+  width: 80%;
+  max-width: 500px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ==================== HERO SECTION ==================== */
+
+.home-hero {
+  position: relative;
+  width: 100%;
+  margin-bottom: 4rem;
+}
+
+.home-hero__image-wrapper {
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.home-hero__image {
+  width: 100%;
+  height: 600px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.home-hero__overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.6) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.home-hero__title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #ebebeb;
+  text-align: center;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.home-hero__cta {
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000;
+  background: #fff;
+  border: 2px solid #fff;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.home-hero__cta:hover {
+  background: #ebebeb;
+  border-color: #ebebeb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.6);
+}
+
+.home-hero__cta:active {
+  transform: translateY(0);
+}
+
+/* ==================== SEÇÕES ==================== */
+
+.home-section__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  letter-spacing: -0.5px;
+}
+
+/* ==================== MINISTÉRIOS ==================== */
+
+.home-ministerios {
+  padding: 4rem 1.5rem;
+  background-color: #000;
+}
+
+.home-ministerios__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ==================== CARDS ==================== */
+
+.home-card {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.home-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.home-card__image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+}
+
+.home-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.home-card:hover .home-card__image {
+  transform: scale(1.05);
+}
+
+.home-card__content {
+  padding: 1.5rem;
+}
+
+.home-card__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 0.75rem 0;
+}
+
+.home-card__description {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ==================== CARDS FLIP ==================== */
+
+.home-card-flip {
+  background-color: transparent;
+  width: 100%;
+  height: 450px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.home-card-flip__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.home-card-flip:hover .home-card-flip__inner {
+  transform: rotateY(180deg);
+}
+
+.home-card-flip__front,
+.home-card-flip__back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.3s ease;
+}
+
+.home-card-flip:hover .home-card-flip__front,
+.home-card-flip:hover .home-card-flip__back {
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.4);
+}
+
+.home-card-flip__front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: #000;
+  transform: rotateY(0deg);
+}
+
+.home-card-flip__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.home-card-flip__title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.5) 70%,
+    transparent 100%
+  );
+  color: #ebebeb;
+  font-size: 2.5rem;
+  font-weight: 700;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.home-card-flip__back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2b2f30 100%);
+  color: #ebebeb;
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 2.5rem;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+}
+
+.home-card-flip:hover .home-card-flip__back {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.home-card-flip__back h3 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 2rem 0;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.home-card-flip__back p {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  margin: 0 0 1.5rem 0;
+  color: #ebebeb;
+  text-align: center;
+  max-width: 85%;
+}
+
+.home-card-flip__cta {
+  padding: 0.875rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: "Montserrat", sans-serif;
+  color: #000;
+  background: #fff;
+  border: 2px solid #fff;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+}
+
+.home-card-flip__cta:hover {
+  background: #02869b;
+  border-color: #02869b;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(2, 134, 155, 0.5);
+}
+
+.home-card-flip__cta:active {
+  transform: translateY(0);
+}
+
+/* ==================== EVENTOS ==================== */
+
+.home-eventos {
+  padding: 4rem 1.5rem;
+  background-color: #000;
+}
+
+.home-eventos__featured {
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.home-eventos__image {
+  width: 100%;
+  height: 500px;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.home-eventos__overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.5) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.home-eventos__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.75rem 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.home-eventos__description {
+  font-size: 1.125rem;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ==================== PLATAFORMA DE ESTUDOS ==================== */
+
+.home-plataforma {
+  padding: 5rem 1.5rem;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-plataforma::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+}
+
+.home-plataforma__container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-plataforma__content {
+  text-align: center;
+}
+
+.home-plataforma__title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 1.5rem 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.home-plataforma__description {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #ebebeb;
+  line-height: 1.8;
+  margin: 0 auto 4rem;
+  max-width: 800px;
+}
+
+.home-plataforma__features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.home-plataforma__feature {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.home-plataforma__feature:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(255, 255, 255, 0.2);
+}
+
+.home-plataforma__feature-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.home-plataforma__feature-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.home-plataforma__feature:hover .home-plataforma__feature-icon {
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.home-plataforma__feature-title {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.3px;
+}
+
+.home-plataforma__feature-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #ebebeb;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.home-plataforma__cta {
+  font-family: "Montserrat", sans-serif;
+  padding: 1.25rem 3rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000;
+  background: #fff;
+  border: 2px solid #fff;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.home-plataforma__cta:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.5);
+}
+
+.home-plataforma__cta:active {
+  transform: translateY(0);
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 1200px) {
+  .home-ministerios__grid {
+    grid-template-columns: 1fr;
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    padding-top: 20px;
+  }
+
+  .home-hero__title {
+    font-size: 1.75rem;
+  }
+
+  .home-hero__cta {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+  }
+
+  .home-section__title {
+    font-size: 1.75rem;
+  }
+
+  .home-ministerios__grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .home-card__image-wrapper {
+    height: 250px;
+  }
+
+  .home-card__title {
+    font-size: 1.25rem;
+  }
+
+  .home-eventos__title {
+    font-size: 1.75rem;
+  }
+
+  .home-eventos__description {
+    font-size: 1rem;
+  }
+
+  .home-plataforma {
+    padding: 3.5rem 1rem;
+  }
+
+  .home-plataforma__title {
+    font-size: 2rem;
+  }
+
+  .home-plataforma__description {
+    font-size: 1.125rem;
+    margin-bottom: 3rem;
+  }
+
+  .home-plataforma__features {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .home-plataforma__feature {
+    padding: 2rem 1.5rem;
+  }
+
+  .home-plataforma__cta {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-hero__overlay {
+    padding: 1.5rem 1rem;
+  }
+
+  .home-hero__title {
+    font-size: 1.5rem;
+  }
+
+  .home-ministerios,
+  .home-eventos {
+    padding: 3rem 1rem;
+  }
+
+  .home-plataforma {
+    padding: 3rem 1rem;
+  }
+
+  .home-plataforma__title {
+    font-size: 1.75rem;
+  }
+
+  .home-plataforma__description {
+    font-size: 1rem;
+  }
+
+  .home-plataforma__feature-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .home-plataforma__feature-title {
+    font-size: 1.25rem;
+  }
+}
+@media (max-width: 768px) {
+  .hero-text h2 {
+    font-size: 1.3rem;
+  }
+
+  .hero-text {
+    top: 60%;
+    transform: translate(-50%, -50%);
+  }
+
+  .cards-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card {
+    width: 90%;
+
+    height: 220px;
+  }
+
+  .footer {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+}

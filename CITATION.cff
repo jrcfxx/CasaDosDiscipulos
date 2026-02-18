@@ -1,0 +1,36 @@
+cff-version: 1.0.1
+message: Sistema LMS (Learning Management System)
+title: Casa dos Discípulos
+authors:
+  - family-names: Rocha Fiorini
+    given-names: Júlia
+  - family-names: dos Santos
+    given-names: Nalanda Luiza
+  - family-names: Dias Abreu
+    given-names: Natalie Santana
+  - family-names: de Carvalho
+    given-names: Paloma Dias 
+  - family-names: de Melo Santos
+    given-names: Pedro Henrique Germano
+  - family-names: dos Santos
+    given-names: Raquel Cristina Pereira
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Aramuni
+    given-names: João Paulo Carneiro
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Marques
+    given-names: Ramon Lacerda
+  - name-suffix: Professor
+    affiliation: PUC Minas
+    family-names: Cunha
+    given-names: Bernardo Guerra Pereira
+keywords:
+  - Plataforma de Ensino
+  - Sistema LMS
+  - Casa dos Discípulos
+repository-code: https://github.com/ICEI-PUC-Minas-PMGES-TI/pmg-es-2025-2-ti3-9577100-casadosdiscipulos.git
+license: CC-BY-4.0
+version: 1.0.0
+date-released: 2025-08-18

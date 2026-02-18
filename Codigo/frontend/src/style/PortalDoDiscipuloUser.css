@@ -1,0 +1,239 @@
+:root {
+  --bg: #0a0a0a;
+  --panel: #111;
+  --muted: #bdbdbd;
+  --text: #f5f5f5;
+  --ring: rgba(255, 255, 255, .25);
+  --radius: 18px;
+  --shadow: 0 10px 26px rgba(0, 0, 0, .45);
+  --brand-w: min(1120px, 92vw);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--text);
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--bg);
+}
+
+/* HEADER */
+.gerir-header.full-bleed {
+  width: 100vw;
+  background-color: #2b2f30;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  padding: 0;
+}
+
+.gerir-header {
+  width: 100%;
+  background-color: #2b2f30; 
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.header-inner {
+  width: 100%;
+  max-width: 1180px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  padding: 20px 20px;
+}
+
+.header-logo img {
+  height: 40px;
+  display: block;
+}
+
+.header-links {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex: 1;
+}
+
+.header-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.header-links a.active,
+.header-links a:hover {
+  color: #ddd;
+}
+
+.header-profile .profile-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  align-items: center;
+}
+
+.header-profile .profile-btn svg {
+  width: 30px;
+  height: 30px;
+}
+
+.portal-user {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-wrap {
+  width: var(--brand-w);
+  margin: 26px auto 36px;
+  flex: 1;
+}
+
+.portal-title {
+  margin: 0 0 18px;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  font-size: clamp(22px, 2.2vw, 30px);
+}
+
+.portal-subtitle {
+  margin: 10px 0 14px;
+  text-align: center;
+  color: #eaeaea;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: clamp(12px, 1.1vw, 14px);
+}
+
+.mt-section {
+  margin-top: 26px;
+}
+
+/* CARDS */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  width: var(--brand-w);
+  margin: 0 auto;
+}
+
+.grid-1 {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.portal-card {
+  position: relative;
+  height: 220px;
+  border-radius: 16px;
+  background-size: cover;
+  background-position: center 55%;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  display: grid;
+  place-items: end center;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.portal-card--wide {
+  width: min(620px, 92vw);
+  height: 220px;
+}
+
+.portal-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, .58) 0%, rgba(0, 0, 0, .15) 60%, rgba(0, 0, 0, 0) 100%);
+}
+
+.portal-card__title {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 18px;
+  padding: 0 10px;
+  text-align: center;
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: .38em;
+  text-transform: uppercase;
+  font-size: clamp(14px, 1.5vw, 18px);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, .55);
+}
+
+.portal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .55);
+}
+
+.portal-card,
+.portal-card:link,
+.portal-card:visited,
+.portal-card:hover,
+.portal-card:active,
+.portal-card:focus {
+  color: #fff;
+  text-decoration: none;
+  outline: none;
+}
+
+.portal-card:hover .portal-card__title,
+.portal-card:focus .portal-card__title {
+  filter: brightness(1.05);
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 900px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-card,
+  .portal-card--wide {
+    height: 200px;
+  }
+}
+
+.footer {
+  width: 100vw;
+  background-color: #2b2f30; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 4rem;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+.footer-info p {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.footer-links a {
+  color: #fff;
+  margin-left: 1rem;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}

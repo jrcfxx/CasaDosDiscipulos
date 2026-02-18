@@ -1,0 +1,740 @@
+{
+  "info": {
+    "name": "Casa dos Discípulos API",
+    "description": "Collection completa para testar todas as rotas do backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Autenticação",
+      "item": [
+        {
+          "name": "Registrar Novo Usuário",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Teste Postman\",\n  \"email\": \"teste@postman.com\",\n  \"senha\": \"senha123\",\n  \"tipo\": \"membro\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login - Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "    console.log(\"Token salvo: \" + jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Líder",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"lider@test.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Membro",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"membro@test.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Usuários",
+      "item": [
+        {
+          "name": "Listar Todos os Usuários",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuarios"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Usuário por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuarios", "1"]
+            }
+          }
+        },
+        {
+          "name": "Atualizar Usuário",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Nome Atualizado\",\n  \"pontuacao\": 150\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuarios", "3"]
+            }
+          }
+        },
+        {
+          "name": "Ativar/Desativar Usuário",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/3/toggle",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuarios", "3", "toggle"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Módulos",
+      "item": [
+        {
+          "name": "Listar Todos os Módulos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/modulo",
+              "host": ["{{baseUrl}}"],
+              "path": ["modulo"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Módulo por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/modulo/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["modulo", "1"]
+            }
+          }
+        },
+        {
+          "name": "Criar Módulo (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Módulo Teste Postman\",\n  \"descricao\": \"Criado via API\",\n  \"ordem\": 10,\n  \"ativo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/modulo",
+              "host": ["{{baseUrl}}"],
+              "path": ["modulo"]
+            }
+          }
+        },
+        {
+          "name": "Atualizar Módulo (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Módulo Atualizado\",\n  \"ativo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/modulo/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["modulo", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Quizzes",
+      "item": [
+        {
+          "name": "Listar Todos os Quizzes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quiz",
+              "host": ["{{baseUrl}}"],
+              "path": ["quiz"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Quiz por ID (com questões)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quiz/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["quiz", "1"]
+            }
+          }
+        },
+        {
+          "name": "Criar Quiz (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_modulo\": 1,\n  \"titulo\": \"Novo Quiz Teste\",\n  \"descricao\": \"Quiz criado via Postman\",\n  \"ativo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/quiz",
+              "host": ["{{baseUrl}}"],
+              "path": ["quiz"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Respostas de Quiz",
+      "item": [
+        {
+          "name": "Submeter Respostas de Quiz",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_usuario\": 3,\n  \"respostas\": [\n    {\n      \"id_questao\": 1,\n      \"resposta\": \"a\"\n    },\n    {\n      \"id_questao\": 2,\n      \"resposta\": \"v\"\n    },\n    {\n      \"id_questao\": 3,\n      \"resposta\": \"Minha resposta discursiva completa sobre o tema abordado na questão.\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/quiz/1/responder",
+              "host": ["{{baseUrl}}"],
+              "path": ["quiz", "1", "responder"]
+            },
+            "description": "Submete respostas de um quiz completo. O sistema:\n- Corrige automaticamente (exceto discursivas)\n- Atualiza pontuação do usuário\n- Marca módulo como concluído"
+          }
+        },
+        {
+          "name": "Listar Respostas de um Quiz",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quiz/1/respostas",
+              "host": ["{{baseUrl}}"],
+              "path": ["quiz", "1", "respostas"]
+            }
+          }
+        },
+        {
+          "name": "Ver Respostas de Usuário Específico",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/quiz/1/respostas/usuario?usuarioId=3",
+              "host": ["{{baseUrl}}"],
+              "path": ["quiz", "1", "respostas", "usuario"],
+              "query": [
+                {
+                  "key": "usuarioId",
+                  "value": "3"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Lições",
+      "item": [
+        {
+          "name": "Listar Todas as Lições",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/licao",
+              "host": ["{{baseUrl}}"],
+              "path": ["licao"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Lição por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/licao/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["licao", "1"]
+            }
+          }
+        },
+        {
+          "name": "Criar Lição (Admin/Líder)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Nova Lição\",\n  \"descricao\": \"Descrição da lição\",\n  \"ordem\": 5,\n  \"ativa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/licao",
+              "host": ["{{baseUrl}}"],
+              "path": ["licao"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Formulários",
+      "item": [
+        {
+          "name": "Listar Todos os Formulários",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formulario",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Formulário por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formulario/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario", "1"]
+            }
+          }
+        },
+        {
+          "name": "Criar Formulário (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Novo Formulário\",\n  \"descricao\": \"Descrição do formulário\",\n  \"ativo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/formulario",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Campos Personalizados",
+      "item": [
+        {
+          "name": "Listar Tipos de Campos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campo",
+              "host": ["{{baseUrl}}"],
+              "path": ["campo"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Células",
+      "item": [
+        {
+          "name": "Listar Todas as Células",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/celula",
+              "host": ["{{baseUrl}}"],
+              "path": ["celula"]
+            }
+          }
+        },
+        {
+          "name": "Listar Células Ativas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/celula/ativas",
+              "host": ["{{baseUrl}}"],
+              "path": ["celula", "ativas"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Célula por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/celula/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["celula", "1"]
+            }
+          }
+        },
+        {
+          "name": "Células por Líder",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/celula/lider/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["celula", "lider", "2"]
+            }
+          }
+        },
+        {
+          "name": "Criar Célula",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Célula Teste\",\n  \"descricao\": \"Célula de teste via Postman\",\n  \"id_lider\": 2,\n  \"dia_reuniao\": \"quinta\",\n  \"horario_reuniao\": \"20:00\",\n  \"local_reuniao\": \"Rua Teste, 123\",\n  \"ativa\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/celula",
+              "host": ["{{baseUrl}}"],
+              "path": ["celula"]
+            }
+          }
+        },
+        {
+          "name": "Atualizar Célula",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Célula Teste Atualizada\",\n  \"horario_reuniao\": \"19:30\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/celula/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["celula", "1"]
+            }
+          }
+        },
+        {
+          "name": "Deletar Célula",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/celula/3",
+              "host": ["{{baseUrl}}"],
+              "path": ["celula", "3"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Respostas de Formulários",
+      "item": [
+        {
+          "name": "Listar Todas as Respostas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formulario-resposta",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario-resposta"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Resposta por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formulario-resposta/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario-resposta", "1"]
+            }
+          }
+        },
+        {
+          "name": "Respostas por Formulário",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formulario-resposta/formulario/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario-resposta", "formulario", "1"]
+            }
+          }
+        },
+        {
+          "name": "Respostas por Célula",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formulario-resposta/celula/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario-resposta", "celula", "1"]
+            }
+          }
+        },
+        {
+          "name": "Submeter Resposta de Formulário",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_formulario\": 1,\n  \"id_celula\": 1,\n  \"campos\": [\n    {\n      \"id_formulario_campo\": 1,\n      \"resposta\": \"20 pessoas presentes\"\n    },\n    {\n      \"id_formulario_campo\": 2,\n      \"resposta\": \"Culto de ação de graças\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/formulario-resposta",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario-resposta"]
+            }
+          }
+        },
+        {
+          "name": "Deletar Resposta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formulario-resposta/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["formulario-resposta", "2"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teste de Conexão",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3001/",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3001",
+          "path": [""]
+        },
+        "description": "Testa se o servidor está rodando"
+      }
+    }
+  ]
+}

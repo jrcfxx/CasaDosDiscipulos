@@ -1,0 +1,486 @@
+/**
+ * EditarModulosEscolaDiscipulosAdmin Styles - ISOLATED NAMESPACE
+ * Branding: Casa dos Discípulos
+ * Cores: #00444c #f4b002 #02869b #2b2f30 #ebebeb #00b5d2
+ * Namespace: .editar-modulo-* para evitar conflitos com CSS global
+ */
+
+/* ========== CSS VARIABLES (namespaced) ========== */
+.editar-modulo-page {
+  --em-primary-dark: #00444c;
+  --em-primary-teal: #02869b;
+  --em-primary-gray: #2b2f30;
+  --em-primary-light: #ebebeb;
+  --em-secondary-gold: #f4b002;
+  --em-secondary-cyan: #00b5d2;
+  --em-bg-black: #000000;
+  --em-white: #ffffff;
+  --em-gray-900: #1f2937;
+  --em-gray-700: #374151;
+  --em-gray-600: #4b5563;
+  --em-gray-500: #64748b;
+  --em-gray-400: #94a3b8;
+  --em-gray-300: #cbd5e1;
+  --em-gray-200: #e2e8f0;
+  --em-gray-100: #f1f5f9;
+  --em-gray-50: #f8fafc;
+  --em-red-500: #ef4444;
+  --em-red-600: #dc2626;
+  --em-red-900: #991b1b;
+  --em-red-100: #fee2e2;
+  --em-red-200: #fecaca;
+}
+
+/* ========== PAGE STRUCTURE ========== */
+.editar-modulo-page {
+  min-height: 100vh;
+  background: var(--em-bg-black);
+  font-family: "Montserrat", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.editar-modulo-page main {
+  flex: 1;
+}
+
+.editar-modulo-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 3rem;
+}
+
+main.editar-modulo-container {
+  margin-top: 0;
+}
+
+/* ========== PAGE TITLE ========== */
+.editar-modulo-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--em-primary-light);
+  text-align: center;
+  margin: 4rem 0 2.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.editar-modulo-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--em-primary-teal),
+    var(--em-secondary-gold)
+  );
+  border-radius: 2px;
+}
+
+/* ========== LAYOUT GRID ========== */
+.editar-modulo-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========== PANELS ========== */
+.editar-modulo-panel {
+  background: var(--em-white);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.editar-modulo-panel-main {
+  padding: 2.5rem;
+}
+
+.editar-modulo-panel-aside {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ========== FORM LABELS ========== */
+.editar-modulo-label {
+  display: block;
+  margin: 1.5rem 0 0.5rem;
+  color: var(--em-gray-900);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.editar-modulo-label:first-of-type {
+  margin-top: 0;
+}
+
+/* ========== INPUTS ========== */
+.editar-modulo-input {
+  width: 100%;
+  border-radius: 10px;
+  background: var(--em-white);
+  color: var(--em-gray-900);
+  border: 2px solid var(--em-gray-200);
+  padding: 0.85rem 1.1rem;
+  outline: none;
+  font-family: "Montserrat", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.editar-modulo-input:focus {
+  border-color: var(--em-primary-teal);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+}
+
+.editar-modulo-input.editar-modulo-input-error {
+  border-color: var(--em-red-500);
+}
+
+.editar-modulo-input.editar-modulo-input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+textarea.editar-modulo-input {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* ========== SECTION TITLES ========== */
+.editar-modulo-section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--em-gray-900);
+  margin: 2.5rem 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--em-gray-200);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editar-modulo-aside-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--em-gray-900);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editar-modulo-aside-description {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--em-gray-500);
+  line-height: 1.6;
+}
+
+/* ========== TOGGLE SWITCH ========== */
+.editar-modulo-toggle-container {
+  margin: 1.5rem 0;
+}
+
+.editar-modulo-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.editar-modulo-toggle-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--em-gray-900);
+}
+
+.editar-modulo-toggle-btn {
+  position: relative;
+  width: 56px;
+  height: 28px;
+  background: var(--em-gray-300);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  padding: 0;
+}
+
+.editar-modulo-toggle-btn.active {
+  background: var(--em-primary-teal);
+}
+
+.editar-modulo-toggle-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: var(--em-white);
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.editar-modulo-toggle-btn.active .editar-modulo-toggle-slider {
+  transform: translateX(28px);
+}
+
+.editar-modulo-toggle-info {
+  margin: 1rem 0 0;
+  padding: 0.85rem;
+  background: var(--em-gray-100);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--em-gray-600);
+  line-height: 1.6;
+  border-left: 3px solid var(--em-primary-teal);
+}
+
+/* ========== FIELD CARDS ========== */
+.editar-modulo-field-card {
+  position: relative;
+  background: var(--em-gray-50);
+  border: 2px solid var(--em-gray-200);
+  border-radius: 12px;
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.editar-modulo-field-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: var(--em-primary-teal);
+  transform: translateY(-2px);
+}
+
+/* Force label colors inside field cards */
+.editar-modulo-field-card label,
+.editar-modulo-field-card .form-label,
+.editar-modulo-field-card .field-label {
+  color: var(--em-gray-900) !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+}
+
+/* Force input and textarea colors inside field cards */
+.editar-modulo-field-card input,
+.editar-modulo-field-card textarea,
+.editar-modulo-field-card select,
+.editar-modulo-field-card .input {
+  color: var(--em-gray-900) !important;
+  background: var(--em-white) !important;
+}
+
+.editar-modulo-field-card input::placeholder,
+.editar-modulo-field-card textarea::placeholder {
+  color: var(--em-gray-400) !important;
+}
+
+.editar-modulo-field-remove {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--em-red-100);
+  color: var(--em-red-900);
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.editar-modulo-field-remove:hover {
+  background: var(--em-red-200);
+  transform: scale(1.1);
+}
+
+/* ========== ADD FIELD BUTTONS ========== */
+.editar-modulo-add-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+/* ========== BUTTONS ========== */
+.editar-modulo-btn {
+  border-radius: 10px;
+  padding: 0.85rem 1.75rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  border: none;
+  font-family: "Montserrat", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editar-modulo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editar-modulo-btn-primary {
+  background: var(--em-primary-gray);
+  color: var(--em-white);
+  box-shadow: 0 2px 8px rgba(43, 47, 48, 0.3);
+}
+
+.editar-modulo-btn-primary:hover:not(:disabled) {
+  background: var(--em-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 68, 76, 0.4);
+}
+
+.editar-modulo-btn-secondary {
+  background: var(--em-white);
+  color: var(--em-primary-gray);
+  border: 2px solid var(--em-gray-200);
+}
+
+.editar-modulo-btn-secondary:hover:not(:disabled) {
+  background: #f7fafc;
+  border-color: var(--em-primary-teal);
+  color: var(--em-primary-teal);
+}
+
+.editar-modulo-btn-outline {
+  background: var(--em-white);
+  border: 2px solid var(--em-primary-teal);
+  color: var(--em-primary-teal);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.editar-modulo-btn-outline:hover:not(:disabled) {
+  background: var(--em-primary-teal);
+  color: var(--em-white);
+}
+
+.editar-modulo-btn-danger {
+  background: var(--em-red-500);
+  color: var(--em-white);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.editar-modulo-btn-danger:hover:not(:disabled) {
+  background: var(--em-red-600);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+}
+
+/* ========== ACTIONS ROW ========== */
+.editar-modulo-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--em-gray-200);
+}
+
+/* ========== TOAST NOTIFICATIONS ========== */
+.editar-modulo-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--em-primary-gray);
+  color: var(--em-white);
+  padding: 1.1rem 1.75rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  font-weight: 600;
+  font-size: 0.95rem;
+  z-index: 10000;
+  animation: editarModuloSlideIn 0.3s ease-out;
+  border-left: 4px solid var(--em-secondary-gold);
+}
+
+@keyframes editarModuloSlideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1024px) {
+  .editar-modulo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editar-modulo-panel-aside {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .editar-modulo-container {
+    padding: 0 1rem 2rem;
+  }
+
+  .editar-modulo-title {
+    font-size: 1.75rem;
+    margin: 2rem 0 1.5rem;
+  }
+
+  .editar-modulo-panel-main {
+    padding: 1.5rem;
+  }
+
+  .editar-modulo-panel-aside {
+    padding: 1.5rem;
+  }
+
+  .editar-modulo-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .editar-modulo-actions .editar-modulo-btn {
+    width: 100%;
+  }
+
+  .editar-modulo-add-buttons {
+    gap: 0.5rem;
+  }
+
+  .editar-modulo-btn-outline {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .editar-modulo-field-card {
+    padding: 1.25rem;
+  }
+
+  .editar-modulo-toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+}

@@ -1,0 +1,134 @@
+CREATE DATABASE IF NOT EXISTS CasaDosDiscipulos;
+USE CasaDosDiscipulos;
+
+-- TABELA: USUARIO
+CREATE TABLE usuario (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    tipo ENUM('administrador','lider','membro') NOT NULL,
+    pontuacao INT DEFAULT 0,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+-- TABELA: CURSO
+CREATE TABLE curso (
+    id_curso INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+-- TABELA: MODULO
+CREATE TABLE modulo (
+    id_modulo INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    ativo BOOLEAN DEFAULT TRUE,
+    id_quiz INT NULL,
+    FOREIGN KEY (id_quiz) REFERENCES quiz(id_quiz) ON DELETE SET NULL
+);
+
+-- TABELA: QUIZ
+CREATE TABLE quiz (
+    id_quiz INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT NULL,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+-- TABELA: CAMPO_PERSONALIZADO
+CREATE TABLE campo_personalizado (
+    id_campo INT AUTO_INCREMENT PRIMARY KEY,
+    origem ENUM('quiz','formulario','modulo','licao') NOT NULL,
+    id_origem INT UNSIGNED NOT NULL,
+    label VARCHAR(255) NOT NULL,
+    tipo_campo ENUM('texto','numero','data','alternativa','discursiva','link','upload','v/f','id_quiz') NOT NULL,
+    obrigatorio BOOLEAN DEFAULT FALSE
+);
+
+-- TABELA: QUIZ_RESPOSTA
+CREATE TABLE quiz_resposta (
+    id_resposta INT AUTO_INCREMENT PRIMARY KEY,
+    id_quiz INT UNSIGNED NOT NULL,
+    id_usuario INT UNSIGNED NOT NULL,
+    id_campo INT UNSIGNED NOT NULL,
+    resposta TEXT NULL,
+    data_resposta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_quiz) REFERENCES quiz(id_quiz),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (id_campo) REFERENCES campo_personalizado(id_campo)
+);
+
+-- TABELA: RANKING
+CREATE TABLE ranking (
+    id_ranking INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT UNSIGNED NOT NULL,
+    pontuacao_total INT DEFAULT 0,
+    posicao INT NULL,
+    data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+);
+
+-- TABELA: USUARIO_MODULO
+CREATE TABLE usuario_modulo (
+    id_usuario_modulo INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT UNSIGNED NOT NULL,
+    id_modulo INT UNSIGNED NOT NULL,
+    status ENUM('nao_iniciado','em_andamento','concluido') DEFAULT 'nao_iniciado',
+    nota_quiz DECIMAL(5,2) NULL,
+    data_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_conclusao TIMESTAMP NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+    FOREIGN KEY (id_modulo) REFERENCES modulo(id_modulo),
+    UNIQUE (id_usuario, id_modulo)
+);
+
+-- TABELA: FORMULARIO
+CREATE TABLE formulario (
+    id_formulario INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT NULL,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+-- TABELA: FORMULARIO_RESPOSTA
+CREATE TABLE formulario_resposta (
+    id_resposta INT AUTO_INCREMENT PRIMARY KEY,
+    id_formulario INT UNSIGNED NOT NULL,
+    id_usuario INT UNSIGNED NOT NULL,
+    celula VARCHAR(255) NULL,
+    data_resposta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_formulario) REFERENCES formulario(id_formulario),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+);
+
+-- TABELA: FORMULARIO_RESPOSTA_CAMPO
+CREATE TABLE formulario_resposta_campo (
+    id_resposta_campo INT AUTO_INCREMENT PRIMARY KEY,
+    id_resposta INT UNSIGNED NOT NULL,
+    id_campo INT UNSIGNED NOT NULL,
+    valor TEXT NULL,
+    FOREIGN KEY (id_resposta) REFERENCES formulario_resposta(id_resposta),
+    FOREIGN KEY (id_campo) REFERENCES campo_personalizado(id_campo)
+);
+
+-- TABELA: LICAO
+CREATE TABLE licao (
+    id_licao INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    descricao TEXT NULL,
+    material TEXT NULL,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+-- TABELA: MODULO_CAMPO
+CREATE TABLE modulo_campo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_modulo INT UNSIGNED NOT NULL,
+    id_campo INT UNSIGNED NOT NULL,
+    FOREIGN KEY (id_modulo) REFERENCES modulo(id_modulo) ON DELETE CASCADE,
+    FOREIGN KEY (id_campo) REFERENCES campo_personalizado(id_campo) ON DELETE CASCADE
+);

@@ -1,0 +1,1 @@
+Abstrai a conexão com banco

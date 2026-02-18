@@ -1,0 +1,200 @@
+/**
+ * Portal do Discípulo - Admin
+ * Branding: Casa dos Discípulos
+ */
+
+:root {
+  --primary-dark: #00444c;
+  --primary-teal: #02869b;
+  --primary-gray: #2b2f30;
+  --primary-light: #ebebeb;
+  --secondary-gold: #f4b002;
+  --secondary-cyan: #00b5d2;
+  --bg-black: #000000;
+}
+
+.portal {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-black);
+  font-family: "Montserrat", "Segoe UI", sans-serif;
+}
+
+.portal-wrap {
+  width: min(1280px, 94vw);
+  margin: 0 auto;
+  padding: 3rem 2rem 4rem;
+  flex: 1;
+  color: #fff;
+}
+
+.portal-title {
+  text-align: center;
+  margin: 0 0 3.5rem;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  letter-spacing: 0.1em;
+  color: var(--primary-light);
+  text-transform: uppercase;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.portal-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--primary-teal),
+    var(--secondary-gold)
+  );
+  border-radius: 2px;
+}
+
+.portal-section {
+  margin-bottom: 4rem;
+}
+
+.portal-section:last-of-type {
+  margin-bottom: 2rem;
+}
+
+.portal-subtitle {
+  text-align: center;
+  margin: 0 0 2rem;
+  font-weight: 700;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  letter-spacing: 0.15em;
+  color: var(--primary-teal);
+  text-transform: uppercase;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* Grid de Cards */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Card */
+.portal-card {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  height: 240px;
+  border-radius: 20px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid rgba(2, 134, 155, 0.2);
+  cursor: pointer;
+}
+
+.portal-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 0 3px var(--primary-teal);
+  border-color: var(--primary-teal);
+}
+
+.portal-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.5) 50%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  transition: background 0.4s ease;
+}
+
+.portal-card:hover .portal-card__overlay {
+  background: linear-gradient(
+    to top,
+    rgba(2, 134, 155, 0.6) 0%,
+    rgba(0, 0, 0, 0.4) 60%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+}
+
+.portal-card__title {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: 1.5rem;
+  font-weight: 700;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+}
+
+.portal-card:hover .portal-card__title {
+  letter-spacing: 0.25em;
+  color: var(--secondary-gold);
+  text-shadow: 0 0 20px rgba(244, 176, 2, 0.6);
+}
+
+/* Link Styles */
+.portal-card,
+.portal-card:link,
+.portal-card:visited,
+.portal-card:hover,
+.portal-card:active,
+.portal-card:focus {
+  color: #fff;
+  text-decoration: none;
+  outline: none;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .portal-wrap {
+    padding: 2rem 1rem 3rem;
+  }
+
+  .portal-title {
+    margin-bottom: 2.5rem;
+  }
+
+  .portal-section {
+    margin-bottom: 3rem;
+  }
+
+  .portal-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .portal-card {
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .portal-card__title {
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    padding: 1.2rem;
+  }
+
+  .portal-card:hover .portal-card__title {
+    letter-spacing: 0.18em;
+  }
+}
