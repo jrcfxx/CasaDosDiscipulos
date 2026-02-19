@@ -166,7 +166,7 @@ export default function FormulariosSecretariaCelulasLeader() {
     try {
       const camposPayload = fields.map((f) => ({
         id_formulario_campo: f.id_formulario_campo,
-        resposta: f.conteudo ?? "",
+        resposta: String(f.conteudo ?? ""),
       }));
 
       await formularioRespostaService.criar({
@@ -263,7 +263,8 @@ export default function FormulariosSecretariaCelulasLeader() {
                                 <TextField
                                   id={`campo_${campo.uid}`}
                                   name={`campo_${campo.uid}`}
-                                  label={safeLabel}
+                                  label=""
+                                  placeholder={safeLabel}
                                   value={campo.conteudo}
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
@@ -272,7 +273,8 @@ export default function FormulariosSecretariaCelulasLeader() {
                                 <NumberField
                                   id={`campo_${campo.uid}`}
                                   name={`campo_${campo.uid}`}
-                                  label={safeLabel}
+                                  label=""
+                                  placeholder={safeLabel}
                                   value={campo.conteudo}
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
@@ -281,7 +283,8 @@ export default function FormulariosSecretariaCelulasLeader() {
                                 <DateField
                                   id={`campo_${campo.uid}`}
                                   name={`campo_${campo.uid}`}
-                                  label={safeLabel}
+                                  label=""
+                                  placeholder={safeLabel}
                                   value={campo.conteudo}
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
@@ -290,7 +293,8 @@ export default function FormulariosSecretariaCelulasLeader() {
                                 <LinkField
                                   id={`campo_${campo.uid}`}
                                   name={`campo_${campo.uid}`}
-                                  label={safeLabel}
+                                  label=""
+                                  placeholder={safeLabel}
                                   value={campo.conteudo}
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
@@ -299,7 +303,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                 <UploadField
                                   id={`campo_${campo.uid}`}
                                   name={`campo_${campo.uid}`}
-                                  label={safeLabel}
+                                  label=""
                                   value={campo.conteudo}
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
@@ -308,7 +312,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                 <VideoField
                                   id={`campo_${campo.uid}`}
                                   name={`campo_${campo.uid}`}
-                                  label={safeLabel}
+                                  label=""
                                   value={campo.conteudo}
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
