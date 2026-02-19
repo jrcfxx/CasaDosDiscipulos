@@ -2,24 +2,24 @@ import api from "./apiClient";
 
 const URL = "/usuarios";
 
-export function showAllUsers() {
-  const response = api
-    .get(URL)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+export async function showAllUsers() {
+  try {
+    const res = await api.get(URL);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao listar usuários:", err);
+    throw err;
+  }
 }
 
 export async function showUserById(id) {
-  const response = await api
-    .get(`${URL}/${id}`)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.get(`${URL}/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao buscar usuário:", err);
+    throw err;
+  }
 }
 
 export async function createUser(userData) {
@@ -43,49 +43,48 @@ export async function updateUser(id, userData) {
 }
 
 export async function deleteUser(id) {
-  const response = await api
-    .delete(`${URL}/${id}`)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.delete(`${URL}/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao excluir usuário:", err);
+    throw err;
+  }
 }
 
 export async function getUserProfile() {
-  const response = await api
-    .get(`${URL}/perfil`)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.get(`${URL}/perfil`);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao carregar perfil:", err);
+    throw err;
+  }
 }
 
 export async function updateUserProfile(userData) {
-  const response = await api
-    .put(`${URL}/perfil`, userData)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.put(`${URL}/perfil`, userData);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao atualizar perfil:", err);
+    throw err;
+  }
 }
 
 export async function uploadUserPhoto(file) {
   const formData = new FormData();
   formData.append("foto", file);
 
-  const response = await api
-    .post(`${URL}/perfil/foto`, formData, {
+  try {
+    const res = await api.post(`${URL}/perfil/foto`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
-    })
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-      throw err;
     });
-  return response;
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao enviar foto:", err);
+    throw err;
+  }
 }

@@ -102,9 +102,7 @@ const MultipleChoiceField: React.FC<SelectFieldProps> = ({
     }));
     const newData = { alternativas: novasAlternativas };
     setData(newData);
-    const jsonString = JSON.stringify(newData);
-    console.log("Salvando alternativa correta:", index, jsonString);
-    onChange(jsonString);
+    onChange(JSON.stringify(newData));
   };
 
   return (

@@ -101,9 +101,7 @@ const CheckboxField: React.FC<SelectFieldProps> = ({
     );
     const newData = { alternativas: novasAlternativas };
     setData(newData);
-    const jsonString = JSON.stringify(newData);
-    console.log("Salvando alternativas corretas (checkbox):", jsonString);
-    onChange(jsonString);
+    onChange(JSON.stringify(newData));
   };
 
   return (

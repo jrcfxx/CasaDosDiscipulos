@@ -82,7 +82,6 @@ const SelectField: React.FC<SelectFieldProps> = ({
   const handleCorretaChange = (opcao: string) => {
     const newData = { ...data, correta: opcao };
     setData(newData);
-    console.log("Salvando resposta correta (select):", opcao);
     onChange(JSON.stringify(newData));
   };
 

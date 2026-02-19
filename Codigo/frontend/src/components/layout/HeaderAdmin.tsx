@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../../services/usuario";
+import { ASSETS_BASE } from "../../config/api";
 import { useAuth } from "../../hooks/useAuth";
 import "../../style/layout.css";
 import iconeIgreja from "../../assets/logo.png";
@@ -39,9 +40,7 @@ const HeaderAdmin: React.FC = () => {
         if (data?.foto) {
           const fotoUrl = data.foto.startsWith("http")
             ? data.foto
-            : `http://localhost:3001${data.foto}`;
-          console.log("Foto header do banco:", data.foto);
-          console.log("URL header da foto:", fotoUrl);
+            : `${ASSETS_BASE}${data.foto}`;
           setUserPhoto(fotoUrl);
         }
       } catch (err) {

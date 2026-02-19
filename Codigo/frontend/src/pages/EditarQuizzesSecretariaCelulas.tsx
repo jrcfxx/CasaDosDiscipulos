@@ -41,9 +41,6 @@ export default function EditarQuizzesSecretariaCelulas() {
       setDescricao(savedData.descricao || "");
       setCampos(savedData.campos || []);
       setLiberado(savedData.liberado_para_alunos || false);
-    } else {
-      // Aqui você pode futuramente buscar via API usando o título
-      console.log("Nenhum dado recebido. Você pode carregar via fetch aqui.");
     }
   }, [location.state]);
 
@@ -81,14 +78,6 @@ export default function EditarQuizzesSecretariaCelulas() {
 
   // --- SALVAR (simula update) ---
   const salvarAlteracoes = () => {
-    const payload = {
-      titulo,
-      descricao,
-      liberado_para_alunos: liberado,
-      campos,
-      arquivo_nome: arquivo?.name ?? null,
-    };
-    console.log("Alterações salvas:", payload);
     setToast("Alterações salvas com sucesso ✅");
   };
 

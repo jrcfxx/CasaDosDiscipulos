@@ -35,9 +35,9 @@ app.use(express.json());
 // Servir arquivos estáticos da pasta uploads
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Teste simples da API
+// Health check
 app.get("/", (req, res) => {
-  res.json({ message: "API Casa dos Discípulos - Online ✓" });
+  res.json({ message: "API Casa dos Discípulos - Online" });
 });
 
 // Rotas de autenticação

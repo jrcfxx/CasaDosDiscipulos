@@ -60,8 +60,10 @@ const errorHandler = (err, req, res, next) => {
     }
   }
 
-  // Erro inesperado (bug) - não expor detalhes ao cliente
-  console.error("ERRO NÃO TRATADO:", err);
+  // Erro inesperado (bug) - nunca expor stack ou detalhes ao cliente
+  if (process.env.NODE_ENV !== "production") {
+    console.error("ERRO NÃO TRATADO:", err);
+  }
   return res.status(500).json({
     error: "Ocorreu um erro inesperado. Por favor, tente novamente.",
   });

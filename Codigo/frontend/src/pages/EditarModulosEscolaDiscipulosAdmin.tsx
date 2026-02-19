@@ -112,8 +112,8 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
           setSelectedQuizId(quizData.id_quiz);
           quizVinculado = quizData;
         }
-      } catch (err) {
-        console.log("Nenhum quiz vinculado");
+      } catch {
+        // Quiz opcional
       }
 
       // Mapear campos do módulo e adicionar quiz se houver
@@ -268,10 +268,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
           .filter((f) => f.tipo !== "QUIZ")
           .map(async (f, index) => {
             const idCampo = f.campo?.id_campo;
-            if (!idCampo) {
-              console.warn("Campo sem id_campo encontrado:", f);
-              return null;
-            }
+            if (!idCampo) return null;
 
             let conteudo = f.conteudo ?? "";
 

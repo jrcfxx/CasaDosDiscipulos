@@ -35,7 +35,7 @@ type Celula = {
   nome: string;
 };
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+import { ASSETS_BASE } from "../config/api";
 
 export default function FormulariosSecretariaCelulasLeader() {
   const [formularios, setFormularios] = useState<Formulario[]>([]);
@@ -124,7 +124,7 @@ export default function FormulariosSecretariaCelulasLeader() {
       const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext);
       const url = String(campo.conteudo).startsWith("http")
         ? campo.conteudo
-        : `${API_URL}${campo.conteudo}`;
+        : `${ASSETS_BASE}${campo.conteudo}`;
       return (
         <div className="upload-preview-campo">
           {isImage && (
@@ -139,7 +139,7 @@ export default function FormulariosSecretariaCelulasLeader() {
     if (campo.tipo === "video" && campo.conteudo) {
       const url = String(campo.conteudo).startsWith("http")
         ? campo.conteudo
-        : `${API_URL}${campo.conteudo}`;
+        : `${ASSETS_BASE}${campo.conteudo}`;
       return (
         <div className="video-preview-campo">
           <video controls src={url} style={{ maxWidth: 400 }} />

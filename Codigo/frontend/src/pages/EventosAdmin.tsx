@@ -6,6 +6,7 @@ import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import Toast from "../components/ui/Toast";
 import axios from "axios";
+import { API_BASE, ASSETS_BASE } from "../config/api";
 
 interface Evento {
   id_evento: number;
@@ -35,7 +36,7 @@ const EventosAdmin: React.FC = () => {
   const [eventoToDelete, setEventoToDelete] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const API_URL = "http://localhost:3001/api/evento";
+  const API_URL = `${API_BASE}/evento`;
 
   useEffect(() => {
     fetchEventos();
@@ -160,7 +161,7 @@ const EventosAdmin: React.FC = () => {
         ordem: evento.ordem,
         ativo: evento.ativo,
       });
-      setPreviewUrl(`http://localhost:3001${evento.imagem_url}`);
+      setPreviewUrl(`${ASSETS_BASE}${evento.imagem_url}`);
     } else {
       setEditingEvento(null);
       setFormData({
@@ -209,7 +210,7 @@ const EventosAdmin: React.FC = () => {
               <div key={evento.id_evento} className="evento-card">
                 <div className="evento-image-wrapper">
                   <img
-                    src={`http://localhost:3001${evento.imagem_url}`}
+                    src={`${ASSETS_BASE}${evento.imagem_url}`}
                     alt={evento.titulo}
                     className="evento-image"
                   />

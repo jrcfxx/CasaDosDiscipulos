@@ -5,6 +5,7 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
 import axios from "axios";
+import { API_BASE, ASSETS_BASE } from "../config/api";
 
 /* TYPES */
 type Licao = {
@@ -33,7 +34,7 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
 
   const fetchLicoes = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/licao");
+      const res = await axios.get(`${API_BASE}/licao`);
       const mapped: Licao[] = (res.data || []).map((l: any) => ({
         id: l.id_licao ?? l.id ?? 0,
         titulo: l.titulo,
@@ -79,7 +80,7 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
             {isImage ? (
               <div>
                 <img
-                  src={`http://localhost:3001${conteudo}`}
+                  src={`${ASSETS_BASE}${conteudo}`}
                   alt={fileName}
                   style={{
                     maxWidth: "200px",
@@ -91,7 +92,7 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
               </div>
             ) : null}
             <a
-              href={`http://localhost:3001${conteudo}`}
+              href={`${ASSETS_BASE}${conteudo}`}
               target="_blank"
               rel="noopener noreferrer"
               download

@@ -9,6 +9,7 @@
     "start": "node src/app.js",
     "migrate": "knex --knexfile knexfile.cjs migrate:latest",
     "migrate:rollback": "knex --knexfile knexfile.cjs migrate:rollback",
+    "db:reset": "node scripts/dbReset.cjs",
     "seed": "node ./src/seeds/runSeeds.js"
   },
   "keywords": [],

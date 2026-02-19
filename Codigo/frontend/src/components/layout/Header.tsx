@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../../services/usuario";
+import { ASSETS_BASE } from "../../config/api";
 import { useAuth } from "../../hooks/useAuth";
 import NotificationsDropdown, { NotificationsBell } from "../NotificationsDropdown";
 import "../../style/layout.css";
@@ -50,7 +51,7 @@ const Header: React.FC = () => {
         if (data?.foto) {
           const fotoUrl = data.foto.startsWith("http")
             ? data.foto
-            : `http://localhost:3001${data.foto}`;
+            : `${ASSETS_BASE}${data.foto}`;
           setUserPhoto(fotoUrl);
         }
       } catch (err) {

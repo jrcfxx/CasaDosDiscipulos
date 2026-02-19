@@ -29,6 +29,10 @@ coverage/
 # dotenv environment variables file
 .env
 
+# Uploads (arquivos enviados pelos usuários)
+uploads/*
+!uploads/.gitkeep
+
 # Optional npm cache directory
 .npm/
 

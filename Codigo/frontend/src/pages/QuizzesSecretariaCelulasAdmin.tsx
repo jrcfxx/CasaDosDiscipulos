@@ -21,6 +21,7 @@ import CheckboxField from "../components/fields/CheckboxField";
 import SelectField from "../components/fields/SelectField";
 
 import usuarioService from "../services/usuarioService";
+import { API_BASE, ASSETS_BASE } from "../config/api";
 import type { Usuario } from "../services/usuarioService";
 
 /* TYPES */
@@ -115,7 +116,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const fetchQuizzes = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/quiz");
+      const res = await axios.get(`${API_BASE}/quiz`);
       const mapped: Quiz[] = (res.data || []).map((q: any) => ({
         id: q.id_quiz ?? q.id ?? 0,
         titulo: q.titulo,
@@ -134,7 +135,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const fetchAvailableFields = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/campo", {
+      const res = await axios.get(`${API_BASE}/campo`, {
         params: { modalidade: "quiz" },
       });
       setAvailableFields(res.data || []);
@@ -166,7 +167,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
         })
       );
 
-      await axios.put(`http://localhost:3001/api/quiz/${id}`, {
+      await axios.put(`${API_BASE}/quiz/${id}`, {
         titulo: quiz.titulo,
         descricao: quiz.descricao,
         ativo: quiz.ativo === 1 ? false : true,
@@ -177,7 +178,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       // Se o quiz alterado é o que está selecionado, atualizar a visualização
       if (selectedQuiz && selectedQuiz.id === id) {
-        const res = await axios.get(`http://localhost:3001/api/quiz/${id}`);
+        const res = await axios.get(`${API_BASE}/quiz/${id}`);
         const q = res.data;
         setSelectedQuiz({
           id: q.id_quiz ?? q.id ?? id,
@@ -270,7 +271,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const openEditModal = async (id: number) => {
     try {
-      const res = await axios.get(`http://localhost:3001/api/quiz/${id}`);
+      const res = await axios.get(`${API_BASE}/quiz/${id}`);
       const q = res.data;
 
       setCurrentForm({
@@ -294,7 +295,6 @@ export default function QuizzesSecretariaCelulasAdmin() {
           tipo === "select"
         ) {
           conteudoLimpo = c.conteudo ?? "";
-          console.log(`Carregando campo ${tipo}:`, c.label, conteudoLimpo);
         } else if (conteudoLimpo === c.label || !conteudoLimpo) {
           if (tipo === "numero") {
             conteudoLimpo = 0;
@@ -340,7 +340,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/upload/campo",
+        `${API_BASE}/upload/campo`,
         formData,
         {
           headers: {
@@ -394,8 +394,6 @@ export default function QuizzesSecretariaCelulasAdmin() {
       ordem: index,
     }));
 
-    console.log("Salvando quiz com campos:", camposPayload);
-
     const payload: any = {
       titulo: currentForm.nome,
       descricao: currentForm.descricao || null,
@@ -406,7 +404,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
     try {
       if (quizToEdit) {
         await axios.put(
-          `http://localhost:3001/api/quiz/${quizToEdit}`,
+          `${API_BASE}/quiz/${quizToEdit}`,
           payload
         );
         await fetchQuizzes();
@@ -414,7 +412,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
         // Atualizar o quiz selecionado se for o que foi editado
         if (selectedQuiz && selectedQuiz.id === quizToEdit) {
           const res = await axios.get(
-            `http://localhost:3001/api/quiz/${quizToEdit}`
+            `${API_BASE}/quiz/${quizToEdit}`
           );
           const q = res.data;
           setSelectedQuiz({
@@ -428,7 +426,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
         showToast("Quiz atualizado com sucesso!");
       } else {
-        await axios.post("http://localhost:3001/api/quiz", payload);
+        await axios.post(`${API_BASE}/quiz`, payload);
         await fetchQuizzes();
         showToast("Quiz criado com sucesso!");
       }
@@ -484,7 +482,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
             {isImage ? (
               <div>
                 <img
-                  src={`http://localhost:3001${conteudo}`}
+                  src={`${ASSETS_BASE}${conteudo}`}
                   alt={fileName}
                   style={{
                     maxWidth: "200px",
@@ -496,7 +494,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
               </div>
             ) : null}
             <a
-              href={`http://localhost:3001${conteudo}`}
+              href={`${ASSETS_BASE}${conteudo}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -929,7 +927,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                         >
                           {usuario.foto ? (
                             <img
-                              src={`http://localhost:3001${usuario.foto}`}
+                              src={`${ASSETS_BASE}${usuario.foto}`}
                               alt={usuario.nome}
                               className="rank-avatar-photo"
                             />
