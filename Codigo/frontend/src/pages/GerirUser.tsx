@@ -4,7 +4,9 @@ import "../style/GerirUser.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
+import Toast from "../components/ui/Toast";
 import perfil from "../assets/perfil-preto.png";
+import { ASSETS_BASE } from "../config/api";
 import { showAllUsers, createUser, updateUser } from "../services/usuario";
 import {
   showAllNiveis,
@@ -55,7 +57,7 @@ export default function GerenciarUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [niveis, setNiveis] = useState<Nivel[]>([]);
   const [filtro, setFiltro] = useState("");
-  const [filtroNivel, setFiltroNivel] = useState<number | "">("");
+  const [filtroNivel, setFiltroNivel] = useState<string>("");
   const [modalAberto, setModalAberto] = useState(false);
   const [usuarioModal, setUsuarioModal] = useState<UsuarioModal>({
     nome: "",
@@ -67,10 +69,9 @@ export default function GerenciarUsuarios() {
     id_nivel: null,
   });
   const [modalInativarAberto, setModalInativarAberto] = useState(false);
-  const [usuarioInativarIndex, setUsuarioInativarIndex] = useState<
-    number | null
-  >(null);
+  const [usuarioInativar, setUsuarioInativar] = useState<Usuario | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<"success" | "error" | "info">("info");
   const [loading, setLoading] = useState(true);
   const [modalNivelAberto, setModalNivelAberto] = useState(false);
   const [nivelModal, setNivelModal] = useState<NivelModal>({
@@ -93,9 +94,9 @@ export default function GerenciarUsuarios() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    setToastVariant(variant);
   };
 
   async function fetchUsuarios() {
@@ -107,7 +108,7 @@ export default function GerenciarUsuarios() {
       }
     } catch (err) {
       console.error("Erro ao carregar usuários:", err);
-      showToast("Erro ao carregar usuários");
+      showToast("Erro ao carregar usuários", "error");
     } finally {
       setLoading(false);
     }
@@ -124,18 +125,26 @@ export default function GerenciarUsuarios() {
     }
   }
 
+  // Normaliza id_nivel para comparação (API pode retornar number ou string)
+  const getIdNivel = (u: Usuario): number | null => {
+    const v = u.id_nivel;
+    if (v === null || v === undefined) return null;
+    const n = Number(v);
+    return Number.isNaN(n) ? null : n;
+  };
+
   const usuariosFiltrados = usuarios.filter((u) => {
-    const matchNome = u.nome.toLowerCase().includes(filtro.toLowerCase());
+    const matchNome = !filtro || u.nome.toLowerCase().includes(filtro.toLowerCase());
 
     let matchNivel = true;
-    if (filtroNivel === 0) {
-      // Filtrar usuários sem nível
-      matchNivel = u.id_nivel === null || u.id_nivel === undefined;
+    if (filtroNivel === "0") {
+      matchNivel = getIdNivel(u) === null;
     } else if (filtroNivel !== "") {
-      // Filtrar por nível específico
-      matchNivel = u.id_nivel === filtroNivel;
+      const idUsuario = getIdNivel(u);
+      const idFiltro = Number(filtroNivel);
+      matchNivel =
+        idUsuario !== null && !Number.isNaN(idFiltro) && idUsuario === idFiltro;
     }
-    // Se filtroNivel === "", mostra todos
 
     return matchNome && matchNivel;
   });
@@ -154,8 +163,7 @@ export default function GerenciarUsuarios() {
     setModalAberto(true);
   };
 
-  const abrirModalEdicao = (index: number) => {
-    const u = usuarios[index];
+  const abrirModalEdicao = (u: Usuario) => {
     if (u.ativo === false) {
       showToast("Não é possível editar usuário inativo");
       return;
@@ -239,42 +247,43 @@ export default function GerenciarUsuarios() {
     try {
       if (usuarioModal.id_usuario) {
         await updateUser(usuarioModal.id_usuario, userData);
-        showToast("Usuário atualizado com sucesso!");
+        showToast("Usuário atualizado com sucesso!", "success");
       } else {
         await createUser(userData);
-        showToast("Usuário criado com sucesso!");
+        showToast("Usuário criado com sucesso!", "success");
       }
       await fetchUsuarios();
       fecharModal();
     } catch (err: any) {
       console.error("Erro ao salvar usuário:", err);
       const msg = err?.response?.data?.error || "Erro ao salvar usuário";
-      showToast(msg);
+      showToast(msg, "error");
     }
   };
 
-  const abrirModalInativar = (index: number) => {
-    setUsuarioInativarIndex(index);
+  const abrirModalInativar = (usuario: Usuario) => {
+    setUsuarioInativar(usuario);
     setModalInativarAberto(true);
   };
 
   const confirmarInativar = async () => {
-    if (usuarioInativarIndex === null) return;
-    const usuario = usuarios[usuarioInativarIndex];
+    if (!usuarioInativar) return;
+    const usuario = usuarioInativar;
 
     try {
       await updateUser(usuario.id_usuario!, {
         ativo: !usuario.ativo,
       });
       showToast(
-        `Usuário ${usuario.ativo ? "inativado" : "reativado"} com sucesso!`
+        `Usuário ${usuario.ativo ? "inativado" : "reativado"} com sucesso!`,
+        "success"
       );
       await fetchUsuarios();
       setModalInativarAberto(false);
-      setUsuarioInativarIndex(null);
+      setUsuarioInativar(null);
     } catch (err) {
       console.error("Erro ao alterar status:", err);
-      showToast("Erro ao alterar status do usuário");
+      showToast("Erro ao alterar status do usuário", "error");
     }
   };
 
@@ -324,17 +333,17 @@ export default function GerenciarUsuarios() {
     try {
       if (nivelModal.id_nivel) {
         await updateNivel(nivelModal.id_nivel, nivelData);
-        showToast("Nível atualizado com sucesso!");
+        showToast("Nível atualizado com sucesso!", "success");
       } else {
         await createNivel(nivelData);
-        showToast("Nível criado com sucesso!");
+        showToast("Nível criado com sucesso!", "success");
       }
       await fetchNiveis();
       fecharModalNivel();
     } catch (err: any) {
       console.error("Erro ao salvar nível:", err);
       const msg = err?.response?.data?.error || "Erro ao salvar nível";
-      showToast(msg);
+      showToast(msg, "error");
     }
   };
 
@@ -350,11 +359,11 @@ export default function GerenciarUsuarios() {
     setNivelToInativar(null);
     try {
       await deleteNivel(id);
-      showToast("Nível inativado com sucesso!");
+      showToast("Nível inativado com sucesso!", "success");
       await fetchNiveis();
     } catch (err: any) {
       console.error("Erro ao inativar nível:", err);
-      showToast("Erro ao inativar nível");
+      showToast("Erro ao inativar nível", "error");
     }
   };
 
@@ -363,7 +372,7 @@ export default function GerenciarUsuarios() {
       <Header />
 
       <main className="gerir-main">
-        <h1>GERENCIAMENTO</h1>
+        <h1 className="gerir-title">Gerenciamento</h1>
 
         {/* Tabs de navegação */}
         <div className="tabs-container">
@@ -394,14 +403,12 @@ export default function GerenciarUsuarios() {
               <select
                 className="filtro-nivel"
                 value={filtroNivel}
-                onChange={(e) =>
-                  setFiltroNivel(e.target.value ? parseInt(e.target.value) : "")
-                }
+                onChange={(e) => setFiltroNivel(e.target.value)}
               >
                 <option value="">Todos os níveis</option>
                 <option value="0">Sem nível</option>
                 {niveis.map((nivel) => (
-                  <option key={nivel.id_nivel} value={nivel.id_nivel}>
+                  <option key={nivel.id_nivel} value={String(nivel.id_nivel)}>
                     {nivel.nome}
                   </option>
                 ))}
@@ -421,19 +428,18 @@ export default function GerenciarUsuarios() {
               <div className="empty-state">
                 <h3>Nenhum usuário encontrado</h3>
                 <p>
-                  {filtro
-                    ? "Tente buscar por outro termo"
+                  {filtro || filtroNivel
+                    ? "Tente outro termo ou filtro de nível"
                     : "Clique em + para criar o primeiro usuário"}
                 </p>
               </div>
             ) : (
               <div className="cards-container">
-                {usuariosFiltrados.map((usuario, index) => {
-                  // Construir URL da foto
+                {usuariosFiltrados.map((usuario) => {
                   const fotoUrl = usuario.foto
                     ? usuario.foto.startsWith("http")
                       ? usuario.foto
-                      : `http://localhost:3001${usuario.foto}`
+                      : `${ASSETS_BASE}${usuario.foto}`
                     : perfil;
 
                   return (
@@ -458,7 +464,7 @@ export default function GerenciarUsuarios() {
                       <div className="card-buttons">
                         <button
                           className="editar-btn"
-                          onClick={() => abrirModalEdicao(index)}
+                          onClick={() => abrirModalEdicao(usuario)}
                           disabled={usuario.ativo === false}
                         >
                           Editar
@@ -467,7 +473,7 @@ export default function GerenciarUsuarios() {
                           className={`inativar-btn ${
                             usuario.ativo ? "" : "reativar"
                           }`}
-                          onClick={() => abrirModalInativar(index)}
+                          onClick={() => abrirModalInativar(usuario)}
                         >
                           {usuario.ativo ? "Inativar" : "Reativar"}
                         </button>
@@ -493,6 +499,12 @@ export default function GerenciarUsuarios() {
               </button>
             </div>
 
+            {niveis.length === 0 ? (
+              <div className="empty-state">
+                <h3>Nenhum nível cadastrado</h3>
+                <p>Clique em + para criar o primeiro nível</p>
+              </div>
+            ) : (
             <div className="niveis-table-container">
               <table className="niveis-table">
                 <thead>
@@ -528,6 +540,7 @@ export default function GerenciarUsuarios() {
                 </tbody>
               </table>
             </div>
+            )}
           </>
         )}
       </main>
@@ -623,26 +636,20 @@ export default function GerenciarUsuarios() {
       )}
 
       {/* Modal de Inativar/Reativar */}
-      {modalInativarAberto && usuarioInativarIndex !== null && (
+      {modalInativarAberto && usuarioInativar && (
         <div
           className="modal-fundo"
           onClick={() => setModalInativarAberto(false)}
         >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>
-              {usuarios[usuarioInativarIndex].ativo ? "Inativar" : "Reativar"}{" "}
+              {usuarioInativar.ativo ? "Inativar" : "Reativar"}{" "}
               Usuário
             </h2>
-            <p
-              style={{
-                textAlign: "center",
-                marginBottom: "1.5rem",
-                color: "#64748b",
-              }}
-            >
+            <p className="modal-confirm-text">
               Tem certeza que deseja{" "}
-              {usuarios[usuarioInativarIndex].ativo ? "inativar" : "reativar"}{" "}
-              <strong>{usuarios[usuarioInativarIndex].nome}</strong>?
+              {usuarioInativar.ativo ? "inativar" : "reativar"}{" "}
+              <strong>{usuarioInativar.nome}</strong>?
             </p>
             <div className="modal-buttons">
               <button onClick={() => setModalInativarAberto(false)}>
@@ -688,12 +695,13 @@ export default function GerenciarUsuarios() {
               <input
                 type="number"
                 value={nivelModal.ordem || 0}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
                   setNivelModal((prev) => ({
                     ...prev,
-                    ordem: parseInt(e.target.value),
-                  }))
-                }
+                    ordem: isNaN(v) ? 1 : Math.max(1, v),
+                  }));
+                }}
                 min="1"
               />
             </div>
@@ -722,7 +730,13 @@ export default function GerenciarUsuarios() {
         }}
       />
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <Toast
+          message={toast}
+          onClose={() => setToast(null)}
+          variant={toastVariant}
+        />
+      )}
 
       <Footer />
     </div>

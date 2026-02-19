@@ -1,16 +1,15 @@
 /**
- * GerirUser Styles
- * Branding: Casa dos Discípulos
- * Tema: Elegante Dark
+ * GerirUser Styles - Gerenciamento de Usuários e Níveis
+ * Branding: Casa dos Discípulos (primary-teal, secondary-gold)
  */
 
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
+
 :root {
-  --primary-dark: #00444c;
   --primary-teal: #02869b;
+  --primary-teal-hover: #03a3bd;
   --primary-gray: #2b2f30;
-  --primary-light: #ebebeb;
   --secondary-gold: #f4b002;
-  --secondary-cyan: #00b5d2;
 }
 
 .gerir-container {
@@ -19,6 +18,7 @@
   display: flex;
   flex-direction: column;
   font-family: "Montserrat", "Segoe UI", sans-serif;
+  color-scheme: dark;
 }
 
 .gerir-main {
@@ -29,15 +29,28 @@
   width: 100%;
 }
 
-.gerir-main h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
+.gerir-title {
+  font-size: clamp(1.8rem, 3.4vw, 2.4rem);
+  font-weight: 800;
   color: #ffffff;
   text-align: center;
-  margin-top: 3rem;
-  margin-bottom: 2rem;
+  margin: 2rem 0;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.06em;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.gerir-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-teal), var(--secondary-gold));
+  border-radius: 2px;
 }
 
 /* Tabs */
@@ -114,8 +127,8 @@
   padding: 0.85rem 1.25rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
   outline: none;
   font-size: 0.95rem;
   font-family: "Montserrat", sans-serif;
@@ -153,7 +166,7 @@
 }
 
 .btn-add:hover {
-  background: #03a3bd;
+  background: var(--primary-teal-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(2, 134, 155, 0.5);
 }
@@ -373,6 +386,7 @@
 .modal input[type="text"],
 .modal input[type="email"],
 .modal input[type="password"],
+.modal input[type="number"],
 .modal select {
   width: 100%;
   padding: 0.75rem;
@@ -411,6 +425,12 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+.modal-confirm-text {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
 .modal p strong {
   color: var(--primary-teal);
 }
@@ -438,7 +458,7 @@
 
 .modal-buttons button:first-child {
   background: rgba(255, 255, 255, 0.08);
-  color: rgb(0, 0, 0);
+  color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -453,35 +473,9 @@
 }
 
 .modal-buttons button:last-child:hover {
-  background: #03a3bd;
+  background: var(--primary-teal-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(2, 134, 155, 0.4);
-}
-
-/* Toast/Notification */
-.toast {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: var(--primary-teal);
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(2, 134, 155, 0.4);
-  font-weight: 600;
-  z-index: 10000;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 
 /* Loading State */
