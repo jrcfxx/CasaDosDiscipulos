@@ -105,6 +105,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const [filtroRespondente, setFiltroRespondente] = useState<string>("");
   const [filtroDataInicio, setFiltroDataInicio] = useState<string>("");
   const [filtroDataFim, setFiltroDataFim] = useState<string>("");
+
+  /* Filtro do dashboard por mês/ano */
+  const [filtroDashboardMes, setFiltroDashboardMes] = useState<string>("");
   const [celulas, setCelulas] = useState<
     Array<{ id_celula: number; nome: string }>
   >([]);
@@ -146,6 +149,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
     setFiltroRespondente("");
     setFiltroDataInicio("");
     setFiltroDataFim("");
+    setFiltroDashboardMes("");
   }, [selectedFormulario?.id]);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
@@ -320,12 +324,50 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   const respondentesUnicos = [...new Set(respostas.map((r) => r.nome_lider || "-").filter(Boolean))].sort();
 
+  /* Respostas filtradas por mês para o dashboard */
+  const respostasDashboard = filtroDashboardMes
+    ? respostas.filter((r) => {
+        try {
+          const dr = new Date(r.data_resposta);
+          const mesAno = `${dr.getFullYear()}-${String(dr.getMonth() + 1).padStart(2, "0")}`;
+          return mesAno === filtroDashboardMes;
+        } catch {
+          return false;
+        }
+      })
+    : respostas;
+
   const celulasQueResponderam = (selectedFormulario?.id
-    ? respostas.map((r) => r.id_celula)
+    ? respostasDashboard.map((r) => r.id_celula)
     : []) as number[];
   const celulasQueNaoResponderam = celulas.filter(
     (c) => !celulasQueResponderam.includes(c.id_celula)
   );
+
+  /* Dados para o dashboard visual */
+  const celulasComRespostas = respostasDashboard.reduce(
+    (
+      acc: Array<{ id_celula: number; nome: string; count: number }>,
+      r
+    ) => {
+      const cel = celulas.find((c) => c.id_celula === r.id_celula);
+      const exist = acc.find((a) => a.id_celula === r.id_celula);
+      if (exist) exist.count += 1;
+      else
+        acc.push({
+          id_celula: r.id_celula,
+          nome: cel?.nome || r.nome_celula || `Célula #${r.id_celula}`,
+          count: 1,
+        });
+      return acc;
+    },
+    []
+  );
+  const totalCelulas = celulas.length;
+  const emDiaCount = celulasComRespostas.length;
+  const pendentesCount = celulasQueNaoResponderam.length;
+  const percentualEmDia =
+    totalCelulas > 0 ? Math.round((emDiaCount / totalCelulas) * 100) : 0;
 
   const buildUploadUrl = (path: string) => {
     if (!path || !path.startsWith("/")) return "";
@@ -967,61 +1009,86 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
                 {abaAtiva === "dashboard" && (
                   <div className="dashboard-section">
-                    <h3>Células que responderam</h3>
-                    {celulasQueResponderam.length === 0 ? (
-                      <p className="muted">
-                        Nenhuma célula respondeu este formulário ainda.
+                    <div className="dashboard-header">
+                      <p className="dashboard-subtitle">Status por célula — formulário semanal</p>
+                      <div className="dashboard-filtro">
+                        <label htmlFor="filtro-dashboard-mes">Ref. mês</label>
+                        <input
+                          id="filtro-dashboard-mes"
+                          type="month"
+                          value={filtroDashboardMes}
+                          onChange={(e) => setFiltroDashboardMes(e.target.value)}
+                          title="Filtrar por mês/ano (ex: Janeiro 2025)"
+                        />
+                        {filtroDashboardMes && (
+                          <button
+                            type="button"
+                            className="dashboard-filtro-limpar"
+                            onClick={() => setFiltroDashboardMes("")}
+                            title="Ver todos os períodos"
+                          >
+                            Todos
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="dashboard-metrics">
+                      <div className="metric-card metric-total">
+                        <span className="metric-value">{totalCelulas}</span>
+                        <span className="metric-label">Células</span>
+                      </div>
+                      <div className="metric-card metric-ok">
+                        <span className="metric-value">{emDiaCount}</span>
+                        <span className="metric-label">Em dia</span>
+                      </div>
+                      <div className="metric-card metric-pending">
+                        <span className="metric-value">{pendentesCount}</span>
+                        <span className="metric-label">Pendentes</span>
+                      </div>
+                      <div className="metric-card metric-pct">
+                        <span className="metric-value">{percentualEmDia}%</span>
+                        <span className="metric-label">Respostas</span>
+                      </div>
+                    </div>
+
+                    <div className="dashboard-progress">
+                      <div
+                        className="dashboard-progress-bar"
+                        style={{
+                          width: `${percentualEmDia}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="dashboard-cards">
+                      {celulasComRespostas.map((c) => (
+                        <div
+                          key={c.id_celula}
+                          className="dashboard-cell-card card-ok"
+                        >
+                          <span className="cell-card-icon">✓</span>
+                          <span className="cell-card-nome">{c.nome}</span>
+                          <span className="cell-card-count">
+                            {c.count} resposta{c.count !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      ))}
+                      {celulasQueNaoResponderam.map((c) => (
+                        <div
+                          key={c.id_celula}
+                          className="dashboard-cell-card card-pending"
+                        >
+                          <span className="cell-card-icon">⏳</span>
+                          <span className="cell-card-nome">{c.nome}</span>
+                          <span className="cell-card-count">Pendente</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {totalCelulas === 0 && (
+                      <p className="dashboard-empty muted">
+                        Nenhuma célula cadastrada.
                       </p>
-                    ) : (
-                      <ul className="dashboard-list responded">
-                        {respostas
-                          .reduce(
-                            (
-                              acc: Array<{
-                                id_celula: number;
-                                nome: string;
-                                count: number;
-                              }>,
-                              r
-                            ) => {
-                              const cel = celulas.find(
-                                (c) => c.id_celula === r.id_celula
-                              );
-                              const exist = acc.find(
-                                (a) => a.id_celula === r.id_celula
-                              );
-                              if (exist) {
-                                exist.count += 1;
-                              } else {
-                                acc.push({
-                                  id_celula: r.id_celula,
-                                  nome: cel?.nome || r.nome_celula || `Célula #${r.id_celula}`,
-                                  count: 1,
-                                });
-                              }
-                              return acc;
-                            },
-                            []
-                          )
-                          .map((c) => (
-                            <li key={c.id_celula}>
-                              <strong>{c.nome}</strong> — {c.count} resposta
-                              {c.count !== 1 ? "s" : ""}
-                            </li>
-                          ))}
-                      </ul>
-                    )}
-                    <h3>Células que não responderam</h3>
-                    {celulasQueNaoResponderam.length === 0 ? (
-                      <p className="muted">
-                        Todas as células responderam este formulário.
-                      </p>
-                    ) : (
-                      <ul className="dashboard-list not-responded">
-                        {celulasQueNaoResponderam.map((c) => (
-                          <li key={c.id_celula}>{c.nome}</li>
-                        ))}
-                      </ul>
                     )}
                   </div>
                 )}
