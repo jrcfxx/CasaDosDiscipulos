@@ -160,6 +160,10 @@ const UsuarioService = {
       }
     }
 
+    if (data.telefone !== undefined && data.telefone !== null && String(data.telefone).trim()) {
+      novoUsuarioData.telefone = String(data.telefone).trim();
+    }
+
     // Cria usuário
     const novoUsuario = await UsuarioModel.create(novoUsuarioData);
 
@@ -259,6 +263,10 @@ const UsuarioService = {
     if (data.foto !== undefined) {
       // Permite string (caminho da foto) ou null para remover
       dadosAtualizacao.foto = data.foto;
+    }
+
+    if (data.telefone !== undefined) {
+      dadosAtualizacao.telefone = data.telefone === "" || data.telefone === null ? null : String(data.telefone).trim();
     }
 
     // Permissões de líder (lider_celula = Secretaria, lider_ministerio = Escala)

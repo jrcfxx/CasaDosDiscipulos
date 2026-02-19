@@ -31,6 +31,8 @@ export const createUsuarioSchema = Joi.object({
 
   id_nivel: Joi.number().integer().positive().allow(null).optional(),
 
+  telefone: Joi.string().max(20).allow("", null).optional(),
+
   lider_celula: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
   lider_ministerio: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
   id_ministerios_lider: Joi.array().items(Joi.number().integer().positive()).optional(),
@@ -66,6 +68,8 @@ export const updateUsuarioSchema = Joi.object({
     }),
 
   id_nivel: Joi.number().integer().positive().allow(null).optional(),
+
+  telefone: Joi.string().max(20).allow("", null).optional(),
 
   lider_celula: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
   lider_ministerio: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),

@@ -21,6 +21,7 @@ import usuarioCelulaRoutes from "./routes/usuarioCelulaRoutes.js";
 import ministerioRoutes from "./routes/ministerioRoutes.js";
 import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import { iniciarJobModulosWhatsApp } from "./jobs/whatsappModulosJob.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -94,4 +95,7 @@ app.use("/api/notificacoes", notificacaoRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+  iniciarJobModulosWhatsApp();
+});

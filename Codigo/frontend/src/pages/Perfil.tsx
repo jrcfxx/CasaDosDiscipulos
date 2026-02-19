@@ -35,6 +35,7 @@ interface CelulaPrincipal {
 interface PerfilData {
   nome: string;
   email: string;
+  telefone?: string;
   tipo: string;
   id_nivel?: number | null;
   nivel_escola?: number | null;
@@ -55,6 +56,7 @@ export default function Perfil() {
   const [niveis, setNiveis] = useState<Nivel[]>([]);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
@@ -84,6 +86,7 @@ export default function Perfil() {
           setPerfil(data);
           setNome(data.nome);
           setEmail(data.email);
+          setTelefone(data.telefone ?? "");
           setCelulaPrincipalId(
             data.celula_principal?.id_celula ?? ""
           );
@@ -134,6 +137,7 @@ export default function Perfil() {
         setPerfil(data);
         setNome(data.nome);
         setEmail(data.email);
+        setTelefone(data.telefone ?? "");
         setCelulaPrincipalId(data.celula_principal?.id_celula ?? "");
         setFotoPreview(buildFotoUrl(data.foto) ?? null);
       }
@@ -176,6 +180,7 @@ export default function Perfil() {
     // Resetar campos
     setNome(perfil.nome);
     setEmail(perfil.email);
+    setTelefone(perfil.telefone ?? "");
     setCelulaPrincipalId(perfil.celula_principal?.id_celula ?? "");
     setSenhaAtual("");
     setNovaSenha("");
@@ -221,6 +226,7 @@ export default function Perfil() {
       const updateData: any = {
         nome: nome.trim(),
         email: email.trim(),
+        telefone: telefone.trim() || null,
       };
 
       // Adiciona senha apenas se foi alterada
@@ -377,6 +383,21 @@ export default function Perfil() {
                 className="form-input"
                 placeholder="Digite seu email"
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="perfil-telefone" className="form-label">Telefone / WhatsApp</label>
+              <input
+                id="perfil-telefone"
+                type="tel"
+                value={telefone}
+                onChange={(e) => setTelefone(e.target.value)}
+                className="form-input"
+                placeholder="(11) 99999-9999"
+              />
+              <p className="password-hint">
+                Opcional. Para receber notificações no WhatsApp (escalação, lembretes de módulos).
+              </p>
             </div>
 
             <div className="form-group">

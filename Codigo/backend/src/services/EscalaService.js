@@ -3,6 +3,8 @@ import EscalaAreaModel from "../models/EscalaAreaModel.js";
 import EscalaAtribuicaoModel from "../models/EscalaAtribuicaoModel.js";
 import MinisterioModel from "../models/MinisterioModel.js";
 import NotificacaoModel from "../models/NotificacaoModel.js";
+import UsuarioModel from "../models/UsuarioModel.js";
+import WhatsAppService from "./WhatsAppService.js";
 import knex from "../database/index.js";
 import {
   NotFoundError,
@@ -415,6 +417,18 @@ class EscalaService {
       mensagem: `${areaNome} • ${dataFmt}`,
       area_nome: areaNome,
     });
+
+    // Notificação WhatsApp (não bloqueia se falhar)
+    if (WhatsAppService.estaConfigurado()) {
+      const usuario = await UsuarioModel.getById(idUsuario);
+      if (usuario?.telefone) {
+        WhatsAppService.notificarEscalacao(
+          { nome: usuario.nome, telefone: usuario.telefone },
+          { titulo: evento.titulo, data_hora: evento.data_hora },
+          areaNome
+        ).catch((err) => console.error("[WhatsApp] Erro ao notificar escalação:", err?.message || err));
+      }
+    }
   }
 }
 

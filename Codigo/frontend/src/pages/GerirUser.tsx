@@ -29,6 +29,7 @@ interface Usuario {
   id_usuario?: number;
   nome: string;
   email: string;
+  telefone?: string;
   senha?: string;
   foto?: string;
   tipo: "lider" | "administrador" | "membro";
@@ -46,6 +47,7 @@ interface UsuarioModal {
   id_usuario?: number;
   nome: string;
   email: string;
+  telefone: string;
   senha: string;
   foto?: File | string | null;
   confirmarSenha?: string;
@@ -83,6 +85,7 @@ export default function GerenciarUsuarios() {
   const [usuarioModal, setUsuarioModal] = useState<UsuarioModal>({
     nome: "",
     email: "",
+    telefone: "",
     senha: "",
     foto: null,
     confirmarSenha: "",
@@ -223,6 +226,7 @@ export default function GerenciarUsuarios() {
       id_usuario: undefined,
       nome: "",
       email: "",
+      telefone: "",
       senha: "",
       confirmarSenha: "",
       foto: null,
@@ -261,6 +265,7 @@ export default function GerenciarUsuarios() {
         id_usuario: usuarioAtual.id_usuario,
         nome: usuarioAtual.nome,
         email: usuarioAtual.email,
+        telefone: (usuarioAtual as Usuario).telefone ?? "",
         senha: "",
         confirmarSenha: "",
         foto: usuarioAtual.foto || null,
@@ -290,6 +295,7 @@ export default function GerenciarUsuarios() {
     setUsuarioModal({
       nome: "",
       email: "",
+      telefone: "",
       senha: "",
       foto: null,
       confirmarSenha: "",
@@ -335,6 +341,7 @@ export default function GerenciarUsuarios() {
     const userData: any = {
       nome: usuarioModal.nome,
       email: usuarioModal.email,
+      telefone: usuarioModal.telefone?.trim() || null,
       tipo: usuarioModal.tipo,
       id_nivel: usuarioModal.id_nivel,
       ativo: true,
@@ -865,6 +872,14 @@ export default function GerenciarUsuarios() {
                 value={usuarioModal.email || ""}
                 onChange={(e) => handleChange("email", e.target.value)}
                 placeholder="Digite o email"
+              />
+
+              <label>Telefone / WhatsApp</label>
+              <input
+                type="tel"
+                value={usuarioModal.telefone || ""}
+                onChange={(e) => handleChange("telefone", e.target.value)}
+                placeholder="(11) 99999-9999"
               />
 
               <label>Tipo de Usuário</label>

@@ -596,6 +596,44 @@ const ModuloService = {
     const idx = Math.min(count - 1, nivelByOrdem.length - 1);
     return idx >= 0 ? nivelByOrdem[idx].id_nivel : null;
   },
+
+  /**
+   * Retorna usuários com módulos pendentes e telefone cadastrado (para notificação WhatsApp semanal)
+   * Módulos pendentes = nao_iniciado ou em_andamento que o usuário pode acessar
+   * @returns {Promise<Array<{ id_usuario, nome, telefone, modulos: Array<{ titulo }> }>>}
+   */
+  async getUsuariosComModulosPendentes() {
+    const usuarios = await knex("usuario")
+      .where({ ativo: true })
+      .whereNotNull("telefone")
+      .where("telefone", "!=", "")
+      .select("id_usuario", "nome", "telefone");
+
+    const resultado = [];
+    for (const u of usuarios) {
+      const { modulos } = await this.getActiveWithProgress(u.id_usuario);
+      const pendentes = modulos.filter(
+        (m) =>
+          (m.status === "nao_iniciado" || m.status === "em_andamento") &&
+          m.ativo
+      );
+      // Só incluir módulos que o usuário pode acessar (pré-requisitos ok)
+      const pendentesAcessiveis = [];
+      for (const m of pendentes) {
+        const pode = await this.podeAcessarModulo(m.id_modulo, u.id_usuario);
+        if (pode) pendentesAcessiveis.push({ titulo: m.titulo });
+      }
+      if (pendentesAcessiveis.length > 0) {
+        resultado.push({
+          id_usuario: u.id_usuario,
+          nome: u.nome,
+          telefone: u.telefone,
+          modulos: pendentesAcessiveis,
+        });
+      }
+    }
+    return resultado;
+  },
 };
 
 export default ModuloService;
