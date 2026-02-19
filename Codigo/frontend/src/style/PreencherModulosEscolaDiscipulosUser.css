@@ -239,7 +239,23 @@ body{
   border: none;
 }
 .modulo-upload img { max-width: 100%; height: auto; border-radius: 8px; }
-.modulo-upload a { color: #2563eb; text-decoration: underline; }
+.modulo-upload a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-teal);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.2s;
+}
+.modulo-upload a:hover {
+  background: #036d7a;
+  transform: translateY(-1px);
+}
 
 /* Quiz */
 .modulo-quiz { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--line); }

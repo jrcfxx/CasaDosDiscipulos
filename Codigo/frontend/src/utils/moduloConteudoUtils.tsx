@@ -41,16 +41,7 @@ export function formatarConteudoCampo(conteudo: unknown): React.ReactNode {
               <br />
             </div>
           ) : null}
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#3b82f6",
-              textDecoration: "underline",
-              fontSize: "0.9rem",
-            }}
-          >
+          <a href={url} target="_blank" rel="noopener noreferrer">
             📄 {fileName}
           </a>
         </div>

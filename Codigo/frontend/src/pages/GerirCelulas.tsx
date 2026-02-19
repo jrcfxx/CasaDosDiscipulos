@@ -42,6 +42,7 @@ export default function GerirCelulas() {
   const [celulaToExcluir, setCelulaToExcluir] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [toastVariant, setToastVariant] = useState<"success" | "error" | "info">("info");
+  const [buscaLider, setBuscaLider] = useState("");
 
   useEffect(() => {
     fetchCelulas();
@@ -122,6 +123,7 @@ export default function GerirCelulas() {
 
   const fecharModal = () => {
     setModalAberto(false);
+    setBuscaLider("");
   };
 
   const handleChange = (campo: keyof CelulaModal, valor: string | number | boolean | number[]) => {
@@ -326,17 +328,49 @@ export default function GerirCelulas() {
               />
 
               <label>Líderes *</label>
-              <div className="lideres-checkboxes">
-                {lideres.map((l) => (
-                  <label key={l.id_usuario} className="checkbox-lider">
-                    <input
-                      type="checkbox"
-                      checked={(celulaModal.id_lideres ?? []).includes(l.id_usuario)}
-                      onChange={() => toggleLider(l.id_usuario)}
-                    />
-                    <span>{l.nome}</span>
-                  </label>
-                ))}
+              <div className="lideres-select-wrapper">
+                <div className="lideres-search">
+                  <span className="lideres-search-icon" aria-hidden>🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Buscar líder pelo nome..."
+                    value={buscaLider}
+                    onChange={(e) => setBuscaLider(e.target.value)}
+                    className="lideres-search-input"
+                  />
+                </div>
+                <div className="lideres-selected-count">
+                  {(celulaModal.id_lideres ?? []).length} selecionado(s)
+                </div>
+                <div className="lideres-list">
+                  {lideres
+                    .filter((l) =>
+                      !buscaLider.trim()
+                        ? true
+                        : l.nome.toLowerCase().includes(buscaLider.toLowerCase())
+                    )
+                    .map((l) => (
+                      <label key={l.id_usuario} className={`lider-item ${(celulaModal.id_lideres ?? []).includes(l.id_usuario) ? "selected" : ""}`}>
+                        <input
+                          type="checkbox"
+                          checked={(celulaModal.id_lideres ?? []).includes(l.id_usuario)}
+                          onChange={() => toggleLider(l.id_usuario)}
+                        />
+                        <span className="lider-item-nome">{l.nome}</span>
+                      </label>
+                    ))}
+                  {lideres.filter((l) =>
+                    !buscaLider.trim()
+                      ? true
+                      : l.nome.toLowerCase().includes(buscaLider.toLowerCase())
+                  ).length === 0 && (
+                    <div className="lideres-empty">
+                      {buscaLider.trim()
+                        ? `Nenhum líder encontrado para "${buscaLider}"`
+                        : "Nenhum líder cadastrado"}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <label>Dia da reunião</label>
