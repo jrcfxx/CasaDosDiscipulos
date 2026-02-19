@@ -94,19 +94,31 @@ const UsuarioController = {
   /**
    * Busca perfil do usuário autenticado
    * GET /api/usuarios/perfil
+   * Inclui nivel_escola (nível conquistado por módulos concluídos)
    */
   async perfil(req, res, next) {
     try {
       const usuarioId = req.usuario?.id_usuario;
       const usuario = await UsuarioService.getById(usuarioId);
       let celula_principal = null;
+      let nivel_escola = null;
       try {
         const UsuarioCelulaModel = (await import("../models/UsuarioCelulaModel.js")).default;
         celula_principal = await UsuarioCelulaModel.getPrincipalByUsuario(usuarioId);
       } catch {
         // Tabela usuario_celula pode não existir se migration não rodou
       }
-      res.status(HTTP_STATUS.OK).json({ ...usuario, celula_principal });
+      try {
+        const ModuloService = (await import("../services/ModuloService.js")).default;
+        nivel_escola = await ModuloService.getNivelEscola(usuarioId);
+      } catch {
+        // ModuloService pode não estar disponível
+      }
+      res.status(HTTP_STATUS.OK).json({
+        ...usuario,
+        celula_principal,
+        nivel_escola,
+      });
     } catch (err) {
       next(err);
     }

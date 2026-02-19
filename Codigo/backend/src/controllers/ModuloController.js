@@ -156,6 +156,26 @@ const ModuloController = {
   },
 
   /**
+   * Progresso do usuário em um módulo (requer auth)
+   * GET /api/modulo/:id/progresso
+   */
+  async getProgresso(req, res, next) {
+    try {
+      const id_usuario = req.usuario?.id_usuario;
+      if (!id_usuario) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
+      const progresso = await ModuloService.getProgressoUsuario(
+        req.params.id,
+        id_usuario
+      );
+      res.status(200).json(progresso ?? { status: null, nota_quiz: null });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * Busca quiz vinculado a um módulo
    * GET /api/modulo/:id/quiz
    */
@@ -195,19 +215,6 @@ const ModuloController = {
       }
       await ModuloService.concluirModulo(req.params.id, id_usuario);
       res.status(HTTP_STATUS.OK).json({ message: "Módulo concluído com sucesso" });
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  /**
-   * Lista módulos ativos (sem progresso)
-   * GET /api/modulo/active
-   */
-  async active(req, res, next) {
-    try {
-      const modulos = await ModuloService.getActive();
-      res.status(HTTP_STATUS.OK).json(modulos);
     } catch (error) {
       next(error);
     }

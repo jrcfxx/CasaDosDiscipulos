@@ -99,6 +99,14 @@ const moduloService = {
   },
 
   /**
+   * Progresso do usuário em um módulo (requer auth)
+   */
+  async getProgresso(idModulo: number): Promise<{ status: string | null; nota_quiz: number | null }> {
+    const response = await apiClient.get(`/modulo/${idModulo}/progresso`);
+    return response.data;
+  },
+
+  /**
    * Busca quiz vinculado a um módulo
    */
   async getQuizVinculado(idModulo: number): Promise<any> {
@@ -111,7 +119,7 @@ const moduloService = {
    * Retorna { modulos, nivel_escola }
    */
   async getActiveWithProgress(): Promise<{
-    modulos: (Modulo & { status?: string; nota_quiz?: number | null; data_conclusao?: string | null })[];
+    modulos: (Modulo & { status?: string; nota_quiz?: number | null; pontuacao_maxima?: number | null; data_conclusao?: string | null })[];
     nivel_escola: number;
     nivel_escola_nome?: string | null;
   }> {

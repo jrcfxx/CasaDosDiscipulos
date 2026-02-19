@@ -21,6 +21,7 @@ type ModuloComProgresso = {
   campos?: Array<{ label?: string; tipo_campo?: string; conteudo?: unknown }>;
   status?: "nao_iniciado" | "em_andamento" | "concluido";
   nota_quiz?: number | null;
+  pontuacao_maxima?: number | null;
   data_conclusao?: string | null;
 };
 
@@ -235,7 +236,11 @@ const ModulosEscolaDiscipulosUser: React.FC = () => {
                     selectedModulo.nota_quiz != null && (
                       <div className="meta-item">
                         <span className="meta-label">Sua nota:</span>
-                        <span className="meta-value">{selectedModulo.nota_quiz}</span>
+                        <span className="meta-value">
+                          {selectedModulo.pontuacao_maxima != null
+                            ? `${selectedModulo.nota_quiz}/${selectedModulo.pontuacao_maxima}`
+                            : selectedModulo.nota_quiz}
+                        </span>
                       </div>
                     )}
                 </div>

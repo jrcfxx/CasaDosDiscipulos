@@ -5,6 +5,7 @@ import NivelModel from "../models/NivelModel.js";
 import CampoModel from "../models/CampoModel.js";
 import ModuloQuizModel from "../models/ModuloQuizModel.js";
 import UsuarioModuloModel from "../models/UsuarioModuloModel.js";
+import QuizQuestaoModel from "../models/QuizQuestaoModel.js";
 import { NotFoundError, ValidationError } from "../utils/AppError.js";
 
 /**
@@ -46,6 +47,7 @@ const ModuloService = {
   async podeAcessarModulo(id_modulo, id_usuario) {
     const modulo = await ModuloModel.getById(id_modulo);
     if (!modulo) return false;
+    if (modulo.ativo === false || modulo.ativo === 0) return false;
 
     const preRequisitos = await ModuloPreRequisitoModel.getByModulo(id_modulo);
 
@@ -86,6 +88,9 @@ const ModuloService = {
    */
   async iniciarModulo(id_modulo, id_usuario) {
     const modulo = await this.getById(id_modulo);
+    if (modulo.ativo === false || modulo.ativo === 0) {
+      throw new ValidationError("Este módulo está inativo e não pode ser realizado.");
+    }
     const podeAcessar = await this.podeAcessarModulo(id_modulo, id_usuario);
     if (!podeAcessar) {
       throw new ValidationError(
@@ -115,11 +120,17 @@ const ModuloService = {
    */
   async concluirModulo(id_modulo, id_usuario) {
     const modulo = await this.getById(id_modulo);
+    if (modulo.ativo === false || modulo.ativo === 0) {
+      throw new ValidationError("Este módulo está inativo e não pode ser realizado.");
+    }
     const quiz = await this.getQuizVinculado(id_modulo);
     if (quiz?.id_quiz) {
-      throw new ValidationError(
-        "Este módulo possui quiz. Conclua pelo quiz para finalizar."
-      );
+      const questoes = await QuizQuestaoModel.getByQuiz(quiz.id_quiz);
+      if (questoes.length > 0) {
+        throw new ValidationError(
+          "Este módulo possui quiz. Conclua pelo quiz para finalizar."
+        );
+      }
     }
 
     const podeAcessar = await this.podeAcessarModulo(id_modulo, id_usuario);
@@ -356,6 +367,21 @@ const ModuloService = {
   },
 
   /**
+   * Retorna progresso do usuário em um módulo (requer auth)
+   * @param {number} id_modulo - ID do módulo
+   * @param {number} id_usuario - ID do usuário
+   * @returns {Promise<Object|null>} { status, nota_quiz } ou null se sem progresso
+   */
+  async getProgressoUsuario(id_modulo, id_usuario) {
+    const row = await UsuarioModuloModel.getByUsuarioAndModulo(id_usuario, id_modulo);
+    if (!row) return null;
+    return {
+      status: row.status,
+      nota_quiz: row.nota_quiz ?? null,
+    };
+  },
+
+  /**
    * Busca quiz vinculado a um módulo
    * Verifica primeiro modulo_quiz (N:N), depois quiz.id_modulo (vinculação direta)
    * @param {number} idModulo - ID do módulo
@@ -398,11 +424,17 @@ const ModuloService = {
 
     const modulosComCampos = await Promise.all(
       modulos.map(async (modulo) => {
-        const [campos, pre_requisitos] = await Promise.all([
+        const [campos, pre_requisitos, quiz] = await Promise.all([
           CampoModel.getByEntity("modulo", modulo.id_modulo),
           ModuloPreRequisitoModel.getByModulo(modulo.id_modulo),
+          this.getQuizVinculado(modulo.id_modulo),
         ]);
         const progresso = progressMap.get(modulo.id_modulo);
+        let pontuacao_maxima = null;
+        if (quiz?.id_quiz) {
+          const questoes = await QuizQuestaoModel.getByQuiz(quiz.id_quiz);
+          pontuacao_maxima = questoes.reduce((s, q) => s + (q.pontos || 0), 0) || null;
+        }
         return {
           ...modulo,
           campos,
@@ -410,6 +442,7 @@ const ModuloService = {
           nivel_nome: modulo.id_nivel ? nivelById.get(modulo.id_nivel) : null,
           status: progresso?.status || "nao_iniciado",
           nota_quiz: progresso?.nota_quiz ?? null,
+          pontuacao_maxima,
           data_conclusao: progresso?.data_conclusao ?? null,
         };
       })

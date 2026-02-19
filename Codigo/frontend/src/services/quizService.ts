@@ -17,6 +17,7 @@ export interface Quiz {
   descricao?: string;
   ativo: boolean | number;
   questoes?: QuizQuestao[];
+  campos?: Array<{ id?: number; id_campo?: number; tipo_campo?: string; label?: string; conteudo?: unknown }>;
 }
 
 const quizService = {
@@ -64,7 +65,8 @@ const quizService = {
     pontos_obtidos: number;
     total_questoes: number;
     pontuacao_maxima?: number;
-    eh_repeticao?: boolean;
+    atingiu_50?: boolean;
+    eh_retentativa?: boolean;
   }> {
     const userStr = localStorage.getItem("usuario");
     const usuario = userStr ? JSON.parse(userStr) : null;

@@ -182,6 +182,31 @@ const QuizRespostaModel = {
   async delete(id_resposta) {
     return knex("quiz_resposta").where({ id_resposta }).del();
   },
+
+  /**
+   * Remove todas as respostas de um usuário em um quiz
+   * @param {number} id_usuario - ID do usuário
+   * @param {number} id_quiz - ID do quiz
+   * @param {Object} trx - Transação Knex (opcional)
+   * @returns {Promise<number>} Número de registros removidos
+   */
+  async deleteByUsuarioAndQuiz(id_usuario, id_quiz, trx = null) {
+    const executor = trx || knex;
+    const ids = await executor("quiz_resposta")
+      .join("quiz_questao", "quiz_resposta.id_questao", "quiz_questao.id_questao")
+      .where({
+        "quiz_resposta.id_usuario": id_usuario,
+        "quiz_questao.id_quiz": id_quiz,
+      })
+      .select("quiz_resposta.id_resposta");
+    if (ids.length === 0) return 0;
+    return executor("quiz_resposta")
+      .whereIn(
+        "id_resposta",
+        ids.map((r) => r.id_resposta)
+      )
+      .del();
+  },
 };
 
 export default QuizRespostaModel;

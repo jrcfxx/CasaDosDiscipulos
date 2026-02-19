@@ -119,8 +119,8 @@ class QuizRespostaService {
   }
 
   /**
-   * Submete todas as respostas de um quiz de uma vez
-   * Permite repetição: 1ª vez = pontuação integral; repetições = 1/3 da pontuação
+   * Submete todas as respostas de um quiz de uma vez.
+   * Regra: usuário só pode enviar 1 vez, exceto se tirou menos de 50% — aí pode tentar novamente.
    * @param {number} id_quiz - ID do quiz
    * @param {Object} payload - { id_usuario, id_modulo?, respostas: [{ id_questao, resposta }] }
    */
@@ -161,13 +161,32 @@ class QuizRespostaService {
       );
     }
 
+    const pontuacao_maxima = questoes.reduce((s, q) => s + (q.pontos || 0), 0);
+
+    const moduloUsuario = await knex("usuario_modulo")
+      .where({ id_usuario, id_modulo: id_modulo_efetivo })
+      .first();
+
+    if (moduloUsuario?.status === "concluido" && moduloUsuario.nota_quiz != null) {
+      const notaAnterior = Number(moduloUsuario.nota_quiz);
+      const limiteAprovacao = pontuacao_maxima * 0.5;
+      if (notaAnterior >= limiteAprovacao) {
+        throw new ValidationError(
+          "Você já concluiu este módulo com sucesso. Não é permitido refazer o quiz."
+        );
+      }
+    }
+
     const questoesMap = new Map(questoes.map((q) => [q.id_questao, q]));
 
     const respostasExistentes = await QuizRespostaModel.getByUsuarioAndQuiz(
       id_usuario,
       id_quiz
     );
-    const ehRepeticao = respostasExistentes.length > 0;
+    const ehRetentativa = respostasExistentes.length > 0;
+    const notaAnteriorParaReverter = ehRetentativa && moduloUsuario?.nota_quiz != null
+      ? Number(moduloUsuario.nota_quiz)
+      : 0;
 
     const now = new Date();
     const rows = [];
@@ -200,24 +219,23 @@ class QuizRespostaService {
       });
     }
 
-    if (ehRepeticao) {
-      pontuacao_total = Math.floor(pontuacao_total / 3);
-    }
-
     return knex.transaction(async (trx) => {
-      if (!ehRepeticao) {
-        await QuizRespostaModel.createMany(rows, trx);
+      if (ehRetentativa) {
+        await QuizRespostaModel.deleteByUsuarioAndQuiz(id_usuario, id_quiz, trx);
+        if (notaAnteriorParaReverter > 0) {
+          await trx("usuario")
+            .where({ id_usuario })
+            .decrement("pontuacao", notaAnteriorParaReverter);
+        }
       }
+
+      await QuizRespostaModel.createMany(rows, trx);
 
       if (pontuacao_total > 0) {
         await trx("usuario")
           .where({ id_usuario })
           .increment("pontuacao", pontuacao_total);
       }
-
-      const moduloUsuario = await trx("usuario_modulo")
-        .where({ id_usuario, id_modulo: id_modulo_efetivo })
-        .first();
 
       const dadosProgresso = {
         status: "concluido",
@@ -237,13 +255,13 @@ class QuizRespostaService {
         });
       }
 
-      const pontuacao_maxima = questoes.reduce((s, q) => s + (q.pontos || 0), 0);
       return {
         message: "Respostas submetidas com sucesso",
         total_questoes: respostas.length,
         pontos_obtidos: pontuacao_total,
         pontuacao_maxima,
-        eh_repeticao: ehRepeticao,
+        eh_retentativa: ehRetentativa,
+        atingiu_50: pontuacao_maxima > 0 && pontuacao_total >= pontuacao_maxima * 0.5,
       };
     });
   }

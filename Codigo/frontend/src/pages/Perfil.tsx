@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import "../style/Perfil.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import Toast from "../components/ui/Toast";
 import perfilDefault from "../assets/perfil-preto.png";
 import {
   getUserProfile,
@@ -12,6 +13,11 @@ import { showAllNiveis } from "../services/nivel";
 import celulaService from "../services/celulaService";
 import usuarioCelulaService from "../services/usuarioCelulaService";
 import { ASSETS_BASE } from "../config/api";
+
+function buildFotoUrl(foto: string | undefined): string | null {
+  if (!foto) return null;
+  return foto.startsWith("http") ? foto : `${ASSETS_BASE}${foto}`;
+}
 
 interface Nivel {
   id_nivel: number;
@@ -31,6 +37,7 @@ interface PerfilData {
   email: string;
   tipo: string;
   id_nivel?: number | null;
+  nivel_escola?: number | null;
   pontuacao: number;
   foto?: string;
   celula_principal?: CelulaPrincipal | null;
@@ -54,6 +61,7 @@ export default function Perfil() {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<"success" | "error" | "info">("info");
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [celulas, setCelulas] = useState<Array<{ id_celula: number; nome: string }>>([]);
@@ -79,21 +87,11 @@ export default function Perfil() {
           setCelulaPrincipalId(
             data.celula_principal?.id_celula ?? ""
           );
-          if (data.foto) {
-            // Adiciona o base URL da API se a foto for um caminho relativo
-            const fotoUrl = data.foto.startsWith("http")
-              ? data.foto
-              : `${ASSETS_BASE}${data.foto}`;
-            console.log("Foto do banco:", data.foto);
-            console.log("URL da foto:", fotoUrl);
-            setFotoPreview(fotoUrl);
-          } else {
-            setFotoPreview(null);
-          }
+          setFotoPreview(buildFotoUrl(data.foto) ?? null);
         }
       } catch (err) {
         console.error("Erro ao carregar perfil:", err);
-        showToast("Erro ao carregar perfil");
+        showToast("Erro ao carregar perfil", "error");
       } finally {
         setLoading(false);
       }
@@ -124,9 +122,9 @@ export default function Perfil() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    setToastVariant(variant);
   };
 
   const fetchPerfilAtualizado = async () => {
@@ -136,20 +134,8 @@ export default function Perfil() {
         setPerfil(data);
         setNome(data.nome);
         setEmail(data.email);
-        setCelulaPrincipalId(
-          data.celula_principal?.id_celula ?? ""
-        );
-        if (data.foto) {
-          // Adiciona o base URL da API se a foto for um caminho relativo
-          const fotoUrl = data.foto.startsWith("http")
-            ? data.foto
-            : `${ASSETS_BASE}${data.foto}`;
-          console.log("Foto atualizada do banco:", data.foto);
-          console.log("URL atualizada da foto:", fotoUrl);
-          setFotoPreview(fotoUrl);
-        } else {
-          setFotoPreview(null);
-        }
+        setCelulaPrincipalId(data.celula_principal?.id_celula ?? "");
+        setFotoPreview(buildFotoUrl(data.foto) ?? null);
       }
     } catch (err) {
       console.error("Erro ao carregar perfil:", err);
@@ -194,9 +180,9 @@ export default function Perfil() {
     setSenhaAtual("");
     setNovaSenha("");
     setConfirmarSenha("");
-    setFotoPreview(perfil.foto || null);
+    setFotoPreview(buildFotoUrl(perfil.foto) ?? null);
     setFotoFile(null);
-    showToast("Alterações canceladas");
+    showToast("Alterações canceladas", "info");
   };
 
   const handleSave = async () => {
@@ -248,11 +234,11 @@ export default function Perfil() {
           const uploadResult = await uploadUserPhoto(fotoFile);
           if (uploadResult?.foto) {
             // A foto foi enviada com sucesso, o backend já atualizou
-            showToast("Foto atualizada com sucesso!");
+            showToast("Foto atualizada com sucesso!", "success");
           }
         } catch (uploadErr) {
           console.error("Erro ao enviar foto:", uploadErr);
-          showToast("Erro ao enviar foto");
+          showToast("Erro ao enviar foto", "error");
         }
       }
 
@@ -270,11 +256,11 @@ export default function Perfil() {
           }
         } catch (err) {
           console.error("Erro ao atualizar célula principal:", err);
-          showToast("Perfil salvo, mas não foi possível atualizar a célula.");
+          showToast("Perfil salvo, mas não foi possível atualizar a célula.", "info");
         }
       }
 
-      showToast("Perfil atualizado com sucesso!");
+      showToast("Perfil atualizado com sucesso!", "success");
 
       // Limpar campos de senha
       setSenhaAtual("");
@@ -287,22 +273,23 @@ export default function Perfil() {
     } catch (err: any) {
       console.error("Erro ao salvar perfil:", err);
       const msg = err?.response?.data?.error || "Erro ao salvar perfil";
-      showToast(msg);
+      showToast(msg, "error");
     } finally {
       setSalvando(false);
     }
   };
 
-  const nivelAtual = perfil.id_nivel
-    ? niveis.find((n) => n.id_nivel === perfil.id_nivel)
+  const nivelId = perfil.nivel_escola ?? perfil.id_nivel;
+  const nivelAtual = nivelId
+    ? niveis.find((n) => n.id_nivel === nivelId)
     : null;
 
   if (loading) {
     return (
-      <div className="perfil-container">
+      <div className="perfil-page page-with-fixed-header">
         <Header />
         <main className="perfil-main">
-          <div className="loading-message">Carregando perfil...</div>
+          <div className="perfil-loading">Carregando perfil...</div>
         </main>
         <Footer />
       </div>
@@ -310,11 +297,11 @@ export default function Perfil() {
   }
 
   return (
-    <div className="perfil-container">
+    <div className="perfil-page page-with-fixed-header">
       <Header />
 
       <main className="perfil-main">
-        <h1>MEU PERFIL</h1>
+        <h1 className="perfil-title">Meu Perfil</h1>
 
         <div className="perfil-card">
           {/* Seção de Avatar */}
@@ -330,15 +317,18 @@ export default function Perfil() {
               type="button"
               onClick={handleChoosePhoto}
               className="btn-upload"
+              aria-label="Alterar foto de perfil"
             >
               Alterar Foto
             </button>
             <input
               type="file"
+              id="foto-perfil-input"
               accept="image/*"
               ref={fileInputRef}
               onChange={handleFileChange}
               className="file-input-hidden"
+              aria-hidden
             />
           </div>
 
@@ -350,9 +340,7 @@ export default function Perfil() {
                 {nivelAtual ? (
                   <span className="badge-nivel">{nivelAtual.nome}</span>
                 ) : (
-                  <span style={{ color: "rgba(255,255,255,0.4)" }}>
-                    Sem nível
-                  </span>
+                  <span className="info-value-empty">Sem nível</span>
                 )}
               </div>
             </div>
@@ -368,8 +356,9 @@ export default function Perfil() {
           {/* Formulário */}
           <div className="form-section">
             <div className="form-group">
-              <label className="form-label">Nome Completo</label>
+              <label htmlFor="perfil-nome" className="form-label">Nome Completo</label>
               <input
+                id="perfil-nome"
                 type="text"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
@@ -379,8 +368,9 @@ export default function Perfil() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Email</label>
+              <label htmlFor="perfil-email" className="form-label">Email</label>
               <input
+                id="perfil-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -390,8 +380,9 @@ export default function Perfil() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Tipo de Usuário</label>
+              <label htmlFor="perfil-tipo" className="form-label">Tipo de Usuário</label>
               <input
+                id="perfil-tipo"
                 type="text"
                 value={tipoLabels[perfil.tipo] || perfil.tipo}
                 className="form-input"
@@ -401,8 +392,9 @@ export default function Perfil() {
 
             {(perfil.tipo === "membro" || perfil.tipo === "lider") && (
               <div className="form-group">
-                <label className="form-label">Célula Principal</label>
+                <label htmlFor="perfil-celula" className="form-label">Célula Principal</label>
                 <select
+                  id="perfil-celula"
                   value={celulaPrincipalId}
                   onChange={(e) =>
                     setCelulaPrincipalId(
@@ -427,8 +419,9 @@ export default function Perfil() {
             {/* Seção de Senha */}
             <div className="password-section">
               <div className="form-group">
-                <label className="form-label">Senha Atual</label>
+                <label htmlFor="perfil-senha-atual" className="form-label">Senha Atual</label>
                 <input
+                  id="perfil-senha-atual"
                   type="password"
                   value={senhaAtual}
                   onChange={(e) => setSenhaAtual(e.target.value)}
@@ -441,8 +434,9 @@ export default function Perfil() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Nova Senha</label>
+                <label htmlFor="perfil-nova-senha" className="form-label">Nova Senha</label>
                 <input
+                  id="perfil-nova-senha"
                   type="password"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
@@ -452,8 +446,9 @@ export default function Perfil() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Confirmar Nova Senha</label>
+                <label htmlFor="perfil-confirmar-senha" className="form-label">Confirmar Nova Senha</label>
                 <input
+                  id="perfil-confirmar-senha"
                   type="password"
                   value={confirmarSenha}
                   onChange={(e) => setConfirmarSenha(e.target.value)}
@@ -480,7 +475,13 @@ export default function Perfil() {
         </div>
       </main>
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <Toast
+          message={toast}
+          onClose={() => setToast(null)}
+          variant={toastVariant}
+        />
+      )}
 
       <Footer />
     </div>

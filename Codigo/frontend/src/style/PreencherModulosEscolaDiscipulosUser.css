@@ -258,7 +258,9 @@ body{
   border-radius: 12px;
 }
 .modulo-resultado-sucesso { background: rgba(34, 197, 94, 0.12); }
+.modulo-resultado-reprovar { background: rgba(245, 158, 11, 0.12); }
 .modulo-resultado h2 { margin: 0 0 1rem; font-size: 1.4rem; color: #166534; }
+.modulo-resultado-reprovar h2 { color: #b45309; }
 .modulo-resultado-pontos { margin: 0 0 1.5rem; font-size: 1.1rem; }
 .modulo-resultado-repeticao { display: block; font-size: 0.9rem; color: #6b7280; margin-top: 0.5rem; }
 

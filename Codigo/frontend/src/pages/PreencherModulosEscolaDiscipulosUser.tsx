@@ -11,6 +11,12 @@ import { getUploadUrl } from "../services/uploadService";
 import { ASSETS_BASE } from "../config/api";
 import type { Modulo, Campo } from "../types";
 
+const QUESTOES_TIPOS = ["multipla_escolha", "verdadeiro_falso", "discursiva", "checkbox", "select"];
+
+function isCampoQuestao(tipo: string | undefined): boolean {
+  return !!(tipo && QUESTOES_TIPOS.includes(String(tipo).toLowerCase()));
+}
+
 const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -26,8 +32,10 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
   const [resultado, setResultado] = useState<{
     pontos: number;
     total: number;
-    eh_repeticao?: boolean;
+    atingiu_50?: boolean;
+    eh_retentativa?: boolean;
   } | null>(null);
+  const [moduloJaConcluido, setModuloJaConcluido] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,41 +56,77 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       ]);
       setModulo(moduloData);
 
+      if ((moduloData as any).ativo === false || (moduloData as any).ativo === 0) {
+        setErroAcesso("Este módulo está inativo e não pode ser realizado.");
+        return;
+      }
+
       if (quizData?.id_quiz) {
         try {
+          const [progresso, quizCompleto] = await Promise.all([
+            moduloService.getProgresso(idModulo!),
+            quizService.getById(quizData.id_quiz),
+          ]);
+          const pontuacaoMaxima = (quizCompleto.questoes || []).reduce(
+            (s, q) => s + (q.pontos || 0),
+            0
+          );
+          if (
+            progresso?.status === "concluido" &&
+            progresso.nota_quiz != null &&
+            pontuacaoMaxima > 0 &&
+            progresso.nota_quiz >= pontuacaoMaxima * 0.5
+          ) {
+            setModuloJaConcluido(true);
+            setQuiz(quizCompleto);
+            setLoading(false);
+            return;
+          }
+          setQuiz(quizCompleto);
+          const init: Record<number, string> = {};
+          (quizCompleto.questoes || []).forEach((q: QuizQuestao) => {
+            init[q.id_questao] = "";
+          });
+          setRespostas(init);
+        } catch (quizErr: unknown) {
+          const err = quizErr as { response?: { data?: { error?: string } }; message?: string };
+          setToast(err?.response?.data?.error || err?.message || "Erro ao carregar o quiz.");
+          setLoading(false);
+          return;
+        }
+        try {
           await moduloService.iniciar(idModulo!);
-        } catch (e: any) {
-          if (e?.response?.status === 409) {
+        } catch (e: unknown) {
+          const err = e as { response?: { status?: number; data?: { error?: string } }; message?: string };
+          if (err?.response?.status === 409) {
             // Módulo já iniciado/concluído — seguir normalmente
           } else {
-            const msg = e?.response?.data?.error || e?.message || "Complete os módulos anteriores na sequência.";
+            const msg = err?.response?.data?.error || err?.message || "Complete os módulos anteriores na sequência.";
             setErroAcesso(msg);
             return;
           }
         }
-        const quizCompleto = await quizService.getById(quizData.id_quiz);
-        setQuiz(quizCompleto);
-        const init: Record<number, string> = {};
-        (quizCompleto.questoes || []).forEach((q: QuizQuestao) => {
-          init[q.id_questao] = "";
-        });
-        setRespostas(init);
       } else {
         try {
           await moduloService.iniciar(idModulo!);
-        } catch (e: any) {
-          if (e?.response?.status === 409) {
+        } catch (e: unknown) {
+          const err = e as { response?: { status?: number; data?: { error?: string } }; message?: string };
+          if (err?.response?.status === 409) {
             // Módulo já iniciado/concluído — seguir normalmente
           } else {
-            const msg = e?.response?.data?.error || e?.message || "Complete os módulos anteriores na sequência.";
+            const msg = err?.response?.data?.error || err?.message || "Complete os módulos anteriores na sequência.";
             setErroAcesso(msg);
             return;
           }
         }
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string }; status?: number }; message?: string };
       console.error("Erro ao carregar:", err);
-      navigate("/usuario/modulos");
+      const msg = error?.response?.data?.error || error?.message || "Erro ao carregar o módulo.";
+      setToast(msg);
+      setTimeout(() => navigate("/usuario/modulos"), 1500);
+      return;
     } finally {
       setLoading(false);
     }
@@ -94,8 +138,9 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     try {
       await moduloService.concluir(idModulo);
       navigate("/usuario/modulos");
-    } catch (e: any) {
-      const msg = e?.response?.data?.error || e?.message || "Erro ao concluir módulo.";
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { error?: string } }; message?: string };
+      const msg = err?.response?.data?.error || err?.message || "Erro ao concluir módulo.";
       setToast(msg);
     } finally {
       setConcluindo(false);
@@ -166,11 +211,13 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     );
   };
 
-  const renderConteudo = (campo: Campo) => {
+  const renderConteudo = (campo: Campo | { tipo_campo?: string; label?: string; conteudo?: unknown }) => {
     const tipo = String(campo.tipo_campo || "texto").toLowerCase();
     const valor = campo.conteudo ?? "";
 
-    if (valor === null || valor === undefined || valor === "") return null;
+    if (valor === null || valor === undefined) return null;
+    const valorStr = String(valor).trim();
+    if (valorStr === "") return null;
 
     switch (tipo) {
       case "link": {
@@ -219,6 +266,88 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     }
   };
 
+  const renderQuizItem = (
+    item: { type: "conteudo"; campo: { id?: number; tipo_campo?: string; label?: string; conteudo?: unknown } } | { type: "questao"; questao: QuizQuestao; questaoIdx: number },
+    respostas: Record<number, string>,
+    setRespostas: React.Dispatch<React.SetStateAction<Record<number, string>>>
+  ) => {
+    if (item.type === "conteudo") {
+      const conteudo = renderConteudo(item.campo);
+      if (!conteudo && !item.campo.label) return null;
+      return (
+        <div key={`c-${item.campo.id ?? Math.random()}`} className="modulo-campo modulo-quiz-campo">
+          {item.campo.label && <h3 className="modulo-campo-label">{item.campo.label}</h3>}
+          {conteudo}
+        </div>
+      );
+    }
+    const q = item.questao;
+    const opcoes = parseOpcoes(q.opcoes);
+    const valor = respostas[q.id_questao] || "";
+    return (
+      <div key={q.id_questao} className="modulo-questao">
+        <p className="modulo-questao-enunciado">
+          {item.questaoIdx + 1}. {q.enunciado}
+        </p>
+        {q.tipo_questao === "discursiva" ? (
+          <textarea
+            className="pfu-textarea"
+            value={valor}
+            onChange={(e) => setRespostas((prev) => ({ ...prev, [q.id_questao]: e.target.value }))}
+            placeholder="Digite sua resposta"
+            required
+          />
+        ) : (
+          <fieldset className="modulo-opcoes">
+            {opcoes.map((opt) => {
+              const optId = typeof opt === "object" ? opt.id : opt;
+              const optText = typeof opt === "object" ? opt.texto : opt;
+              return (
+                <label key={optId} className="modulo-opcao">
+                  <input
+                    type="radio"
+                    name={`q-${q.id_questao}`}
+                    value={optId}
+                    checked={valor === optId}
+                    onChange={(e) => setRespostas((prev) => ({ ...prev, [q.id_questao]: e.target.value }))}
+                  />
+                  <span>{optText}</span>
+                </label>
+              );
+            })}
+          </fieldset>
+        )}
+      </div>
+    );
+  };
+
+  const quizMergedItems = React.useMemo(() => {
+    if (!quiz?.questoes?.length) return [];
+    const campos = quiz.campos ?? [];
+    const questoes = [...quiz.questoes].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
+    let questaoIdx = 0;
+    type Item =
+      | { type: "conteudo"; campo: { id?: number; tipo_campo?: string; label?: string; conteudo?: unknown } }
+      | { type: "questao"; questao: QuizQuestao; questaoIdx: number };
+    const items: Item[] = [];
+    for (const campo of campos) {
+      const tipo = String(campo.tipo_campo || "").toLowerCase();
+      if (isCampoQuestao(tipo)) {
+        if (questaoIdx < questoes.length) {
+          items.push({ type: "questao", questao: questoes[questaoIdx], questaoIdx });
+          questaoIdx++;
+        }
+      } else {
+        items.push({ type: "conteudo", campo });
+      }
+    }
+    while (questaoIdx < questoes.length) {
+      items.push({ type: "questao", questao: questoes[questaoIdx], questaoIdx });
+      questaoIdx++;
+    }
+    return items;
+  }, [quiz?.campos, quiz?.questoes]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quiz?.questoes?.length || !idModulo) return;
@@ -243,11 +372,14 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
         res.pontuacao_maxima ?? (quiz.questoes || []).reduce((s, q) => s + (q.pontos || 0), 0);
       setResultado({
         pontos: res.pontos_obtidos,
-        total: totalPontos || res.total_questoes,
-        eh_repeticao: res.eh_repeticao,
+        total: totalPontos > 0 ? totalPontos : 1,
+        atingiu_50: res.atingiu_50 ?? false,
+        eh_retentativa: res.eh_retentativa,
       });
-    } catch (err) {
-      setToast("Erro ao enviar respostas. Tente novamente.");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } }; message?: string };
+      const msg = error?.response?.data?.error || error?.message || "Erro ao enviar respostas. Tente novamente.";
+      setToast(msg);
       console.error(err);
     } finally {
       setEnviando(false);
@@ -267,6 +399,28 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
   }
 
   if (!modulo) return null;
+
+  if (moduloJaConcluido) {
+    return (
+      <div className="modulo-user page-with-fixed-header">
+        <Header />
+        <main className="pfu-main">
+          <div className="modulo-resultado modulo-resultado-sucesso">
+            <h2>Módulo já concluído</h2>
+            <p>Você já concluiu este módulo com sucesso. Não é permitido refazer o quiz.</p>
+            <button
+              type="button"
+              className="pfu-save"
+              onClick={() => navigate("/usuario/modulos")}
+            >
+              Voltar aos módulos
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (erroAcesso) {
     return (
@@ -310,16 +464,11 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
           ))}
 
           {quiz?.questoes?.length ? (
-            resultado ? (
+            resultado?.atingiu_50 ? (
               <div className="modulo-resultado modulo-resultado-sucesso">
-                <h2>Quiz concluído!</h2>
+                <h2>Módulo concluído!</h2>
                 <p className="modulo-resultado-pontos">
-                  Você obteve <strong>{resultado.pontos}</strong> de {resultado.total} pontos
-                  {resultado.eh_repeticao && (
-                    <span className="modulo-resultado-repeticao">
-                      (participação - quiz já realizado antes)
-                    </span>
-                  )}
+                  Você obteve <strong>{resultado.pontos}/{resultado.total}</strong> pontos.
                 </p>
                 <button
                   type="button"
@@ -329,63 +478,40 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
                   Voltar aos módulos
                 </button>
               </div>
+            ) : resultado && !resultado.atingiu_50 ? (
+              <div className="modulo-resultado modulo-resultado-reprovar">
+                <h2>Você não atingiu 50% do quiz.</h2>
+                <p className="modulo-resultado-pontos">
+                  Você obteve <strong>{resultado.pontos}/{resultado.total}</strong> pontos.
+                  Tente novamente para concluir o módulo.
+                </p>
+                <form className="modulo-quiz" onSubmit={handleSubmit} aria-labelledby="quizTitle">
+                  <h2 id="quizTitle" className="modulo-quiz-title">
+                    {quiz.titulo || "Quiz"}
+                  </h2>
+                  {quizMergedItems.map((item, idx) => (
+                    <React.Fragment key={idx}>
+                      {renderQuizItem(item, respostas, setRespostas)}
+                    </React.Fragment>
+                  ))}
+                  <div className="pfu-actions">
+                    <button type="submit" className="pfu-save" disabled={enviando}>
+                      {enviando ? "Enviando..." : "Tentar novamente"}
+                    </button>
+                  </div>
+                </form>
+              </div>
             ) : (
               <form className="modulo-quiz" onSubmit={handleSubmit} aria-labelledby="quizTitle">
                 <h2 id="quizTitle" className="modulo-quiz-title">
                   {quiz.titulo || "Quiz"}
                 </h2>
 
-                {quiz.questoes.map((q, idx) => {
-                  const opcoes = parseOpcoes(q.opcoes);
-                  const valor = respostas[q.id_questao] || "";
-
-                  return (
-                    <div key={q.id_questao} className="modulo-questao">
-                      <p className="modulo-questao-enunciado">
-                        {idx + 1}. {q.enunciado}
-                      </p>
-
-                      {q.tipo_questao === "discursiva" ? (
-                        <textarea
-                          className="pfu-textarea"
-                          value={valor}
-                          onChange={(e) =>
-                            setRespostas((prev) => ({
-                              ...prev,
-                              [q.id_questao]: e.target.value,
-                            }))
-                          }
-                          placeholder="Digite sua resposta"
-                          required
-                        />
-                      ) : (
-                        <fieldset className="modulo-opcoes">
-                          {opcoes.map((opt) => {
-                            const optId = typeof opt === "object" ? opt.id : opt;
-                            const optText = typeof opt === "object" ? opt.texto : opt;
-                            return (
-                              <label key={optId} className="modulo-opcao">
-                                <input
-                                  type="radio"
-                                  name={`q-${q.id_questao}`}
-                                  value={optId}
-                                  checked={valor === optId}
-                                  onChange={(e) =>
-                                    setRespostas((prev) => ({
-                                      ...prev,
-                                      [q.id_questao]: e.target.value,
-                                    }))
-                                  }
-                                />
-                                <span>{optText}</span>
-                              </label>
-                            );
-                          })}
-                        </fieldset>
-                      )}
-                    </div>
-                  );
-                })}
+                {quizMergedItems.map((item, idx) => (
+                  <React.Fragment key={idx}>
+                    {renderQuizItem(item, respostas, setRespostas)}
+                  </React.Fragment>
+                ))}
 
                 <div className="pfu-actions">
                   <button type="submit" className="pfu-save" disabled={enviando}>

@@ -135,15 +135,15 @@ class QuizService {
       throw new NotFoundError("Quiz não encontrado");
     }
 
-    let questoes = await QuizQuestaoModel.getByQuiz(parsedId);
     const campos = await CampoModel.getByEntity("quiz", parsedId);
 
-    // Se não há questões mas há campos tipo pergunta, sincroniza (quizzes antigos da secretaria)
-    if (questoes.length === 0 && campos.length > 0) {
+    // Sincroniza campos tipo pergunta para quiz_questao sempre que houver campos
+    // (garante que quizzes da secretaria tenham todas as questões ao realizar módulo)
+    if (campos.length > 0) {
       await this._syncCamposToQuestoes(parsedId, campos);
-      questoes = await QuizQuestaoModel.getByQuiz(parsedId);
     }
 
+    const questoes = await QuizQuestaoModel.getByQuiz(parsedId);
     return { ...quiz, questoes, campos };
   }
 

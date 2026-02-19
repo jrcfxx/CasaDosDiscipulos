@@ -20,6 +20,7 @@ router.get("/ranking/minha-posicao", verificarToken, ModuloController.minhaPosic
 router.get("/ranking", ModuloController.ranking);
 router.post("/:id/iniciar", verificarToken, ModuloController.iniciar);
 router.post("/:id/concluir", verificarToken, ModuloController.concluir);
+router.get("/:id/progresso", verificarToken, ModuloController.getProgresso);
 router.get("/:id", ModuloController.show);
 router.get("/:id/quiz", ModuloController.getQuizVinculado);
 router.post("/", validate(createModuloSchema), ModuloController.store);
