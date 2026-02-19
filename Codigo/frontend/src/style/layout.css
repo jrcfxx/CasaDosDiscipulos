@@ -21,6 +21,61 @@ body {
   font-family: "Montserrat", Arial, sans-serif;
 }
 
+/* HEADER HOME - minimalista (apenas Home e Sobre nós) */
+.header-home {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  transition: background 0.2s ease;
+}
+
+.header-home:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.header-home__nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.header-home__link {
+  color: #ebebeb;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.2s;
+}
+
+.header-home__link:hover {
+  color: #fff;
+}
+
+.header-home__btn-login {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #000;
+  background: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Montserrat", sans-serif;
+}
+
+.header-home__btn-login:hover {
+  background: #ebebeb;
+}
+
 /* CABEÇALHO */
 .top-bar-wrapper {
   width: 100%;

@@ -173,7 +173,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
       showToast("Módulo criado com sucesso!");
 
       setTimeout(() => {
-        navigate("/ModulosEscolaDiscipulosAdmin");
+        navigate("/admin/modulos");
       }, 1000);
     } catch (err: any) {
       console.error("Erro ao criar módulo:", err);
@@ -319,7 +319,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
               </button>
               <button
                 className="criar-modulo-btn criar-modulo-btn-secondary"
-                onClick={() => navigate("/ModulosEscolaDiscipulosAdmin")}
+                onClick={() => navigate("/admin/modulos")}
                 disabled={loading}
               >
                 Cancelar

@@ -50,12 +50,12 @@ const FormularioRespostaService = {
 
   /**
    * Cria nova resposta de formulário
-   * @param {Object} data - Dados da resposta { id_formulario, id_celula, campos: [] }
+   * @param {Object} data - Dados da resposta { id_usuario?, id_formulario, id_celula, campos: [] }
    * @returns {Promise<Object>} Resposta criada
    * @throws {ValidationError} Se dados inválidos
    */
   async create(data) {
-    const { id_formulario, id_celula, campos } = data;
+    const { id_usuario, id_formulario, id_celula, campos } = data;
 
     // Validações básicas
     if (!id_formulario) {
@@ -72,9 +72,13 @@ const FormularioRespostaService = {
       );
     }
 
-    // Criar resposta principal
+    if (!id_usuario) {
+      throw new ValidationError("ID do usuário (líder) é obrigatório");
+    }
+
     const respostaData = {
       id_formulario,
+      id_usuario,
       id_celula,
       data_resposta: new Date(),
     };
@@ -92,7 +96,7 @@ const FormularioRespostaService = {
       await FormularioRespostaModel.createCampo({
         id_resposta: resposta.id_resposta,
         id_formulario_campo: campo.id_formulario_campo,
-        resposta: campo.resposta || null,
+        valor: campo.resposta != null ? String(campo.resposta) : null,
       });
     }
 

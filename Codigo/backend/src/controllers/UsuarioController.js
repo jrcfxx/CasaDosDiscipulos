@@ -99,7 +99,14 @@ const UsuarioController = {
     try {
       const usuarioId = req.usuario?.id_usuario;
       const usuario = await UsuarioService.getById(usuarioId);
-      res.status(HTTP_STATUS.OK).json(usuario);
+      let celula_principal = null;
+      try {
+        const UsuarioCelulaModel = (await import("../models/UsuarioCelulaModel.js")).default;
+        celula_principal = await UsuarioCelulaModel.getPrincipalByUsuario(usuarioId);
+      } catch {
+        // Tabela usuario_celula pode não existir se migration não rodou
+      }
+      res.status(HTTP_STATUS.OK).json({ ...usuario, celula_principal });
     } catch (err) {
       next(err);
     }

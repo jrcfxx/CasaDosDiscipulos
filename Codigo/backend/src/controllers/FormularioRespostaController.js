@@ -63,11 +63,13 @@ const FormularioRespostaController = {
 
   /**
    * Cria nova resposta de formulário
-   * POST /api/formulario-resposta
+   * POST /api/formulario-resposta (requer auth - líder)
    */
   async store(req, res, next) {
     try {
-      const resposta = await FormularioRespostaService.create(req.body);
+      const id_usuario = req.usuario?.id_usuario;
+      const payload = { ...req.body, id_usuario };
+      const resposta = await FormularioRespostaService.create(payload);
       res.status(HTTP_STATUS.CREATED).json(resposta);
     } catch (error) {
       next(error);

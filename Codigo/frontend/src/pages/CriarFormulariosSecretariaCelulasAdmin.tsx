@@ -194,7 +194,7 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
         await axios.post(API, payload);
         alert("Formulário criado!");
       }
-      navigate("/secretaria/formularios");
+      navigate("/admin/formularios");
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar formulário.");
@@ -206,7 +206,7 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
     try {
       await axios.delete(`${API}/${params.id}`);
       alert("Formulário excluído.");
-      navigate("/secretaria/formularios");
+      navigate("/admin/formularios");
     } catch (err) {
       console.error(err);
       alert("Erro ao excluir formulário.");

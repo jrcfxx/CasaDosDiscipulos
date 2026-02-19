@@ -1,6 +1,7 @@
 import { Router } from "express";
 import FormularioRespostaController from "../controllers/FormularioRespostaController.js";
 import validate from "../middlewares/validate.js";
+import verificarToken from "../middlewares/authMiddleware.js";
 import {
   createFormularioRespostaSchema,
   updateFormularioRespostaSchema,
@@ -20,6 +21,7 @@ router.get("/", FormularioRespostaController.index);
 router.get("/:id", FormularioRespostaController.show);
 router.post(
   "/",
+  verificarToken,
   validate(createFormularioRespostaSchema),
   FormularioRespostaController.store
 );

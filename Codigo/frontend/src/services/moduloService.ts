@@ -95,6 +95,29 @@ const moduloService = {
     const response = await apiClient.get(`/modulo/${idModulo}/quiz`);
     return response.data;
   },
+
+  /**
+   * Lista módulos ativos com progresso do usuário (requer auth)
+   */
+  async getActiveWithProgress(): Promise<(Modulo & { status?: string; nota_quiz?: number | null; data_conclusao?: string | null })[]> {
+    const response = await apiClient.get("/modulo/ativos-com-progresso");
+    return response.data;
+  },
+
+  /**
+   * Inicia módulo (marca como em_andamento)
+   */
+  async iniciar(id: number): Promise<void> {
+    await apiClient.post(`/modulo/${id}/iniciar`);
+  },
+
+  /**
+   * Ranking de usuários por pontuação
+   */
+  async getRanking(limit = 10): Promise<Array<{ id_usuario: number; nome: string; pontuacao: number; foto?: string }>> {
+    const response = await apiClient.get(`/modulo/ranking?limit=${limit}`);
+    return response.data;
+  },
 };
 
 export default moduloService;

@@ -37,6 +37,31 @@ const quizService = {
     const all = await this.getAll();
     return all.filter((quiz) => quiz.ativo === true || quiz.ativo === 1);
   },
+
+  /**
+   * Submete respostas do quiz
+   * @param idQuiz - ID do quiz
+   * @param idModulo - ID do módulo (contexto atual)
+   * @param respostas - Array de { id_questao, resposta }
+   */
+  async responder(
+    idQuiz: number,
+    idModulo: number,
+    respostas: Array<{ id_questao: number; resposta: string }>
+  ): Promise<{ message: string; pontos_obtidos: number; total_questoes: number; eh_repeticao?: boolean }> {
+    const userStr = localStorage.getItem("usuario");
+    const usuario = userStr ? JSON.parse(userStr) : null;
+    const id_usuario = usuario?.id_usuario;
+    if (!id_usuario) {
+      throw new Error("Usuário não autenticado");
+    }
+    const response = await apiClient.post(`/quiz/${idQuiz}/responder`, {
+      id_usuario,
+      id_modulo: idModulo,
+      respostas,
+    });
+    return response.data;
+  },
 };
 
 export default quizService;

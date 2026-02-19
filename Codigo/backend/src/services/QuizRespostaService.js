@@ -119,11 +119,12 @@ class QuizRespostaService {
 
   /**
    * Submete todas as respostas de um quiz de uma vez
+   * Permite repetição: 1ª vez = pontuação integral; repetições = 1/3 da pontuação
    * @param {number} id_quiz - ID do quiz
-   * @param {Object} payload - { id_usuario, respostas: [{ id_questao, resposta }] }
+   * @param {Object} payload - { id_usuario, id_modulo?, respostas: [{ id_questao, resposta }] }
    */
   async submitResponses(id_quiz, payload) {
-    const { id_usuario, respostas } = payload;
+    const { id_usuario, id_modulo, respostas } = payload;
 
     if (!id_usuario) {
       throw new ValidationError("id_usuario é obrigatório");
@@ -132,35 +133,35 @@ class QuizRespostaService {
       throw new ValidationError("É necessário enviar pelo menos uma resposta");
     }
 
-    // Verificar se quiz existe
     const quiz = await QuizModel.getById(id_quiz);
     if (!quiz) {
       throw new NotFoundError("Quiz não encontrado");
     }
 
-    // Buscar todas as questões do quiz
     const questoes = await QuizQuestaoModel.getByQuiz(id_quiz);
     if (!questoes.length) {
       throw new ValidationError("Este quiz não possui questões");
     }
 
-    // Criar mapa de questões para fácil acesso
+    const id_modulo_efetivo = id_modulo ?? quiz.id_modulo;
+    if (!id_modulo_efetivo) {
+      throw new ValidationError(
+        "id_modulo é obrigatório quando o quiz não está vinculado diretamente a um módulo"
+      );
+    }
+
     const questoesMap = new Map(questoes.map((q) => [q.id_questao, q]));
 
-    // Verificar se já respondeu alguma questão
     const respostasExistentes = await QuizRespostaModel.getByUsuarioAndQuiz(
       id_usuario,
       id_quiz
     );
-    if (respostasExistentes.length > 0) {
-      throw new ValidationError("Você já respondeu este quiz");
-    }
+    const ehRepeticao = respostasExistentes.length > 0;
 
     const now = new Date();
     const rows = [];
     let pontuacao_total = 0;
 
-    // Processar cada resposta
     for (const r of respostas) {
       const questao = questoesMap.get(r.id_questao);
       if (!questao) {
@@ -169,13 +170,12 @@ class QuizRespostaService {
         );
       }
 
-      // Avaliar resposta
       let correta = null;
       let pontos_obtidos = 0;
 
       if (questao.tipo_questao !== "discursiva" && questao.resposta_correta) {
-        correta = r.resposta.trim() === questao.resposta_correta.trim();
-        pontos_obtidos = correta ? questao.pontos : 0;
+        correta = String(r.resposta || "").trim() === String(questao.resposta_correta || "").trim();
+        pontos_obtidos = correta ? (questao.pontos || 0) : 0;
         pontuacao_total += pontos_obtidos;
       }
 
@@ -189,36 +189,48 @@ class QuizRespostaService {
       });
     }
 
-    // Inserir todas as respostas em uma transação
-    return knex.transaction(async (trx) => {
-      await QuizRespostaModel.createMany(rows, trx);
+    if (ehRepeticao) {
+      pontuacao_total = Math.floor(pontuacao_total / 3);
+    }
 
-      // Atualizar pontuação do usuário se houver pontos
+    return knex.transaction(async (trx) => {
+      if (!ehRepeticao) {
+        await QuizRespostaModel.createMany(rows, trx);
+      }
+
       if (pontuacao_total > 0) {
         await trx("usuario")
           .where({ id_usuario })
           .increment("pontuacao", pontuacao_total);
       }
 
-      // Atualizar progresso do módulo
       const moduloUsuario = await trx("usuario_modulo")
-        .where({ id_usuario, id_modulo: quiz.id_modulo })
+        .where({ id_usuario, id_modulo: id_modulo_efetivo })
         .first();
+
+      const dadosProgresso = {
+        status: "concluido",
+        nota_quiz: pontuacao_total,
+        data_conclusao: now,
+      };
 
       if (moduloUsuario) {
         await trx("usuario_modulo")
-          .where({ id_usuario, id_modulo: quiz.id_modulo })
-          .update({
-            status: "concluido",
-            nota_quiz: pontuacao_total,
-            data_conclusao: now,
-          });
+          .where({ id_usuario, id_modulo: id_modulo_efetivo })
+          .update(dadosProgresso);
+      } else {
+        await trx("usuario_modulo").insert({
+          id_usuario,
+          id_modulo: id_modulo_efetivo,
+          ...dadosProgresso,
+        });
       }
 
       return {
         message: "Respostas submetidas com sucesso",
         total_questoes: respostas.length,
         pontos_obtidos: pontuacao_total,
+        eh_repeticao: ehRepeticao,
       };
     });
   }

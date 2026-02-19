@@ -387,7 +387,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
             </div>
             <button
               className="btn-create"
-              onClick={() => navigate("/CriarModulosEscolaDiscipulosAdmin")}
+              onClick={() => navigate("/admin/modulos/criar")}
             >
               + CRIAR MÓDULO
             </button>
@@ -415,7 +415,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                     className="btn-edit"
                     onClick={() =>
                       navigate(
-                        `/EditarModulosEscolaDiscipulosAdmin/${selectedModulo.id_modulo}`
+                        `/admin/modulos/editar/${selectedModulo.id_modulo}`
                       )
                     }
                   >

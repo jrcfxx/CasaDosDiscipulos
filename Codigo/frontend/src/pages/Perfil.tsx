@@ -9,6 +9,9 @@ import {
   uploadUserPhoto,
 } from "../services/usuario";
 import { showAllNiveis } from "../services/nivel";
+import celulaService from "../services/celulaService";
+import usuarioCelulaService from "../services/usuarioCelulaService";
+import { ASSETS_BASE } from "../config/api";
 
 interface Nivel {
   id_nivel: number;
@@ -18,6 +21,11 @@ interface Nivel {
   ativo: boolean;
 }
 
+interface CelulaPrincipal {
+  id_celula: number;
+  nome_celula?: string;
+}
+
 interface PerfilData {
   nome: string;
   email: string;
@@ -25,6 +33,7 @@ interface PerfilData {
   id_nivel?: number | null;
   pontuacao: number;
   foto?: string;
+  celula_principal?: CelulaPrincipal | null;
 }
 
 export default function Perfil() {
@@ -47,6 +56,8 @@ export default function Perfil() {
   const [toast, setToast] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [celulas, setCelulas] = useState<Array<{ id_celula: number; nome: string }>>([]);
+  const [celulaPrincipalId, setCelulaPrincipalId] = useState<number | "">("");
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -65,11 +76,14 @@ export default function Perfil() {
           setPerfil(data);
           setNome(data.nome);
           setEmail(data.email);
+          setCelulaPrincipalId(
+            data.celula_principal?.id_celula ?? ""
+          );
           if (data.foto) {
             // Adiciona o base URL da API se a foto for um caminho relativo
             const fotoUrl = data.foto.startsWith("http")
               ? data.foto
-              : `http://localhost:3001${data.foto}`;
+              : `${ASSETS_BASE}${data.foto}`;
             console.log("Foto do banco:", data.foto);
             console.log("URL da foto:", fotoUrl);
             setFotoPreview(fotoUrl);
@@ -96,8 +110,17 @@ export default function Perfil() {
       }
     }
 
+    async function fetchCelulas() {
+      try {
+        const c = await celulaService.getAtivas();
+        setCelulas(c || []);
+      } catch {
+        setCelulas([]);
+      }
+    }
     fetchPerfil();
     fetchNiveis();
+    fetchCelulas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -113,11 +136,14 @@ export default function Perfil() {
         setPerfil(data);
         setNome(data.nome);
         setEmail(data.email);
+        setCelulaPrincipalId(
+          data.celula_principal?.id_celula ?? ""
+        );
         if (data.foto) {
           // Adiciona o base URL da API se a foto for um caminho relativo
           const fotoUrl = data.foto.startsWith("http")
             ? data.foto
-            : `http://localhost:3001${data.foto}`;
+            : `${ASSETS_BASE}${data.foto}`;
           console.log("Foto atualizada do banco:", data.foto);
           console.log("URL atualizada da foto:", fotoUrl);
           setFotoPreview(fotoUrl);
@@ -164,6 +190,7 @@ export default function Perfil() {
     // Resetar campos
     setNome(perfil.nome);
     setEmail(perfil.email);
+    setCelulaPrincipalId(perfil.celula_principal?.id_celula ?? "");
     setSenhaAtual("");
     setNovaSenha("");
     setConfirmarSenha("");
@@ -231,6 +258,22 @@ export default function Perfil() {
 
       // Atualizar outros dados do perfil
       await updateUserProfile(updateData);
+
+      // Célula principal (membros e líderes)
+      if (perfil.tipo === "membro" || perfil.tipo === "lider") {
+        try {
+          const idAntigo = perfil.celula_principal?.id_celula;
+          if (celulaPrincipalId) {
+            await usuarioCelulaService.setCelulaPrincipal(Number(celulaPrincipalId));
+          } else if (idAntigo) {
+            await usuarioCelulaService.removeCelula(idAntigo);
+          }
+        } catch (err) {
+          console.error("Erro ao atualizar célula principal:", err);
+          showToast("Perfil salvo, mas não foi possível atualizar a célula.");
+        }
+      }
+
       showToast("Perfil atualizado com sucesso!");
 
       // Limpar campos de senha
@@ -355,6 +398,31 @@ export default function Perfil() {
                 disabled
               />
             </div>
+
+            {(perfil.tipo === "membro" || perfil.tipo === "lider") && (
+              <div className="form-group">
+                <label className="form-label">Célula Principal</label>
+                <select
+                  value={celulaPrincipalId}
+                  onChange={(e) =>
+                    setCelulaPrincipalId(
+                      e.target.value ? Number(e.target.value) : ""
+                    )
+                  }
+                  className="form-input"
+                >
+                  <option value="">Nenhuma selecionada</option>
+                  {celulas.map((c) => (
+                    <option key={c.id_celula} value={c.id_celula}>
+                      {c.nome}
+                    </option>
+                  ))}
+                </select>
+                <p className="password-hint">
+                  Opcional. Vincule-se a uma célula para facilitar o acompanhamento.
+                </p>
+              </div>
+            )}
 
             {/* Seção de Senha */}
             <div className="password-section">

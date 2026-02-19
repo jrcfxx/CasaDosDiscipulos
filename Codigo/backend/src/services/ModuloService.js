@@ -1,6 +1,8 @@
+import knex from "../database/index.js";
 import ModuloModel from "../models/ModuloModel.js";
 import CampoModel from "../models/CampoModel.js";
 import ModuloQuizModel from "../models/ModuloQuizModel.js";
+import UsuarioModuloModel from "../models/UsuarioModuloModel.js";
 import { NotFoundError, ValidationError } from "../utils/AppError.js";
 
 /**
@@ -24,6 +26,27 @@ const ModuloService = {
     );
 
     return modulosComCampos;
+  },
+
+  /**
+   * Marca módulo como em_andamento para o usuário (ao acessar o conteúdo)
+   * @param {number} id_modulo - ID do módulo
+   * @param {number} id_usuario - ID do usuário
+   */
+  async iniciarModulo(id_modulo, id_usuario) {
+    await this.getById(id_modulo);
+    const existente = await UsuarioModuloModel.getByUsuarioAndModulo(
+      id_usuario,
+      id_modulo
+    );
+    if (!existente) {
+      await UsuarioModuloModel.create({
+        id_usuario,
+        id_modulo,
+        status: "em_andamento",
+      });
+    }
+    return UsuarioModuloModel.getByUsuarioAndModulo(id_usuario, id_modulo);
   },
 
   /**
@@ -225,11 +248,62 @@ const ModuloService = {
 
   /**
    * Busca quiz vinculado a um módulo
+   * Verifica primeiro modulo_quiz (N:N), depois quiz.id_modulo (vinculação direta)
    * @param {number} idModulo - ID do módulo
    * @returns {Promise<Object|null>} Quiz vinculado ou null
    */
   async getQuizVinculado(idModulo) {
-    return ModuloQuizModel.getQuizByModulo(idModulo);
+    const viaModuloQuiz = await ModuloQuizModel.getQuizByModulo(idModulo);
+    if (viaModuloQuiz) return viaModuloQuiz;
+
+    const quiz = await knex("quiz")
+      .where({ id_modulo: idModulo })
+      .first();
+    return quiz || null;
+  },
+
+  /**
+   * Busca módulos ativos com progresso do usuário (para página do usuário)
+   * @param {number} id_usuario - ID do usuário (opcional)
+   * @returns {Promise<Array>} Módulos ordenados por ordem, com status de progresso
+   */
+  async getActiveWithProgress(id_usuario) {
+    const modulos = await ModuloModel.getActive();
+
+    let progressMap = new Map();
+    if (id_usuario) {
+      const progressos = await UsuarioModuloModel.getByUsuario(id_usuario);
+      progressMap = new Map(progressos.map((p) => [p.id_modulo, p]));
+    }
+
+    const modulosComCampos = await Promise.all(
+      modulos.map(async (modulo) => {
+        const campos = await CampoModel.getByEntity("modulo", modulo.id_modulo);
+        const progresso = progressMap.get(modulo.id_modulo);
+        return {
+          ...modulo,
+          campos,
+          status: progresso?.status || "nao_iniciado",
+          nota_quiz: progresso?.nota_quiz ?? null,
+          data_conclusao: progresso?.data_conclusao ?? null,
+        };
+      })
+    );
+
+    return modulosComCampos.sort((a, b) => a.ordem - b.ordem);
+  },
+
+  /**
+   * Retorna ranking de usuários por pontuação (para gamificação)
+   * @param {number} limit - Quantidade de usuários (padrão 10)
+   * @returns {Promise<Array>} Lista ordenada por pontuacao desc
+   */
+  async getRanking(limit = 10) {
+    return knex("usuario")
+      .where({ ativo: true })
+      .select("id_usuario", "nome", "pontuacao", "foto")
+      .orderBy("pontuacao", "desc")
+      .limit(limit);
   },
 };
 

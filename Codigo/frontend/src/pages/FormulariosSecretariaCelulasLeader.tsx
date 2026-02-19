@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import "../style/FormulariosSecretariaCelulasLeader.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import axios from "axios";
+import formularioService, { FormularioCampo } from "../services/formularioService";
+import celulaService from "../services/celulaService";
+import formularioRespostaService from "../services/formularioRespostaService";
+import authService from "../services/authService";
 import TextField from "../components/fields/TextField";
 import NumberField from "../components/fields/NumberField";
 import DateField from "../components/fields/DateField";
@@ -10,28 +13,35 @@ import LinkField from "../components/fields/LinkField";
 import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 
-/* TYPES */
 type Formulario = {
-  id: number;
+  id_formulario: number;
   titulo: string;
   descricao?: string | null;
-  ativo?: number;
-  campos?: any[];
+  ativo: boolean;
+  campos?: FormularioCampo[];
 };
 
 type LocalField = {
   uid: number;
-  id_campo: number;
+  id_formulario_campo: number;
   tipo: string;
   label: string;
   conteudo: any;
   obrigatorio?: boolean;
 };
 
+type Celula = {
+  id_celula: number;
+  nome: string;
+};
+
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+
 export default function FormulariosSecretariaCelulasLeader() {
   const [formularios, setFormularios] = useState<Formulario[]>([]);
-  const [selectedFormulario, setSelectedFormulario] =
-    useState<Formulario | null>(null);
+  const [celulas, setCelulas] = useState<Celula[]>([]);
+  const [selectedFormulario, setSelectedFormulario] = useState<Formulario | null>(null);
+  const [selectedCelula, setSelectedCelula] = useState<number | null>(null);
   const [fields, setFields] = useState<LocalField[]>([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -50,30 +60,35 @@ export default function FormulariosSecretariaCelulasLeader() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:3001/api/formulario");
-      const mapped: Formulario[] = (res.data || []).map((f: any) => ({
-        id: f.id_formulario ?? f.id ?? 0,
-        titulo: f.titulo,
-        descricao: f.descricao ?? "",
-        ativo: f.ativo ?? 1,
-        campos: f.campos ?? [],
-      }));
-      setFormularios(mapped);
-      if (mapped.length > 0 && !selectedFormulario) {
-        setSelectedFormulario(mapped[0]);
+      const user = authService.getUser();
+      const idUsuario = user?.id_usuario;
+
+      const [formulariosRes, celulasRes] = await Promise.all([
+        formularioService.getAll(),
+        idUsuario ? celulaService.getByLider(idUsuario) : celulaService.getAtivas(),
+      ]);
+
+      setFormularios(formulariosRes);
+      setCelulas(celulasRes);
+
+      if (formulariosRes.length > 0 && !selectedFormulario) {
+        setSelectedFormulario(formulariosRes[0]);
+      }
+      if (celulasRes.length > 0 && selectedCelula === null) {
+        setSelectedCelula(celulasRes[0].id_celula);
       }
     } catch (err) {
-      showToast("Erro ao buscar formulários");
+      showToast("Erro ao buscar dados");
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    if (selectedFormulario) {
+    if (selectedFormulario?.campos) {
       setFields(
-        (selectedFormulario.campos || []).map((c: any, idx: number) => ({
+        selectedFormulario.campos.map((c, idx) => ({
           uid: idx,
-          id_campo: c.id_campo,
+          id_formulario_campo: c.id,
           tipo: c.tipo_campo || "texto",
           label: c.label || `Campo ${idx + 1}`,
           conteudo: "",
@@ -97,62 +112,31 @@ export default function FormulariosSecretariaCelulasLeader() {
   };
 
   const formatarConteudoCampo = (campo: LocalField) => {
-    // Visualização do campo (read-only)
     if (campo.tipo === "upload" && campo.conteudo) {
       const fileName = String(campo.conteudo).split("/").pop() || "arquivo";
-      const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-      const isImage = [
-        "jpg",
-        "jpeg",
-        "png",
-        "gif",
-        "webp",
-        "svg",
-        "bmp",
-      ].includes(fileExtension);
+      const ext = fileName.split(".").pop()?.toLowerCase() || "";
+      const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext);
+      const url = String(campo.conteudo).startsWith("http")
+        ? campo.conteudo
+        : `${API_URL}${campo.conteudo}`;
       return (
         <div className="upload-preview-campo">
-          {isImage ? (
-            <img
-              src={`http://localhost:3001${campo.conteudo}`}
-              alt={fileName}
-              style={{
-                maxWidth: "200px",
-                maxHeight: "200px",
-                borderRadius: "4px",
-              }}
-            />
-          ) : null}
-          <a
-            href={`http://localhost:3001${campo.conteudo}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#3b82f6",
-              textDecoration: "underline",
-              fontSize: "0.9rem",
-            }}
-          >
+          {isImage && (
+            <img src={url} alt={fileName} style={{ maxWidth: 200, maxHeight: 200 }} />
+          )}
+          <a href={url} target="_blank" rel="noopener noreferrer">
             📄 {fileName}
           </a>
         </div>
       );
     }
     if (campo.tipo === "video" && campo.conteudo) {
+      const url = String(campo.conteudo).startsWith("http")
+        ? campo.conteudo
+        : `${API_URL}${campo.conteudo}`;
       return (
-        <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
-          <video
-            controls
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "auto",
-              borderRadius: "8px",
-            }}
-          >
-            <source src={campo.conteudo} type="video/mp4" />
-            Seu navegador não suporta o elemento de vídeo.
-          </video>
+        <div className="video-preview-campo">
+          <video controls src={url} style={{ maxWidth: 400 }} />
         </div>
       );
     }
@@ -161,19 +145,32 @@ export default function FormulariosSecretariaCelulasLeader() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedFormulario || selectedCelula === null) {
+      showToast("Selecione um formulário e uma célula");
+      return;
+    }
+
+    const obrigatorios = fields.filter((f) => f.obrigatorio && !f.conteudo);
+    if (obrigatorios.length > 0) {
+      showToast("Preencha todos os campos obrigatórios");
+      return;
+    }
+
     setSending(true);
     try {
-      // Monta payload para envio
       const camposPayload = fields.map((f) => ({
-        id_campo: f.id_campo,
-        label: f.label,
-        conteudo: f.conteudo,
+        id_formulario_campo: f.id_formulario_campo,
+        resposta: f.conteudo ?? "",
       }));
-      await axios.post(
-        `http://localhost:3001/api/formulario/${selectedFormulario?.id}/resposta`,
-        { campos: camposPayload }
-      );
+
+      await formularioRespostaService.criar({
+        id_formulario: selectedFormulario.id_formulario,
+        id_celula: selectedCelula,
+        campos: camposPayload,
+      });
+
       setSuccess(true);
+      setFields((prev) => prev.map((f) => ({ ...f, conteudo: "" })));
       showToast("Formulário enviado com sucesso!");
     } catch (err) {
       showToast("Erro ao enviar formulário");
@@ -188,11 +185,7 @@ export default function FormulariosSecretariaCelulasLeader() {
         <h1 className="page-title">SECRETARIA DAS CÉLULAS</h1>
         {loading && <p className="loading-message">Carregando...</p>}
         <section className="formularios-layout">
-          {/* Coluna esquerda - Lista de Formulários */}
-          <aside
-            className="panel formularios-left"
-            aria-label="Lista de formulários"
-          >
+          <aside className="panel formularios-left" aria-label="Lista de formulários">
             <div className="list-header">
               <h2>Formulários</h2>
               <span className="count">{formularios.length}</span>
@@ -200,69 +193,65 @@ export default function FormulariosSecretariaCelulasLeader() {
             <div className="list">
               {formularios.map((formulario) => (
                 <div
-                  key={formulario.id}
+                  key={formulario.id_formulario}
                   className={`formulario-item ${
-                    selectedFormulario?.id === formulario.id ? "selected" : ""
+                    selectedFormulario?.id_formulario === formulario.id_formulario
+                      ? "selected"
+                      : ""
                   } ${!formulario.ativo ? "inactive" : ""}`}
                   onClick={() => handleSelectFormulario(formulario)}
                 >
-                  <div className="formulario-item__info">
-                    <span className="formulario-item__name">
-                      {formulario.titulo}
-                    </span>
-                  </div>
+                  <span className="formulario-item__name">{formulario.titulo}</span>
                 </div>
               ))}
             </div>
           </aside>
-          {/* Coluna central - Visualização e preenchimento do Formulário */}
-          <section
-            className="panel formularios-center"
-            aria-label="Detalhes do formulário"
-          >
+
+          <section className="panel formularios-center" aria-label="Formulário">
             {selectedFormulario ? (
               <div className="formulario-card">
                 <div className="formulario-header">
-                  <div className="formulario-title-area">
-                    <h2 className="formulario-title">
-                      {selectedFormulario.titulo}
-                    </h2>
-                    <span
-                      className={`badge badge-${
-                        selectedFormulario.ativo ? "active" : "inactive"
-                      }`}
-                    >
-                      {selectedFormulario.ativo ? "Ativo" : "Inativo"}
-                    </span>
-                  </div>
+                  <h2 className="formulario-title">{selectedFormulario.titulo}</h2>
+                  <span className={`badge badge-${selectedFormulario.ativo ? "active" : "inactive"}`}>
+                    {selectedFormulario.ativo ? "Ativo" : "Inativo"}
+                  </span>
                 </div>
+
                 {selectedFormulario.descricao && (
                   <div className="formulario-description">
-                    <h3>Descrição</h3>
                     <p>{selectedFormulario.descricao}</p>
                   </div>
                 )}
-                <div className="formulario-meta">
-                  <div className="meta-item">
-                    <span className="meta-label">Campos:</span>
-                    <span className="meta-value">
-                      {selectedFormulario.campos?.length || 0}
-                    </span>
-                  </div>
-                </div>
-                {selectedFormulario.campos &&
-                selectedFormulario.campos.length > 0 ? (
+
+                {selectedFormulario.campos?.length ? (
                   <form className="formulario-fields" onSubmit={handleSubmit}>
+                    <div className="celula-selector">
+                      <label htmlFor="celula">Célula *</label>
+                      <select
+                        id="celula"
+                        value={selectedCelula ?? ""}
+                        onChange={(e) => setSelectedCelula(Number(e.target.value))}
+                        required
+                      >
+                        <option value="">Selecione a célula</option>
+                        {celulas.map((c) => (
+                          <option key={c.id_celula} value={c.id_celula}>
+                            {c.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <h3>Preencha os campos</h3>
                     <div className="campos-grid">
                       {fields.map((campo) => {
-                        let safeLabel =
-                          typeof campo.label === "string"
-                            ? campo.label
-                            : String(campo.label ?? "Campo");
+                        const safeLabel = String(campo.label ?? "Campo");
                         return (
                           <div key={campo.uid} className="campo-card">
-                            <div className="campo-label">{campo.label}</div>
+                            <div className="campo-label">
+                              {campo.label}
+                              {campo.obrigatorio && " *"}
+                            </div>
                             <div className="campo-conteudo">
                               {campo.tipo === "texto" && (
                                 <TextField
@@ -270,9 +259,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   name={`campo_${campo.uid}`}
                                   label={safeLabel}
                                   value={campo.conteudo}
-                                  onChange={(v: any) =>
-                                    handleChangeField(campo.uid, v)
-                                  }
+                                  onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}
                               {campo.tipo === "numero" && (
@@ -281,9 +268,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   name={`campo_${campo.uid}`}
                                   label={safeLabel}
                                   value={campo.conteudo}
-                                  onChange={(v: any) =>
-                                    handleChangeField(campo.uid, v)
-                                  }
+                                  onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}
                               {campo.tipo === "data" && (
@@ -292,9 +277,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   name={`campo_${campo.uid}`}
                                   label={safeLabel}
                                   value={campo.conteudo}
-                                  onChange={(v: any) =>
-                                    handleChangeField(campo.uid, v)
-                                  }
+                                  onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}
                               {campo.tipo === "link" && (
@@ -303,9 +286,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   name={`campo_${campo.uid}`}
                                   label={safeLabel}
                                   value={campo.conteudo}
-                                  onChange={(v: any) =>
-                                    handleChangeField(campo.uid, v)
-                                  }
+                                  onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}
                               {campo.tipo === "upload" && (
@@ -314,9 +295,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   name={`campo_${campo.uid}`}
                                   label={safeLabel}
                                   value={campo.conteudo}
-                                  onChange={(v: any) =>
-                                    handleChangeField(campo.uid, v)
-                                  }
+                                  onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}
                               {campo.tipo === "video" && (
@@ -325,36 +304,20 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   name={`campo_${campo.uid}`}
                                   label={safeLabel}
                                   value={campo.conteudo}
-                                  onChange={(v: any) =>
-                                    handleChangeField(campo.uid, v)
-                                  }
+                                  onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}
-                              {/* Visualização do conteúdo preenchido */}
                               {formatarConteudoCampo(campo)}
                             </div>
-                            {campo.obrigatorio && (
-                              <span className="campo-required">
-                                Obrigatório
-                              </span>
-                            )}
                           </div>
                         );
                       })}
                     </div>
                     <div className="formulario-actions">
-                      <button
-                        type="submit"
-                        className="save-btn"
-                        disabled={sending}
-                      >
+                      <button type="submit" className="save-btn" disabled={sending}>
                         {sending ? "Enviando..." : "Enviar"}
                       </button>
-                      {success && (
-                        <span className="success-message">
-                          Formulário enviado!
-                        </span>
-                      )}
+                      {success && <span className="success-message">Formulário enviado!</span>}
                     </div>
                   </form>
                 ) : (
@@ -365,7 +328,7 @@ export default function FormulariosSecretariaCelulasLeader() {
               </div>
             ) : (
               <div className="formulario-placeholder">
-                <p>Selecione um formulário na lista para visualizar</p>
+                <p>Selecione um formulário na lista</p>
               </div>
             )}
           </section>

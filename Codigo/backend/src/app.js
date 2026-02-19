@@ -16,6 +16,7 @@ import celulaRoutes from "./routes/celulaRoutes.js";
 import eventoRoutes from "./routes/eventoRoutes.js";
 import nivelRoutes from "./routes/nivelRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import usuarioCelulaRoutes from "./routes/usuarioCelulaRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -73,6 +74,9 @@ app.use("/api/nivel", nivelRoutes);
 
 // Rotas de Upload
 app.use("/api/upload", uploadRoutes);
+
+// Célula principal do usuário (perfil)
+app.use("/api/usuario-celula", usuarioCelulaRoutes);
 
 // Middleware de tratamento de erros deve vir por último
 app.use(errorHandler);

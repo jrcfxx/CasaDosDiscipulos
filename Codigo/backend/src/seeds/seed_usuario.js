@@ -6,6 +6,13 @@ import knex from "../database/index.js";
  * Cria 1 admin, 1 líder e 1 membro para testes
  */
 export async function seed() {
+  // Remove em ordem reversa de dependências (FK)
+  await knex("formulario_resposta_campo").del();
+  await knex("formulario_resposta").del();
+  await knex("quiz_resposta").del();
+  await knex("usuario_modulo").del();
+  await knex("usuario_celula").del();
+  await knex("celula").del();
   await knex("usuario").del();
 
   const senhaHash = await bcrypt.hash("123456", 10);

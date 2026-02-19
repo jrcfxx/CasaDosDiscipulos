@@ -1,6 +1,7 @@
 import { Router } from "express";
 import ModuloController from "../controllers/ModuloController.js";
 import validate from "../middlewares/validate.js";
+import verificarToken from "../middlewares/authMiddleware.js";
 import {
   createModuloSchema,
   updateModuloSchema,
@@ -9,6 +10,14 @@ import {
 const router = Router();
 
 router.get("/", ModuloController.index);
+router.get("/active", ModuloController.active);
+router.get(
+  "/ativos-com-progresso",
+  verificarToken,
+  ModuloController.activeWithProgress
+);
+router.get("/ranking", ModuloController.ranking);
+router.post("/:id/iniciar", verificarToken, ModuloController.iniciar);
 router.get("/:id", ModuloController.show);
 router.get("/:id/quiz", ModuloController.getQuizVinculado);
 router.post("/", validate(createModuloSchema), ModuloController.store);

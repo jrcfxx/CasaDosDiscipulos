@@ -1,232 +1,220 @@
 /**
- * SobreNos Styles
- * Página sobre a Casa dos Discipulos
+ * SobreNos - Layout moderno e clean
+ * Marca: Montserrat (fonte oficial Casa dos Discípulos)
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap");
-
-/* ==================== CONTAINER PRINCIPAL ==================== */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
 
 .sobre-nos-page {
   min-height: 100vh;
-  background-color: #000;
-  font-family: "Montserrat", sans-serif;
+  background: #000;
+  font-family: "Montserrat", "Segoe UI", sans-serif;
 }
 
 .sobre-nos-content {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem;
-}
-
-/* ==================== TITULO ==================== */
-
-.sobre-nos__title {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--primary-light);
-  text-align: center;
-  margin: 3rem 0 4rem 0;
-  letter-spacing: -0.5px;
-  font-family: "Playfair Display", serif;
-}
-
-/* ==================== IMAGENS ==================== */
-
-.sobre-nos__images {
-  display: flex;
-  flex-direction: column;
-  gap: 4rem;
   max-width: 1200px;
   margin: 0 auto;
+  /* Espaço para o header fixo/sticky */
+  padding-top: 90px;
 }
 
-.sobre-nos__section {
-  width: 100%;
-}
+/* ==================== HERO ==================== */
 
-.sobre-nos__image-wrapper {
+.sobre-nos-hero {
   position: relative;
-  width: 100%;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  transition: all 0.4s ease;
-}
-
-.sobre-nos__image-wrapper:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 50px rgba(253, 248, 233, 0.3);
-}
-
-.sobre-nos__image {
-  width: 100%;
-  height: 600px;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-}
-
-.sobre-nos__text-overlay {
-  position: absolute;
-  bottom: 3rem;
-  left: 0;
-  right: 0;
+  min-height: 50vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 0 2.5rem;
+  justify-content: center;
+  padding: 6rem 1.5rem 4rem;
+  overflow: hidden;
 }
 
-.sobre-nos__welcome-text {
+.sobre-nos-hero__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.sobre-nos-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
+.sobre-nos-hero__texto {
+  position: relative;
+  z-index: 2;
   text-align: center;
 }
 
-.sobre-nos__mission-vision {
-  text-align: center;
-  max-width: 900px;
-}
-
-/* ==================== TEXTOS ==================== */
-
-.sobre-nos__welcome-line {
+.sobre-nos-hero__titulo {
   font-family: "Montserrat", sans-serif;
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: #fff;
-  margin: 0 0 1rem 0;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
-  letter-spacing: 0.5px;
-}
-
-.sobre-nos__simple-text {
-  font-family: "Montserrat", sans-serif;
-  font-size: 4rem;
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
-  color: #fff;
-  margin: 0;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
-  letter-spacing: 0.5px;
+  color: #ebebeb;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
-.sobre-nos__playfair {
-  font-family: "Playfair Display", serif;
-  font-size: 4rem;
-  font-weight: 700;
-  color: #fff;
+.sobre-nos-hero__titulo span {
+  font-style: italic;
 }
 
-.sobre-nos__section-title {
+.sobre-nos-hero__subtitulo {
   font-family: "Montserrat", sans-serif;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 1.5rem 0;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
-}
-
-.sobre-nos__text {
-  font-family: "Montserrat", sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 400;
-  color: #fff;
-  line-height: 1.8;
+  color: rgba(235, 235, 235, 0.9);
   margin: 0;
-  max-width: 800px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* ==================== SEÇÕES MISSÃO / VISÃO ==================== */
+
+.sobre-nos-section {
+  padding: 4rem 1.5rem;
+  background: #000;
+}
+
+.sobre-nos-section--alt {
+  background: #1a1a1a;
+}
+
+.sobre-nos-section__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.sobre-nos-section__grid--reverse {
+  direction: rtl;
+}
+
+.sobre-nos-section__grid--reverse > * {
+  direction: ltr;
+}
+
+.sobre-nos-section__img-wrap {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.sobre-nos-section__img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.sobre-nos-section__body {
+  padding: 0 1rem;
+}
+
+.sobre-nos-section__titulo {
+  font-family: "Montserrat", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 1.25rem 0;
+  letter-spacing: -0.02em;
+}
+
+.sobre-nos-section__texto {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.05rem;
+  color: #ebebeb;
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* ==================== FULL WIDTH IMAGEM ==================== */
+
+.sobre-nos-full {
+  padding: 0 1.5rem 4rem;
+}
+
+.sobre-nos-full__img {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: block;
+  border-radius: 12px;
+  object-fit: cover;
+  object-position: center;
+  height: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ==================== CTA VOLTAR ==================== */
+
+.sobre-nos-cta {
+  padding: 2rem 1.5rem 4rem;
+  text-align: center;
+}
+
+.sobre-nos-cta__link {
+  font-family: "Montserrat", sans-serif;
+  color: #02869b;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.sobre-nos-cta__link:hover {
+  color: #ebebeb;
 }
 
 /* ==================== RESPONSIVE ==================== */
 
 @media (max-width: 768px) {
-  .sobre-nos-page {
-    padding-top: 80px;
+  .sobre-nos-hero {
+    min-height: 40vh;
+    padding: 5rem 1rem 3rem;
   }
 
-  .sobre-nos-content {
-    padding: 2rem 1rem;
+  .sobre-nos-section__grid,
+  .sobre-nos-section__grid--reverse {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    direction: ltr;
   }
 
-  .sobre-nos__title {
-    font-size: 2rem;
-    margin-bottom: 3rem;
+  .sobre-nos-section__img {
+    height: 260px;
   }
 
-  .sobre-nos__images {
-    gap: 3rem;
+  .sobre-nos-section__titulo {
+    font-size: 1.5rem;
   }
 
-  .sobre-nos__image {
-    height: 450px;
-  }
-
-  .sobre-nos__text-overlay {
-    bottom: 2rem;
-    padding: 0 1.5rem;
-  }
-
-  .sobre-nos__welcome-line {
-    font-size: 1.75rem;
-  }
-
-  .sobre-nos__simple-text {
-    font-size: 2.5rem;
-  }
-
-  .sobre-nos__playfair {
-    font-size: 2.5rem;
-  }
-
-  .sobre-nos__section-title {
-    font-size: 2rem;
-  }
-
-  .sobre-nos__text {
-    font-size: 1.1rem;
+  .sobre-nos-full__img {
+    height: 280px;
   }
 }
 
 @media (max-width: 480px) {
-  .sobre-nos__title {
-    font-size: 1.75rem;
+  .sobre-nos-section {
+    padding: 3rem 1rem;
   }
 
-  .sobre-nos__images {
-    gap: 2rem;
+  .sobre-nos-section__img {
+    height: 220px;
   }
 
-  .sobre-nos__image {
-    height: 350px;
-  }
-
-  .sobre-nos__text-overlay {
-    bottom: 1.5rem;
-    padding: 0 1rem;
-  }
-
-  .sobre-nos__welcome-line {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .sobre-nos__simple-text {
-    font-size: 1.75rem;
-  }
-
-  .sobre-nos__playfair {
-    font-size: 1.75rem;
-  }
-
-  .sobre-nos__section-title {
-    font-size: 1.75rem;
-  }
-
-  .sobre-nos__text {
-    font-size: 1rem;
-    line-height: 1.6;
+  .sobre-nos-full__img {
+    height: 220px;
   }
 }

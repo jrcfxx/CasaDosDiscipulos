@@ -29,7 +29,7 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
 
           <div className="portal-grid">
             <Link
-              to="/LicoesSecretariaAdmin"
+              to="/admin/licoes"
               className="portal-card"
               style={{ backgroundImage: `url(${imgLicoes})` }}
               aria-label="Lições"
@@ -39,7 +39,7 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
             </Link>
 
             <Link
-              to="/FormulariosSecretariaCelulasAdmin"
+              to="/admin/formularios"
               className="portal-card"
               style={{ backgroundImage: `url(${imgFormularios})` }}
               aria-label="Formulários"
@@ -57,7 +57,7 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
           {}
           <div className="portal-grid">
             <Link
-              to="/ModulosEscolaDiscipulosAdmin"
+              to="/admin/modulos"
               className="portal-card"
               style={{ backgroundImage: `url(${imgModulos})` }}
               aria-label="Módulos"
@@ -67,7 +67,7 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
             </Link>
 
             <Link
-              to="/QuizzesSecretariaCelulasAdmin"
+              to="/admin/quizzes"
               className="portal-card"
               style={{ backgroundImage: `url(${imgQuiz})` }}
               aria-label="Quiz"

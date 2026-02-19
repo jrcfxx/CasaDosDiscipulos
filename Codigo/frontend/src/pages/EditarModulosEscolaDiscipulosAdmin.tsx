@@ -65,7 +65,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
     if (!id_modulo) {
       console.error("ID do módulo não encontrado na URL");
       showToast("ID do módulo não encontrado");
-      navigate("/ModulosEscolaDiscipulosAdmin");
+      navigate("/admin/modulos");
       return;
     }
 
@@ -73,7 +73,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
     if (isNaN(moduloId) || moduloId <= 0) {
       console.error("ID do módulo inválido:", id_modulo);
       showToast("ID do módulo inválido");
-      navigate("/ModulosEscolaDiscipulosAdmin");
+      navigate("/admin/modulos");
       return;
     }
 
@@ -83,7 +83,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
       if (!modulo) {
         showToast("Módulo não encontrado");
-        navigate("/ModulosEscolaDiscipulosAdmin");
+        navigate("/admin/modulos");
         return;
       }
 
@@ -281,7 +281,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       // Recarregar dados do módulo após salvar
       await loadModulo();
 
-      setTimeout(() => navigate("/ModulosEscolaDiscipulosAdmin"), 1000);
+      setTimeout(() => navigate("/admin/modulos"), 1000);
     } catch (err) {
       console.error(err);
       showToast("Erro ao atualizar módulo.");
@@ -440,7 +440,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
                 </button>
                 <button
                   className="editar-modulo-btn editar-modulo-btn-secondary"
-                  onClick={() => navigate("/ModulosEscolaDiscipulosAdmin")}
+                  onClick={() => navigate("/admin/modulos")}
                 >
                   Cancelar
                 </button>

@@ -1,681 +1,310 @@
 /**
- * HomePage Styles
+ * HomePage - Estrutura moderna e clean
+ * Marca: Montserrat (fonte oficial Casa dos Discípulos)
  */
 
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
 @import "./tokens.css";
-
-/* ==================== CONTAINER PRINCIPAL ==================== */
 
 .home-page {
   min-height: 100vh;
   background-color: #000;
-  padding-top: 0px;
+  font-family: "Montserrat", "Segoe UI", sans-serif;
 }
 
 .home-content {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
+  /* Espaço para o header fixo */
+  padding-top: 70px;
 }
 
-/* ==================== LOGO SECTION ==================== */
-
-.home-logo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0rem 1rem 1rem;
-  background-color: #000;
-}
-
-.home-logo__image {
-  width: 80%;
-  max-width: 500px;
-  height: auto;
-  object-fit: contain;
-}
-
-/* ==================== HERO SECTION ==================== */
+/* ==================== HERO ==================== */
 
 .home-hero {
   position: relative;
-  width: 100%;
-  margin-bottom: 4rem;
-}
-
-.home-hero__image-wrapper {
-  position: relative;
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  border-radius: 12px;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
-.home-hero__image {
-  width: 100%;
-  height: 600px;
-  display: block;
-  object-fit: cover;
-  object-position: center;
+.home-hero__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .home-hero__overlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.6) 50%,
-    rgba(0, 0, 0, 0) 100%
+    180deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.6) 100%
   );
-  padding: 3rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
+}
+
+.home-hero__content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
 }
 
 .home-hero__title {
-  font-size: 3.5rem;
+  font-family: "Montserrat", sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 700;
   color: #ebebeb;
-  text-align: center;
-  margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  letter-spacing: -0.5px;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0 0 2rem 0;
 }
 
 .home-hero__cta {
-  padding: 1rem 2.5rem;
-  font-size: 1.125rem;
+  font-family: "Montserrat", sans-serif;
+  padding: 0.9rem 2rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #000;
   background: #fff;
-  border: 2px solid #fff;
+  border: none;
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
-  letter-spacing: 0.5px;
+  transition: all 0.25s ease;
+  letter-spacing: 0.03em;
 }
 
 .home-hero__cta:hover {
   background: #ebebeb;
-  border-color: #ebebeb;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.6);
 }
 
-.home-hero__cta:active {
-  transform: translateY(0);
+/* ==================== PARTICIPE ==================== */
+
+.home-participe {
+  padding: 5rem 1.5rem;
+  background: #000;
 }
 
-/* ==================== SEÇÕES ==================== */
-
-.home-section__title {
-  font-size: 2rem;
+.home-participe__titulo {
+  font-size: 1.75rem;
   font-weight: 700;
   color: #fff;
   text-align: center;
-  margin-bottom: 2.5rem;
-  letter-spacing: -0.5px;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.02em;
 }
 
-/* ==================== MINISTÉRIOS ==================== */
-
-.home-ministerios {
-  padding: 4rem 1.5rem;
-  background-color: #000;
+.home-participe__texto {
+  font-size: 1.05rem;
+  color: #ebebeb;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  line-height: 1.6;
 }
 
-.home-ministerios__grid {
+.home-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
   gap: 2rem;
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
-/* ==================== CARDS ==================== */
-
 .home-card {
-  background-color: #fff;
+  background: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .home-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-.home-card__image-wrapper {
-  position: relative;
-  width: 100%;
-  height: 350px;
+.home-card__img-wrap {
+  aspect-ratio: 16 / 10;
   overflow: hidden;
 }
 
-.home-card__image {
+.home-card__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.4s ease;
 }
 
-.home-card:hover .home-card__image {
-  transform: scale(1.05);
+.home-card:hover .home-card__img {
+  transform: scale(1.03);
 }
 
-.home-card__content {
-  padding: 1.5rem;
+.home-card__body {
+  padding: 1.75rem 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.home-card__title {
-  font-size: 1.5rem;
+.home-card__titulo {
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #000;
+  color: #fff;
   margin: 0 0 0.75rem 0;
 }
 
-.home-card__description {
-  font-size: 1rem;
-  color: #666;
+.home-card__texto {
+  font-size: 0.95rem;
+  color: #ebebeb;
   line-height: 1.6;
-  margin: 0;
+  margin: 0 0 1.25rem 0;
+  flex: 1;
 }
 
-/* ==================== CARDS FLIP ==================== */
-
-.home-card-flip {
-  background-color: transparent;
-  width: 100%;
-  height: 450px;
-  perspective: 1000px;
-  cursor: pointer;
-}
-
-.home-card-flip__inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
-}
-
-.home-card-flip:hover .home-card-flip__inner {
-  transform: rotateY(180deg);
-}
-
-.home-card-flip__front,
-.home-card-flip__back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: box-shadow 0.3s ease;
-}
-
-.home-card-flip:hover .home-card-flip__front,
-.home-card-flip:hover .home-card-flip__back {
-  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.4);
-}
-
-.home-card-flip__front {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  background: #000;
-  transform: rotateY(0deg);
-}
-
-.home-card-flip__image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-.home-card-flip__title {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.5) 70%,
-    transparent 100%
-  );
-  color: #ebebeb;
-  font-size: 2.5rem;
-  font-weight: 700;
-  padding: 2.5rem 1.5rem;
-  text-align: center;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.home-card-flip__back {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #1a1a1a 0%, #2b2f30 100%);
-  color: #ebebeb;
-  transform: rotateY(180deg);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 3rem 2.5rem;
-  box-sizing: border-box;
-  border: 2px solid transparent;
-}
-
-.home-card-flip:hover .home-card-flip__back {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.home-card-flip__back h3 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 2rem 0;
-  color: #ffffff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.home-card-flip__back p {
-  font-size: 1.2rem;
-  line-height: 1.8;
-  margin: 0 0 1.5rem 0;
-  color: #ebebeb;
-  text-align: center;
-  max-width: 85%;
-}
-
-.home-card-flip__cta {
-  padding: 0.875rem 2rem;
-  font-size: 1rem;
+.home-card__cta {
+  align-self: flex-start;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  font-family: "Montserrat", sans-serif;
   color: #000;
   background: #fff;
-  border: 2px solid #fff;
+  border: none;
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.5px;
-  margin-top: 1rem;
+  transition: all 0.2s ease;
 }
 
-.home-card-flip__cta:hover {
+.home-card__cta:hover {
   background: #02869b;
-  border-color: #02869b;
   color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(2, 134, 155, 0.5);
 }
 
-.home-card-flip__cta:active {
-  transform: translateY(0);
+/* ==================== PLATAFORMA ==================== */
+
+.home-plataforma {
+  padding: 5rem 1.5rem;
+  background: #2b2f30;
+}
+
+.home-plataforma__wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-plataforma__titulo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 1rem 0;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.home-plataforma__texto {
+  font-size: 1.05rem;
+  color: #ebebeb;
+  line-height: 1.7;
+  margin: 0 0 2rem 0;
+}
+
+.home-plataforma__cta {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+  background: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.home-plataforma__cta:hover {
+  background: #ebebeb;
+  transform: translateY(-2px);
 }
 
 /* ==================== EVENTOS ==================== */
 
 .home-eventos {
   padding: 4rem 1.5rem;
-  background-color: #000;
-}
-
-.home-eventos__featured {
-  position: relative;
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-.home-eventos__image {
-  width: 100%;
-  height: 500px;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-}
-
-.home-eventos__overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.5) 60%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  padding: 2.5rem 2rem;
-  text-align: center;
-}
-
-.home-eventos__title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 0.75rem 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.home-eventos__description {
-  font-size: 1.125rem;
-  color: #fff;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* ==================== PLATAFORMA DE ESTUDOS ==================== */
-
-.home-plataforma {
-  padding: 5rem 1.5rem;
   background: #000;
-  position: relative;
-  overflow: hidden;
 }
 
-.home-plataforma::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+.home-eventos__titulo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin: 0 0 2rem 0;
+  letter-spacing: -0.02em;
 }
 
-.home-plataforma__container {
-  width: 90%;
-  max-width: 1200px;
+.home-eventos .carousel-container {
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-.home-plataforma__content {
-  text-align: center;
+/* ==================== LOGO RODAPÉ ==================== */
+
+.home-logo-rodape {
+  padding: 3rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
 }
 
-.home-plataforma__title {
-  font-family: "Montserrat", sans-serif;
-  font-size: 3rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 1.5rem 0;
-  letter-spacing: -0.5px;
-  line-height: 1.2;
-}
-
-.home-plataforma__description {
-  font-family: "Montserrat", sans-serif;
-  font-size: 1.25rem;
-  font-weight: 400;
-  color: #ebebeb;
-  line-height: 1.8;
-  margin: 0 auto 4rem;
-  max-width: 800px;
-}
-
-.home-plataforma__features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2.5rem;
-  margin-bottom: 3.5rem;
-}
-
-.home-plataforma__feature {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-}
-
-.home-plataforma__feature:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.4);
-  transform: translateY(-8px);
-  box-shadow: 0 12px 32px rgba(255, 255, 255, 0.2);
-}
-
-.home-plataforma__feature-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1.5rem;
-  color: #ffffff;
-  transition: all 0.3s ease;
-}
-
-.home-plataforma__feature-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.home-plataforma__feature:hover .home-plataforma__feature-icon {
-  color: #fff;
-  transform: scale(1.1);
-}
-
-.home-plataforma__feature-title {
-  font-family: "Montserrat", sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 1rem 0;
-  letter-spacing: -0.3px;
-}
-
-.home-plataforma__feature-text {
-  font-family: "Montserrat", sans-serif;
-  font-size: 1rem;
-  font-weight: 400;
-  color: #ebebeb;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.home-plataforma__cta {
-  font-family: "Montserrat", sans-serif;
-  padding: 1.25rem 3rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #000;
-  background: #fff;
-  border: 2px solid #fff;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.5px;
-}
-
-.home-plataforma__cta:hover {
-  background: #ffffff;
-  border-color: #ffffff;
-  color: #000;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.5);
-}
-
-.home-plataforma__cta:active {
-  transform: translateY(0);
+.home-logo-rodape__img {
+  width: 200px;
+  height: auto;
+  opacity: 0.9;
 }
 
 /* ==================== RESPONSIVE ==================== */
 
-@media (max-width: 1200px) {
-  .home-ministerios__grid {
-    grid-template-columns: 1fr;
-    max-width: 600px;
-  }
-}
-
 @media (max-width: 768px) {
-  .home-page {
-    padding-top: 20px;
+  .home-hero {
+    min-height: 60vh;
+    padding: 3rem 1rem;
   }
 
-  .home-hero__title {
-    font-size: 1.75rem;
-  }
-
-  .home-hero__cta {
-    padding: 0.875rem 2rem;
-    font-size: 1rem;
-  }
-
-  .home-section__title {
-    font-size: 1.75rem;
-  }
-
-  .home-ministerios__grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .home-card__image-wrapper {
-    height: 250px;
-  }
-
-  .home-card__title {
-    font-size: 1.25rem;
-  }
-
-  .home-eventos__title {
-    font-size: 1.75rem;
-  }
-
-  .home-eventos__description {
-    font-size: 1rem;
-  }
-
-  .home-plataforma {
-    padding: 3.5rem 1rem;
-  }
-
-  .home-plataforma__title {
-    font-size: 2rem;
-  }
-
-  .home-plataforma__description {
-    font-size: 1.125rem;
-    margin-bottom: 3rem;
-  }
-
-  .home-plataforma__features {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .home-plataforma__feature {
-    padding: 2rem 1.5rem;
-  }
-
-  .home-plataforma__cta {
-    padding: 1rem 2rem;
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .home-hero__overlay {
-    padding: 1.5rem 1rem;
-  }
-
-  .home-hero__title {
-    font-size: 1.5rem;
-  }
-
-  .home-ministerios,
+  .home-participe,
+  .home-plataforma,
   .home-eventos {
     padding: 3rem 1rem;
   }
 
-  .home-plataforma {
-    padding: 3rem 1rem;
+  .home-acesso-rapido__wrap {
+    gap: 1rem;
   }
 
-  .home-plataforma__title {
-    font-size: 1.75rem;
-  }
-
-  .home-plataforma__description {
-    font-size: 1rem;
-  }
-
-  .home-plataforma__feature-icon {
-    width: 56px;
-    height: 56px;
-  }
-
-  .home-plataforma__feature-title {
-    font-size: 1.25rem;
+  .home-acesso-link {
+    font-size: 0.85rem;
   }
 }
-@media (max-width: 768px) {
-  .hero-text h2 {
-    font-size: 1.3rem;
+
+@media (max-width: 480px) {
+  .home-hero__title {
+    font-size: 2rem;
   }
 
-  .hero-text {
-    top: 60%;
-    transform: translate(-50%, -50%);
+  .home-cards {
+    grid-template-columns: 1fr;
   }
 
-  .cards-section {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .card {
-    width: 90%;
-
-    height: 220px;
-  }
-
-  .footer {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
+  .home-plataforma__titulo {
+    font-size: 1.5rem;
   }
 }

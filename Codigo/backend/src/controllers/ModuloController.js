@@ -33,6 +33,23 @@ const ModuloController = {
   },
 
   /**
+   * Inicia módulo (marca como em_andamento)
+   * POST /api/modulo/:id/iniciar - requer auth
+   */
+  async iniciar(req, res, next) {
+    try {
+      const id_usuario = req.usuario?.id_usuario;
+      if (!id_usuario) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
+      await ModuloService.iniciarModulo(req.params.id, id_usuario);
+      res.status(HTTP_STATUS.OK).json({ message: "Módulo iniciado" });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * Lista apenas módulos ativos
    * GET /api/modulo/active
    */
@@ -131,6 +148,47 @@ const ModuloController = {
     try {
       const quiz = await ModuloService.getQuizVinculado(req.params.id);
       res.status(HTTP_STATUS.OK).json(quiz);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Lista módulos ativos com progresso do usuário (requer auth)
+   * GET /api/modulo/ativos-com-progresso
+   */
+  async activeWithProgress(req, res, next) {
+    try {
+      const id_usuario = req.usuario?.id_usuario;
+      const modulos = await ModuloService.getActiveWithProgress(id_usuario);
+      res.status(HTTP_STATUS.OK).json(modulos);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Lista módulos ativos (sem progresso)
+   * GET /api/modulo/active
+   */
+  async active(req, res, next) {
+    try {
+      const modulos = await ModuloService.getActive();
+      res.status(HTTP_STATUS.OK).json(modulos);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Ranking de usuários por pontuação
+   * GET /api/modulo/ranking?limit=10
+   */
+  async ranking(req, res, next) {
+    try {
+      const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
+      const ranking = await ModuloService.getRanking(limit);
+      res.status(HTTP_STATUS.OK).json(ranking);
     } catch (error) {
       next(error);
     }

@@ -23,7 +23,7 @@ const FormularioRespostaModel = {
         "formulario.id_formulario"
       )
       .leftJoin("celula", "formulario_resposta.id_celula", "celula.id_celula")
-      .leftJoin("usuario", "celula.id_lider", "usuario.id_usuario")
+      .leftJoin("usuario", "formulario_resposta.id_usuario", "usuario.id_usuario")
       .orderBy("formulario_resposta.data_resposta", "desc");
   },
 
@@ -46,7 +46,7 @@ const FormularioRespostaModel = {
         "formulario.id_formulario"
       )
       .leftJoin("celula", "formulario_resposta.id_celula", "celula.id_celula")
-      .leftJoin("usuario", "celula.id_lider", "usuario.id_usuario")
+      .leftJoin("usuario", "formulario_resposta.id_usuario", "usuario.id_usuario")
       .where({ "formulario_resposta.id_resposta": id_resposta })
       .first();
   },
@@ -64,7 +64,7 @@ const FormularioRespostaModel = {
         "usuario.nome as nome_lider"
       )
       .leftJoin("celula", "formulario_resposta.id_celula", "celula.id_celula")
-      .leftJoin("usuario", "celula.id_lider", "usuario.id_usuario")
+      .leftJoin("usuario", "formulario_resposta.id_usuario", "usuario.id_usuario")
       .where({ "formulario_resposta.id_formulario": id_formulario })
       .orderBy("formulario_resposta.data_resposta", "desc");
   },

@@ -6,6 +6,9 @@ import Footer from "../components/layout/Footer";
 
 import axios from "axios";
 
+import formularioRespostaService from "../services/formularioRespostaService";
+import celulaService from "../services/celulaService";
+
 import TextField from "../components/fields/TextField";
 import NumberField from "../components/fields/NumberField";
 import DateField from "../components/fields/DateField";
@@ -42,6 +45,23 @@ type LocalField = {
   conteudo: any;
 };
 
+type Resposta = {
+  id_resposta: number;
+  id_formulario: number;
+  id_celula: number;
+  id_usuario?: number;
+  data_resposta: string;
+  nome_celula?: string;
+  nome_lider?: string;
+  campos?: Array<{
+    label?: string;
+    valor?: string;
+    resposta?: string;
+    conteudo?: string;
+    tipo_campo?: string;
+  }>;
+};
+
 const initialFormState: FormularioForm = {
   id: null,
   nome: "",
@@ -65,6 +85,19 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const [toast, setToast] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
 
+  const [respostas, setRespostas] = useState<Resposta[]>([]);
+  const [respostasLoading, setRespostasLoading] = useState(false);
+  const [expandedRespostaId, setExpandedRespostaId] = useState<number | null>(
+    null
+  );
+  const [respostaDetalhe, setRespostaDetalhe] = useState<Resposta | null>(null);
+  const [celulas, setCelulas] = useState<
+    Array<{ id_celula: number; nome: string }>
+  >([]);
+  const [abaAtiva, setAbaAtiva] = useState<
+    "formulario" | "respostas" | "dashboard"
+  >("formulario");
+
   const fieldOptions = [
     { label: "Texto", tipo: "texto", component: TextField },
     { label: "Número", tipo: "numero", component: NumberField },
@@ -76,8 +109,26 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   useEffect(() => {
     loadData();
+    celulaService.getAll().then((c) => setCelulas(c || []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!selectedFormulario) {
+      setRespostas([]);
+      setExpandedRespostaId(null);
+      setRespostaDetalhe(null);
+      return;
+    }
+    setRespostasLoading(true);
+    formularioRespostaService
+      .listarPorFormulario(selectedFormulario.id)
+      .then((r: Resposta[]) => setRespostas(r || []))
+      .catch(() => setRespostas([]))
+      .finally(() => setRespostasLoading(false));
+    setExpandedRespostaId(null);
+    setRespostaDetalhe(null);
+  }, [selectedFormulario?.id]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -163,6 +214,44 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const handleSelectFormulario = (formulario: Formulario) => {
     setSelectedFormulario(formulario);
   };
+
+  const handleExpandResposta = async (id: number) => {
+    if (expandedRespostaId === id) {
+      setExpandedRespostaId(null);
+      setRespostaDetalhe(null);
+      return;
+    }
+    try {
+      const det = await formularioRespostaService.getById(id);
+      setExpandedRespostaId(id);
+      setRespostaDetalhe(det);
+    } catch {
+      setRespostaDetalhe(null);
+    }
+  };
+
+  const formatarData = (d: string) => {
+    if (!d) return "-";
+    try {
+      const dt = new Date(d);
+      return dt.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return d;
+    }
+  };
+
+  const celulasQueResponderam = (selectedFormulario?.id
+    ? respostas.map((r) => r.id_celula)
+    : []) as number[];
+  const celulasQueNaoResponderam = celulas.filter(
+    (c) => !celulasQueResponderam.includes(c.id_celula)
+  );
 
   const formatarConteudoCampo = (conteudo: any): React.ReactNode => {
     if (!conteudo) return "Sem conteúdo";
@@ -618,6 +707,29 @@ export default function FormulariosSecretariaCelulasAdmin() {
           >
             {selectedFormulario ? (
               <div className="formulario-card">
+                <div className="formulario-tabs">
+                  <button
+                    className={abaAtiva === "formulario" ? "active" : ""}
+                    onClick={() => setAbaAtiva("formulario")}
+                  >
+                    Formulário
+                  </button>
+                  <button
+                    className={abaAtiva === "respostas" ? "active" : ""}
+                    onClick={() => setAbaAtiva("respostas")}
+                  >
+                    Respostas ({respostas.length})
+                  </button>
+                  <button
+                    className={abaAtiva === "dashboard" ? "active" : ""}
+                    onClick={() => setAbaAtiva("dashboard")}
+                  >
+                    Dashboard
+                  </button>
+                </div>
+
+                {abaAtiva === "formulario" && (
+                  <>
                 <div className="formulario-header">
                   <div className="formulario-title-area">
                     <h2 className="formulario-title">
@@ -680,6 +792,151 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 ) : (
                   <div className="formulario-empty">
                     <p>Este formulário não possui campos cadastrados.</p>
+                  </div>
+                )}
+                  </>
+                )}
+
+                {abaAtiva === "respostas" && (
+                  <div className="respostas-section">
+                    {respostasLoading ? (
+                      <p className="loading-message">Carregando respostas...</p>
+                    ) : respostas.length === 0 ? (
+                      <div className="formulario-empty">
+                        <p>Nenhuma resposta enviada para este formulário.</p>
+                      </div>
+                    ) : (
+                      <div className="respostas-list">
+                        {respostas.map((r) => (
+                          <div
+                            key={r.id_resposta}
+                            className={`resposta-item ${
+                              expandedRespostaId === r.id_resposta
+                                ? "expanded"
+                                : ""
+                            }`}
+                          >
+                            <div
+                              className="resposta-item-header"
+                              onClick={() => handleExpandResposta(r.id_resposta)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) =>
+                                e.key === "Enter" &&
+                                handleExpandResposta(r.id_resposta)
+                              }
+                            >
+                              <span className="resposta-celula">
+                                {r.nome_celula || `Célula #${r.id_celula}`}
+                              </span>
+                              <span className="resposta-lider">
+                                {r.nome_lider || "-"}
+                              </span>
+                              <span className="resposta-data">
+                                {formatarData(r.data_resposta)}
+                              </span>
+                              <span className="resposta-toggle">
+                                {expandedRespostaId === r.id_resposta
+                                  ? "▼"
+                                  : "▶"}
+                              </span>
+                            </div>
+                            {expandedRespostaId === r.id_resposta &&
+                              respostaDetalhe?.id_resposta === r.id_resposta && (
+                                <div className="resposta-detalhe">
+                                  {respostaDetalhe.campos &&
+                                  respostaDetalhe.campos.length > 0 ? (
+                                    <div className="campos-grid">
+                                      {respostaDetalhe.campos.map(
+                                        (c: any, idx: number) => (
+                                          <div
+                                            key={idx}
+                                            className="campo-card"
+                                          >
+                                            <div className="campo-label">
+                                              {c.label || "Campo"}
+                                            </div>
+                                            <div className="campo-conteudo">
+                                              {formatarConteudoCampo(
+                                                c.valor ?? c.resposta ?? c.conteudo
+                                              )}
+                                            </div>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <p className="muted">
+                                      Sem campos preenchidos.
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {abaAtiva === "dashboard" && (
+                  <div className="dashboard-section">
+                    <h3>Células que responderam</h3>
+                    {celulasQueResponderam.length === 0 ? (
+                      <p className="muted">
+                        Nenhuma célula respondeu este formulário ainda.
+                      </p>
+                    ) : (
+                      <ul className="dashboard-list responded">
+                        {respostas
+                          .reduce(
+                            (
+                              acc: Array<{
+                                id_celula: number;
+                                nome: string;
+                                count: number;
+                              }>,
+                              r
+                            ) => {
+                              const cel = celulas.find(
+                                (c) => c.id_celula === r.id_celula
+                              );
+                              const exist = acc.find(
+                                (a) => a.id_celula === r.id_celula
+                              );
+                              if (exist) {
+                                exist.count += 1;
+                              } else {
+                                acc.push({
+                                  id_celula: r.id_celula,
+                                  nome: cel?.nome || r.nome_celula || `Célula #${r.id_celula}`,
+                                  count: 1,
+                                });
+                              }
+                              return acc;
+                            },
+                            []
+                          )
+                          .map((c) => (
+                            <li key={c.id_celula}>
+                              <strong>{c.nome}</strong> — {c.count} resposta
+                              {c.count !== 1 ? "s" : ""}
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                    <h3>Células que não responderam</h3>
+                    {celulasQueNaoResponderam.length === 0 ? (
+                      <p className="muted">
+                        Todas as células responderam este formulário.
+                      </p>
+                    ) : (
+                      <ul className="dashboard-list not-responded">
+                        {celulasQueNaoResponderam.map((c) => (
+                          <li key={c.id_celula}>{c.nome}</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
               </div>

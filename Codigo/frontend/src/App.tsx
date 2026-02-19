@@ -31,9 +31,7 @@ import PortalDoDiscipuloUser from "./pages/PortalDoDiscipuloUser";
 import ModulosEscolaDiscipulosUser from "./pages/ModulosEscolaDiscipulosUser";
 import PreencherModulosEscolaDiscipulosUser from "./pages/PreencherModulosEscolaDiscipulosUser";
 import LicaoSecretariaCelulaUser from "./pages/LicaoSecretariaCelulaUser";
-import InicioFormularioSecretariaUser from "./pages/InicioFormularioSecretariaUser";
 import FormulariosSecretariaCelulasLeader from "./pages/FormulariosSecretariaCelulasLeader";
-import PreencherFormularioSecretariaUser from "./pages/PreencherFormularioSecretariaUser";
 
 // Páginas Comuns
 import Perfil from "./pages/Perfil";
@@ -280,14 +278,6 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/usuario/formularios/preencher/:id"
-        element={
-          <ProtectedRoute allowedRoles="lider">
-            <PreencherFormularioSecretariaUser />
-          </ProtectedRoute>
-        }
-      />
 
       {/* ==================== ROTAS COMUNS (AUTENTICADAS) ==================== */}
 
@@ -301,9 +291,8 @@ export default function App() {
         }
       />
 
-      {/* ==================== ROTAS DE COMPATIBILIDADE (DEPRECATED) ==================== */}
-
-      {/* Redirecionamentos para manter compatibilidade com URLs antigas */}
+      {/* ==================== ROTAS DE COMPATIBILIDADE ==================== */}
+      {/* Redirecionamentos para URLs antigas (bookmarks, links externos) */}
       <Route path="/HomePage" element={<Navigate to="/home" replace />} />
       <Route
         path="/portal"
@@ -340,7 +329,11 @@ export default function App() {
       />
       <Route
         path="/EditarModulosEscolaDiscipulosAdmin/:id_modulo"
-        element={<EditarModulosEscolaDiscipulosAdmin />}
+        element={
+          <ProtectedRoute requireAdmin>
+            <EditarModulosEscolaDiscipulosAdmin />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/QuizzesSecretariaCelulasAdmin"

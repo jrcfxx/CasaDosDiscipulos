@@ -76,6 +76,16 @@ const CampoModel = {
       throw new Error(`Entidade inválida: ${entity}`);
     }
 
+    const baseSelect = [
+      `${config.table}.id`,
+      `${config.table}.id_campo`,
+      "campo_personalizado.tipo_campo",
+      `${config.table}.label`,
+      `${config.table}.conteudo`,
+    ];
+    if (entity === "formulario") {
+      baseSelect.push(`${config.table}.obrigatorio`);
+    }
     return knex(config.table)
       .where({ [config.idField]: entityId })
       .join(
@@ -83,13 +93,8 @@ const CampoModel = {
         `${config.table}.id_campo`,
         "campo_personalizado.id_campo"
       )
-      .select(
-        `${config.table}.id`,
-        `${config.table}.id_campo`,
-        "campo_personalizado.tipo_campo",
-        `${config.table}.label`,
-        `${config.table}.conteudo`
-      )
+      .select(...baseSelect)
+      .orderBy(`${config.table}.ordem`, "asc")
       .orderBy(`${config.table}.id`, "asc");
   },
 
