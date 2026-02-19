@@ -18,6 +18,7 @@ import { seed as seedUsuarioCelula } from "./seed_usuario_celula.js";
 import { seed as seedFormularioResposta } from "./seed_formulario_resposta.js";
 import { seed as seedUsuarioModulo } from "./seed_usuario_modulo.js";
 import { seed as seedQuizResposta } from "./seed_quiz_resposta.js";
+import { seed as seedNotificacao } from "./seed_notificacao.js";
 
 /**
  * Executa todos os seeders na ordem correta
@@ -77,6 +78,9 @@ async function run() {
 
   // 13. Respostas de formulário (dados de exemplo para o dashboard)
   await seedFormularioResposta();
+
+  // 14. Notificações
+  await seedNotificacao();
 
   console.log("\n✅ Todos os seeders executados com sucesso!");
   process.exit(0);

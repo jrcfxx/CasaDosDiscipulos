@@ -87,7 +87,31 @@ export async function seed() {
     valor: valores2[idx] ?? "",
   }));
 
-  await knex("formulario_resposta_campo").insert([...resposta1Campos, ...resposta2Campos]);
+  const allCampos = [...resposta1Campos, ...resposta2Campos];
 
-  console.log("✅ Respostas de formulário inseridas com sucesso!");
+  // Mais respostas para outras células (Relatório de Célula)
+  const lideres = await knex("usuario").where({ tipo: "lider" }).select("id_usuario");
+  for (let i = 2; i < Math.min(celulas.length, 6); i++) {
+    const dataResp = new Date(hoje);
+    dataResp.setDate(dataResp.getDate() - (i * 3));
+    const [idResp] = await knex("formulario_resposta").insert({
+      id_formulario: formulario.id_formulario,
+      id_usuario: lideres[i % lideres.length]?.id_usuario ?? lider.id_usuario,
+      id_celula: celulas[i].id_celula,
+      data_resposta: dataResp,
+    });
+    const vals = [
+      dataResp.toISOString().split("T")[0],
+      String(6 + i * 2),
+      `Reunião célula ${celulas[i].nome}.`,
+      i % 2 === 0 ? "Testemunho compartilhado." : "",
+    ];
+    formularioCampos.forEach((fc, idx) => {
+      allCampos.push({ id_resposta: idResp, id_formulario_campo: fc.id, valor: vals[idx] ?? "" });
+    });
+  }
+
+  await knex("formulario_resposta_campo").insert(allCampos);
+
+  console.log(`✅ Respostas de formulário inseridas com sucesso!`);
 }

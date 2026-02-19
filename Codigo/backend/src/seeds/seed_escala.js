@@ -11,9 +11,20 @@ export async function seed() {
   await knex("escala_evento").del();
 
   const admin = await knex("usuario").where({ email: "admin@test.com" }).first();
-  const ministerios = await knex("ministerio").select("id_ministerio").orderBy("ordem");
-  const membro1 = await knex("usuario").where({ email: "membro@test.com" }).first();
-  const maria = await knex("usuario").where({ email: "maria@test.com" }).first();
+  const ministerios = await knex("ministerio").select("id_ministerio", "nome").orderBy("ordem");
+  const usuarios = await knex("usuario")
+    .select("id_usuario", "email")
+    .where({ ativo: true });
+
+  const getUsuario = (email) => usuarios.find((u) => u.email === email);
+  const membro1 = getUsuario("membro@test.com");
+  const maria = getUsuario("maria@test.com");
+  const joao = getUsuario("joao@test.com");
+  const fernanda = getUsuario("fernanda@test.com");
+  const pedro = getUsuario("pedro@test.com");
+  const juliana = getUsuario("juliana@test.com");
+  const amanda = getUsuario("amanda@test.com");
+  const beatriz = getUsuario("beatriz@test.com");
 
   if (!admin || ministerios.length === 0) {
     console.log("Execute seed_usuario e seed_ministerio primeiro.");
@@ -23,70 +34,146 @@ export async function seed() {
   const agora = new Date();
   const proximoDomingo = new Date(agora);
   proximoDomingo.setDate(agora.getDate() + ((7 - agora.getDay()) % 7));
-  proximoDomingo.setHours(19, 0, 0, 0);
 
-  const [idEvento1] = await knex("escala_evento").insert({
-    titulo: "Culto de Celebração",
-    data_hora: proximoDomingo.toISOString().slice(0, 19).replace("T", " "),
-    descricao: "Culto dominical de louvor e pregação",
-    ativo: true,
-    id_criador: admin.id_usuario,
-  });
+  const formatDt = (d, h = 19, m = 0) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0)
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
 
-  const proximoDomingo2 = new Date(proximoDomingo);
-  proximoDomingo2.setDate(proximoDomingo2.getDate() + 7);
-  const [idEvento2] = await knex("escala_evento").insert({
-    titulo: "Ensaio de Louvor",
-    data_hora: proximoDomingo2.toISOString().slice(0, 19).replace("T", " "),
-    descricao: "Ensaio do ministério de louvor",
-    ativo: true,
-    id_criador: admin.id_usuario,
-  });
-
-  // Áreas para cada evento
-  const areas1 = [
-    { id_escala_evento: idEvento1, nome: "Som", ordem: 0 },
-    { id_escala_evento: idEvento1, nome: "Louvor", ordem: 1 },
-    { id_escala_evento: idEvento1, nome: "Recepção", ordem: 2 },
-  ];
-  const areas2 = [
-    { id_escala_evento: idEvento2, nome: "Louvor", ordem: 0 },
-    { id_escala_evento: idEvento2, nome: "Som", ordem: 1 },
+  const eventosData = [
+    { titulo: "Culto de Celebração", data: proximoDomingo, desc: "Culto dominical de louvor e pregação" },
+    { titulo: "Ensaio de Louvor", data: new Date(proximoDomingo.getTime() - 86400000), desc: "Ensaio do ministério de louvor", h: 18, m: 30 },
+    { titulo: "Culto de Oração", data: new Date(proximoDomingo.getTime() + 7 * 86400000), desc: "Noite de oração e intercessão" },
+    { titulo: "Culto Especial Jovens", data: new Date(proximoDomingo.getTime() + 14 * 86400000), desc: "Culto temático para juventude" },
+    { titulo: "Ensaio Geral", data: new Date(proximoDomingo.getTime() - 2 * 86400000), desc: "Ensaio geral da equipe de louvor", h: 19, m: 0 },
   ];
 
-  await knex("escala_area").insert(areas1);
-  await knex("escala_area").insert(areas2);
-
-  const areasEvento1 = await knex("escala_area").where({ id_escala_evento: idEvento1 }).orderBy("ordem");
-  const evento1Ministerios = ministerios.slice(0, 3).map((m) => ({
-    id_escala_evento: idEvento1,
-    id_ministerio: m.id_ministerio,
-  }));
-  if (evento1Ministerios.length > 0) {
-    await knex("escala_evento_ministerio").insert(evento1Ministerios);
+  const idsEventos = [];
+  for (const ev of eventosData) {
+    const [id] = await knex("escala_evento").insert({
+      titulo: ev.titulo,
+      data_hora: formatDt(ev.data, ev.h ?? 19, ev.m ?? 0),
+      descricao: ev.desc,
+      ativo: true,
+      id_criador: admin.id_usuario,
+    });
+    idsEventos.push({ id, ev });
   }
 
-  await knex("escala_evento_ministerio").insert(
-    ministerios.slice(0, 2).map((m) => ({
-      id_escala_evento: idEvento2,
-      id_ministerio: m.id_ministerio,
-    }))
-  );
+  const areasPorEvento = {
+    0: ["Som", "Louvor", "Recepção", "Mídia", "Liturgia", "Diaconia", "Intercessão"],
+    1: ["Louvor", "Som"],
+    2: ["Intercessão", "Som", "Recepção", "Liturgia"],
+    3: ["Juventude", "Som", "Louvor", "Recepção", "Mídia"],
+    4: ["Louvor", "Som", "Liturgia"],
+  };
 
-  // Atribuições de exemplo (som e louvor)
-  const areaSom = areasEvento1.find((a) => a.nome === "Som");
-  const areaLouvor = areasEvento1.find((a) => a.nome === "Louvor");
+  const areasInseridas = {};
+  for (let i = 0; i < idsEventos.length; i++) {
+    const { id } = idsEventos[i];
+    const areas = areasPorEvento[i] ?? ["Louvor", "Som"];
+    for (let j = 0; j < areas.length; j++) {
+      const [idArea] = await knex("escala_area").insert({
+        id_escala_evento: id,
+        nome: areas[j],
+        ordem: j,
+      });
+      if (!areasInseridas[id]) areasInseridas[id] = [];
+      areasInseridas[id].push({ id_escala_area: idArea, nome: areas[j] });
+    }
+  }
+
+  // Vincular ministérios aos eventos
+  for (let i = 0; i < idsEventos.length; i++) {
+    const { id } = idsEventos[i];
+    const ministeriosEvento = ministerios.slice(0, 4 + (i % 4));
+    await knex("escala_evento_ministerio").insert(
+      ministeriosEvento.map((m) => ({ id_escala_evento: id, id_ministerio: m.id_ministerio }))
+    );
+  }
+
+  // Atribuições com detalhes por ministério
+  const detalhesPorArea = {
+    Louvor: { instrumento: "Violão", musicas: "Rei dos Reis, Cristo é o Senhor", funcao: "Backing vocal" },
+    Som: { funcao: "Operador de mesa", observacoes: "Chegar 30 min antes" },
+    Recepção: { funcao: "Recepcionista principal", observacoes: "Porta de entrada" },
+    Mídia: { funcao: "Projeção", observacoes: "Slides e transmissão" },
+    Liturgia: { funcao: "Condução geral", observacoes: "" },
+    Diaconia: { funcao: "Santa Ceia", observacoes: "" },
+    Intercessão: { funcao: "Oração de abertura", observacoes: "" },
+    Juventude: { funcao: "Condução", tema: "Identidade em Cristo" },
+  };
 
   const atribuicoes = [];
-  if (areaSom && membro1) {
-    atribuicoes.push({ id_escala_area: areaSom.id_escala_area, id_usuario: membro1.id_usuario });
+  const ev0 = areasInseridas[idsEventos[0].id];
+  if (ev0) {
+    const areaSom = ev0.find((a) => a.nome === "Som");
+    const areaLouvor = ev0.find((a) => a.nome === "Louvor");
+    const areaRecepcao = ev0.find((a) => a.nome === "Recepção");
+    if (areaSom && membro1)
+      atribuicoes.push({
+        id_escala_area: areaSom.id_escala_area,
+        id_usuario: membro1.id_usuario,
+        detalhes: JSON.stringify(detalhesPorArea.Som),
+      });
+    if (areaLouvor && maria)
+      atribuicoes.push({
+        id_escala_area: areaLouvor.id_escala_area,
+        id_usuario: maria.id_usuario,
+        detalhes: JSON.stringify(detalhesPorArea.Louvor),
+      });
+    if (areaRecepcao && beatriz)
+      atribuicoes.push({
+        id_escala_area: areaRecepcao.id_escala_area,
+        id_usuario: beatriz.id_usuario,
+        detalhes: JSON.stringify(detalhesPorArea.Recepção),
+      });
   }
-  if (areaLouvor && maria) {
-    atribuicoes.push({ id_escala_area: areaLouvor.id_escala_area, id_usuario: maria.id_usuario });
+
+  const ev1 = areasInseridas[idsEventos[1].id];
+  if (ev1) {
+    const areaLouvor = ev1.find((a) => a.nome === "Louvor");
+    const areaSom = ev1.find((a) => a.nome === "Som");
+    if (areaLouvor && fernanda)
+      atribuicoes.push({
+        id_escala_area: areaLouvor.id_escala_area,
+        id_usuario: fernanda.id_usuario,
+        detalhes: JSON.stringify({ instrumento: "Teclado", musicas: "Ensaio geral", funcao: "Tecladista" }),
+      });
+    if (areaSom && pedro)
+      atribuicoes.push({
+        id_escala_area: areaSom.id_escala_area,
+        id_usuario: pedro.id_usuario,
+        detalhes: JSON.stringify({ funcao: "Operador auxiliar", observacoes: "" }),
+      });
   }
+
+  const ev2 = areasInseridas[idsEventos[2].id];
+  if (ev2 && juliana) {
+    const areaIntercessao = ev2.find((a) => a.nome === "Intercessão");
+    if (areaIntercessao)
+      atribuicoes.push({
+        id_escala_area: areaIntercessao.id_escala_area,
+        id_usuario: juliana.id_usuario,
+        detalhes: JSON.stringify({ funcao: "Líder de intercessão", observacoes: "" }),
+      });
+  }
+
+  const ev3 = areasInseridas[idsEventos[3].id];
+  if (ev3 && amanda) {
+    const areaJuventude = ev3.find((a) => a.nome === "Juventude");
+    if (areaJuventude)
+      atribuicoes.push({
+        id_escala_area: areaJuventude.id_escala_area,
+        id_usuario: amanda.id_usuario,
+        detalhes: JSON.stringify(detalhesPorArea.Juventude),
+      });
+  }
+
   if (atribuicoes.length > 0) {
     await knex("escala_atribuicao").insert(atribuicoes);
   }
 
-  console.log("✅ Escala (eventos e atribuições) inseridos com sucesso!");
+  console.log(`✅ Escala: ${eventosData.length} eventos, ${atribuicoes.length} atribuições inseridas!`);
 }

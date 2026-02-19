@@ -1,63 +1,60 @@
 import knex from "../database/index.js";
 
 /**
- * Seed para respostas de quiz (quiz_resposta)
+ * Seed para respostas de quiz
  * Exemplos de respostas dos usuários às questões
- * Depende de: seed_usuario, seed_quiz, seed_quiz_questao
  */
 export async function seed() {
   await knex("quiz_resposta").del();
 
-  const membro1 = await knex("usuario").where({ email: "membro@test.com" }).first();
-  const maria = await knex("usuario").where({ email: "maria@test.com" }).first();
-  const quiz = await knex("quiz").select("id_quiz").orderBy("id_quiz").first();
-  const questoes = quiz
-    ? await knex("quiz_questao").where({ id_quiz: quiz.id_quiz }).orderBy("ordem")
-    : [];
+  const usuarios = await knex("usuario").select("id_usuario", "email").where({ ativo: true });
+  const quizzes = await knex("quiz").select("id_quiz").orderBy("id_quiz");
+  const getUsuario = (email) => usuarios.find((u) => u.email === email);
 
-  if (!membro1 || !quiz || questoes.length === 0) {
-    console.log("Execute seed_usuario, seed_quiz e seed_quiz_questao primeiro.");
+  const membro1 = getUsuario("membro@test.com");
+  const maria = getUsuario("maria@test.com");
+  const joao = getUsuario("joao@test.com");
+  const fernanda = getUsuario("fernanda@test.com");
+  const pedro = getUsuario("pedro@test.com");
+
+  if (!membro1 || quizzes.length === 0) {
+    console.log("Execute seed_usuario e seed_quiz primeiro.");
     return;
   }
 
   const respostas = [];
+  for (const quiz of quizzes.slice(0, 5)) {
+    const questoes = await knex("quiz_questao").where({ id_quiz: quiz.id_quiz }).orderBy("ordem");
+    const multipla = questoes.find((q) => q.tipo_questao === "multipla_escolha");
+    const vf = questoes.find((q) => q.tipo_questao === "verdadeiro_falso");
 
-  // Membro respondeu as questões do primeiro quiz (multipla_escolha e verdadeiro_falso)
-  const q1 = questoes.find((q) => q.tipo_questao === "multipla_escolha");
-  const q2 = questoes.find((q) => q.tipo_questao === "verdadeiro_falso");
-
-  if (q1 && membro1) {
-    respostas.push({
-      id_questao: q1.id_questao,
-      id_usuario: membro1.id_usuario,
-      resposta: "a",
-      correta: q1.resposta_correta === "a",
-      pontos_obtidos: q1.resposta_correta === "a" ? (q1.pontos || 10) : 0,
-    });
-  }
-  if (q2 && membro1) {
-    respostas.push({
-      id_questao: q2.id_questao,
-      id_usuario: membro1.id_usuario,
-      resposta: "v",
-      correta: q2.resposta_correta === "v",
-      pontos_obtidos: q2.resposta_correta === "v" ? (q2.pontos || 5) : 0,
-    });
-  }
-
-  if (maria && q1) {
-    respostas.push({
-      id_questao: q1.id_questao,
-      id_usuario: maria.id_usuario,
-      resposta: "b",
-      correta: false,
-      pontos_obtidos: 0,
+    const usersToAdd = [membro1, maria, joao, fernanda, pedro].filter(Boolean);
+    usersToAdd.forEach((u, idx) => {
+      if (multipla) {
+        const resp = idx % 3 === 0 ? multipla.resposta_correta : "b";
+        respostas.push({
+          id_questao: multipla.id_questao,
+          id_usuario: u.id_usuario,
+          resposta: resp,
+          correta: resp === multipla.resposta_correta,
+          pontos_obtidos: resp === multipla.resposta_correta ? (multipla.pontos || 10) : 0,
+        });
+      }
+      if (vf) {
+        const resp = idx % 2 === 0 ? vf.resposta_correta : "f";
+        respostas.push({
+          id_questao: vf.id_questao,
+          id_usuario: u.id_usuario,
+          resposta: resp,
+          correta: resp === vf.resposta_correta,
+          pontos_obtidos: resp === vf.resposta_correta ? (vf.pontos || 5) : 0,
+        });
+      }
     });
   }
 
   if (respostas.length > 0) {
     await knex("quiz_resposta").insert(respostas);
   }
-
-  console.log("✅ Respostas de quiz inseridas com sucesso!");
+  console.log(`✅ ${respostas.length} respostas de quiz inseridas com sucesso!`);
 }

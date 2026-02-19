@@ -102,34 +102,40 @@ export async function seed() {
   // FORMULÁRIO 3: Avaliação de Evento
   if (formularios[2]) {
     campos.push(
-      {
-        id_formulario: formularios[2].id_formulario,
-        id_campo: campoTexto.id_campo,
-        label: "Nome completo",
-        conteudo: "",
-        ordem: 1,
-        obrigatorio: true,
-      },
-      {
-        id_formulario: formularios[2].id_formulario,
-        id_campo: campoNumero.id_campo,
-        label: "Nota do evento (1-10)",
-        conteudo: "Como você avalia o evento?",
-        ordem: 2,
-        obrigatorio: true,
-      },
-      {
-        id_formulario: formularios[2].id_formulario,
-        id_campo: campoTexto.id_campo,
-        label: "Comentários e sugestões",
-        conteudo: "Deixe suas impressões sobre o evento",
-        ordem: 3,
-        obrigatorio: false,
-      }
+      { id_formulario: formularios[2].id_formulario, id_campo: campoTexto.id_campo, label: "Nome completo", conteudo: "", ordem: 1, obrigatorio: true },
+      { id_formulario: formularios[2].id_formulario, id_campo: campoNumero.id_campo, label: "Nota do evento (1-10)", conteudo: "Como você avalia o evento?", ordem: 2, obrigatorio: true },
+      { id_formulario: formularios[2].id_formulario, id_campo: campoTexto.id_campo, label: "Comentários e sugestões", conteudo: "Deixe suas impressões sobre o evento", ordem: 3, obrigatorio: false }
+    );
+  }
+
+  // FORMULÁRIO 4: Visitas Realizadas
+  if (formularios[3]) {
+    campos.push(
+      { id_formulario: formularios[3].id_formulario, id_campo: campoData.id_campo, label: "Data da visita", conteudo: "", ordem: 1, obrigatorio: true },
+      { id_formulario: formularios[3].id_formulario, id_campo: campoTexto.id_campo, label: "Nome visitado", conteudo: "Quem foi visitado", ordem: 2, obrigatorio: true },
+      { id_formulario: formularios[3].id_formulario, id_campo: campoTexto.id_campo, label: "Relato", conteudo: "Como foi a visita", ordem: 3, obrigatorio: false }
+    );
+  }
+
+  // FORMULÁRIO 5: Relatório de Ministério
+  if (formularios[4]) {
+    campos.push(
+      { id_formulario: formularios[4].id_formulario, id_campo: campoData.id_campo, label: "Período", conteudo: "Mês do relatório", ordem: 1, obrigatorio: true },
+      { id_formulario: formularios[4].id_formulario, id_campo: campoTexto.id_campo, label: "Atividades", conteudo: "O que foi realizado", ordem: 2, obrigatorio: true },
+      { id_formulario: formularios[4].id_formulario, id_campo: campoNumero.id_campo, label: "Participantes", conteudo: "Quantas pessoas participaram", ordem: 3, obrigatorio: false }
+    );
+  }
+
+  // FORMULÁRIO 6: Feedback de Culto
+  if (formularios[5]) {
+    campos.push(
+      { id_formulario: formularios[5].id_formulario, id_campo: campoData.id_campo, label: "Data do culto", conteudo: "", ordem: 1, obrigatorio: true },
+      { id_formulario: formularios[5].id_formulario, id_campo: campoNumero.id_campo, label: "Nota (1-10)", conteudo: "", ordem: 2, obrigatorio: true },
+      { id_formulario: formularios[5].id_formulario, id_campo: campoTexto.id_campo, label: "Sugestões", conteudo: "", ordem: 3, obrigatorio: false }
     );
   }
 
   await knex("formulario_campo").insert(campos);
 
-  console.log("✅ Campos de formulário inseridos com sucesso!");
+  console.log(`✅ ${campos.length} campos de formulário inseridos com sucesso!`);
 }

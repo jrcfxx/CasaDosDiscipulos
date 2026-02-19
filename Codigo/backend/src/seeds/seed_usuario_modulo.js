@@ -8,50 +8,52 @@ import knex from "../database/index.js";
 export async function seed() {
   await knex("usuario_modulo").del();
 
-  const membro1 = await knex("usuario").where({ email: "membro@test.com" }).first();
-  const maria = await knex("usuario").where({ email: "maria@test.com" }).first();
-  const lider1 = await knex("usuario").where({ email: "lider@test.com" }).first();
+  const usuarios = await knex("usuario").select("id_usuario", "email").where({ ativo: true });
   const modulos = await knex("modulo").select("id_modulo", "ordem").orderBy("ordem");
+  const getUsuario = (email) => usuarios.find((u) => u.email === email);
 
-  if (!membro1 || modulos.length === 0) {
+  if (modulos.length === 0) {
     console.log("Execute seed_usuario e seed_modulo primeiro.");
     return;
   }
 
   const registros = [];
+  const add = (user, modIdx, status, nota) => {
+    if (user && modulos[modIdx])
+      registros.push({
+        id_usuario: user.id_usuario,
+        id_modulo: modulos[modIdx].id_modulo,
+        status,
+        nota_quiz: nota ?? null,
+        data_conclusao: status === "concluido" ? new Date() : null,
+      });
+  };
 
-  // Membro Teste: módulo 1 concluído, módulo 2 em andamento
-  if (modulos[0]) {
-    registros.push({
-      id_usuario: membro1.id_usuario,
-      id_modulo: modulos[0].id_modulo,
-      status: "concluido",
-      nota_quiz: 85.5,
-      data_conclusao: new Date(),
-    });
-  }
-  if (modulos[1] && maria) {
-    registros.push({
-      id_usuario: maria.id_usuario,
-      id_modulo: modulos[1].id_modulo,
-      status: "em_andamento",
-      nota_quiz: null,
-      data_conclusao: null,
-    });
-  }
-  if (modulos[0] && lider1) {
-    registros.push({
-      id_usuario: lider1.id_usuario,
-      id_modulo: modulos[0].id_modulo,
-      status: "concluido",
-      nota_quiz: 92.0,
-      data_conclusao: new Date(),
-    });
-  }
+  add(getUsuario("membro@test.com"), 0, "concluido", 85.5);
+  add(getUsuario("membro@test.com"), 1, "em_andamento", null);
+  add(getUsuario("maria@test.com"), 0, "concluido", 78);
+  add(getUsuario("maria@test.com"), 1, "concluido", 90);
+  add(getUsuario("maria@test.com"), 2, "em_andamento", null);
+  add(getUsuario("joao@test.com"), 0, "concluido", 72);
+  add(getUsuario("fernanda@test.com"), 0, "concluido", 95);
+  add(getUsuario("fernanda@test.com"), 1, "concluido", 88);
+  add(getUsuario("fernanda@test.com"), 2, "concluido", 82);
+  add(getUsuario("pedro@test.com"), 0, "em_andamento", null);
+  add(getUsuario("lider@test.com"), 0, "concluido", 92);
+  add(getUsuario("lider@test.com"), 1, "concluido", 88);
+  add(getUsuario("lider@test.com"), 2, "concluido", 95);
+  add(getUsuario("lider2@test.com"), 0, "concluido", 90);
+  add(getUsuario("lider2@test.com"), 1, "concluido", 85);
+  add(getUsuario("lider2@test.com"), 2, "concluido", 88);
+  add(getUsuario("amanda@test.com"), 0, "concluido", 98);
+  add(getUsuario("amanda@test.com"), 1, "concluido", 92);
+  add(getUsuario("patricia@test.com"), 0, "concluido", 100);
+  add(getUsuario("patricia@test.com"), 1, "concluido", 95);
+  add(getUsuario("patricia@test.com"), 2, "concluido", 90);
 
   if (registros.length > 0) {
     await knex("usuario_modulo").insert(registros);
   }
 
-  console.log("✅ Progresso usuário-módulo inserido com sucesso!");
+  console.log(`✅ ${registros.length} registros usuário-módulo inseridos!`);
 }

@@ -17,7 +17,7 @@ export async function seed() {
 
   const questoes = [];
 
-  // Para cada quiz, criar 3 questões de exemplo
+  // Para cada quiz, criar 5 questões de exemplo
   quizzes.forEach((quiz, idx) => {
     // Questão múltipla escolha
     questoes.push({
@@ -57,7 +57,26 @@ export async function seed() {
       pontos: 15,
       ordem: 3,
       opcoes: null,
-      resposta_correta: null, // Discursivas não têm resposta automática
+      resposta_correta: null,
+    });
+    // Questões extras
+    questoes.push({
+      id_quiz: quiz.id_quiz,
+      tipo_questao: "multipla_escolha",
+      enunciado: `Segunda questão sobre ${quiz.titulo}`,
+      pontos: 10,
+      ordem: 4,
+      opcoes: JSON.stringify([{ id: "a", texto: "Sim" }, { id: "b", texto: "Não" }, { id: "c", texto: "Talvez" }]),
+      resposta_correta: "a",
+    });
+    questoes.push({
+      id_quiz: quiz.id_quiz,
+      tipo_questao: "verdadeiro_falso",
+      enunciado: `Terceira afirmação sobre ${quiz.titulo}`,
+      pontos: 5,
+      ordem: 5,
+      opcoes: JSON.stringify([{ id: "v", texto: "Verdadeiro" }, { id: "f", texto: "Falso" }]),
+      resposta_correta: "v",
     });
   });
 

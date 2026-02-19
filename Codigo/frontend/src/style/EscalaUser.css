@@ -163,9 +163,15 @@
   cursor: default;
 }
 
+.calendario-celula.clicavel {
+  cursor: pointer;
+}
+
 .calendario-celula.tem-evento {
   cursor: pointer;
   background: rgba(2, 122, 143, 0.2);
+  justify-content: flex-start;
+  padding-top: 4px;
 }
 
 .calendario-celula.tem-evento:hover {
@@ -173,23 +179,51 @@
 }
 
 .dia-numero {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--primary-light);
+  flex-shrink: 0;
 }
 
-.dia-badge {
+.dia-eventos {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
-  font-size: 0.65rem;
-  background: var(--secondary-gold);
-  color: var(--primary-gray);
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+  inset: 20px 3px 3px 3px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
+  gap: 1px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.dia-evento-nome {
+  font-size: clamp(0.62rem, 2vw, 0.82rem);
+  color: var(--primary-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  width: 100%;
+  text-align: center;
+  line-height: 1.2;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0 1px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dia-evento-nome:hover {
+  color: var(--secondary-gold);
+  text-decoration: underline;
+}
+
+.dia-evento-mais {
+  font-size: clamp(0.5rem, 1.6vw, 0.68rem);
+  color: var(--secondary-gold);
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .escala-lista {
@@ -949,10 +983,12 @@
     font-size: 0.8rem;
   }
 
-  .dia-badge {
-    width: 14px;
-    height: 14px;
+  .dia-evento-nome {
     font-size: 0.6rem;
+  }
+
+  .dia-evento-mais {
+    font-size: 0.5rem;
   }
 
   .modal-escala-overlay {

@@ -304,13 +304,230 @@ export const MINISTERIO_CAMPOS: MinisteriosCamposConfig[] = [
     ],
   },
   {
-    palavrasChave: ["conducao", "condução geral", "coordenacao"],
+    palavrasChave: ["conducao", "condução", "condução geral", "coordenacao"],
     campos: [
       {
         chave: "funcao",
         label: "Papel no evento",
         tipo: "text",
         placeholder: "Ex: Condução geral, Abertura, Encerramento",
+      },
+      {
+        chave: "observacoes",
+        label: "Observações",
+        tipo: "textarea",
+      },
+    ],
+  },
+  {
+    palavrasChave: ["adolescentes", "teen", "teenager"],
+    campos: [
+      {
+        chave: "faixa_etaria",
+        label: "Faixa etária",
+        tipo: "select",
+        opcoes: [
+          { value: "11_13", label: "11 a 13 anos" },
+          { value: "14_15", label: "14 a 15 anos" },
+          { value: "16_17", label: "16 a 17 anos" },
+          { value: "todas", label: "Todas as idades" },
+        ],
+      },
+      {
+        chave: "atividades",
+        label: "Atividades planejadas",
+        tipo: "textarea",
+        placeholder: "Lounge, dinâmica, louvor, palavra, etc.",
+      },
+      {
+        chave: "tema",
+        label: "Tema / Estudo",
+        tipo: "text",
+        placeholder: "Tema do encontro ou estudo bíblico",
+      },
+      {
+        chave: "observacoes",
+        label: "Observações",
+        tipo: "textarea",
+      },
+    ],
+  },
+  {
+    palavrasChave: ["juventude", "jovens", "young"],
+    campos: [
+      {
+        chave: "funcao",
+        label: "Função",
+        tipo: "select",
+        opcoes: [
+          { value: "louvor", label: "Louvor" },
+          { value: "conducao", label: "Condução" },
+          { value: "ensino", label: "Ensino / Palavra" },
+          { value: "dinamica", label: "Dinâmica" },
+          { value: "recepcao", label: "Recepção" },
+          { value: "outro", label: "Outro" },
+        ],
+      },
+      {
+        chave: "tema",
+        label: "Tema / Estudo",
+        tipo: "text",
+      },
+      {
+        chave: "observacoes",
+        label: "Observações",
+        tipo: "textarea",
+      },
+    ],
+  },
+  {
+    palavrasChave: ["social", "ação social", "acão social", "assistência", "assistencia"],
+    campos: [
+      {
+        chave: "tipo_servico",
+        label: "Tipo de serviço",
+        tipo: "select",
+        opcoes: [
+          { value: "distribuicao", label: "Distribuição de alimentos" },
+          { value: "vestuario", label: "Vestuário / roupas" },
+          { value: "cesta", label: "Cesta básica" },
+          { value: "evangelismo", label: "Evangelismo" },
+          { value: "outro", label: "Outro" },
+        ],
+      },
+      {
+        chave: "local",
+        label: "Local / Ponto de encontro",
+        tipo: "text",
+        placeholder: "Onde será realizado",
+      },
+      {
+        chave: "itens",
+        label: "Itens a levar",
+        tipo: "textarea",
+        placeholder: "Lista do que precisa trazer",
+      },
+      {
+        chave: "observacoes",
+        label: "Observações",
+        tipo: "textarea",
+      },
+    ],
+  },
+  {
+    palavrasChave: ["visitação", "visita", "visitação"],
+    campos: [
+      {
+        chave: "tipo",
+        label: "Tipo de visita",
+        tipo: "select",
+        opcoes: [
+          { value: "hospitalar", label: "Hospitalar" },
+          { value: "domiciliar", label: "Domiciliar" },
+          { value: "acolhida", label: "Acolhida / novo convertido" },
+          { value: "enfermos", label: "Enfermos" },
+          { value: "outro", label: "Outro" },
+        ],
+      },
+      {
+        chave: "endereco",
+        label: "Endereço / Referência",
+        tipo: "text",
+        placeholder: "Local da visita",
+      },
+      {
+        chave: "horario",
+        label: "Horário",
+        tipo: "text",
+        placeholder: "Ex: 14h",
+      },
+      {
+        chave: "observacoes",
+        label: "Observações",
+        tipo: "textarea",
+      },
+    ],
+  },
+  {
+    palavrasChave: ["casais", "casal", "família", "familia"],
+    campos: [
+      {
+        chave: "funcao",
+        label: "Função",
+        tipo: "select",
+        opcoes: [
+          { value: "conducao", label: "Condução" },
+          { value: "ensino", label: "Ensino" },
+          { value: "testemunho", label: "Testemunho" },
+          { value: "recepcao", label: "Recepção" },
+          { value: "outro", label: "Outro" },
+        ],
+      },
+      {
+        chave: "tema",
+        label: "Tema do encontro",
+        tipo: "text",
+      },
+      {
+        chave: "observacoes",
+        label: "Observações",
+        tipo: "textarea",
+      },
+    ],
+  },
+  {
+    palavrasChave: ["transporte", "carona", "motorista"],
+    campos: [
+      {
+        chave: "funcao",
+        label: "Função",
+        tipo: "select",
+        opcoes: [
+          { value: "motorista", label: "Motorista" },
+          { value: "coordenador", label: "Coordenador de caronas" },
+          { value: "rota", label: "Rota específica" },
+          { value: "outro", label: "Outro" },
+        ],
+      },
+      {
+        chave: "rota",
+        label: "Rota / Bairros",
+        tipo: "text",
+        placeholder: "Ex: Centro, Zona Sul",
+      },
+      {
+        chave: "vagas",
+        label: "Vagas no veículo",
+        tipo: "text",
+        placeholder: "Ex: 4 pessoas",
+      },
+      {
+        chave: "observacoes",
+        label: "Observações",
+        tipo: "textarea",
+      },
+    ],
+  },
+  {
+    palavrasChave: ["manutenção", "manutencao", "zeladoria", "limpeza"],
+    campos: [
+      {
+        chave: "funcao",
+        label: "Função",
+        tipo: "select",
+        opcoes: [
+          { value: "limpeza", label: "Limpeza" },
+          { value: "arrumacao", label: "Arrumação" },
+          { value: "reparos", label: "Reparos" },
+          { value: "organizacao", label: "Organização" },
+          { value: "outro", label: "Outro" },
+        ],
+      },
+      {
+        chave: "setor",
+        label: "Setor / Área",
+        tipo: "text",
+        placeholder: "Ex: Salão principal, banheiros",
       },
       {
         chave: "observacoes",

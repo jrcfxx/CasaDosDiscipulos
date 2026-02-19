@@ -103,7 +103,7 @@ const EscalaUser: React.FC = () => {
     }
   }, []);
 
-  const abrirModalEvento = (evento?: EscalaEvento) => {
+  const abrirModalEvento = (evento?: EscalaEvento, dataAlvo?: Date) => {
     if (!evento && !isAdmin) return; // criar: apenas admin
     if (evento && !podeEditar) return; // editar: admin ou líder
     if (evento) {
@@ -121,14 +121,12 @@ const EscalaUser: React.FC = () => {
       });
     } else {
       setEditandoEventoId(null);
-      const now = new Date();
+      const n = dataAlvo ?? new Date();
+      const pad = (x: number) => String(x).padStart(2, "0");
+      const dataStr = `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}T19:00`;
       setFormEvento({
         titulo: "",
-        data_hora: (() => {
-          const n = new Date();
-          const pad = (x: number) => String(x).padStart(2, "0");
-          return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}T${pad(n.getHours())}:${pad(n.getMinutes())}`;
-        })(),
+        data_hora: dataStr,
         descricao: "",
         ativo: true,
         id_ministerios: [],
@@ -397,12 +395,30 @@ const EscalaUser: React.FC = () => {
                   return (
                     <div
                       key={dia}
-                      className={`calendario-celula ${evs.length > 0 ? "tem-evento" : ""}`}
-                      onClick={() => evs[0] && abrirEvento(evs[0].id_escala_evento)}
+                      className={`calendario-celula ${evs.length > 0 ? "tem-evento" : ""} ${isAdmin ? "clicavel" : ""}`}
+                      onClick={() => isAdmin && abrirModalEvento(undefined, d)}
                     >
                       <span className="dia-numero">{dia}</span>
                       {evs.length > 0 && (
-                        <span className="dia-badge">{evs.length}</span>
+                        <div className="dia-eventos">
+                          {evs.slice(0, 3).map((ev) => (
+                            <button
+                              key={ev.id_escala_evento}
+                              type="button"
+                              className="dia-evento-nome"
+                              title={ev.titulo}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                abrirEvento(ev.id_escala_evento);
+                              }}
+                            >
+                              {ev.titulo}
+                            </button>
+                          ))}
+                          {evs.length > 3 && (
+                            <span className="dia-evento-mais">+{evs.length - 3}</span>
+                          )}
+                        </div>
                       )}
                     </div>
                   );
