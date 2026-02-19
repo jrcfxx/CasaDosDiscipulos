@@ -20,35 +20,31 @@ const PortalDoDiscipuloUser: React.FC = () => {
       <main className="portal-wrap">
         <h1 className="portal-title">PORTAL DO DISCÍPULO</h1>
 
-        {/* Na Casa - Escala - Apenas para Líderes de Ministério */}
-        {isLiderMinisterio && (
-          <>
-            <h2 className="portal-subtitle">NA CASA</h2>
-            <div className="grid-2">
-              <NavLink
-                to="/usuario/escala"
-                className="portal-card"
-                style={{ backgroundImage: `url(${imgEscala})` }}
-              >
-                <span className="portal-card__overlay" />
-                <span className="portal-card__title">ESCALA</span>
-              </NavLink>
-              <NavLink
-                to="/usuario/escala/mapa"
-                className="portal-card"
-                style={{ backgroundImage: `url(${imgEscala})` }}
-              >
-                <span className="portal-card__overlay" />
-                <span className="portal-card__title">MAPA DA ESCALA</span>
-              </NavLink>
-            </div>
-          </>
-        )}
+        {/* Na Casa - Escala - Todos os usuários */}
+        <h2 className="portal-subtitle">NA CASA</h2>
+        <div className="grid-2">
+          <NavLink
+            to="/usuario/escala"
+            className="portal-card"
+            style={{ backgroundImage: `url(${imgEscala})` }}
+          >
+            <span className="portal-card__overlay" />
+            <span className="portal-card__title">ESCALA</span>
+          </NavLink>
+          <NavLink
+            to="/usuario/escala/mapa"
+            className="portal-card"
+            style={{ backgroundImage: `url(${imgEscala})` }}
+          >
+            <span className="portal-card__overlay" />
+            <span className="portal-card__title">MAPA DA ESCALA</span>
+          </NavLink>
+        </div>
 
         {/* Secretaria das Células - Apenas para Líderes de Célula */}
         {isLiderCelula && (
           <>
-            <h2 className={`portal-subtitle ${isLiderMinisterio ? "mt-section" : ""}`}>
+            <h2 className="portal-subtitle mt-section">
               SECRETARIA DAS CÉLULAS
             </h2>
             <div className="grid-2">
@@ -74,7 +70,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
         )}
 
         {/* Escola de Discípulos - Para Líderes e Membros */}
-        <h2 className={`portal-subtitle ${(isLiderCelula || isLiderMinisterio) ? "mt-section" : ""}`}>
+        <h2 className="portal-subtitle mt-section">
           ESCOLA DE DISCÍPULOS
         </h2>
         <div className="grid-1">

@@ -27,6 +27,7 @@ export interface EscalaAtribuicao {
   id_usuario: number;
   usuario_nome?: string;
   area_nome?: string;
+  detalhes?: Record<string, string | number | null>;
 }
 
 export interface EscalaEventoCompleto extends EscalaEvento {
@@ -88,11 +89,21 @@ const escalaService = {
     await apiClient.delete(`/escala/eventos/${id}`);
   },
 
-  async addAtribuicao(id_escala_area: number, id_usuario: number): Promise<EscalaAtribuicao> {
+  async addAtribuicao(
+    id_escala_area: number,
+    id_usuario: number,
+    detalhes?: Record<string, string | number | null>
+  ): Promise<EscalaAtribuicao> {
     const response = await apiClient.post("/escala/atribuicoes", {
       id_escala_area,
       id_usuario,
+      detalhes: detalhes || {},
     });
+    return response.data;
+  },
+
+  async updateAtribuicao(id: number, detalhes: Record<string, string | number | null>): Promise<EscalaAtribuicao> {
+    const response = await apiClient.put(`/escala/atribuicoes/${id}`, { detalhes });
     return response.data;
   },
 

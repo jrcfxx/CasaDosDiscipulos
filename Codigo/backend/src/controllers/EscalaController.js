@@ -76,14 +76,32 @@ class EscalaController {
     try {
       const idUsuarioLogado = req.usuario?.id_usuario;
       const tipo = req.usuario?.tipo;
-      const { id_escala_area, id_usuario } = req.body;
+      const { id_escala_area, id_usuario, detalhes } = req.body;
       const atrib = await EscalaService.addAtribuicao(
         id_escala_area,
         id_usuario,
         idUsuarioLogado,
-        tipo
+        tipo,
+        detalhes
       );
       res.status(201).json(atrib);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateAtribuicao(req, res, next) {
+    try {
+      const idUsuarioLogado = req.usuario?.id_usuario;
+      const tipo = req.usuario?.tipo;
+      const { detalhes } = req.body;
+      const atrib = await EscalaService.updateAtribuicao(
+        req.params.id,
+        detalhes,
+        idUsuarioLogado,
+        tipo
+      );
+      res.json(atrib);
     } catch (err) {
       next(err);
     }

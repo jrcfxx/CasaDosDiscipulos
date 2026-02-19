@@ -266,11 +266,11 @@ export default function App() {
         }
       />
 
-      {/* Escala - Admin e Líder de Ministério */}
+      {/* Escala - Todos os usuários (visualização); admin/líder podem editar */}
       <Route
         path="/usuario/escala"
         element={
-          <ProtectedRoute requireLiderMinisterio>
+          <ProtectedRoute>
             <EscalaUser />
           </ProtectedRoute>
         }
@@ -278,7 +278,7 @@ export default function App() {
       <Route
         path="/usuario/escala/mapa"
         element={
-          <ProtectedRoute requireLiderMinisterio>
+          <ProtectedRoute>
             <EscalaMapa />
           </ProtectedRoute>
         }

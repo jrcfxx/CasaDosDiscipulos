@@ -719,3 +719,282 @@
   border-color: var(--primary-teal);
   box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.1);
 }
+
+/* ========== Modal Ministério — Design moderno, dark theme, branding ========== */
+.modal-ministerio-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1.5rem;
+  animation: ministerioOverlayIn 0.2s ease-out;
+}
+
+@keyframes ministerioOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-ministerio {
+  background: linear-gradient(180deg, #1a1f22 0%, #0f1214 100%);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(2, 134, 155, 0.12);
+  animation: ministerioModalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes ministerioModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-ministerio-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 1.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(135deg, rgba(2, 134, 155, 0.08) 0%, transparent 50%);
+  border-radius: 20px 20px 0 0;
+}
+
+.modal-ministerio-header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.modal-ministerio-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 134, 155, 0.2);
+  border-radius: 14px;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.modal-ministerio-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  letter-spacing: -0.02em;
+}
+
+.modal-ministerio-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.modal-ministerio-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-ministerio-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+.modal-ministerio-body {
+  padding: 1.25rem 1.75rem 1rem;
+}
+
+.modal-ministerio-form-group {
+  margin-bottom: 1.25rem;
+}
+
+.modal-ministerio-form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 0.5rem;
+}
+
+.modal-ministerio-form-group input[type="text"],
+.modal-ministerio-form-group input[type="number"],
+.modal-ministerio-form-group textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  color: var(--primary-light);
+  font-size: 1rem;
+  font-family: "Montserrat", sans-serif;
+  transition: all 0.2s ease;
+}
+
+.modal-ministerio-form-group input::placeholder,
+.modal-ministerio-form-group textarea::placeholder {
+  color: #64748b;
+}
+
+.modal-ministerio-form-group input:focus,
+.modal-ministerio-form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-teal);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.2);
+}
+
+.modal-ministerio-form-group textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.modal-ministerio-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.modal-ministerio-form-group--sm {
+  flex: 0 0 100px;
+  margin-bottom: 0;
+}
+
+.modal-ministerio-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+
+.modal-ministerio-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-teal);
+  cursor: pointer;
+}
+
+.modal-ministerio-lideres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.modal-ministerio-lider-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.modal-ministerio-lider-chip:hover {
+  border-color: rgba(2, 134, 155, 0.4);
+  background: rgba(2, 134, 155, 0.1);
+}
+
+.modal-ministerio-lider-chip input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-teal);
+  cursor: pointer;
+}
+
+.modal-ministerio-hint {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  padding: 0.75rem 0;
+}
+
+.modal-ministerio-footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.75rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-ministerio-btn-cancel,
+.modal-ministerio-btn-save {
+  flex: 1;
+  padding: 0.9rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  font-family: "Montserrat", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-ministerio-btn-cancel {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.modal-ministerio-btn-cancel:hover {
+  background: rgba(100, 116, 139, 0.35);
+  color: #e2e8f0;
+}
+
+.modal-ministerio-btn-save {
+  background: linear-gradient(135deg, var(--primary-teal) 0%, var(--primary-teal-hover) 100%);
+  color: #fff;
+  border: none;
+}
+
+.modal-ministerio-btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(2, 134, 155, 0.35);
+}
+
+@media (max-width: 520px) {
+  .modal-ministerio-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-ministerio-form-group--sm {
+    flex: none;
+  }
+
+  .modal-ministerio-footer {
+    flex-direction: column;
+  }
+}

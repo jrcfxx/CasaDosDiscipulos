@@ -8,6 +8,7 @@ import escalaService, {
   EscalaEvento,
   EscalaEventoCompleto,
 } from "../services/escalaService";
+import { DetalhesResumo } from "../components/AtribuicaoDetalhesForm";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -242,7 +243,10 @@ const EscalaMapa: React.FC = () => {
                                   .slice(0, 2)
                                   .toUpperCase()}
                               </span>
-                              <span className="mapa-nome">{att.usuario_nome}</span>
+                              <div className="mapa-pessoa-info">
+                                <span className="mapa-nome">{att.usuario_nome}</span>
+                                <DetalhesResumo detalhes={att.detalhes} nomeArea={ar.nome} />
+                              </div>
                             </div>
                           ))
                         ) : (

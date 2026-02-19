@@ -256,7 +256,17 @@ body {
   border-color: #fff;
 }
 
-/* Profile Dropdown Container */
+/* Header right: notificações + perfil */
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-notif-container {
+  position: relative;
+}
+
 .header-profile-container {
   position: relative;
 }

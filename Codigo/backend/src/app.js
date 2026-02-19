@@ -19,6 +19,7 @@ import nivelRoutes from "./routes/nivelRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import usuarioCelulaRoutes from "./routes/usuarioCelulaRoutes.js";
 import ministerioRoutes from "./routes/ministerioRoutes.js";
+import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -85,6 +86,9 @@ app.use("/api/usuario-celula", usuarioCelulaRoutes);
 
 // Ministérios
 app.use("/api/ministerios", ministerioRoutes);
+
+// Notificações
+app.use("/api/notificacoes", notificacaoRoutes);
 
 // Middleware de tratamento de erros deve vir por último
 app.use(errorHandler);

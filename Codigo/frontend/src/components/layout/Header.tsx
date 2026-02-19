@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getUserProfile } from "../../services/usuario";
 import { useAuth } from "../../hooks/useAuth";
+import NotificationsDropdown, { NotificationsBell } from "../NotificationsDropdown";
 import "../../style/layout.css";
 import iconeIgreja from "../../assets/logo.png";
 
@@ -32,12 +33,14 @@ const ProfileIcon = () => (
  */
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAdmin, isLiderCelula, isLiderMinisterio, logout } = useAuth();
+  const { isAdmin, isLiderCelula, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const portalDropdownRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchUserPhoto() {
@@ -90,16 +93,19 @@ const Header: React.FC = () => {
       ) {
         setPortalDropdownOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotifOpen(false);
+      }
     };
 
-    if (dropdownOpen || portalDropdownOpen) {
+    if (dropdownOpen || portalDropdownOpen || notifOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [dropdownOpen, portalDropdownOpen]);
+  }, [dropdownOpen, portalDropdownOpen, notifOpen]);
 
   return (
     <div className="top-bar-wrapper">
@@ -138,24 +144,22 @@ const Header: React.FC = () => {
                   </Link>
                 </div>
 
-                {/* Na Casa - Admin e Líder de Ministério */}
-                {(isAdmin || isLiderMinisterio) && (
-                  <div className="nav-dropdown-section">
-                    <p className="nav-dropdown-title">NA CASA</p>
-                    <Link
-                      to="/usuario/escala"
-                      onClick={() => setPortalDropdownOpen(false)}
-                    >
-                      Escala (Calendário)
-                    </Link>
-                    <Link
-                      to="/usuario/escala/mapa"
-                      onClick={() => setPortalDropdownOpen(false)}
-                    >
-                      Mapa da Escala
-                    </Link>
-                  </div>
-                )}
+                {/* Na Casa - Todos os usuários */}
+                <div className="nav-dropdown-section">
+                  <p className="nav-dropdown-title">NA CASA</p>
+                  <Link
+                    to="/usuario/escala"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Escala (Calendário)
+                  </Link>
+                  <Link
+                    to="/usuario/escala/mapa"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Mapa da Escala
+                  </Link>
+                </div>
 
                 {/* Secretaria das Células - Admin e Líder de Célula */}
                 {(isAdmin || isLiderCelula) && (
@@ -214,7 +218,14 @@ const Header: React.FC = () => {
           {isAdmin && <Link to="/admin/usuarios">GERENCIAMENTO</Link>}
         </nav>
 
-        <div className="header-profile-container" ref={dropdownRef}>
+        <div className="header-right-group">
+          <div className="header-notif-container" ref={notifRef}>
+            <NotificationsBell count={0} onClick={() => setNotifOpen(!notifOpen)} />
+            {notifOpen && (
+              <NotificationsDropdown onClose={() => setNotifOpen(false)} />
+            )}
+          </div>
+          <div className="header-profile-container" ref={dropdownRef}>
           <button
             className="header-profile-btn"
             title="Perfil"
@@ -270,6 +281,7 @@ const Header: React.FC = () => {
               </button>
             </div>
           )}
+          </div>
         </div>
       </header>
     </div>

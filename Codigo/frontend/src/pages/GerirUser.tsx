@@ -1107,71 +1107,106 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Cadastro/Edição de Ministério */}
       {modalMinisterioAberto && (
-        <div className="modal-fundo" onClick={() => setModalMinisterioAberto(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{ministerioModal.id_ministerio ? "Editar Ministério" : "Novo Ministério"}</h2>
-            <div className="modal-content">
-              <label>Nome</label>
-              <input
-                type="text"
-                value={ministerioModal.nome || ""}
-                onChange={(e) => setMinisterioModal((p) => ({ ...p, nome: e.target.value }))}
-                placeholder="Ex: Louvor"
-              />
-              <label>Descrição</label>
-              <textarea
-                value={ministerioModal.descricao || ""}
-                onChange={(e) => setMinisterioModal((p) => ({ ...p, descricao: e.target.value }))}
-                placeholder="Opcional"
-                rows={2}
-              />
-              <label>Ordem</label>
-              <input
-                type="number"
-                value={ministerioModal.ordem || 0}
-                onChange={(e) =>
-                  setMinisterioModal((p) => ({
-                    ...p,
-                    ordem: Math.max(0, parseInt(e.target.value, 10) || 0),
-                  }))
-                }
-                min="0"
-              />
-              <label className="checkbox-row">
+        <div className="modal-ministerio-overlay" onClick={() => setModalMinisterioAberto(false)}>
+          <div className="modal-ministerio" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-ministerio-header">
+              <div className="modal-ministerio-header-content">
+                <span className="modal-ministerio-icon" aria-hidden>⛪</span>
+                <div>
+                  <h2 className="modal-ministerio-title">
+                    {ministerioModal.id_ministerio ? "Editar Ministério" : "Novo Ministério"}
+                  </h2>
+                  <p className="modal-ministerio-subtitle">
+                    {ministerioModal.id_ministerio
+                      ? "Atualize as informações do ministério"
+                      : "Preencha os dados para criar um novo ministério"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-ministerio-close"
+                onClick={() => setModalMinisterioAberto(false)}
+                title="Fechar"
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-ministerio-body">
+              <div className="modal-ministerio-form-group">
+                <label>Nome *</label>
                 <input
-                  type="checkbox"
-                  checked={ministerioModal.ativo}
-                  onChange={(e) => setMinisterioModal((p) => ({ ...p, ativo: e.target.checked }))}
+                  type="text"
+                  value={ministerioModal.nome || ""}
+                  onChange={(e) => setMinisterioModal((p) => ({ ...p, nome: e.target.value }))}
+                  placeholder="Ex: Louvor, Som, Recepção"
                 />
-                <span>Ativo</span>
-              </label>
-              <label>Líderes do ministério</label>
-              <div className="ministerios-participa-box">
-                {lideresParaSelect.map((u) => (
-                  <label key={u.id_usuario!} className="checkbox-row">
-                    <input
-                      type="checkbox"
-                      checked={ministerioModal.id_lideres.includes(u.id_usuario!)}
-                      onChange={(e) => {
-                        const prev = ministerioModal.id_lideres;
-                        const next = e.target.checked
-                          ? [...prev, u.id_usuario!]
-                          : prev.filter((id) => id !== u.id_usuario);
-                        setMinisterioModal((p) => ({ ...p, id_lideres: next }));
-                      }}
-                    />
-                    <span>{u.nome}</span>
-                  </label>
-                ))}
-                {lideresParaSelect.length === 0 && (
-                  <p className="hint">Nenhum líder cadastrado. Crie usuários do tipo Líder primeiro.</p>
-                )}
+              </div>
+              <div className="modal-ministerio-form-group">
+                <label>Descrição</label>
+                <textarea
+                  value={ministerioModal.descricao || ""}
+                  onChange={(e) => setMinisterioModal((p) => ({ ...p, descricao: e.target.value }))}
+                  placeholder="Descrição opcional do ministério"
+                  rows={2}
+                />
+              </div>
+              <div className="modal-ministerio-row">
+                <div className="modal-ministerio-form-group modal-ministerio-form-group--sm">
+                  <label>Ordem</label>
+                  <input
+                    type="number"
+                    value={ministerioModal.ordem || 0}
+                    onChange={(e) =>
+                      setMinisterioModal((p) => ({
+                        ...p,
+                        ordem: Math.max(0, parseInt(e.target.value, 10) || 0),
+                      }))
+                    }
+                    min="0"
+                  />
+                </div>
+                <label className="modal-ministerio-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={ministerioModal.ativo}
+                    onChange={(e) => setMinisterioModal((p) => ({ ...p, ativo: e.target.checked }))}
+                  />
+                  <span>Ministério ativo</span>
+                </label>
+              </div>
+              <div className="modal-ministerio-form-group">
+                <label>Líderes do ministério</label>
+                <div className="modal-ministerio-lideres">
+                  {lideresParaSelect.map((u) => (
+                    <label key={u.id_usuario!} className="modal-ministerio-lider-chip">
+                      <input
+                        type="checkbox"
+                        checked={(ministerioModal.id_lideres || []).includes(u.id_usuario!)}
+                        onChange={(e) => {
+                          const prev = ministerioModal.id_lideres;
+                          const next = e.target.checked
+                            ? [...prev, u.id_usuario!]
+                            : prev.filter((id) => id !== u.id_usuario);
+                          setMinisterioModal((p) => ({ ...p, id_lideres: next }));
+                        }}
+                      />
+                      <span>{u.nome}</span>
+                    </label>
+                  ))}
+                  {lideresParaSelect.length === 0 && (
+                    <p className="modal-ministerio-hint">Nenhum líder cadastrado. Crie usuários do tipo Líder na aba Usuários.</p>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="modal-buttons">
-              <button onClick={() => setModalMinisterioAberto(false)}>Cancelar</button>
-              <button onClick={salvarMinisterio}>
-                {ministerioModal.id_ministerio ? "Salvar" : "Criar Ministério"}
+            <div className="modal-ministerio-footer">
+              <button type="button" className="modal-ministerio-btn-cancel" onClick={() => setModalMinisterioAberto(false)}>
+                Cancelar
+              </button>
+              <button type="button" className="modal-ministerio-btn-save" onClick={salvarMinisterio}>
+                {ministerioModal.id_ministerio ? "Salvar alterações" : "Criar ministério"}
               </button>
             </div>
           </div>

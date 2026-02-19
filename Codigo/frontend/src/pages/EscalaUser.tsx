@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../style/EscalaUser.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -13,6 +13,7 @@ import escalaService, {
   EscalaAtribuicao,
 } from "../services/escalaService";
 import ministerioService from "../services/ministerioService";
+import AtribuicaoDetalhesForm, { DetalhesResumo } from "../components/AtribuicaoDetalhesForm";
 import axios from "axios";
 
 const MESES = [
@@ -36,7 +37,10 @@ function formatarData(s: string) {
 }
 
 const EscalaUser: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { isAdmin, isLiderMinisterio } = useAuth();
+  const podeEditar = isAdmin || isLiderMinisterio;
   const [eventos, setEventos] = useState<EscalaEvento[]>([]);
   const [eventoSelecionado, setEventoSelecionado] = useState<EscalaEventoCompleto | null>(null);
   const [usuarios, setUsuarios] = useState<{ id_usuario: number; nome: string }[]>([]);
@@ -60,6 +64,8 @@ const EscalaUser: React.FC = () => {
   });
   const [editandoEventoId, setEditandoEventoId] = useState<number | null>(null);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<number | null>(null);
+  const [formDetalhes, setFormDetalhes] = useState<Record<string, string>>({});
+  const [atribuicaoEditando, setAtribuicaoEditando] = useState<EscalaAtribuicao | null>(null);
 
   const showToast = useCallback((msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
@@ -82,6 +88,8 @@ const EscalaUser: React.FC = () => {
     fetchEventos();
   }, [fetchEventos]);
 
+  const abrirEventoId = (location.state as { abrirEventoId?: number })?.abrirEventoId;
+
   useEffect(() => {
     ministerioService.getAll().then(setMinisterios).catch(() => setMinisterios([]));
   }, []);
@@ -96,7 +104,8 @@ const EscalaUser: React.FC = () => {
   }, []);
 
   const abrirModalEvento = (evento?: EscalaEvento) => {
-    if (!isAdmin) return;
+    if (!evento && !isAdmin) return; // criar: apenas admin
+    if (evento && !podeEditar) return; // editar: admin ou líder
     if (evento) {
       setEditandoEventoId(evento.id_escala_evento);
       const dh = new Date(evento.data_hora);
@@ -199,20 +208,30 @@ const EscalaUser: React.FC = () => {
     setEventoToExcluir(null);
   };
 
-  const abrirEvento = async (id: number) => {
+  const abrirEvento = useCallback(async (id: number) => {
     try {
       const ev = await escalaService.getEventoCompleto(id);
       setEventoSelecionado(ev);
     } catch {
       showToast("Erro ao carregar evento", "error");
     }
-  };
+  }, [showToast]);
+
+  const abriuEventoRef = useRef(false);
+  useEffect(() => {
+    if (abrirEventoId && !abriuEventoRef.current) {
+      abriuEventoRef.current = true;
+      abrirEvento(abrirEventoId);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [abrirEventoId, abrirEvento, navigate, location.pathname]);
 
   const fecharEvento = () => setEventoSelecionado(null);
 
   const abrirModalAtribuicao = (area: EscalaArea) => {
     setAreaParaAtribuir(area);
     setUsuarioSelecionado(null);
+    setFormDetalhes({});
     if (eventoSelecionado) {
       carregarUsuariosParaEscalar(eventoSelecionado.id_escala_evento, area.nome);
     }
@@ -222,12 +241,34 @@ const EscalaUser: React.FC = () => {
   const fecharModalAtribuicao = () => {
     setShowModalAtribuicao(false);
     setAreaParaAtribuir(null);
+    setFormDetalhes({});
+  };
+
+  const abrirModalEditarDetalhes = (att: EscalaAtribuicao, areaNome: string) => {
+    const detalhes = att.detalhes || {};
+    const strDetalhes: Record<string, string> = {};
+    Object.entries(detalhes).forEach(([k, v]) => {
+      strDetalhes[k] = v != null ? String(v) : "";
+    });
+    setAtribuicaoEditando(att);
+    setFormDetalhes(strDetalhes);
+    setAreaParaAtribuir({ id_escala_area: att.id_escala_area, id_escala_evento: 0, nome: areaNome, ordem: 0 });
+  };
+
+  const fecharModalEditarDetalhes = () => {
+    setAtribuicaoEditando(null);
+    setFormDetalhes({});
+    setAreaParaAtribuir(null);
   };
 
   const handleAdicionarAtribuicao = async () => {
     if (!areaParaAtribuir || !usuarioSelecionado) return;
     try {
-      await escalaService.addAtribuicao(areaParaAtribuir.id_escala_area, usuarioSelecionado);
+      const detalhesObj: Record<string, string | null> = {};
+      Object.entries(formDetalhes).forEach(([k, v]) => {
+        detalhesObj[k] = v?.trim() || null;
+      });
+      await escalaService.addAtribuicao(areaParaAtribuir.id_escala_area, usuarioSelecionado, detalhesObj);
       showToast("Pessoa escalada com sucesso", "success");
       fecharModalAtribuicao();
       if (eventoSelecionado) {
@@ -253,6 +294,25 @@ const EscalaUser: React.FC = () => {
       }
     } catch {
       showToast("Erro ao remover", "error");
+    }
+  };
+
+  const handleSalvarDetalhes = async () => {
+    if (!atribuicaoEditando) return;
+    try {
+      const detalhesObj: Record<string, string | null> = {};
+      Object.entries(formDetalhes).forEach(([k, v]) => {
+        detalhesObj[k] = v?.trim() || null;
+      });
+      await escalaService.updateAtribuicao(atribuicaoEditando.id_escala_atribuicao, detalhesObj);
+      showToast("Informações atualizadas", "success");
+      fecharModalEditarDetalhes();
+      if (eventoSelecionado) {
+        const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
+        setEventoSelecionado(ev);
+      }
+    } catch {
+      showToast("Erro ao atualizar", "error");
     }
   };
 
@@ -433,16 +493,29 @@ const EscalaUser: React.FC = () => {
                             <span className="pessoa-avatar">
                               {(att.usuario_nome || "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()}
                             </span>
-                            <span className="pessoa-nome">{att.usuario_nome}</span>
+                            <div className="pessoa-chip-content">
+                              <span className="pessoa-nome">{att.usuario_nome}</span>
+                              <DetalhesResumo detalhes={att.detalhes} nomeArea={ar.nome} />
+                            </div>
                             {podeGerenciar && (
-                              <button
-                                type="button"
-                                className="btn-remover-chip"
-                                onClick={() => handleRemoverAtribuicao(att)}
-                                title="Remover da escala"
-                              >
-                                ×
-                              </button>
+                              <div className="pessoa-chip-actions">
+                                <button
+                                  type="button"
+                                  className="btn-editar-chip"
+                                  onClick={() => abrirModalEditarDetalhes(att, ar.nome)}
+                                  title="Editar informações"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-remover-chip"
+                                  onClick={() => handleRemoverAtribuicao(att)}
+                                  title="Remover da escala"
+                                >
+                                  ×
+                                </button>
+                              </div>
                             )}
                           </div>
                         ))
@@ -464,7 +537,7 @@ const EscalaUser: React.FC = () => {
               })}
             </div>
 
-            {isAdmin && (
+            {podeEditar && (
               <div className="escala-dashboard-actions">
                 <button
                   type="button"
@@ -476,16 +549,18 @@ const EscalaUser: React.FC = () => {
                 >
                   ✏️ Editar evento
                 </button>
-                <button
-                  type="button"
-                  className="btn-excluir-evento"
-                  onClick={() => {
-                    setEventoToExcluir(eventoSelecionado.id_escala_evento);
-                    setShowConfirmExcluir(true);
-                  }}
-                >
-                  🗑️ Excluir evento
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="btn-excluir-evento"
+                    onClick={() => {
+                      setEventoToExcluir(eventoSelecionado.id_escala_evento);
+                      setShowConfirmExcluir(true);
+                    }}
+                  >
+                    🗑️ Excluir evento
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -493,10 +568,23 @@ const EscalaUser: React.FC = () => {
       )}
 
       {showModalEvento && (
-        <div className="modal-overlay" onClick={fecharModalEvento}>
-          <div className="modal-content modal-escala-evento" onClick={(e) => e.stopPropagation()}>
-            <h2>{editandoEventoId ? "Editar Evento" : "Novo Evento"}</h2>
-            <form onSubmit={handleSalvarEvento}>
+        <div className="modal-evento-overlay" onClick={fecharModalEvento}>
+          <div className="modal-escala-evento" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-evento-header">
+              <div className="modal-evento-header-content">
+                <span className="modal-evento-icon" aria-hidden>📅</span>
+                <div>
+                  <h2 className="modal-evento-title">{editandoEventoId ? "Editar Evento" : "Novo Evento"}</h2>
+                  <p className="modal-evento-subtitle">
+                    {editandoEventoId ? "Atualize os dados do evento" : "Preencha os dados para criar um novo evento"}
+                  </p>
+                </div>
+              </div>
+              <button type="button" className="modal-evento-close" onClick={fecharModalEvento} title="Fechar" aria-label="Fechar">
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleSalvarEvento} className="modal-evento-form">
               <div className="form-group">
                 <label>Título *</label>
                 <input
@@ -560,12 +648,12 @@ const EscalaUser: React.FC = () => {
                   Evento ativo
                 </label>
               </div>
-              <div className="modal-actions">
-                <button type="button" className="btn-cancelar" onClick={fecharModalEvento}>
+              <div className="modal-evento-actions">
+                <button type="button" className="btn-evento-cancelar" onClick={fecharModalEvento}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-salvar">
-                  {editandoEventoId ? "Salvar" : "Criar"}
+                <button type="submit" className="btn-evento-salvar">
+                  {editandoEventoId ? "Salvar alterações" : "Criar evento"}
                 </button>
               </div>
             </form>
@@ -573,9 +661,9 @@ const EscalaUser: React.FC = () => {
         </div>
       )}
 
-      {showModalAtribuicao && areaParaAtribuir && (
-        <div className="modal-overlay" onClick={fecharModalAtribuicao}>
-          <div className="modal-content modal-atribuicao" onClick={(e) => e.stopPropagation()}>
+      {showModalAtribuicao && areaParaAtribuir && !atribuicaoEditando && (
+        <div className="modal-overlay modal-evento-overlay" onClick={fecharModalAtribuicao}>
+          <div className="modal-content modal-atribuicao modal-atribuicao-completo" onClick={(e) => e.stopPropagation()}>
             <h2>Escalar em {areaParaAtribuir.nome}</h2>
             <div className="form-group">
               <label>Selecione a pessoa</label>
@@ -591,6 +679,14 @@ const EscalaUser: React.FC = () => {
                 ))}
               </select>
             </div>
+            <div className="form-group">
+              <label>Informações da escala</label>
+              <AtribuicaoDetalhesForm
+                nomeArea={areaParaAtribuir.nome}
+                value={formDetalhes}
+                onChange={setFormDetalhes}
+              />
+            </div>
             <div className="modal-actions">
               <button type="button" className="btn-cancelar" onClick={fecharModalAtribuicao}>
                 Cancelar
@@ -602,6 +698,28 @@ const EscalaUser: React.FC = () => {
                 disabled={!usuarioSelecionado}
               >
                 Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {atribuicaoEditando && areaParaAtribuir && (
+        <div className="modal-overlay modal-evento-overlay" onClick={fecharModalEditarDetalhes}>
+          <div className="modal-content modal-atribuicao modal-atribuicao-editar" onClick={(e) => e.stopPropagation()}>
+            <h2>Editar informações — {atribuicaoEditando.usuario_nome}</h2>
+            <p className="modal-atribuicao-contexto">Em {areaParaAtribuir.nome}</p>
+            <AtribuicaoDetalhesForm
+              nomeArea={areaParaAtribuir.nome}
+              value={formDetalhes}
+              onChange={setFormDetalhes}
+            />
+            <div className="modal-actions">
+              <button type="button" className="btn-cancelar" onClick={fecharModalEditarDetalhes}>
+                Cancelar
+              </button>
+              <button type="button" className="btn-salvar" onClick={handleSalvarDetalhes}>
+                Salvar
               </button>
             </div>
           </div>

@@ -2,6 +2,7 @@ import EscalaEventoModel from "../models/EscalaEventoModel.js";
 import EscalaAreaModel from "../models/EscalaAreaModel.js";
 import EscalaAtribuicaoModel from "../models/EscalaAtribuicaoModel.js";
 import MinisterioModel from "../models/MinisterioModel.js";
+import NotificacaoModel from "../models/NotificacaoModel.js";
 import knex from "../database/index.js";
 import {
   NotFoundError,
@@ -28,6 +29,8 @@ class EscalaService {
   // ---------- Eventos ----------
   async getEventos(filters = {}, idUsuario = null, tipoUsuario = null) {
     let eventos = await EscalaEventoModel.getAll(filters);
+    // Líder: vê apenas eventos dos ministérios que lidera
+    // Admin e Membro: vêem todos os eventos ativos
     if (tipoUsuario === USER_TYPES.LEADER && idUsuario) {
       const meusMinisterios = await MinisterioModel.getMinisteriosByUsuario(idUsuario);
       const idsMeus = meusMinisterios.map((m) => m.id_ministerio);
@@ -77,6 +80,7 @@ class EscalaService {
 
     if (dados.id_ministerios && Array.isArray(dados.id_ministerios) && dados.id_ministerios.length) {
       await EscalaEventoModel.setMinisterios(evento.id_escala_evento, dados.id_ministerios);
+      await this._notificarEventoCriado(evento, dados.id_ministerios);
     }
 
     return this._enrichEvento(evento);
@@ -147,7 +151,7 @@ class EscalaService {
     return await EscalaAtribuicaoModel.getByEventoId(parsed);
   }
 
-  async addAtribuicao(idArea, idUsuario, idUsuarioLogado, tipoUsuario) {
+  async addAtribuicao(idArea, idUsuario, idUsuarioLogado, tipoUsuario, detalhes = null) {
     const parsedArea = this._parseId(idArea);
     const parsedUsuario = this._parseId(idUsuario);
 
@@ -189,10 +193,36 @@ class EscalaService {
       );
     }
 
-    return await EscalaAtribuicaoModel.create({
+    const detalhesObj = detalhes && typeof detalhes === "object" ? detalhes : null;
+    const atrib = await EscalaAtribuicaoModel.create({
       id_escala_area: parsedArea,
       id_usuario: parsedUsuario,
+      detalhes: detalhesObj,
     });
+    await this._notificarEscalado(parsedUsuario, area.id_escala_evento, area.nome);
+    return atrib;
+  }
+
+  async updateAtribuicao(idAtribuicao, detalhes, idUsuarioLogado, tipoUsuario) {
+    const parsed = this._parseId(idAtribuicao);
+    const atribuicao = await knex("escala_atribuicao as a")
+      .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
+      .select("a.*", "ar.nome as area_nome")
+      .where("a.id_escala_atribuicao", parsed)
+      .first();
+    if (!atribuicao) throw new NotFoundError("Atribuição não encontrada");
+
+    if (tipoUsuario === USER_TYPES.LEADER) {
+      const meusMinisterios = await MinisterioModel.getMinisteriosByUsuario(idUsuarioLogado);
+      const idsMeus = meusMinisterios.map((m) => m.id_ministerio);
+      const ministerioArea = await knex("ministerio").where("nome", atribuicao.area_nome).where("ativo", true).first();
+      const lideraEstaArea = ministerioArea && idsMeus.includes(ministerioArea.id_ministerio);
+      if (!lideraEstaArea) {
+        throw new ForbiddenError("Você só pode editar atribuições dos ministérios em que é líder");
+      }
+    }
+
+    return await EscalaAtribuicaoModel.update(parsed, { detalhes: detalhes || {} });
   }
 
   async removeAtribuicao(idAtribuicao, idUsuarioLogado, tipoUsuario) {
@@ -332,6 +362,59 @@ class EscalaService {
     const areas = await EscalaAreaModel.getByEventoId(evento.id_escala_evento);
     const ministerios = await EscalaEventoModel.getMinisteriosByEvento(evento.id_escala_evento);
     return { ...evento, areas, ministerios };
+  }
+
+  async _notificarEventoCriado(evento, idMinisterios) {
+    const rows = await knex("usuario_ministerio")
+      .whereIn("id_ministerio", idMinisterios)
+      .distinct("id_usuario")
+      .select("id_usuario");
+    const idsUsuarios = [...new Set(rows.map((r) => r.id_usuario))];
+    const usuariosAtivosRows = await knex("usuario")
+      .whereIn("id_usuario", idsUsuarios.length ? idsUsuarios : [0])
+      .where("ativo", true)
+      .select("id_usuario");
+    const usuariosAtivos = usuariosAtivosRows.map((r) => r.id_usuario);
+    const dataFmt = evento.data_hora
+      ? new Date(evento.data_hora).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+    for (const idU of usuariosAtivos) {
+      await NotificacaoModel.create({
+        id_usuario: idU,
+        tipo: "evento_criado",
+        id_escala_evento: evento.id_escala_evento,
+        titulo: `Novo evento: ${evento.titulo}`,
+        mensagem: `${dataFmt}. Veja os detalhes na Escala.`,
+      });
+    }
+  }
+
+  async _notificarEscalado(idUsuario, idEvento, areaNome) {
+    const evento = await EscalaEventoModel.getById(idEvento);
+    if (!evento) return;
+    const dataFmt = evento.data_hora
+      ? new Date(evento.data_hora).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+    await NotificacaoModel.create({
+      id_usuario: idUsuario,
+      tipo: "escalado",
+      id_escala_evento: idEvento,
+      titulo: `Você foi escalado(a) para ${evento.titulo}`,
+      mensagem: `${areaNome} • ${dataFmt}`,
+      area_nome: areaNome,
+    });
   }
 }
 

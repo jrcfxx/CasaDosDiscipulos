@@ -23,6 +23,7 @@ export async function seed() {
     "formulario_resposta",
     "quiz_resposta",
     "usuario_modulo",
+    "notificacao",
     "escala_atribuicao",
     "escala_evento_ministerio",
     "escala_area",
