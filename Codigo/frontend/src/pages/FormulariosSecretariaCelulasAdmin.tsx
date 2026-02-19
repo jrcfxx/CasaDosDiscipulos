@@ -99,6 +99,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
     null
   );
   const [respostaDetalhe, setRespostaDetalhe] = useState<Resposta | null>(null);
+
+  /* Filtros da visualização de respostas */
+  const [filtroCelula, setFiltroCelula] = useState<number | "">("");
+  const [filtroRespondente, setFiltroRespondente] = useState<string>("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState<string>("");
+  const [filtroDataFim, setFiltroDataFim] = useState<string>("");
   const [celulas, setCelulas] = useState<
     Array<{ id_celula: number; nome: string }>
   >([]);
@@ -136,6 +142,10 @@ export default function FormulariosSecretariaCelulasAdmin() {
       .finally(() => setRespostasLoading(false));
     setExpandedRespostaId(null);
     setRespostaDetalhe(null);
+    setFiltroCelula("");
+    setFiltroRespondente("");
+    setFiltroDataInicio("");
+    setFiltroDataFim("");
   }, [selectedFormulario?.id]);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
@@ -277,6 +287,38 @@ export default function FormulariosSecretariaCelulasAdmin() {
       return d;
     }
   };
+
+  /* Respostas filtradas por célula, respondente e intervalo de data */
+  const filteredRespostas = respostas.filter((r) => {
+    if (filtroCelula !== "" && r.id_celula !== filtroCelula) return false;
+    if (filtroRespondente) {
+      if (filtroRespondente === "-") {
+        if (r.nome_lider) return false;
+      } else if (
+        (r.nome_lider || "").toLowerCase() !== filtroRespondente.toLowerCase()
+      ) {
+        return false;
+      }
+    }
+    if (filtroDataInicio || filtroDataFim) {
+      try {
+        const dr = new Date(r.data_resposta).setHours(0, 0, 0, 0);
+        if (filtroDataInicio) {
+          const di = new Date(filtroDataInicio).setHours(0, 0, 0, 0);
+          if (dr < di) return false;
+        }
+        if (filtroDataFim) {
+          const df = new Date(filtroDataFim).setHours(23, 59, 59, 999);
+          if (dr > df) return false;
+        }
+      } catch {
+        /* ignora data inválida */
+      }
+    }
+    return true;
+  });
+
+  const respondentesUnicos = [...new Set(respostas.map((r) => r.nome_lider || "-").filter(Boolean))].sort();
 
   const celulasQueResponderam = (selectedFormulario?.id
     ? respostas.map((r) => r.id_celula)
@@ -774,8 +816,83 @@ export default function FormulariosSecretariaCelulasAdmin() {
                         <p>Nenhuma resposta enviada para este formulário.</p>
                       </div>
                     ) : (
-                      <div className="respostas-list">
-                        {respostas.map((r) => (
+                      <>
+                        <div className="respostas-filtros">
+                          <div className="filtro-group">
+                            <label htmlFor="filtro-celula">Célula</label>
+                            <select
+                              id="filtro-celula"
+                              value={filtroCelula}
+                              onChange={(e) =>
+                                setFiltroCelula(
+                                  e.target.value === "" ? "" : Number(e.target.value)
+                                )
+                              }
+                            >
+                              <option value="">Todas</option>
+                              {celulas.map((c) => (
+                                <option key={c.id_celula} value={c.id_celula}>
+                                  {c.nome}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="filtro-group">
+                            <label htmlFor="filtro-respondente">Respondente</label>
+                            <select
+                              id="filtro-respondente"
+                              value={filtroRespondente}
+                              onChange={(e) => setFiltroRespondente(e.target.value)}
+                            >
+                              <option value="">Todos</option>
+                              <option value="-">Sem respondente</option>
+                              {respondentesUnicos
+                                .filter((n) => n !== "-")
+                                .map((nome) => (
+                                  <option key={nome} value={nome}>
+                                    {nome}
+                                  </option>
+                                ))}
+                            </select>
+                          </div>
+                          <div className="filtro-group">
+                            <label htmlFor="filtro-data-inicio">Data início</label>
+                            <input
+                              id="filtro-data-inicio"
+                              type="date"
+                              value={filtroDataInicio}
+                              onChange={(e) => setFiltroDataInicio(e.target.value)}
+                            />
+                          </div>
+                          <div className="filtro-group">
+                            <label htmlFor="filtro-data-fim">Data fim</label>
+                            <input
+                              id="filtro-data-fim"
+                              type="date"
+                              value={filtroDataFim}
+                              onChange={(e) => setFiltroDataFim(e.target.value)}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="btn-limpar-filtros"
+                            onClick={() => {
+                              setFiltroCelula("");
+                              setFiltroRespondente("");
+                              setFiltroDataInicio("");
+                              setFiltroDataFim("");
+                            }}
+                          >
+                            Limpar filtros
+                          </button>
+                        </div>
+                        <p className="respostas-count">
+                          {filteredRespostas.length} resposta{filteredRespostas.length !== 1 ? "s" : ""}
+                          {(filtroCelula !== "" || filtroRespondente || filtroDataInicio || filtroDataFim) &&
+                            ` de ${respostas.length}`}
+                        </p>
+                        <div className="respostas-list">
+                        {filteredRespostas.map((r) => (
                           <div
                             key={r.id_resposta}
                             className={`resposta-item ${
@@ -842,7 +959,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
                               )}
                           </div>
                         ))}
-                      </div>
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
