@@ -8,7 +8,7 @@
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
     "migrate": "knex --knexfile knexfile.cjs migrate:latest",
-    "migrate:rollback": "knex migrate:rollback",
+    "migrate:rollback": "knex --knexfile knexfile.cjs migrate:rollback",
     "seed": "node ./src/seeds/runSeeds.js"
   },
   "keywords": [],

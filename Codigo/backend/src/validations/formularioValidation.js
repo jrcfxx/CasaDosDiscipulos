@@ -16,6 +16,11 @@ export const createFormularioSchema = Joi.object({
 
   ativo: Joi.boolean().default(true),
 
+  frequencia: Joi.string()
+    .valid("semanal", "quinzenal", "mensal", "bimestral")
+    .allow(null)
+    .optional(),
+
   campos: Joi.array()
     .items(
       Joi.object({
@@ -50,6 +55,11 @@ export const updateFormularioSchema = Joi.object({
   descricao: Joi.string().allow(null, "").max(1000),
 
   ativo: Joi.boolean(),
+
+  frequencia: Joi.string()
+    .valid("semanal", "quinzenal", "mensal", "bimestral")
+    .allow(null)
+    .optional(),
 
   campos: Joi.array()
     .items(

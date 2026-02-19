@@ -36,18 +36,19 @@ class FormularioService {
       titulo: data.titulo,
       descricao: data.descricao,
       ativo: data.ativo,
+      frequencia: data.frequencia || null,
     });
 
     if (data.campos && data.campos.length > 0) {
       for (const campo of data.campos) {
-        await CampoModel.createByOption(
-          "formulario",
-          novo.id_formulario,
-          campo.id_campo,
-          campo.conteudo || "",
-          campo.label || "",
-          campo.ordem ?? 0
-        );
+        await knex("formulario_campo").insert({
+          id_formulario: novo.id_formulario,
+          id_campo: campo.id_campo,
+          conteudo: campo.conteudo || "",
+          label: campo.label || "",
+          ordem: campo.ordem ?? 0,
+          obrigatorio: campo.obrigatorio || false,
+        });
       }
     }
 
@@ -65,6 +66,7 @@ class FormularioService {
         titulo: data.titulo,
         descricao: data.descricao,
         ativo: data.ativo,
+        frequencia: data.frequencia || null,
       });
 
       if (!rowsAffected) throw new AppError("Formulário não encontrado", 404);

@@ -67,18 +67,18 @@ const CelulaService = {
       );
     }
 
-    if (!data.id_lider) {
-      throw new ValidationError("Célula deve ter um líder");
+    const idLideres = data.id_lideres ?? (data.id_lider ? [data.id_lider] : []);
+    if (!Array.isArray(idLideres) || idLideres.length === 0) {
+      throw new ValidationError("Célula deve ter pelo menos um líder");
     }
 
-    // Cria célula
+    // Cria célula (tabela usa endereco)
     const novaCelula = await CelulaModel.create({
       nome: data.nome.trim(),
-      descricao: data.descricao?.trim() || null,
-      id_lider: data.id_lider,
+      endereco: (data.endereco || data.local_reuniao || "").toString().trim() || null,
+      id_lideres: idLideres,
       dia_reuniao: data.dia_reuniao || null,
       horario_reuniao: data.horario_reuniao || null,
-      local_reuniao: data.local_reuniao?.trim() || null,
       ativa: data.ativa ?? true,
     });
 
@@ -107,16 +107,17 @@ const CelulaService = {
       dadosAtualizacao.nome = data.nome.trim();
     }
 
-    if (data.descricao !== undefined)
-      dadosAtualizacao.descricao = data.descricao?.trim() || null;
+    if (data.endereco !== undefined)
+      dadosAtualizacao.endereco = data.endereco?.trim() || null;
+    if (data.local_reuniao !== undefined)
+      dadosAtualizacao.endereco = data.local_reuniao?.trim() || null;
 
-    if (data.id_lider !== undefined) dadosAtualizacao.id_lider = data.id_lider;
+    if (data.id_lideres !== undefined) dadosAtualizacao.id_lideres = data.id_lideres;
+    if (data.id_lider !== undefined) dadosAtualizacao.id_lideres = [data.id_lider];
     if (data.dia_reuniao !== undefined)
       dadosAtualizacao.dia_reuniao = data.dia_reuniao;
     if (data.horario_reuniao !== undefined)
       dadosAtualizacao.horario_reuniao = data.horario_reuniao;
-    if (data.local_reuniao !== undefined)
-      dadosAtualizacao.local_reuniao = data.local_reuniao?.trim() || null;
     if (data.ativa !== undefined) dadosAtualizacao.ativa = data.ativa;
 
     // Atualiza célula

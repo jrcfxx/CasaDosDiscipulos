@@ -1,3 +1,4 @@
+import { seed as seedNivel } from "./seed_nivel.js";
 import { seed as seedUsuario } from "./seed_usuario.js";
 import { seed as seedCampo } from "./seed_campo_personalizado.js";
 import { seed as seedCelula } from "./seed_celula.js";
@@ -9,6 +10,9 @@ import { seed as seedLicao } from "./seed_licao.js";
 import { seed as seedLicaoCampo } from "./seed_licao_campo.js";
 import { seed as seedFormulario } from "./seed_formulario.js";
 import { seed as seedFormularioCampo } from "./seed_formulario_campo.js";
+import { seed as seedEvento } from "./seed_evento.js";
+import { seed as seedUsuarioCelula } from "./seed_usuario_celula.js";
+import { seed as seedFormularioResposta } from "./seed_formulario_resposta.js";
 
 /**
  * Executa todos os seeders na ordem correta
@@ -17,32 +21,44 @@ import { seed as seedFormularioCampo } from "./seed_formulario_campo.js";
 async function run() {
   console.log("Iniciando seeders...\n");
 
-  // 1. Usuários (sem dependências)
+  // 1. Níveis (usuario e modulo referenciam)
+  await seedNivel();
+
+  // 2. Usuários (depende de nivel)
   await seedUsuario();
 
-  // 2. Tipos de campo (sem dependências)
+  // 3. Tipos de campo
   await seedCampo();
 
-  // 3. Células (depende de usuário/líder)
+  // 4. Células (depende de usuário/líder)
   await seedCelula();
 
-  // 4. Módulos (sem dependências, mas usado por quiz)
+  // 5. Módulos (depende de nivel)
   await seedModulo();
   await seedModuloCampo();
 
-  // 5. Quizzes e questões (depende de módulo)
+  // 6. Quizzes e questões (depende de módulo)
   await seedQuiz();
   await seedQuizQuestao();
 
-  // 6. Lições (sem dependências diretas)
+  // 7. Lições
   await seedLicao();
   await seedLicaoCampo();
 
-  // 7. Formulários (sem dependências diretas)
+  // 8. Formulários
   await seedFormulario();
   await seedFormularioCampo();
 
-  console.log("\n Todos os seeders executados com sucesso!");
+  // 9. Eventos
+  await seedEvento();
+
+  // 10. Usuário-Célula (vincula membros/líderes às células)
+  await seedUsuarioCelula();
+
+  // 11. Respostas de formulário (dados de exemplo para o dashboard)
+  await seedFormularioResposta();
+
+  console.log("\n✅ Todos os seeders executados com sucesso!");
   process.exit(0);
 }
 

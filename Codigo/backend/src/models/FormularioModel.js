@@ -11,7 +11,7 @@ const FormularioModel = {
    */
   async getAll() {
     return knex("formulario")
-      .select("id_formulario", "titulo", "descricao", "ativo")
+      .select("id_formulario", "titulo", "descricao", "ativo", "frequencia")
       .orderBy("id_formulario", "asc");
   },
 
@@ -45,6 +45,7 @@ const FormularioModel = {
       titulo: data.titulo,
       descricao: data.descricao || null,
       ativo: data.ativo ?? true,
+      frequencia: data.frequencia || null,
     });
     return this.getById(id_formulario);
   },

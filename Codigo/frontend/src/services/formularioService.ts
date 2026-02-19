@@ -15,11 +15,14 @@ export interface FormularioCampo {
   ordem?: number;
 }
 
+export type FrequenciaTipo = "semanal" | "quinzenal" | "mensal" | "bimestral" | null;
+
 export interface Formulario {
   id_formulario: number;
   titulo: string;
   descricao?: string | null;
   ativo: number | boolean;
+  frequencia?: FrequenciaTipo;
   campos?: FormularioCampo[];
 }
 
@@ -27,7 +30,14 @@ export interface FormularioCreateUpdate {
   titulo: string;
   descricao?: string | null;
   ativo: boolean;
-  campos?: Array<{ id_campo: number; label: string; conteudo?: string | number | boolean | null; ordem?: number }>;
+  frequencia?: FrequenciaTipo;
+  campos?: Array<{
+    id_campo: number;
+    label: string;
+    conteudo?: string | number | boolean | null;
+    ordem?: number;
+    obrigatorio?: boolean;
+  }>;
 }
 
 const formularioService = {
@@ -55,5 +65,13 @@ const formularioService = {
     await apiClient.delete(`/formulario/${id}`);
   },
 };
+
+export const FREQUENCIA_OPCOES: Array<{ value: string; label: string }> = [
+  { value: "", label: "Sem frequência" },
+  { value: "semanal", label: "Semanal" },
+  { value: "quinzenal", label: "Quinzenal" },
+  { value: "mensal", label: "Mensal" },
+  { value: "bimestral", label: "Bimestral" },
+];
 
 export default formularioService;

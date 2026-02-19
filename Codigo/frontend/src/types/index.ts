@@ -171,7 +171,9 @@ export interface Celula {
   id_celula: number;
   nome: string;
   descricao?: string;
-  id_lider: number;
+  id_lider?: number | null;
+  id_lideres?: number[];
+  lideres?: { id_usuario: number; nome: string; email?: string; principal?: boolean }[];
   dia_reuniao?:
     | "domingo"
     | "segunda"

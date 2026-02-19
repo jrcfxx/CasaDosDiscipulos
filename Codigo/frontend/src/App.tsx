@@ -13,6 +13,7 @@ import SobreNos from "./pages/SobreNos";
 // Páginas Autenticadas - Admin
 import PortalDoDiscipuloAdmin from "./pages/PortalDoDiscipuloAdmin";
 import GerirUser from "./pages/GerirUser";
+import GerirCelulas from "./pages/GerirCelulas";
 import LicoesSecretariaAdmin from "./pages/LicoesSecretariaAdmin";
 import FormulariosSecretariaCelulasAdmin from "./pages/FormulariosSecretariaCelulasAdmin";
 import ModulosEscolaDiscipulosAdmin from "./pages/ModulosEscolaDiscipulosAdmin";
@@ -127,6 +128,16 @@ export default function App() {
         element={
           <ProtectedRoute requireAdmin>
             <LicoesSecretariaAdmin />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Células - Admin */}
+      <Route
+        path="/admin/celulas"
+        element={
+          <ProtectedRoute requireAdmin>
+            <GerirCelulas />
           </ProtectedRoute>
         }
       />

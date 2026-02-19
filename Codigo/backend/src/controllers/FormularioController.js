@@ -75,6 +75,7 @@ class FormularioController {
       next(err);
     }
   }
+
 }
 
 export default new FormularioController();

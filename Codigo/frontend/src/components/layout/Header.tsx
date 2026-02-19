@@ -142,6 +142,14 @@ const Header: React.FC = () => {
                 {(isAdmin || isLider) && (
                   <div className="nav-dropdown-section">
                     <p className="nav-dropdown-title">SECRETARIA DAS CÉLULAS</p>
+                    {isAdmin && (
+                      <Link
+                        to="/admin/celulas"
+                        onClick={() => setPortalDropdownOpen(false)}
+                      >
+                        Células
+                      </Link>
+                    )}
                     <Link
                       to={isAdmin ? "/admin/licoes" : "/usuario/licoes"}
                       onClick={() => setPortalDropdownOpen(false)}

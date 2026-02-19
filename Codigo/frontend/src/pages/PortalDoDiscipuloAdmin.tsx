@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import "../style/PortalDoDiscipuloAdmin.css";
 
 import imgLicoes from "../assets/maos_dadas.jpeg";
+import imgCelulas from "../assets/celulas.jpg";
 import imgFormularios from "../assets/formulario_oficial.jpg";
 import imgModulos from "../assets/casal_leitura.jpeg";
 import imgQuiz from "../assets/quizz.jpg";
@@ -28,6 +29,16 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
           <h2 className="portal-subtitle">SECRETARIA DAS CÉLULAS</h2>
 
           <div className="portal-grid">
+            <Link
+              to="/admin/celulas"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgCelulas})` }}
+              aria-label="Células"
+            >
+              <div className="portal-card__overlay" />
+              <span className="portal-card__title">CÉLULAS</span>
+            </Link>
+
             <Link
               to="/admin/licoes"
               className="portal-card"

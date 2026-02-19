@@ -7,7 +7,11 @@ import InputModal from "../components/ui/InputModal";
 import Toast from "../components/ui/Toast";
 import ConfirmModal from "../components/ui/ConfirmModal";
 
-import formularioService, { FormularioCampo } from "../services/formularioService";
+import formularioService, {
+  FormularioCampo,
+  FormularioCreateUpdate,
+  FREQUENCIA_OPCOES,
+} from "../services/formularioService";
 import formularioRespostaService from "../services/formularioRespostaService";
 import celulaService from "../services/celulaService";
 import campoService from "../services/campoService";
@@ -27,6 +31,7 @@ type Formulario = {
   titulo: string;
   descricao?: string | null;
   ativo?: number;
+  frequencia?: string | null;
   campos?: any[];
 };
 
@@ -35,6 +40,7 @@ type FormularioForm = {
   nome: string;
   descricao: string;
   ativo: number;
+  frequencia: string;
 };
 
 type AvailableField = {
@@ -48,6 +54,7 @@ type LocalField = {
   tipo: string;
   label: string;
   conteudo: any;
+  obrigatorio?: boolean;
 };
 
 type Resposta = {
@@ -67,11 +74,22 @@ type Resposta = {
   }>;
 };
 
+const diasPorFrequencia = (f: string): number => {
+  switch (f) {
+    case "semanal": return 7;
+    case "quinzenal": return 15;
+    case "mensal": return 30;
+    case "bimestral": return 60;
+    default: return 30;
+  }
+};
+
 const initialFormState: FormularioForm = {
   id: null,
   nome: "",
   descricao: "",
   ativo: 1,
+  frequencia: "",
 };
 
 export default function FormulariosSecretariaCelulasAdmin() {
@@ -106,8 +124,6 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const [filtroDataInicio, setFiltroDataInicio] = useState<string>("");
   const [filtroDataFim, setFiltroDataFim] = useState<string>("");
 
-  /* Filtro do dashboard por mês/ano */
-  const [filtroDashboardMes, setFiltroDashboardMes] = useState<string>("");
   const [celulas, setCelulas] = useState<
     Array<{ id_celula: number; nome: string }>
   >([]);
@@ -149,7 +165,6 @@ export default function FormulariosSecretariaCelulasAdmin() {
     setFiltroRespondente("");
     setFiltroDataInicio("");
     setFiltroDataFim("");
-    setFiltroDashboardMes("");
   }, [selectedFormulario?.id]);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
@@ -174,6 +189,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
         titulo: f.titulo,
         descricao: f.descricao ?? "",
         ativo: f.ativo === true || f.ativo === 1 ? 1 : 0,
+        frequencia: f.frequencia ?? null,
         campos: f.campos ?? [],
       }));
       setFormularios(mapped);
@@ -209,6 +225,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
           label: campo.label || "",
           conteudo: campo.conteudo ?? "",
           ordem: index,
+          obrigatorio: Boolean(campo.obrigatorio),
         })
       );
 
@@ -227,6 +244,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
           titulo: updated.titulo,
           descricao: updated.descricao ?? "",
           ativo: updated.ativo === true || updated.ativo === 1 ? 1 : 0,
+          frequencia: updated.frequencia ?? null,
           campos: updated.campos ?? [],
         });
       }
@@ -324,48 +342,51 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   const respondentesUnicos = [...new Set(respostas.map((r) => r.nome_lider || "-").filter(Boolean))].sort();
 
-  /* Respostas filtradas por mês para o dashboard */
-  const respostasDashboard = filtroDashboardMes
-    ? respostas.filter((r) => {
-        try {
-          const dr = new Date(r.data_resposta);
-          const mesAno = `${dr.getFullYear()}-${String(dr.getMonth() + 1).padStart(2, "0")}`;
-          return mesAno === filtroDashboardMes;
-        } catch {
-          return false;
-        }
-      })
-    : respostas;
+  /* Cálculo em dia / atrasada baseado na frequência do formulário */
+  const frequenciaFormulario = selectedFormulario?.frequencia ?? "";
+  const temFrequencia = !!frequenciaFormulario;
 
-  const celulasQueResponderam = (selectedFormulario?.id
-    ? respostasDashboard.map((r) => r.id_celula)
-    : []) as number[];
-  const celulasQueNaoResponderam = celulas.filter(
-    (c) => !celulasQueResponderam.includes(c.id_celula)
-  );
+  const hoje = new Date();
+  hoje.setHours(23, 59, 59, 999);
 
-  /* Dados para o dashboard visual */
-  const celulasComRespostas = respostasDashboard.reduce(
-    (
-      acc: Array<{ id_celula: number; nome: string; count: number }>,
-      r
-    ) => {
-      const cel = celulas.find((c) => c.id_celula === r.id_celula);
-      const exist = acc.find((a) => a.id_celula === r.id_celula);
-      if (exist) exist.count += 1;
-      else
-        acc.push({
-          id_celula: r.id_celula,
-          nome: cel?.nome || r.nome_celula || `Célula #${r.id_celula}`,
-          count: 1,
-        });
+  const ultimaRespostaPorCelula = respostas.reduce<Record<number, string>>(
+    (acc, r) => {
+      const atual = acc[r.id_celula];
+      if (!atual || new Date(r.data_resposta) > new Date(atual)) {
+        acc[r.id_celula] = r.data_resposta;
+      }
       return acc;
     },
-    []
+    {}
   );
+
+  const celulasEmDia: Array<{ id_celula: number; nome: string; count: number }> = [];
+  const celulasAtrasadas: Array<{ id_celula: number; nome: string }> = [];
+
+  if (temFrequencia) {
+    const dias = diasPorFrequencia(frequenciaFormulario);
+    const cutoff = new Date(hoje);
+    cutoff.setDate(cutoff.getDate() - dias);
+
+    celulas.forEach((c) => {
+      const ultima = ultimaRespostaPorCelula[c.id_celula];
+      const respostasDestaCelula = respostas.filter((r) => r.id_celula === c.id_celula);
+
+      if (ultima && new Date(ultima) >= cutoff) {
+        celulasEmDia.push({
+          id_celula: c.id_celula,
+          nome: c.nome,
+          count: respostasDestaCelula.length,
+        });
+      } else {
+        celulasAtrasadas.push({ id_celula: c.id_celula, nome: c.nome });
+      }
+    });
+  }
+
   const totalCelulas = celulas.length;
-  const emDiaCount = celulasComRespostas.length;
-  const pendentesCount = celulasQueNaoResponderam.length;
+  const emDiaCount = celulasEmDia.length;
+  const pendentesCount = celulasAtrasadas.length;
   const percentualEmDia =
     totalCelulas > 0 ? Math.round((emDiaCount / totalCelulas) * 100) : 0;
 
@@ -500,7 +521,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
     id_campo: number,
     tipo: string,
     label = "",
-    conteudo: any = ""
+    conteudo: any = "",
+    obrigatorio = false
   ): LocalField => {
     return {
       uid: Date.now() + Math.floor(Math.random() * 10000),
@@ -508,6 +530,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
       tipo,
       label,
       conteudo,
+      obrigatorio,
     };
   };
 
@@ -567,6 +590,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
         nome: f.titulo ?? "",
         descricao: f.descricao ?? "",
         ativo: f.ativo === 1 || f.ativo === true ? 1 : 0,
+        frequencia: f.frequencia ?? "",
       });
 
       const incomingFields = (f.campos ?? []).map((c: any, idx: number) => {
@@ -594,7 +618,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
           c.id_campo,
           tipo,
           c.label ?? `Campo ${idx + 1}`,
-          conteudoLimpo
+          conteudoLimpo,
+          Boolean(c.obrigatorio)
         );
       });
 
@@ -666,13 +691,23 @@ export default function FormulariosSecretariaCelulasAdmin() {
       else if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") conteudo = v;
       else if (typeof v === "object") conteudo = JSON.stringify(v);
       else conteudo = String(v);
-      return { id_campo: f.id_campo, label: f.label ?? "", conteudo, ordem: index };
+      return {
+        id_campo: f.id_campo,
+        label: f.label ?? "",
+        conteudo,
+        ordem: index,
+        obrigatorio: Boolean(f.obrigatorio),
+      };
     });
 
-    const payload = {
+    const freqVal = currentForm.frequencia;
+    const payload: FormularioCreateUpdate = {
       titulo: currentForm.nome,
       descricao: currentForm.descricao || null,
       ativo: Boolean(currentForm.ativo),
+      frequencia: ["semanal", "quinzenal", "mensal", "bimestral"].includes(freqVal)
+        ? (freqVal as FormularioCreateUpdate["frequencia"])
+        : undefined,
       campos: camposPayload,
     };
 
@@ -687,6 +722,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
             titulo: updated.titulo,
             descricao: updated.descricao ?? "",
             ativo: updated.ativo === true || updated.ativo === 1 ? 1 : 0,
+            frequencia: updated.frequencia ?? null,
             campos: updated.campos ?? [],
           });
         }
@@ -817,6 +853,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     <span className="meta-label">Campos:</span>
                     <span className="meta-value">
                       {selectedFormulario.campos?.length || 0}
+                    </span>
+                  </div>
+                  <div className="meta-item">
+                    <span className="meta-label">Frequência:</span>
+                    <span className="meta-value">
+                      {FREQUENCIA_OPCOES.find((o) => o.value === (selectedFormulario.frequencia ?? ""))?.label ?? "Sem frequência"}
                     </span>
                   </div>
                 </div>
@@ -1010,28 +1052,21 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 {abaAtiva === "dashboard" && (
                   <div className="dashboard-section">
                     <div className="dashboard-header">
-                      <p className="dashboard-subtitle">Status por célula — formulário semanal</p>
-                      <div className="dashboard-filtro">
-                        <label htmlFor="filtro-dashboard-mes">Ref. mês</label>
-                        <input
-                          id="filtro-dashboard-mes"
-                          type="month"
-                          value={filtroDashboardMes}
-                          onChange={(e) => setFiltroDashboardMes(e.target.value)}
-                          title="Filtrar por mês/ano (ex: Janeiro 2025)"
-                        />
-                        {filtroDashboardMes && (
-                          <button
-                            type="button"
-                            className="dashboard-filtro-limpar"
-                            onClick={() => setFiltroDashboardMes("")}
-                            title="Ver todos os períodos"
-                          >
-                            Todos
-                          </button>
-                        )}
-                      </div>
+                      <p className="dashboard-subtitle">
+                        {temFrequencia
+                          ? `Status por célula — formulário ${FREQUENCIA_OPCOES.find((o) => o.value === frequenciaFormulario)?.label?.toLowerCase() ?? frequenciaFormulario}`
+                          : "Defina a frequência do formulário (na edição) para ver quais células estão em dia"}
+                      </p>
                     </div>
+
+                    {!temFrequencia && (
+                      <p className="dashboard-sem-frequencia muted">
+                        Edite o formulário e selecione a frequência esperada de envio (semanal, quinzenal, mensal ou bimestral) para que o dashboard calcule automaticamente quais células estão em dia.
+                      </p>
+                    )}
+
+                    {temFrequencia && (
+                    <>
                     <div className="dashboard-metrics">
                       <div className="metric-card metric-total">
                         <span className="metric-value">{totalCelulas}</span>
@@ -1043,11 +1078,11 @@ export default function FormulariosSecretariaCelulasAdmin() {
                       </div>
                       <div className="metric-card metric-pending">
                         <span className="metric-value">{pendentesCount}</span>
-                        <span className="metric-label">Pendentes</span>
+                        <span className="metric-label">Atrasadas</span>
                       </div>
                       <div className="metric-card metric-pct">
                         <span className="metric-value">{percentualEmDia}%</span>
-                        <span className="metric-label">Respostas</span>
+                        <span className="metric-label">Em dia</span>
                       </div>
                     </div>
 
@@ -1061,7 +1096,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     </div>
 
                     <div className="dashboard-cards">
-                      {celulasComRespostas.map((c) => (
+                      {celulasEmDia.map((c) => (
                         <div
                           key={c.id_celula}
                           className="dashboard-cell-card card-ok"
@@ -1073,22 +1108,24 @@ export default function FormulariosSecretariaCelulasAdmin() {
                           </span>
                         </div>
                       ))}
-                      {celulasQueNaoResponderam.map((c) => (
+                      {celulasAtrasadas.map((c) => (
                         <div
                           key={c.id_celula}
                           className="dashboard-cell-card card-pending"
                         >
                           <span className="cell-card-icon">⏳</span>
                           <span className="cell-card-nome">{c.nome}</span>
-                          <span className="cell-card-count">Pendente</span>
+                          <span className="cell-card-count">Atrasada</span>
                         </div>
                       ))}
                     </div>
 
-                    {totalCelulas === 0 && (
+                    {temFrequencia && totalCelulas === 0 && (
                       <p className="dashboard-empty muted">
                         Nenhuma célula cadastrada.
                       </p>
+                    )}
+                    </>
                     )}
                   </div>
                 )}
@@ -1171,6 +1208,23 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 <option value={0}>Inativo</option>
               </select>
 
+              <label>Frequência de envio esperada</label>
+              <select
+                value={currentForm.frequencia}
+                onChange={(e) =>
+                  setCurrentForm({
+                    ...currentForm,
+                    frequencia: e.target.value,
+                  })
+                }
+              >
+                {FREQUENCIA_OPCOES.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+
               <h3>Campos do Formulário</h3>
 
               <div className="fields-container">
@@ -1184,18 +1238,35 @@ export default function FormulariosSecretariaCelulasAdmin() {
                   return (
                     <div key={f.uid} className="field-wrapper">
                       <div className="dynamic-field-row">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        <Component
-                          id={String(f.uid)}
-                          name={`campo_${f.uid}`}
-                          label={f.label}
-                          value={f.conteudo as any}
-                          onChange={(v: any) =>
-                            setFields((prev) =>
-                              prev.map((fld) => (fld.uid === f.uid ? { ...fld, conteudo: v } : fld))
-                            )
-                          }
-                        />
+                        <div className="field-input-container">
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                          <Component
+                            id={String(f.uid)}
+                            name={`campo_${f.uid}`}
+                            label={f.label}
+                            value={f.conteudo as any}
+                            onChange={(v: any) =>
+                              setFields((prev) =>
+                                prev.map((fld) => (fld.uid === f.uid ? { ...fld, conteudo: v } : fld))
+                              )
+                            }
+                          />
+                          <label className="field-obrigatorio-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(f.obrigatorio)}
+                              onChange={(e) =>
+                                setFields((prev) =>
+                                  prev.map((fld) =>
+                                    fld.uid === f.uid ? { ...fld, obrigatorio: e.target.checked } : fld
+                                  )
+                                )
+                              }
+                              aria-label="Campo obrigatório"
+                            />
+                            <span>Obrigatório</span>
+                          </label>
+                        </div>
                         <button
                           type="button"
                           className="field-remove-btn"

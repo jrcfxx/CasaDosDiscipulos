@@ -69,13 +69,15 @@ const EventosAdmin: React.FC = () => {
     formData.append("imagem", selectedFile);
 
     try {
-      const response = await axios.post(`${API_URL}/upload`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Não definir Content-Type manualmente - axios adiciona boundary automaticamente
+      const response = await axios.post(`${API_URL}/upload`, formData);
       return response.data.imagem_url;
-    } catch (error) {
+    } catch (error: unknown) {
+      const msg = axios.isAxiosError(error) && error.response?.data?.error
+        ? error.response.data.error
+        : "Erro ao fazer upload da imagem";
       console.error("Erro ao fazer upload da imagem:", error);
-      throw new Error("Erro ao fazer upload da imagem");
+      throw new Error(msg);
     }
   };
 
@@ -112,7 +114,8 @@ const EventosAdmin: React.FC = () => {
       closeModal();
     } catch (error) {
       console.error("Erro ao salvar evento:", error);
-      setToast("Erro ao salvar evento");
+      const msg = error instanceof Error ? error.message : "Erro ao salvar evento";
+      setToast(msg);
     }
   };
 

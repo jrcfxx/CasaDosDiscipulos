@@ -136,6 +136,12 @@ const HeaderAdmin: React.FC = () => {
                 <div className="nav-dropdown-section">
                   <p className="nav-dropdown-title">SECRETARIA DAS CÉLULAS</p>
                   <Link
+                    to="/admin/celulas"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Células
+                  </Link>
+                  <Link
                     to="/admin/licoes"
                     onClick={() => setPortalDropdownOpen(false)}
                   >
