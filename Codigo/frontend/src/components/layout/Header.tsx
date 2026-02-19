@@ -146,7 +146,13 @@ const Header: React.FC = () => {
                       to="/usuario/escala"
                       onClick={() => setPortalDropdownOpen(false)}
                     >
-                      Escala
+                      Escala (Calendário)
+                    </Link>
+                    <Link
+                      to="/usuario/escala/mapa"
+                      onClick={() => setPortalDropdownOpen(false)}
+                    >
+                      Mapa da Escala
                     </Link>
                   </div>
                 )}

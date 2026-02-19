@@ -24,14 +24,22 @@ const PortalDoDiscipuloUser: React.FC = () => {
         {isLiderMinisterio && (
           <>
             <h2 className="portal-subtitle">NA CASA</h2>
-            <div className="grid-1">
+            <div className="grid-2">
               <NavLink
                 to="/usuario/escala"
-                className="portal-card portal-card--wide"
+                className="portal-card"
                 style={{ backgroundImage: `url(${imgEscala})` }}
               >
                 <span className="portal-card__overlay" />
                 <span className="portal-card__title">ESCALA</span>
+              </NavLink>
+              <NavLink
+                to="/usuario/escala/mapa"
+                className="portal-card"
+                style={{ backgroundImage: `url(${imgEscala})` }}
+              >
+                <span className="portal-card__overlay" />
+                <span className="portal-card__title">MAPA DA ESCALA</span>
               </NavLink>
             </div>
           </>

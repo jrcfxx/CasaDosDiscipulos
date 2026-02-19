@@ -37,6 +37,15 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
               <div className="portal-card__overlay" />
               <span className="portal-card__title">ESCALA</span>
             </Link>
+            <Link
+              to="/usuario/escala/mapa"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgEscala})` }}
+              aria-label="Mapa da Escala"
+            >
+              <div className="portal-card__overlay" />
+              <span className="portal-card__title">MAPA DA ESCALA</span>
+            </Link>
           </div>
         </section>
 

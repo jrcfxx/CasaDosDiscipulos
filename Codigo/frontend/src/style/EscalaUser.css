@@ -33,9 +33,47 @@
   text-align: center;
 }
 
-.escala-header .btn-criar {
+.escala-header-actions {
   position: absolute;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-mapa {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-teal);
+  background: rgba(2, 134, 155, 0.15);
+  border: 1px solid rgba(2, 134, 155, 0.4);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-mapa:hover {
+  background: rgba(2, 134, 155, 0.25);
+  border-color: var(--primary-teal);
+  color: var(--secondary-gold);
+}
+
+.escala-header .btn-criar {
+  padding: 0.5rem 1.25rem;
+  background: var(--secondary-gold);
+  color: var(--primary-gray, #2b2f30);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.escala-header .btn-criar:hover {
+  background: #d9a002;
+  transform: translateY(-1px);
 }
 
 .escala-calendario-nav {
@@ -631,8 +669,9 @@
     align-items: center;
   }
 
-  .escala-header .btn-criar {
+  .escala-header-actions {
     position: static;
+    flex-direction: column;
   }
 
   .calendario-celula {

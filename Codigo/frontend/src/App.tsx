@@ -31,6 +31,7 @@ import PreencherModulosEscolaDiscipulosUser from "./pages/PreencherModulosEscola
 import LicaoSecretariaCelulaUser from "./pages/LicaoSecretariaCelulaUser";
 import FormulariosSecretariaCelulasLeader from "./pages/FormulariosSecretariaCelulasLeader";
 import EscalaUser from "./pages/EscalaUser";
+import EscalaMapa from "./pages/EscalaMapa";
 
 // Páginas Comuns
 import Perfil from "./pages/Perfil";
@@ -265,12 +266,20 @@ export default function App() {
         }
       />
 
-      {/* Escala - Apenas Líder de Ministério */}
+      {/* Escala - Admin e Líder de Ministério */}
       <Route
         path="/usuario/escala"
         element={
           <ProtectedRoute requireLiderMinisterio>
             <EscalaUser />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/usuario/escala/mapa"
+        element={
+          <ProtectedRoute requireLiderMinisterio>
+            <EscalaMapa />
           </ProtectedRoute>
         }
       />

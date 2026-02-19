@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "../style/EscalaUser.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -270,11 +271,16 @@ const EscalaUser: React.FC = () => {
       <main className="container escala-user">
         <div className="escala-header">
           <h1 className="page-title">ESCALA</h1>
-          {isAdmin && (
-            <button className="btn-criar" onClick={() => abrirModalEvento()}>
-              + Novo Evento
-            </button>
-          )}
+          <div className="escala-header-actions">
+            <Link to="/usuario/escala/mapa" className="btn-mapa">
+              Mapa
+            </Link>
+            {isAdmin && (
+              <button className="btn-criar" onClick={() => abrirModalEvento()}>
+                + Novo Evento
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="escala-calendario-nav">

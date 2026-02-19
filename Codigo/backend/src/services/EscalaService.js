@@ -248,6 +248,19 @@ class EscalaService {
     const parsed = this._parseId(idEvento);
     await this.getEventoById(parsed);
 
+    // Usuários já escalados neste evento (em qualquer área) — excluir da lista
+    const areasEvento = await knex("escala_area")
+      .select("id_escala_area")
+      .where("id_escala_evento", parsed);
+    const idsAreasEvento = areasEvento.map((a) => a.id_escala_area);
+    const idsJaEscalados =
+      idsAreasEvento.length > 0
+        ? (await knex("escala_atribuicao")
+            .select("id_usuario")
+            .whereIn("id_escala_area", idsAreasEvento))
+            .map((r) => r.id_usuario)
+        : [];
+
     const ministeriosEvento = await EscalaEventoModel.getMinisteriosByEvento(parsed);
 
     let idMinisterioFiltro = null;
@@ -259,19 +272,29 @@ class EscalaService {
       if (ministerio) idMinisterioFiltro = ministerio.id_ministerio;
     }
 
+    const excluirEscalados = (q) =>
+      idsJaEscalados.length > 0 ? q.whereNotIn("u.id_usuario", idsJaEscalados) : q;
+
+    const excluirEscaladosUsuario = (q) =>
+      idsJaEscalados.length > 0 ? q.whereNotIn("id_usuario", idsJaEscalados) : q;
+
     if (tipoUsuario === USER_TYPES.ADMIN) {
       if (idMinisterioFiltro) {
-        return await knex("usuario_ministerio as um")
-          .join("usuario as u", "um.id_usuario", "u.id_usuario")
-          .select("u.id_usuario", "u.nome")
-          .where("um.id_ministerio", idMinisterioFiltro)
-          .where("u.ativo", true)
-          .orderBy("u.nome");
+        return excluirEscalados(
+          knex("usuario_ministerio as um")
+            .join("usuario as u", "um.id_usuario", "u.id_usuario")
+            .select("u.id_usuario", "u.nome")
+            .where("um.id_ministerio", idMinisterioFiltro)
+            .where("u.ativo", true)
+            .orderBy("u.nome")
+        );
       }
-      return await knex("usuario")
-        .select("id_usuario", "nome")
-        .where("ativo", true)
-        .orderBy("nome");
+      return excluirEscaladosUsuario(
+        knex("usuario")
+          .select("id_usuario", "nome")
+          .where("ativo", true)
+          .orderBy("nome")
+      );
     }
 
     const meusMinisterios = await MinisterioModel.getMinisteriosByUsuario(idUsuarioLogado);
@@ -288,13 +311,15 @@ class EscalaService {
           ? [] // área especificada mas o líder não lidera esse ministério
           : idsRelevantes;
 
-    return await knex("usuario_ministerio as um")
-      .join("usuario as u", "um.id_usuario", "u.id_usuario")
-      .select("u.id_usuario", "u.nome")
-      .whereIn("um.id_ministerio", idsFiltro)
-      .where("u.ativo", true)
-      .groupBy("u.id_usuario", "u.nome")
-      .orderBy("u.nome");
+    return excluirEscalados(
+      knex("usuario_ministerio as um")
+        .join("usuario as u", "um.id_usuario", "u.id_usuario")
+        .select("u.id_usuario", "u.nome")
+        .whereIn("um.id_ministerio", idsFiltro)
+        .where("u.ativo", true)
+        .groupBy("u.id_usuario", "u.nome")
+        .orderBy("u.nome")
+    );
   }
 
   _parseId(id) {
