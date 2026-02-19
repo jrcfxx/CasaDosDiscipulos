@@ -1,10 +1,11 @@
 import NivelModel from "../models/NivelModel.js";
 
 class NivelController {
-  // GET /api/nivel - Listar todos
+  // GET /api/nivel - Listar todos (query: incluir_inativos=1 para incluir inativos)
   async index(req, res, next) {
     try {
-      const niveis = await NivelModel.findAll();
+      const incluirInativos = req.query.incluir_inativos === "1";
+      const niveis = await NivelModel.findAll(incluirInativos);
       res.json(niveis);
     } catch (error) {
       next(error);
@@ -66,6 +67,28 @@ class NivelController {
 
       await NivelModel.delete(id);
       res.json({ message: "Nível inativado com sucesso" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // PATCH /api/nivel/:id/reativar - Reativar nível inativo
+  async reativar(req, res, next) {
+    try {
+      const { id } = req.params;
+      const nivelExistente = await NivelModel.findById(id);
+
+      if (!nivelExistente) {
+        return res.status(404).json({ error: "Nível não encontrado" });
+      }
+
+      if (nivelExistente.ativo) {
+        return res.status(400).json({ error: "Nível já está ativo" });
+      }
+
+      await NivelModel.reativar(id);
+      const atualizado = await NivelModel.findById(id);
+      res.json(atualizado);
     } catch (error) {
       next(error);
     }

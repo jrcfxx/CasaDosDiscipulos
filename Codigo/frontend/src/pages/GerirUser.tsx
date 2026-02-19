@@ -7,12 +7,13 @@ import ConfirmModal from "../components/ui/ConfirmModal";
 import Toast from "../components/ui/Toast";
 import perfil from "../assets/perfil-preto.png";
 import { ASSETS_BASE } from "../config/api";
-import { showAllUsers, createUser, updateUser } from "../services/usuario";
+import { showAllUsers, showUserById, createUser, updateUser } from "../services/usuario";
 import {
   showAllNiveis,
   createNivel,
   updateNivel,
   deleteNivel,
+  reativarNivel,
 } from "../services/nivel";
 
 interface Nivel {
@@ -31,6 +32,10 @@ interface Usuario {
   foto?: string;
   tipo: "lider" | "administrador" | "membro";
   id_nivel?: number | null;
+  nivel_nome?: string | null;
+  nivel_escola?: number | null;
+  nivel_escola_nome?: string | null;
+  nivel_exibir?: string | null;
   ativo?: boolean;
 }
 
@@ -81,6 +86,8 @@ export default function GerenciarUsuarios() {
   });
   const [showConfirmInativarNivel, setShowConfirmInativarNivel] = useState(false);
   const [nivelToInativar, setNivelToInativar] = useState<number | null>(null);
+  const [showConfirmReativarNivel, setShowConfirmReativarNivel] = useState(false);
+  const [nivelToReativar, setNivelToReativar] = useState<number | null>(null);
 
   const tipoLabels: Record<string, string> = {
     lider: "Líder",
@@ -90,9 +97,13 @@ export default function GerenciarUsuarios() {
 
   useEffect(() => {
     fetchUsuarios();
-    fetchNiveis();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchNiveis(abaAtiva === "niveis");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abaAtiva]);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
@@ -114,23 +125,26 @@ export default function GerenciarUsuarios() {
     }
   }
 
-  async function fetchNiveis() {
+  async function fetchNiveis(incluirInativos = false) {
     try {
-      const data = await showAllNiveis();
+      const data = await showAllNiveis(incluirInativos);
       if (Array.isArray(data)) {
         setNiveis(data);
       }
     } catch (err) {
       console.error("Erro ao carregar níveis:", err);
+      if (abaAtiva === "niveis") {
+        showToast("Erro ao carregar níveis", "error");
+      }
     }
   }
 
-  // Normaliza id_nivel para comparação (API pode retornar number ou string)
-  const getIdNivel = (u: Usuario): number | null => {
-    const v = u.id_nivel;
-    if (v === null || v === undefined) return null;
+  // Normaliza id_nivel para comparação (API pode retornar number, string ou estar em diferentes chaves)
+  const getIdNivel = (u: Usuario | Record<string, unknown>): number | null => {
+    const v = (u as Record<string, unknown>).id_nivel ?? (u as Record<string, unknown>).idNivel ?? (u as Usuario).id_nivel;
+    if (v === null || v === undefined || v === "") return null;
     const n = Number(v);
-    return Number.isNaN(n) ? null : n;
+    return Number.isNaN(n) || n <= 0 ? null : n;
   };
 
   const usuariosFiltrados = usuarios.filter((u) => {
@@ -138,12 +152,16 @@ export default function GerenciarUsuarios() {
 
     let matchNivel = true;
     if (filtroNivel === "0") {
-      matchNivel = getIdNivel(u) === null;
+      const idNivel = getIdNivel(u);
+      const nivelEscola = u.nivel_escola ?? null;
+      matchNivel = idNivel === null && nivelEscola === null;
     } else if (filtroNivel !== "") {
-      const idUsuario = getIdNivel(u);
+      const idNivel = getIdNivel(u);
+      const nivelEscola = u.nivel_escola ?? null;
       const idFiltro = Number(filtroNivel);
       matchNivel =
-        idUsuario !== null && !Number.isNaN(idFiltro) && idUsuario === idFiltro;
+        !Number.isNaN(idFiltro) &&
+        (idNivel === idFiltro || nivelEscola === idFiltro);
     }
 
     return matchNome && matchNivel;
@@ -163,22 +181,40 @@ export default function GerenciarUsuarios() {
     setModalAberto(true);
   };
 
-  const abrirModalEdicao = (u: Usuario) => {
+  const abrirModalEdicao = async (u: Usuario) => {
     if (u.ativo === false) {
       showToast("Não é possível editar usuário inativo");
       return;
     }
-    setUsuarioModal({
-      id_usuario: u.id_usuario,
-      nome: u.nome,
-      email: u.email,
-      senha: "",
-      confirmarSenha: "",
-      foto: u.foto || perfil,
-      tipo: u.tipo,
-      id_nivel: u.id_nivel || null,
-    });
-    setModalAberto(true);
+    const id = u.id_usuario;
+    if (!id) return;
+    try {
+      const usuarioAtual = await showUserById(id);
+      if (!usuarioAtual) {
+        showToast("Erro ao carregar dados do usuário", "error");
+        return;
+      }
+      const idNivel = usuarioAtual.id_nivel != null
+        ? (typeof usuarioAtual.id_nivel === "number"
+          ? usuarioAtual.id_nivel
+          : Number(usuarioAtual.id_nivel))
+        : null;
+      const idNivelFinal = idNivel != null && !Number.isNaN(idNivel) && idNivel > 0 ? idNivel : null;
+      setUsuarioModal({
+        id_usuario: usuarioAtual.id_usuario,
+        nome: usuarioAtual.nome,
+        email: usuarioAtual.email,
+        senha: "",
+        confirmarSenha: "",
+        foto: usuarioAtual.foto || null,
+        tipo: usuarioAtual.tipo,
+        id_nivel: idNivelFinal,
+      });
+      setModalAberto(true);
+    } catch (err) {
+      console.error("Erro ao carregar usuário:", err);
+      showToast("Erro ao carregar dados do usuário", "error");
+    }
   };
 
   const handleChange = (
@@ -219,13 +255,13 @@ export default function GerenciarUsuarios() {
       }
     }
 
-    // Se senha foi preenchida, valida confirmação
+    // Se senha foi preenchida na edição, valida confirmação
     if (usuarioModal.senha || usuarioModal.confirmarSenha) {
       if (usuarioModal.senha !== usuarioModal.confirmarSenha) {
         showToast("As senhas não coincidem");
         return;
       }
-      if (usuarioModal.senha.length < 6) {
+      if (usuarioModal.senha && usuarioModal.senha.length < 6) {
         showToast("Senha deve ter no mínimo 6 caracteres");
         return;
       }
@@ -287,13 +323,20 @@ export default function GerenciarUsuarios() {
     }
   };
 
+  // Níveis ativos (para select de usuário e filtro - exclui inativos)
+  const niveisAtivos = niveis.filter((n) => Boolean(n.ativo));
+
   // Funções de Gerenciamento de Níveis
   const abrirModalNivelCadastro = () => {
+    const proximaOrdem =
+      niveis.length > 0
+        ? Math.max(...niveis.map((n) => Number(n.ordem) || 0), 0) + 1
+        : 1;
     setNivelModal({
       id_nivel: undefined,
       nome: "",
       descricao: "",
-      ordem: niveis.length + 1,
+      ordem: proximaOrdem,
     });
     setModalNivelAberto(true);
   };
@@ -323,12 +366,15 @@ export default function GerenciarUsuarios() {
       return;
     }
 
-    const nivelData = {
-      nome: nivelModal.nome,
-      descricao: nivelModal.descricao,
+    const nivelData: Record<string, unknown> = {
+      nome: nivelModal.nome.trim(),
+      descricao: nivelModal.descricao?.trim() ?? "",
       ordem: nivelModal.ordem,
-      ativo: true,
     };
+
+    if (!nivelModal.id_nivel) {
+      nivelData.ativo = true;
+    }
 
     try {
       if (nivelModal.id_nivel) {
@@ -338,7 +384,7 @@ export default function GerenciarUsuarios() {
         await createNivel(nivelData);
         showToast("Nível criado com sucesso!", "success");
       }
-      await fetchNiveis();
+      await fetchNiveis(abaAtiva === "niveis");
       fecharModalNivel();
     } catch (err: any) {
       console.error("Erro ao salvar nível:", err);
@@ -360,10 +406,32 @@ export default function GerenciarUsuarios() {
     try {
       await deleteNivel(id);
       showToast("Nível inativado com sucesso!", "success");
-      await fetchNiveis();
+      await fetchNiveis(true);
     } catch (err: any) {
       console.error("Erro ao inativar nível:", err);
-      showToast("Erro ao inativar nível", "error");
+      const msg = err?.response?.data?.error || "Erro ao inativar nível";
+      showToast(msg, "error");
+    }
+  };
+
+  const handleReativarNivelClick = (id: number) => {
+    setNivelToReativar(id);
+    setShowConfirmReativarNivel(true);
+  };
+
+  const reativarNivelConfirm = async () => {
+    if (nivelToReativar === null) return;
+    const id = nivelToReativar;
+    setShowConfirmReativarNivel(false);
+    setNivelToReativar(null);
+    try {
+      await reativarNivel(id);
+      showToast("Nível reativado com sucesso!", "success");
+      await fetchNiveis(true);
+    } catch (err: any) {
+      console.error("Erro ao reativar nível:", err);
+      const msg = err?.response?.data?.error || "Erro ao reativar nível";
+      showToast(msg, "error");
     }
   };
 
@@ -407,7 +475,7 @@ export default function GerenciarUsuarios() {
               >
                 <option value="">Todos os níveis</option>
                 <option value="0">Sem nível</option>
-                {niveis.map((nivel) => (
+                {niveisAtivos.map((nivel) => (
                   <option key={nivel.id_nivel} value={String(nivel.id_nivel)}>
                     {nivel.nome}
                   </option>
@@ -441,6 +509,16 @@ export default function GerenciarUsuarios() {
                       ? usuario.foto
                       : `${ASSETS_BASE}${usuario.foto}`
                     : perfil;
+                  const nivelNome =
+                    usuario.nivel_exibir ??
+                    usuario.nivel_escola_nome ??
+                    usuario.nivel_nome ??
+                    (getIdNivel(usuario) != null
+                      ? niveis.find((n) => Number(n.id_nivel) === Number(getIdNivel(usuario)))?.nome
+                      : null);
+                  const tipoTexto = usuario.ativo ? tipoLabels[usuario.tipo] : "INATIVADO";
+                  const nivelTexto =
+                    usuario.ativo && nivelNome ? `${tipoTexto} · ${nivelNome}` : tipoTexto;
 
                   return (
                     <div
@@ -448,17 +526,7 @@ export default function GerenciarUsuarios() {
                       key={usuario.id_usuario}
                     >
                       <img src={fotoUrl} alt={usuario.nome} />
-                      <p className="nivel">
-                        {usuario.ativo ? tipoLabels[usuario.tipo] : "INATIVADO"}
-                      </p>
-                      {usuario.id_nivel && (
-                        <p className="badge-nivel">
-                          {
-                            niveis.find((n) => n.id_nivel === usuario.id_nivel)
-                              ?.nome
-                          }
-                        </p>
-                      )}
+                      <p className="nivel">{nivelTexto}</p>
                       <h3>{usuario.nome}</h3>
                       <p className="email">{usuario.email}</p>
                       <div className="card-buttons">
@@ -516,27 +584,42 @@ export default function GerenciarUsuarios() {
                   </tr>
                 </thead>
                 <tbody>
-                  {niveis.map((nivel) => (
-                    <tr key={nivel.id_nivel}>
-                      <td>{nivel.ordem}</td>
-                      <td>{nivel.nome}</td>
-                      <td>{nivel.descricao || "-"}</td>
-                      <td className="acoes">
-                        <button
-                          className="btn-edit"
-                          onClick={() => abrirModalNivelEdicao(nivel)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className="btn-delete"
-                          onClick={() => handleInativarNivelClick(nivel.id_nivel)}
-                        >
-                          Inativar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {niveis.map((nivel) => {
+                    const inativo = !nivel.ativo;
+                    return (
+                      <tr key={nivel.id_nivel} className={inativo ? "nivel-inativo" : ""}>
+                        <td>{nivel.ordem}</td>
+                        <td>
+                          {nivel.nome}
+                          {inativo && <span className="badge-inativo">Inativo</span>}
+                        </td>
+                        <td>{nivel.descricao || "-"}</td>
+                        <td className="acoes">
+                          <button
+                            className="btn-edit"
+                            onClick={() => abrirModalNivelEdicao(nivel)}
+                          >
+                            Editar
+                          </button>
+                          {inativo ? (
+                            <button
+                              className="btn-reativar"
+                              onClick={() => handleReativarNivelClick(nivel.id_nivel)}
+                            >
+                              Reativar
+                            </button>
+                          ) : (
+                            <button
+                              className="btn-delete"
+                              onClick={() => handleInativarNivelClick(nivel.id_nivel)}
+                            >
+                              Inativar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -583,17 +666,22 @@ export default function GerenciarUsuarios() {
 
               <label>Nível</label>
               <select
-                value={usuarioModal.id_nivel || ""}
+                key={`nivel-${usuarioModal.id_usuario ?? "new"}-${usuarioModal.id_nivel ?? "x"}`}
+                value={
+                  usuarioModal.id_nivel != null && usuarioModal.id_nivel !== 0
+                    ? String(usuarioModal.id_nivel)
+                    : ""
+                }
                 onChange={(e) =>
                   handleChange(
                     "id_nivel",
-                    e.target.value ? parseInt(e.target.value) : null
+                    e.target.value ? parseInt(e.target.value, 10) : null
                   )
                 }
               >
                 <option value="">Sem nível atribuído</option>
-                {niveis.map((nivel) => (
-                  <option key={nivel.id_nivel} value={nivel.id_nivel}>
+                {niveisAtivos.map((nivel) => (
+                  <option key={nivel.id_nivel} value={String(nivel.id_nivel)}>
                     {nivel.nome}
                   </option>
                 ))}
@@ -719,7 +807,7 @@ export default function GerenciarUsuarios() {
       <ConfirmModal
         open={showConfirmInativarNivel}
         title="Tem certeza?"
-        message="Deseja realmente inativar este nível?"
+        message="Deseja realmente inativar este nível? Usuários e módulos vinculados terão a referência removida."
         confirmLabel="Inativar"
         cancelLabel="Cancelar"
         variant="danger"
@@ -727,6 +815,20 @@ export default function GerenciarUsuarios() {
         onCancel={() => {
           setShowConfirmInativarNivel(false);
           setNivelToInativar(null);
+        }}
+      />
+
+      <ConfirmModal
+        open={showConfirmReativarNivel}
+        title="Reativar nível"
+        message="Deseja reativar este nível?"
+        confirmLabel="Reativar"
+        cancelLabel="Cancelar"
+        variant="default"
+        onConfirm={reativarNivelConfirm}
+        onCancel={() => {
+          setShowConfirmReativarNivel(false);
+          setNivelToReativar(null);
         }}
       />
 

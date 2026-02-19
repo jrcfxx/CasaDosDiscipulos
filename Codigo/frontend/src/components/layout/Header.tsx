@@ -184,7 +184,7 @@ const Header: React.FC = () => {
           </div>
 
           {/* Gerenciar Usuários - Apenas Admin */}
-          {isAdmin && <Link to="/admin/usuarios">GERENCIAR USUÁRIOS</Link>}
+          {isAdmin && <Link to="/admin/usuarios">GERENCIAMENTO</Link>}
         </nav>
 
         <div className="header-profile-container" ref={dropdownRef}>

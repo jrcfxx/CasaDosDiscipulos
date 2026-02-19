@@ -23,23 +23,23 @@ export async function showUserById(id) {
 }
 
 export async function createUser(userData) {
-  const response = await api
-    .post(URL, userData)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.post(URL, userData);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao criar usuário:", err);
+    throw err;
+  }
 }
 
 export async function updateUser(id, userData) {
-  const response = await api
-    .put(`${URL}/${id}`, userData)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.put(`${URL}/${id}`, userData);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao atualizar usuário:", err);
+    throw err;
+  }
 }
 
 export async function deleteUser(id) {

@@ -2,52 +2,64 @@ import api from "./apiClient";
 
 const URL = "/nivel";
 
-export async function showAllNiveis() {
-  const response = await api
-    .get(URL)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
+export async function showAllNiveis(incluirInativos = false) {
+  try {
+    const res = await api.get(URL, {
+      params: incluirInativos ? { incluir_inativos: "1" } : undefined,
     });
-  return response;
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao listar níveis:", err);
+    throw err;
+  }
 }
 
 export async function showNivelById(id) {
-  const response = await api
-    .get(`${URL}/${id}`)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.get(`${URL}/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao buscar nível:", err);
+    throw err;
+  }
 }
 
 export async function createNivel(nivelData) {
-  const response = await api
-    .post(URL, nivelData)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.post(URL, nivelData);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao criar nível:", err);
+    throw err;
+  }
 }
 
 export async function updateNivel(id, nivelData) {
-  const response = await api
-    .put(`${URL}/${id}`, nivelData)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.put(`${URL}/${id}`, nivelData);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao atualizar nível:", err);
+    throw err;
+  }
 }
 
 export async function deleteNivel(id) {
-  const response = await api
-    .delete(`${URL}/${id}`)
-    .then((res) => res.data)
-    .catch((err) => {
-      console.log(err);
-    });
-  return response;
+  try {
+    const res = await api.delete(`${URL}/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao inativar nível:", err);
+    throw err;
+  }
+}
+
+export async function reativarNivel(id) {
+  try {
+    const res = await api.patch(`${URL}/${id}/reativar`);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao reativar nível:", err);
+    throw err;
+  }
 }

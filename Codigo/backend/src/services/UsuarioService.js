@@ -1,4 +1,6 @@
 import UsuarioModel from "../models/UsuarioModel.js";
+import NivelModel from "../models/NivelModel.js";
+import ModuloService from "./ModuloService.js";
 import bcrypt from "bcrypt";
 import {
   NotFoundError,
@@ -13,11 +15,41 @@ import { USER_TYPES } from "../utils/constants.js";
  */
 const UsuarioService = {
   /**
-   * Busca todos os usuários
+   * Busca todos os usuários (com nivel_nome e nivel_escola/nivel_escola_nome)
+   * nivel_nome: do id_nivel atribuído manualmente
+   * nivel_escola: calculado por módulos concluídos (como no perfil)
    * @returns {Promise<Array>} Lista de usuários
    */
   async getAll() {
-    return UsuarioModel.getAll();
+    const usuarios = await UsuarioModel.getAll();
+    const niveis = await NivelModel.findAll();
+    const nivelById = new Map(niveis.map((n) => [n.id_nivel, n.nome]));
+
+    const resultado = await Promise.all(
+      usuarios.map(async (u) => {
+        const nivel_nome = u.id_nivel != null ? nivelById.get(u.id_nivel) || null : null;
+        let nivel_escola = null;
+        let nivel_escola_nome = null;
+        try {
+          nivel_escola = await ModuloService.getNivelEscola(u.id_usuario);
+          if (nivel_escola != null) {
+            nivel_escola_nome = nivelById.get(nivel_escola) || null;
+          }
+        } catch {
+          // getNivelEscola pode falhar se módulos não configurados
+        }
+        const nivelExibir = nivel_escola_nome ?? nivel_nome;
+        return {
+          ...u,
+          nivel_nome,
+          nivel_escola,
+          nivel_escola_nome,
+          nivel_exibir: nivelExibir || null,
+        };
+      })
+    );
+
+    return resultado;
   },
 
   /**
