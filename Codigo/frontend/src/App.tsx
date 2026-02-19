@@ -14,10 +14,7 @@ import SobreNos from "./pages/SobreNos";
 import PortalDoDiscipuloAdmin from "./pages/PortalDoDiscipuloAdmin";
 import GerirUser from "./pages/GerirUser";
 import LicoesSecretariaAdmin from "./pages/LicoesSecretariaAdmin";
-import CriarLicoesSecretariaAdmin from "./pages/CriarLicoesSecretariaAdmin";
-import EditarLicoesSecretariaAdmin from "./pages/EditarLicoesSecretariaAdmin";
 import FormulariosSecretariaCelulasAdmin from "./pages/FormulariosSecretariaCelulasAdmin";
-import CriarFormulariosSecretariaCelulasAdmin from "./pages/CriarFormulariosSecretariaCelulasAdmin";
 import ModulosEscolaDiscipulosAdmin from "./pages/ModulosEscolaDiscipulosAdmin";
 import CriarModulosEscolaDiscipulosAdmin from "./pages/CriarModulosEscolaDiscipulosAdmin";
 import EditarModulosEscolaDiscipulosAdmin from "./pages/EditarModulosEscolaDiscipulosAdmin";
@@ -133,22 +130,6 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/admin/licoes/criar"
-        element={
-          <ProtectedRoute requireAdmin>
-            <CriarLicoesSecretariaAdmin />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/licoes/editar/:id"
-        element={
-          <ProtectedRoute requireAdmin>
-            <EditarLicoesSecretariaAdmin />
-          </ProtectedRoute>
-        }
-      />
 
       {/* Formulários - Admin */}
       <Route
@@ -156,14 +137,6 @@ export default function App() {
         element={
           <ProtectedRoute requireAdmin>
             <FormulariosSecretariaCelulasAdmin />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/formularios/criar"
-        element={
-          <ProtectedRoute requireAdmin>
-            <CriarFormulariosSecretariaCelulasAdmin />
           </ProtectedRoute>
         }
       />
@@ -318,7 +291,7 @@ export default function App() {
       />
       <Route
         path="/CriarFormulariosSecretariaCelulasAdmin"
-        element={<Navigate to="/admin/formularios/criar" replace />}
+        element={<Navigate to="/admin/formularios" replace />}
       />
       <Route
         path="/ModulosEscolaDiscipulosAdmin"

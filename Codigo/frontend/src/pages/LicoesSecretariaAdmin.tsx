@@ -4,8 +4,16 @@ import "../style/LicoesSecretariaAdmin.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import InputModal from "../components/ui/InputModal";
+import Toast from "../components/ui/Toast";
+import ConfirmModal from "../components/ui/ConfirmModal";
 
-import axios from "axios";
+import licaoService, {
+  Licao,
+  LicaoCampo,
+} from "../services/licaoService";
+import campoService from "../services/campoService";
+import { uploadCampo, isImagePath } from "../services/uploadService";
+import { ASSETS_BASE } from "../config/api";
 
 import TextField from "../components/fields/TextField";
 import NumberField from "../components/fields/NumberField";
@@ -15,14 +23,6 @@ import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 
 /* TYPES */
-type Licao = {
-  id: number;
-  titulo: string;
-  descricao?: string | null;
-  ativo?: number;
-  campos?: any[];
-};
-
 type LicaoForm = {
   id: number | null;
   nome: string;
@@ -41,7 +41,7 @@ type LocalField = {
   id_campo: number;
   tipo: string;
   label: string;
-  conteudo: any;
+  conteudo: unknown;
 };
 
 const initialFormState: LicaoForm = {
@@ -51,6 +51,15 @@ const initialFormState: LicaoForm = {
   ativo: 1,
   arquivo: null,
 };
+
+const fieldOptions = [
+  { label: "Texto", tipo: "texto", component: TextField },
+  { label: "Número", tipo: "numero", component: NumberField },
+  { label: "Data", tipo: "data", component: DateField },
+  { label: "Link", tipo: "link", component: LinkField },
+  { label: "Upload", tipo: "upload", component: UploadField },
+  { label: "Vídeo", tipo: "video", component: VideoField },
+];
 
 const LicoesSecretariaAdmin: React.FC = () => {
   const [licoes, setLicoes] = useState<Licao[]>([]);
@@ -64,21 +73,15 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
   const [fields, setFields] = useState<LocalField[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<"success" | "error" | "info">("info");
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [licaoToDelete, setLicaoToDelete] = useState<number | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
-    window.setTimeout(() => setToast(null), 2200);
+    setToastVariant(variant);
   };
-
-  const fieldOptions = [
-    { label: "Texto", tipo: "texto", component: TextField },
-    { label: "Número", tipo: "numero", component: NumberField },
-    { label: "Data", tipo: "data", component: DateField },
-    { label: "Link", tipo: "link", component: LinkField },
-    { label: "Upload", tipo: "upload", component: UploadField },
-    { label: "Vídeo", tipo: "video", component: VideoField },
-  ];
 
   useEffect(() => {
     loadData();
@@ -87,15 +90,19 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([fetchLicoes(), fetchAvailableFields()]);
-    setLoading(false);
+    try {
+      await Promise.all([fetchLicoes(), fetchAvailableFields()]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchLicoes = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/licao");
-      const mapped: Licao[] = (res.data || []).map((l: any) => ({
-        id: l.id_licao ?? l.id ?? 0,
+      const data = await licaoService.getAll();
+      const mapped: Licao[] = (data || []).map((l) => ({
+        ...l,
+        id_licao: l.id_licao,
         titulo: l.titulo,
         descricao: l.descricao ?? "",
         ativo: l.ativo ?? 1,
@@ -107,52 +114,74 @@ const LicoesSecretariaAdmin: React.FC = () => {
       }
     } catch (err) {
       console.error("Erro ao buscar lições:", err);
+      showToast("Erro ao carregar lições", "error");
     }
   };
 
   const fetchAvailableFields = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/campo");
-      setAvailableFields(res.data || []);
+      const data = await campoService.getByModalidade("licao");
+      setAvailableFields(data || []);
     } catch (err) {
       console.error("Erro ao buscar campos disponíveis:", err);
+      showToast("Erro ao carregar campos", "error");
     }
   };
 
   const handleToggle = async (id: number) => {
     try {
-      const licao = licoes.find((l) => l.id === id);
+      const licao = licoes.find((l) => l.id_licao === id);
       if (!licao) return;
 
-      const camposLimpos = (licao.campos || []).map((campo: any) => ({
+      const camposLimpos: LicaoCampo[] = (licao.campos || []).map((campo) => ({
         id_campo: campo.id_campo,
         label: campo.label || "",
-        conteudo: campo.conteudo || "",
+        conteudo: campo.conteudo ?? "",
       }));
 
-      await axios.put(`http://localhost:3001/api/licao/${id}`, {
+      const novoAtivo = !!(licao.ativo === 1 || licao.ativo === true);
+      await licaoService.update(id, {
         titulo: licao.titulo,
-        descricao: licao.descricao,
-        ativo: licao.ativo === 1 ? false : true,
+        descricao: licao.descricao ?? null,
+        ativo: !novoAtivo,
         campos: camposLimpos,
       });
 
       await fetchLicoes();
-
-      // Se a lição alterada é a que está selecionada, atualizar a visualização
-      if (selectedLicao && selectedLicao.id === id) {
-        const res = await axios.get(`http://localhost:3001/api/licao/${id}`);
-        const l = res.data;
+      if (selectedLicao && selectedLicao.id_licao === id) {
+        const updated = await licaoService.getById(id);
         setSelectedLicao({
-          id: l.id_licao ?? l.id ?? id,
-          titulo: l.titulo,
-          descricao: l.descricao ?? "",
-          ativo: l.ativo ?? 1,
-          campos: l.campos ?? [],
+          ...updated,
+          ativo: updated.ativo ?? 1,
+          campos: updated.campos ?? [],
         });
       }
     } catch (error) {
       console.error("Erro ao alternar lição:", error);
+      showToast("Erro ao alternar status da lição", "error");
+    }
+  };
+
+  const handleDeleteClick = (id: number) => {
+    setLicaoToDelete(id);
+    setShowConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!licaoToDelete) return;
+    const id = licaoToDelete;
+    setShowConfirmDelete(false);
+    setLicaoToDelete(null);
+    try {
+      await licaoService.delete(id);
+      if (selectedLicao?.id_licao === id) {
+        setSelectedLicao(null);
+      }
+      await fetchLicoes();
+      showToast("Lição excluída com sucesso", "success");
+    } catch (err) {
+      console.error("Erro ao excluir lição:", err);
+      showToast("Erro ao excluir lição", "error");
     }
   };
 
@@ -160,51 +189,38 @@ const LicoesSecretariaAdmin: React.FC = () => {
     setSelectedLicao(licao);
   };
 
-  const formatarConteudoCampo = (conteudo: any): React.ReactNode => {
-    if (!conteudo) return "Sem conteúdo";
+  const buildUploadUrl = (path: string) => {
+    if (!path || !path.startsWith("/")) return "";
+    return `${ASSETS_BASE}${path}`;
+  };
 
-    // Se for uma string, tenta parsear como JSON
+  const formatarConteudoCampo = (conteudo: unknown): React.ReactNode => {
+    if (conteudo === null || conteudo === undefined) return "Sem conteúdo";
+
     let parsed = conteudo;
     if (typeof conteudo === "string") {
-      // Verifica se é um arquivo de upload (caminho que começa com /uploads/)
       if (conteudo.startsWith("/uploads/") || conteudo.includes("/uploads/")) {
         const fileName = conteudo.split("/").pop() || "arquivo";
-        const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-        const isImage = [
-          "jpg",
-          "jpeg",
-          "png",
-          "gif",
-          "webp",
-          "svg",
-          "bmp",
-        ].includes(fileExtension);
+        const isImage = isImagePath(conteudo);
+        const fullUrl = buildUploadUrl(conteudo);
 
         return (
           <div className="upload-preview-campo">
-            {isImage ? (
+            {isImage && fullUrl ? (
               <div>
                 <img
-                  src={`http://localhost:3001${conteudo}`}
+                  src={fullUrl}
                   alt={fileName}
-                  style={{
-                    maxWidth: "200px",
-                    maxHeight: "200px",
-                    borderRadius: "4px",
-                  }}
+                  style={{ maxWidth: "200px", maxHeight: "200px", borderRadius: "4px" }}
                 />
                 <br />
               </div>
             ) : null}
             <a
-              href={`http://localhost:3001${conteudo}`}
+              href={fullUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                color: "#3b82f6",
-                textDecoration: "underline",
-                fontSize: "0.9rem",
-              }}
+              className="upload-link"
             >
               📄 {fileName}
             </a>
@@ -212,9 +228,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
         );
       }
 
-      // Verifica se é uma URL de vídeo
-      const videoUrlRegex =
-        /(youtube\.com|youtu\.be|vimeo\.com|\.mp4|\.webm|\.ogg)/i;
+      const videoUrlRegex = /(youtube\.com|youtu\.be|vimeo\.com|\.mp4|\.webm|\.ogg)/i;
       if (videoUrlRegex.test(conteudo)) {
         return renderVideoPreview(conteudo);
       }
@@ -222,45 +236,28 @@ const LicoesSecretariaAdmin: React.FC = () => {
       try {
         parsed = JSON.parse(conteudo);
       } catch {
-        // Não é JSON, retorna a string original
         return conteudo;
       }
     }
 
-    // Se não for um objeto após o parse, retorna como está
     if (typeof parsed !== "object" || parsed === null) {
       return String(conteudo);
     }
-
-    // Para outros tipos de objetos JSON, exibe formatado
-    return (
-      <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>
-    );
+    return <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>;
   };
 
   const renderVideoPreview = (url: string): React.ReactNode => {
     const convertToEmbedUrl = (videoUrl: string): string | null => {
       try {
-        // YouTube
         const youtubeRegex =
           /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
         const youtubeMatch = videoUrl.match(youtubeRegex);
-        if (youtubeMatch && youtubeMatch[1]) {
-          return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-        }
+        if (youtubeMatch?.[1]) return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
 
-        // Vimeo
-        const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
-        const vimeoMatch = videoUrl.match(vimeoRegex);
-        if (vimeoMatch && vimeoMatch[1]) {
-          return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-        }
+        const vimeoMatch = videoUrl.match(/vimeo\.com\/(\d+)/);
+        if (vimeoMatch?.[1]) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
 
-        // Link direto de vídeo
-        if (videoUrl.match(/\.(mp4|webm|ogg)$/i)) {
-          return videoUrl;
-        }
-
+        if (/\.(mp4|webm|ogg)$/i.test(videoUrl)) return videoUrl;
         return null;
       } catch {
         return null;
@@ -276,33 +273,19 @@ const LicoesSecretariaAdmin: React.FC = () => {
       );
     }
 
-    const isDirectVideo = embedUrl.match(/\.(mp4|webm|ogg)$/i);
+    const isDirectVideo = /\.(mp4|webm|ogg)$/i.test(embedUrl);
 
     return (
       <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
         {isDirectVideo ? (
-          <video
-            controls
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "auto",
-              borderRadius: "8px",
-            }}
-          >
+          <video controls style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
             <source src={embedUrl} type="video/mp4" />
             Seu navegador não suporta o elemento de vídeo.
           </video>
         ) : (
           <iframe
             src={embedUrl}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "225px",
-              border: "none",
-              borderRadius: "8px",
-            }}
+            style={{ width: "100%", maxWidth: "400px", height: "225px", border: "none", borderRadius: "8px" }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             title="Video preview"
@@ -316,16 +299,14 @@ const LicoesSecretariaAdmin: React.FC = () => {
     id_campo: number,
     tipo: string,
     label = "",
-    conteudo: any = ""
-  ): LocalField => {
-    return {
-      uid: Date.now() + Math.floor(Math.random() * 10000),
-      id_campo,
-      tipo,
-      label,
-      conteudo,
-    };
-  };
+    conteudo: unknown = ""
+  ): LocalField => ({
+    uid: Date.now() + Math.floor(Math.random() * 10000),
+    id_campo,
+    tipo,
+    label,
+    conteudo,
+  });
 
   const [labelModalOpen, setLabelModalOpen] = useState(false);
   const [labelModalTipo, setLabelModalTipo] = useState<string | null>(null);
@@ -342,25 +323,18 @@ const LicoesSecretariaAdmin: React.FC = () => {
     setLabelModalTipo(null);
 
     const campo = availableFields.find(
-      (c) => String(c.tipo_campo).toLowerCase() === tipo!.toLowerCase()
+      (c) => String(c.tipo_campo).toLowerCase() === tipo?.toLowerCase()
     );
     if (!campo) {
       showToast(`Nenhum campo disponível para o tipo ${tipo}`);
       return;
     }
 
-    // Define valor inicial baseado no tipo
-    let conteudoInicial: any = "";
-    if (tipo === "numero") {
-      conteudoInicial = 0;
-    } else if (tipo === "data") {
-      conteudoInicial = "";
-    }
+    let conteudoInicial: unknown = "";
+    if (tipo === "numero") conteudoInicial = 0;
+    else if (tipo === "data") conteudoInicial = "";
 
-    setFields((prev) => [
-      ...prev,
-      createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
-    ]);
+    setFields((prev) => [...prev, createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial)]);
   };
 
   const removeField = (uid: number) => {
@@ -377,34 +351,32 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
   const openEditModal = async (id: number) => {
     try {
-      const res = await axios.get(`http://localhost:3001/api/licao/${id}`);
-      const l = res.data;
+      const l = await licaoService.getById(id);
 
       setCurrentForm({
-        id: l.id_licao ?? l.id ?? id,
+        id: l.id_licao,
         nome: l.titulo ?? "",
         descricao: l.descricao ?? "",
-        ativo: l.ativo ?? 1,
+        ativo: l.ativo === 1 || l.ativo === true ? 1 : 0,
         arquivo: null,
       });
 
-      const incomingFields = (l.campos ?? []).map((c: any, idx: number) =>
+      const incomingFields = (l.campos ?? []).map((c, idx) =>
         createLocalField(
           c.id_campo,
-          availableFields.find((f) => f.id_campo === c.id_campo)?.tipo_campo ??
-            "texto",
+          availableFields.find((f) => f.id_campo === c.id_campo)?.tipo_campo ?? "texto",
           c.label ?? `Campo ${idx + 1}`,
           c.conteudo ?? ""
         )
       );
 
       setFields(incomingFields);
-      setLicaoToEdit(l.id_licao ?? l.id ?? id);
+      setLicaoToEdit(l.id_licao);
       setShowFormModal(true);
       setTimeout(() => nameRef.current?.focus(), 100);
     } catch (err) {
       console.error("Erro ao carregar lição:", err);
-      showToast("Erro ao carregar lição para edição.");
+      showToast("Erro ao carregar lição para edição", "error");
     }
   };
 
@@ -415,49 +387,23 @@ const LicoesSecretariaAdmin: React.FC = () => {
     setFields([]);
   };
 
-  // Função auxiliar para fazer upload de arquivo
-  const uploadFile = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axios.post(
-        "http://localhost:3001/api/upload/campo",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data.path || response.data.url || response.data.filePath;
-    } catch (error: any) {
-      console.error("Erro ao fazer upload:", error);
-      const errorMessage =
-        error?.response?.data?.error || "Falha ao fazer upload do arquivo";
-      throw new Error(errorMessage);
-    }
-  };
-
   const saveForm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
     if (!currentForm.nome.trim()) {
-      showToast("Título da lição é obrigatório");
+      showToast("Título da lição é obrigatório", "error");
       return;
     }
 
-    // Processar uploads antes de montar o payload
     const processedFields = await Promise.all(
       fields.map(async (f) => {
         let conteudo = f.conteudo ?? "";
 
-        // Se o conteúdo é um File (upload), fazer upload primeiro
         if (conteudo instanceof File) {
           try {
-            conteudo = await uploadFile(conteudo);
+            conteudo = await uploadCampo(conteudo);
           } catch (error) {
-            showToast(`Erro ao fazer upload do arquivo: ${f.label}`);
+            showToast(`Erro ao fazer upload do arquivo: ${f.label}`, "error");
             throw error;
           }
         }
@@ -466,13 +412,17 @@ const LicoesSecretariaAdmin: React.FC = () => {
       })
     );
 
-    const camposPayload = processedFields.map((f) => ({
-      id_campo: f.id_campo,
-      label: f.label ?? "",
-      conteudo: f.conteudo ?? "",
-    }));
+    const camposPayload: LicaoCampo[] = processedFields.map((f) => {
+      let conteudo: string | number | boolean | null = "";
+      const v = f.conteudo;
+      if (v === null || v === undefined) conteudo = "";
+      else if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") conteudo = v;
+      else if (typeof v === "object") conteudo = JSON.stringify(v);
+      else conteudo = String(v);
+      return { id_campo: f.id_campo, label: f.label ?? "", conteudo };
+    });
 
-    const payload: any = {
+    const payload = {
       titulo: currentForm.nome,
       descricao: currentForm.descricao || null,
       ativo: Boolean(currentForm.ativo),
@@ -481,62 +431,45 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
     try {
       if (licaoToEdit) {
-        await axios.put(
-          `http://localhost:3001/api/licao/${licaoToEdit}`,
-          payload
-        );
+        await licaoService.update(licaoToEdit, payload);
         await fetchLicoes();
-
-        // Atualizar a lição selecionada se for a que foi editada
-        if (selectedLicao && selectedLicao.id === licaoToEdit) {
-          const res = await axios.get(
-            `http://localhost:3001/api/licao/${licaoToEdit}`
-          );
-          const l = res.data;
-          setSelectedLicao({
-            id: l.id_licao ?? l.id ?? licaoToEdit,
-            titulo: l.titulo,
-            descricao: l.descricao ?? "",
-            ativo: l.ativo ?? 1,
-            campos: l.campos ?? [],
-          });
+        if (selectedLicao && selectedLicao.id_licao === licaoToEdit) {
+          const updated = await licaoService.getById(licaoToEdit);
+          setSelectedLicao({ ...updated, campos: updated.campos ?? [] });
         }
-
-        showToast("Lição atualizada com sucesso!");
+        showToast("Lição atualizada com sucesso!", "success");
       } else {
-        await axios.post("http://localhost:3001/api/licao", payload);
+        await licaoService.create(payload);
         await fetchLicoes();
-        showToast("Lição criada com sucesso!");
+        showToast("Lição criada com sucesso!", "success");
       }
       closeFormModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao salvar lição:", err);
-
-      // Trata diferentes formatos de erro
+      const errObj = err as { response?: { data?: { errors?: string[]; error?: string } } };
       let msg = "Erro ao salvar lição";
-      if (
-        err?.response?.data?.errors &&
-        Array.isArray(err.response.data.errors)
-      ) {
-        msg = err.response.data.errors.join(", ");
-      } else if (err?.response?.data?.error) {
-        msg = err.response.data.error;
+      const errors = errObj?.response?.data?.errors;
+      const errorStr = errObj?.response?.data?.error;
+      if (Array.isArray(errors)) {
+        msg = errors.join(", ");
+      } else if (errorStr) {
+        msg = errorStr;
       }
-
-      showToast(msg);
+      showToast(msg, "error");
     }
   };
+
+  const isAtivo = (l: Licao) => l.ativo === 1 || l.ativo === true;
 
   return (
     <div className="licoes-page page-with-fixed-header">
       <Header />
-      <main className="page">
-        <h1 className="page-title">SECRETARIA DAS CÉLULAS</h1>
+      <main className="licoes-main">
+        <h1 className="licoes-title">Secretaria das Células – Lições</h1>
 
         {loading && <p className="loading-message">Carregando...</p>}
 
         <section className="licoes-layout">
-          {/* Coluna esquerda - Lista de Lições */}
           <aside className="panel licoes-left" aria-label="Lista de lições">
             <div className="list-header">
               <h2>Lições</h2>
@@ -545,59 +478,47 @@ const LicoesSecretariaAdmin: React.FC = () => {
             <div className="list">
               {licoes.map((licao) => (
                 <div
-                  key={licao.id}
-                  className={`licao-item ${
-                    selectedLicao?.id === licao.id ? "selected" : ""
-                  } ${!licao.ativo ? "inactive" : ""}`}
+                  key={licao.id_licao}
+                  className={`licao-item ${selectedLicao?.id_licao === licao.id_licao ? "selected" : ""} ${!isAtivo(licao) ? "inactive" : ""}`}
                   onClick={() => handleSelectLicao(licao)}
                 >
                   <div className="licao-item__info">
                     <span className="licao-item__name">{licao.titulo}</span>
                   </div>
                   <button
-                    className={`btn-status ${
-                      licao.ativo ? "active" : "inactive"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggle(licao.id);
-                    }}
-                    title={licao.ativo ? "Desativar lição" : "Ativar lição"}
+                    className={`btn-status ${isAtivo(licao) ? "active" : "inactive"}`}
+                    onClick={(e) => { e.stopPropagation(); handleToggle(licao.id_licao); }}
+                    title={isAtivo(licao) ? "Desativar lição" : "Ativar lição"}
                   >
-                    {licao.ativo ? "Ativo" : "Inativo"}
+                    {isAtivo(licao) ? "Ativo" : "Inativo"}
                   </button>
                 </div>
               ))}
             </div>
             <button className="btn-create" onClick={openCreateModal}>
-              + CRIAR LIÇÃO
+              + Criar lição
             </button>
           </aside>
 
-          {/* Coluna direita - Visualização da Lição */}
-          <section
-            className="panel licoes-center"
-            aria-label="Detalhes da lição"
-          >
+          <section className="panel licoes-center" aria-label="Detalhes da lição">
             {selectedLicao ? (
               <div className="licao-card">
                 <div className="licao-header">
                   <div className="licao-title-area">
                     <h2 className="licao-title">{selectedLicao.titulo}</h2>
-                    <span
-                      className={`badge badge-${
-                        selectedLicao.ativo ? "active" : "inactive"
-                      }`}
-                    >
-                      {selectedLicao.ativo ? "Ativo" : "Inativo"}
+                    <span className={`badge badge-${isAtivo(selectedLicao) ? "active" : "inactive"}`}>
+                      {isAtivo(selectedLicao) ? "Ativo" : "Inativo"}
                     </span>
                   </div>
                   <div className="licao-actions">
-                    <button
-                      className="btn-edit"
-                      onClick={() => openEditModal(selectedLicao.id)}
-                    >
+                    <button className="btn-edit" onClick={() => openEditModal(selectedLicao.id_licao)}>
                       Editar
+                    </button>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDeleteClick(selectedLicao.id_licao)}
+                    >
+                      Excluir
                     </button>
                   </div>
                 </div>
@@ -611,28 +532,22 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
                 <div className="licao-meta">
                   <div className="meta-item">
-                    <span className="meta-label">Campos:</span>
-                    <span className="meta-value">
-                      {selectedLicao.campos?.length || 0}
-                    </span>
+                    <span className="meta-label">Campos</span>
+                    <span className="meta-value">{selectedLicao.campos?.length || 0}</span>
                   </div>
                 </div>
 
                 {selectedLicao.campos && selectedLicao.campos.length > 0 ? (
                   <div className="licao-fields">
-                    <h3>Campos Personalizados</h3>
+                    <h3>Campos personalizados</h3>
                     <div className="campos-grid">
                       {selectedLicao.campos.map((campo, index) => (
                         <div key={index} className="campo-card">
-                          <div className="campo-label">
-                            {campo.label || "Sem label"}
-                          </div>
+                          <div className="campo-label">{campo.label || "Sem label"}</div>
                           <div className="campo-conteudo">
                             {formatarConteudoCampo(campo.conteudo)}
                           </div>
-                          {campo.obrigatorio && (
-                            <span className="campo-required">Obrigatório</span>
-                          )}
+                          {campo.obrigatorio && <span className="campo-required">Obrigatório</span>}
                         </div>
                       ))}
                     </div>
@@ -654,7 +569,9 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
       <Footer />
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <Toast message={toast} onClose={() => setToast(null)} variant={toastVariant} />
+      )}
 
       <InputModal
         open={labelModalOpen}
@@ -662,79 +579,71 @@ const LicoesSecretariaAdmin: React.FC = () => {
         label="Digite o label do campo"
         placeholder="Ex: Nome completo"
         onConfirm={confirmAddField}
-        onCancel={() => {
-          setLabelModalOpen(false);
-          setLabelModalTipo(null);
-        }}
+        onCancel={() => { setLabelModalOpen(false); setLabelModalTipo(null); }}
       />
 
-      {/* FORM MODAL */}
+      <ConfirmModal
+        open={showConfirmDelete}
+        title="Excluir lição"
+        message="Tem certeza que deseja excluir esta lição? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => { setShowConfirmDelete(false); setLicaoToDelete(null); }}
+      />
+
       {showFormModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
-            <h2>{licaoToEdit ? "Editar Lição" : "Criar Nova Lição"}</h2>
+        <div className="modal-overlay" onClick={closeFormModal}>
+          <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
+            <h2>{licaoToEdit ? "Editar lição" : "Criar nova lição"}</h2>
 
             <form onSubmit={saveForm}>
               <label>Título</label>
               <input
                 ref={nameRef}
                 value={currentForm.nome}
-                onChange={(e) =>
-                  setCurrentForm({ ...currentForm, nome: e.target.value })
-                }
+                onChange={(e) => setCurrentForm({ ...currentForm, nome: e.target.value })}
                 required
               />
 
               <label>Descrição</label>
               <textarea
                 value={currentForm.descricao}
-                onChange={(e) =>
-                  setCurrentForm({ ...currentForm, descricao: e.target.value })
-                }
+                onChange={(e) => setCurrentForm({ ...currentForm, descricao: e.target.value })}
                 rows={4}
               />
 
               <label>Ativo</label>
               <select
                 value={currentForm.ativo}
-                onChange={(e) =>
-                  setCurrentForm({
-                    ...currentForm,
-                    ativo: Number(e.target.value),
-                  })
-                }
+                onChange={(e) => setCurrentForm({ ...currentForm, ativo: Number(e.target.value) })}
               >
                 <option value={1}>Ativo</option>
                 <option value={0}>Inativo</option>
               </select>
 
-              <h3>Campos da Lição</h3>
+              <h3>Campos da lição</h3>
 
               <div className="fields-container">
-                {fields.length === 0 && (
-                  <p className="muted">Nenhum campo adicionado.</p>
-                )}
+                {fields.length === 0 && <p className="muted">Nenhum campo adicionado.</p>}
 
                 {fields.map((f) => {
-                  const Component = fieldOptions.find(
-                    (o) => o.tipo === f.tipo
-                  )?.component;
+                  const Component = fieldOptions.find((o) => o.tipo === f.tipo)?.component;
                   if (!Component) return null;
-
                   return (
                     <div key={f.uid} className="field-wrapper">
                       <div className="dynamic-field-row">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <Component
                           id={String(f.uid)}
                           name={`campo_${f.uid}`}
                           label={f.label}
-                          value={f.conteudo}
+                          value={f.conteudo as any}
                           onChange={(v: any) =>
                             setFields((prev) =>
                               prev.map((fld) =>
-                                fld.uid === f.uid
-                                  ? { ...fld, conteudo: v }
-                                  : fld
+                                fld.uid === f.uid ? { ...fld, conteudo: v } : fld
                               )
                             )
                           }
@@ -755,26 +664,15 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
               <div className="field-add-buttons">
                 {fieldOptions.map((opt) => (
-                  <button
-                    key={opt.tipo}
-                    type="button"
-                    onClick={() => addField(opt.tipo)}
-                  >
+                  <button key={opt.tipo} type="button" onClick={() => addField(opt.tipo)}>
                     + {opt.label}
                   </button>
                 ))}
               </div>
 
               <div className="modal-actions">
-                <button type="submit" className="save-btn">
-                  Salvar
-                </button>
-
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={closeFormModal}
-                >
+                <button type="submit" className="save-btn">Salvar</button>
+                <button type="button" className="cancel-btn" onClick={closeFormModal}>
                   Cancelar
                 </button>
               </div>

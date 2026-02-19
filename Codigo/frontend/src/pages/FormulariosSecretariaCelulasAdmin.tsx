@@ -4,11 +4,15 @@ import "../style/FormulariosSecretariaCelulasAdmin.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import InputModal from "../components/ui/InputModal";
+import Toast from "../components/ui/Toast";
+import ConfirmModal from "../components/ui/ConfirmModal";
 
-import axios from "axios";
-
+import formularioService, { FormularioCampo } from "../services/formularioService";
 import formularioRespostaService from "../services/formularioRespostaService";
 import celulaService from "../services/celulaService";
+import campoService from "../services/campoService";
+import { uploadCampo, isImagePath } from "../services/uploadService";
+import { ASSETS_BASE } from "../config/api";
 
 import TextField from "../components/fields/TextField";
 import NumberField from "../components/fields/NumberField";
@@ -84,6 +88,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   const [fields, setFields] = useState<LocalField[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  const [toastVariant, setToastVariant] = useState<"success" | "error" | "info">("info");
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [formularioToDelete, setFormularioToDelete] = useState<number | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
 
   const [respostas, setRespostas] = useState<Resposta[]>([]);
@@ -131,25 +138,28 @@ export default function FormulariosSecretariaCelulasAdmin() {
     setRespostaDetalhe(null);
   }, [selectedFormulario?.id]);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
-    window.setTimeout(() => setToast(null), 2200);
+    setToastVariant(variant);
   };
 
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([fetchFormularios(), fetchAvailableFields()]);
-    setLoading(false);
+    try {
+      await Promise.all([fetchFormularios(), fetchAvailableFields()]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchFormularios = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/formulario");
-      const mapped: Formulario[] = (res.data || []).map((f: any) => ({
-        id: f.id_formulario ?? f.id ?? 0,
+      const data = await formularioService.getAll();
+      const mapped: Formulario[] = (data || []).map((f) => ({
+        id: f.id_formulario,
         titulo: f.titulo,
         descricao: f.descricao ?? "",
-        ativo: f.ativo ?? 1,
+        ativo: f.ativo === true || f.ativo === 1 ? 1 : 0,
         campos: f.campos ?? [],
       }));
       setFormularios(mapped);
@@ -158,57 +168,78 @@ export default function FormulariosSecretariaCelulasAdmin() {
       }
     } catch (err) {
       console.error("Erro ao buscar formulários:", err);
+      showToast("Erro ao carregar formulários", "error");
     }
   };
 
   const fetchAvailableFields = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/campo");
-      setAvailableFields(res.data || []);
+      const data = await campoService.getByModalidade("formulario");
+      setAvailableFields(data || []);
     } catch (err) {
       console.error("Erro ao buscar campos disponíveis:", err);
+      showToast("Erro ao carregar campos", "error");
     }
   };
+
+  const isAtivo = (f: Formulario) => (f.ativo ?? 0) === 1;
 
   const handleToggle = async (id: number) => {
     try {
       const formulario = formularios.find((f) => f.id === id);
       if (!formulario) return;
 
-      const camposLimpos = (formulario.campos || []).map(
-        (campo: any, index: number) => ({
+      const camposLimpos: FormularioCampo[] = (formulario.campos || []).map(
+        (campo, index) => ({
           id_campo: campo.id_campo,
           label: campo.label || "",
-          conteudo: campo.conteudo || "",
+          conteudo: campo.conteudo ?? "",
           ordem: index,
         })
       );
 
-      await axios.put(`http://localhost:3001/api/formulario/${id}`, {
+      await formularioService.update(id, {
         titulo: formulario.titulo,
-        descricao: formulario.descricao,
-        ativo: formulario.ativo === 1 ? false : true,
+        descricao: formulario.descricao ?? null,
+        ativo: !isAtivo(formulario),
         campos: camposLimpos,
       });
 
       await fetchFormularios();
-
-      // Se o formulário alterado é o que está selecionado, atualizar a visualização
       if (selectedFormulario && selectedFormulario.id === id) {
-        const res = await axios.get(
-          `http://localhost:3001/api/formulario/${id}`
-        );
-        const f = res.data;
+        const updated = await formularioService.getById(id);
         setSelectedFormulario({
-          id: f.id_formulario ?? f.id ?? id,
-          titulo: f.titulo,
-          descricao: f.descricao ?? "",
-          ativo: f.ativo ?? 1,
-          campos: f.campos ?? [],
+          id: updated.id_formulario,
+          titulo: updated.titulo,
+          descricao: updated.descricao ?? "",
+          ativo: updated.ativo === true || updated.ativo === 1 ? 1 : 0,
+          campos: updated.campos ?? [],
         });
       }
     } catch (error) {
       console.error("Erro ao alternar formulário:", error);
+      showToast("Erro ao alternar status do formulário", "error");
+    }
+  };
+
+  const handleDeleteClick = (id: number) => {
+    setFormularioToDelete(id);
+    setShowConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!formularioToDelete) return;
+    const id = formularioToDelete;
+    setShowConfirmDelete(false);
+    setFormularioToDelete(null);
+    try {
+      await formularioService.delete(id);
+      if (selectedFormulario?.id === id) setSelectedFormulario(null);
+      await fetchFormularios();
+      showToast("Formulário excluído com sucesso", "success");
+    } catch (err) {
+      console.error("Erro ao excluir formulário:", err);
+      showToast("Erro ao excluir formulário", "error");
     }
   };
 
@@ -254,52 +285,34 @@ export default function FormulariosSecretariaCelulasAdmin() {
     (c) => !celulasQueResponderam.includes(c.id_celula)
   );
 
-  const formatarConteudoCampo = (conteudo: any): React.ReactNode => {
-    if (!conteudo) return "Sem conteúdo";
+  const buildUploadUrl = (path: string) => {
+    if (!path || !path.startsWith("/")) return "";
+    return `${ASSETS_BASE}${path}`;
+  };
 
-    // Se for uma string, tenta parsear como JSON
+  const formatarConteudoCampo = (conteudo: unknown): React.ReactNode => {
+    if (conteudo === null || conteudo === undefined) return "Sem conteúdo";
+
     let parsed = conteudo;
     if (typeof conteudo === "string") {
-      // Verifica se é um arquivo de upload (caminho que começa com /uploads/)
       if (conteudo.startsWith("/uploads/") || conteudo.includes("/uploads/")) {
         const fileName = conteudo.split("/").pop() || "arquivo";
-        const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-        const isImage = [
-          "jpg",
-          "jpeg",
-          "png",
-          "gif",
-          "webp",
-          "svg",
-          "bmp",
-        ].includes(fileExtension);
+        const imgCheck = isImagePath(conteudo);
+        const fullUrl = buildUploadUrl(conteudo);
 
         return (
           <div className="upload-preview-campo">
-            {isImage ? (
+            {imgCheck && fullUrl ? (
               <div>
                 <img
-                  src={`http://localhost:3001${conteudo}`}
+                  src={fullUrl}
                   alt={fileName}
-                  style={{
-                    maxWidth: "200px",
-                    maxHeight: "200px",
-                    borderRadius: "4px",
-                  }}
+                  style={{ maxWidth: "200px", maxHeight: "200px", borderRadius: "4px" }}
                 />
                 <br />
               </div>
             ) : null}
-            <a
-              href={`http://localhost:3001${conteudo}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#3b82f6",
-                textDecoration: "underline",
-                fontSize: "0.9rem",
-              }}
-            >
+            <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="upload-link">
               📄 {fileName}
             </a>
           </div>
@@ -321,15 +334,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
       }
     }
 
-    // Se não for um objeto após o parse, retorna como está
-    if (typeof parsed !== "object" || parsed === null) {
-      return String(conteudo);
-    }
-
-    // Para outros tipos de objetos JSON, exibe formatado
-    return (
-      <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>
-    );
+    if (typeof parsed !== "object" || parsed === null) return String(conteudo);
+    return <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>;
   };
 
   const renderVideoPreview = (url: string): React.ReactNode => {
@@ -470,14 +476,13 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   const openEditModal = async (id: number) => {
     try {
-      const res = await axios.get(`http://localhost:3001/api/formulario/${id}`);
-      const f = res.data;
+      const f = await formularioService.getById(id);
 
       setCurrentForm({
-        id: f.id_formulario ?? f.id ?? id,
+        id: f.id_formulario,
         nome: f.titulo ?? "",
         descricao: f.descricao ?? "",
-        ativo: f.ativo ?? 1,
+        ativo: f.ativo === 1 || f.ativo === true ? 1 : 0,
       });
 
       const incomingFields = (f.campos ?? []).map((c: any, idx: number) => {
@@ -510,12 +515,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
       });
 
       setFields(incomingFields);
-      setFormularioToEdit(f.id_formulario ?? f.id ?? id);
+      setFormularioToEdit(f.id_formulario);
       setShowFormModal(true);
       setTimeout(() => nameRef.current?.focus(), 100);
     } catch (err) {
       console.error("Erro ao carregar formulário:", err);
-      showToast("Erro ao carregar formulário para edição.");
+      showToast("Erro ao carregar formulário para edição", "error");
     }
   };
 
@@ -526,35 +531,11 @@ export default function FormulariosSecretariaCelulasAdmin() {
     setFields([]);
   };
 
-  // Função auxiliar para fazer upload de arquivo
-  const uploadFile = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axios.post(
-        "http://localhost:3001/api/upload/campo",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data.path || response.data.url || response.data.filePath;
-    } catch (error: any) {
-      console.error("Erro ao fazer upload:", error);
-      const errorMessage =
-        error?.response?.data?.error || "Falha ao fazer upload do arquivo";
-      throw new Error(errorMessage);
-    }
-  };
-
   const saveForm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
     if (!currentForm.nome.trim()) {
-      showToast("Título do formulário é obrigatório");
+      showToast("Título do formulário é obrigatório", "error");
       return;
     }
 
@@ -583,9 +564,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
         // Se o conteúdo é um File (upload), fazer upload primeiro
         if (conteudo instanceof File) {
           try {
-            conteudo = await uploadFile(conteudo);
+            conteudo = await uploadCampo(conteudo);
           } catch (error) {
-            showToast(`Erro ao fazer upload do arquivo: ${f.label}`);
+            showToast(`Erro ao fazer upload do arquivo: ${f.label}`, "error");
             throw error;
           }
         }
@@ -594,14 +575,17 @@ export default function FormulariosSecretariaCelulasAdmin() {
       })
     );
 
-    const camposPayload = processedFields.map((f, index) => ({
-      id_campo: f.id_campo,
-      label: f.label ?? "",
-      conteudo: f.conteudo ?? "",
-      ordem: index,
-    }));
+    const camposPayload = processedFields.map((f, index) => {
+      let conteudo: string | number | boolean | null = "";
+      const v = f.conteudo;
+      if (v === null || v === undefined) conteudo = "";
+      else if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") conteudo = v;
+      else if (typeof v === "object") conteudo = JSON.stringify(v);
+      else conteudo = String(v);
+      return { id_campo: f.id_campo, label: f.label ?? "", conteudo, ordem: index };
+    });
 
-    const payload: any = {
+    const payload = {
       titulo: currentForm.nome,
       descricao: currentForm.descricao || null,
       ativo: Boolean(currentForm.ativo),
@@ -610,48 +594,34 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
     try {
       if (formularioToEdit) {
-        await axios.put(
-          `http://localhost:3001/api/formulario/${formularioToEdit}`,
-          payload
-        );
+        await formularioService.update(formularioToEdit, payload);
         await fetchFormularios();
-
-        // Atualizar o formulário selecionado se for o que foi editado
         if (selectedFormulario && selectedFormulario.id === formularioToEdit) {
-          const res = await axios.get(
-            `http://localhost:3001/api/formulario/${formularioToEdit}`
-          );
-          const f = res.data;
+          const updated = await formularioService.getById(formularioToEdit);
           setSelectedFormulario({
-            id: f.id_formulario ?? f.id ?? formularioToEdit,
-            titulo: f.titulo,
-            descricao: f.descricao ?? "",
-            ativo: f.ativo ?? 1,
-            campos: f.campos ?? [],
+            id: updated.id_formulario,
+            titulo: updated.titulo,
+            descricao: updated.descricao ?? "",
+            ativo: updated.ativo === true || updated.ativo === 1 ? 1 : 0,
+            campos: updated.campos ?? [],
           });
         }
-
-        showToast("Formulário atualizado com sucesso!");
+        showToast("Formulário atualizado com sucesso!", "success");
       } else {
-        await axios.post("http://localhost:3001/api/formulario", payload);
+        await formularioService.create(payload);
         await fetchFormularios();
-        showToast("Formulário criado com sucesso!");
+        showToast("Formulário criado com sucesso!", "success");
       }
       closeFormModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao salvar formulário:", err);
-
+      const errObj = err as { response?: { data?: { errors?: string[]; error?: string } } };
       let msg = "Erro ao salvar formulário";
-      if (
-        err?.response?.data?.errors &&
-        Array.isArray(err.response.data.errors)
-      ) {
-        msg = err.response.data.errors.join(", ");
-      } else if (err?.response?.data?.error) {
-        msg = err.response.data.error;
-      }
-
-      showToast(msg);
+      const errors = errObj?.response?.data?.errors;
+      const errorStr = errObj?.response?.data?.error;
+      if (Array.isArray(errors)) msg = errors.join(", ");
+      else if (errorStr) msg = errorStr;
+      showToast(msg, "error");
     }
   };
 
@@ -679,7 +649,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                   key={formulario.id}
                   className={`formulario-item ${
                     selectedFormulario?.id === formulario.id ? "selected" : ""
-                  } ${!formulario.ativo ? "inactive" : ""}`}
+                  } ${!isAtivo(formulario) ? "inactive" : ""}`}
                   onClick={() => handleSelectFormulario(formulario)}
                 >
                   <div className="formulario-item__info">
@@ -688,20 +658,11 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     </span>
                   </div>
                   <button
-                    className={`btn-status ${
-                      formulario.ativo ? "active" : "inactive"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggle(formulario.id);
-                    }}
-                    title={
-                      formulario.ativo
-                        ? "Desativar formulário"
-                        : "Ativar formulário"
-                    }
+                    className={`btn-status ${isAtivo(formulario) ? "active" : "inactive"}`}
+                    onClick={(e) => { e.stopPropagation(); handleToggle(formulario.id); }}
+                    title={isAtivo(formulario) ? "Desativar formulário" : "Ativar formulário"}
                   >
-                    {formulario.ativo ? "Ativo" : "Inativo"}
+                    {isAtivo(formulario) ? "Ativo" : "Inativo"}
                   </button>
                 </div>
               ))}
@@ -746,20 +707,16 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     <h2 className="formulario-title">
                       {selectedFormulario.titulo}
                     </h2>
-                    <span
-                      className={`badge badge-${
-                        selectedFormulario.ativo ? "active" : "inactive"
-                      }`}
-                    >
-                      {selectedFormulario.ativo ? "Ativo" : "Inativo"}
+                    <span className={`badge badge-${isAtivo(selectedFormulario) ? "active" : "inactive"}`}>
+                      {isAtivo(selectedFormulario) ? "Ativo" : "Inativo"}
                     </span>
                   </div>
                   <div className="formulario-actions">
-                    <button
-                      className="btn-edit"
-                      onClick={() => openEditModal(selectedFormulario.id)}
-                    >
+                    <button className="btn-edit" onClick={() => openEditModal(selectedFormulario.id)}>
                       Editar
+                    </button>
+                    <button className="btn-delete" onClick={() => handleDeleteClick(selectedFormulario.id)}>
+                      Excluir
                     </button>
                   </div>
                 </div>
@@ -962,7 +919,18 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
       <Footer />
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && <Toast message={toast} onClose={() => setToast(null)} variant={toastVariant} />}
+
+      <ConfirmModal
+        open={showConfirmDelete}
+        title="Excluir formulário"
+        message="Tem certeza que deseja excluir este formulário? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => { setShowConfirmDelete(false); setFormularioToDelete(null); }}
+      />
 
       <InputModal
         open={labelModalOpen}
@@ -978,8 +946,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
       {/* FORM MODAL */}
       {showFormModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
+        <div className="modal-overlay" onClick={closeFormModal}>
+          <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
             <h2>
               {formularioToEdit ? "Editar Formulário" : "Criar Novo Formulário"}
             </h2>
@@ -1026,26 +994,20 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 )}
 
                 {fields.map((f) => {
-                  const Component = fieldOptions.find(
-                    (o) => o.tipo === f.tipo
-                  )?.component;
+                  const Component = fieldOptions.find((o) => o.tipo === f.tipo)?.component;
                   if (!Component) return null;
-
                   return (
                     <div key={f.uid} className="field-wrapper">
                       <div className="dynamic-field-row">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <Component
                           id={String(f.uid)}
                           name={`campo_${f.uid}`}
                           label={f.label}
-                          value={f.conteudo}
+                          value={f.conteudo as any}
                           onChange={(v: any) =>
                             setFields((prev) =>
-                              prev.map((fld) =>
-                                fld.uid === f.uid
-                                  ? { ...fld, conteudo: v }
-                                  : fld
-                              )
+                              prev.map((fld) => (fld.uid === f.uid ? { ...fld, conteudo: v } : fld))
                             )
                           }
                         />

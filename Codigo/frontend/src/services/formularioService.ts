@@ -1,31 +1,58 @@
+/**
+ * Serviço de Formulários (Secretaria das Células)
+ * Gerencia operações relacionadas a formulários
+ */
+
 import apiClient from "./apiClient";
 
 export interface FormularioCampo {
-  id: number;
+  id?: number;
   id_campo: number;
-  tipo_campo: string;
+  tipo_campo?: string;
   label: string;
-  conteudo?: string | null;
+  conteudo?: string | number | boolean | null;
   obrigatorio?: boolean;
+  ordem?: number;
 }
 
 export interface Formulario {
   id_formulario: number;
   titulo: string;
   descricao?: string | null;
-  ativo: boolean;
+  ativo: number | boolean;
   campos?: FormularioCampo[];
+}
+
+export interface FormularioCreateUpdate {
+  titulo: string;
+  descricao?: string | null;
+  ativo: boolean;
+  campos?: Array<{ id_campo: number; label: string; conteudo?: string | number | boolean | null; ordem?: number }>;
 }
 
 const formularioService = {
   async getAll(): Promise<Formulario[]> {
-    const response = await apiClient.get("/formulario");
-    return response.data;
+    const response = await apiClient.get<Formulario[]>("/formulario");
+    return response.data ?? [];
   },
 
   async getById(id: number): Promise<Formulario> {
-    const response = await apiClient.get(`/formulario/${id}`);
+    const response = await apiClient.get<Formulario>(`/formulario/${id}`);
     return response.data;
+  },
+
+  async create(data: FormularioCreateUpdate): Promise<Formulario> {
+    const response = await apiClient.post<Formulario>("/formulario", data);
+    return response.data;
+  },
+
+  async update(id: number, data: FormularioCreateUpdate): Promise<Formulario> {
+    const response = await apiClient.put<Formulario>(`/formulario/${id}`, data);
+    return response.data;
+  },
+
+  async delete(id: number): Promise<void> {
+    await apiClient.delete(`/formulario/${id}`);
   },
 };
 

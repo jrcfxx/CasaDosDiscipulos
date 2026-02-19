@@ -68,11 +68,17 @@ export default function FormulariosSecretariaCelulasLeader() {
         idUsuario ? celulaService.getByLider(idUsuario) : celulaService.getAtivas(),
       ]);
 
-      setFormularios(formulariosRes);
+      const formulariosNorm = (formulariosRes || []).map((f) => ({
+        ...f,
+        id_formulario: f.id_formulario,
+        ativo: f.ativo === 1 || f.ativo === true,
+      })) as Formulario[];
+
+      setFormularios(formulariosNorm);
       setCelulas(celulasRes);
 
-      if (formulariosRes.length > 0 && !selectedFormulario) {
-        setSelectedFormulario(formulariosRes[0]);
+      if (formulariosNorm.length > 0 && !selectedFormulario) {
+        setSelectedFormulario(formulariosNorm[0]);
       }
       if (celulasRes.length > 0 && selectedCelula === null) {
         setSelectedCelula(celulasRes[0].id_celula);
@@ -88,7 +94,7 @@ export default function FormulariosSecretariaCelulasLeader() {
       setFields(
         selectedFormulario.campos.map((c, idx) => ({
           uid: idx,
-          id_formulario_campo: c.id,
+          id_formulario_campo: c.id ?? c.id_campo ?? idx,
           tipo: c.tipo_campo || "texto",
           label: c.label || `Campo ${idx + 1}`,
           conteudo: "",
