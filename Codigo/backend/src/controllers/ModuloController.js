@@ -107,6 +107,21 @@ const ModuloController = {
   },
 
   /**
+   * Exclui módulo permanentemente
+   * DELETE /api/modulo/:id/permanente
+   */
+  async deletePermanente(req, res, next) {
+    try {
+      await ModuloService.delete(req.params.id);
+      res.status(HTTP_STATUS.OK).json({
+        message: "Módulo excluído permanentemente",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * Vincula quiz a um módulo
    * POST /api/modulo/:id/quiz/:idQuiz
    */
@@ -156,12 +171,30 @@ const ModuloController = {
   /**
    * Lista módulos ativos com progresso do usuário (requer auth)
    * GET /api/modulo/ativos-com-progresso
+   * Retorna { modulos, nivel_escola }
    */
   async activeWithProgress(req, res, next) {
     try {
       const id_usuario = req.usuario?.id_usuario;
-      const modulos = await ModuloService.getActiveWithProgress(id_usuario);
-      res.status(HTTP_STATUS.OK).json(modulos);
+      const resultado = await ModuloService.getActiveWithProgress(id_usuario);
+      res.status(HTTP_STATUS.OK).json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Conclui módulo sem quiz (requer auth)
+   * POST /api/modulo/:id/concluir
+   */
+  async concluir(req, res, next) {
+    try {
+      const id_usuario = req.usuario?.id_usuario;
+      if (!id_usuario) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
+      await ModuloService.concluirModulo(req.params.id, id_usuario);
+      res.status(HTTP_STATUS.OK).json({ message: "Módulo concluído com sucesso" });
     } catch (error) {
       next(error);
     }
@@ -189,6 +222,27 @@ const ModuloController = {
       const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
       const ranking = await ModuloService.getRanking(limit);
       res.status(HTTP_STATUS.OK).json(ranking);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Posição do usuário autenticado no ranking (requer auth)
+   * GET /api/modulo/ranking/minha-posicao
+   * Retorna { posicao, pontuacao, nivel_escola, pontuacao_primeiro, pontuacao_anterior }
+   */
+  async minhaPosicao(req, res, next) {
+    try {
+      const id_usuario = req.usuario?.id_usuario;
+      if (!id_usuario) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
+      const dados = await ModuloService.getMinhaPosicao(id_usuario);
+      if (!dados) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      res.status(HTTP_STATUS.OK).json(dados);
     } catch (error) {
       next(error);
     }

@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import authService from "../../services/authService";
 import { getUserProfile } from "../../services/usuario";
 import { useAuth } from "../../hooks/useAuth";
 import "../../style/layout.css";
@@ -33,7 +32,7 @@ const ProfileIcon = () => (
  */
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAdmin, isLider } = useAuth();
+  const { isAdmin, isLider, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -59,8 +58,8 @@ const Header: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    authService.logout();
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   const handlePerfil = () => {

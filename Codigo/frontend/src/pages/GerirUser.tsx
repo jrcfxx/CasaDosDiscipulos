@@ -3,6 +3,7 @@ import "../style/GerirUser.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import perfil from "../assets/perfil-preto.png";
 import { showAllUsers, createUser, updateUser } from "../services/usuario";
 import {
@@ -77,6 +78,8 @@ export default function GerenciarUsuarios() {
     descricao: "",
     ordem: 0,
   });
+  const [showConfirmInativarNivel, setShowConfirmInativarNivel] = useState(false);
+  const [nivelToInativar, setNivelToInativar] = useState<number | null>(null);
 
   const tipoLabels: Record<string, string> = {
     lider: "Líder",
@@ -335,9 +338,16 @@ export default function GerenciarUsuarios() {
     }
   };
 
-  const excluirNivel = async (id: number) => {
-    if (!window.confirm("Deseja realmente inativar este nível?")) return;
+  const handleInativarNivelClick = (id: number) => {
+    setNivelToInativar(id);
+    setShowConfirmInativarNivel(true);
+  };
 
+  const excluirNivelConfirm = async () => {
+    if (nivelToInativar === null) return;
+    const id = nivelToInativar;
+    setShowConfirmInativarNivel(false);
+    setNivelToInativar(null);
     try {
       await deleteNivel(id);
       showToast("Nível inativado com sucesso!");
@@ -508,7 +518,7 @@ export default function GerenciarUsuarios() {
                         </button>
                         <button
                           className="btn-delete"
-                          onClick={() => excluirNivel(nivel.id_nivel)}
+                          onClick={() => handleInativarNivelClick(nivel.id_nivel)}
                         >
                           Inativar
                         </button>
@@ -697,6 +707,20 @@ export default function GerenciarUsuarios() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={showConfirmInativarNivel}
+        title="Tem certeza?"
+        message="Deseja realmente inativar este nível?"
+        confirmLabel="Inativar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={excluirNivelConfirm}
+        onCancel={() => {
+          setShowConfirmInativarNivel(false);
+          setNivelToInativar(null);
+        }}
+      />
 
       {toast && <div className="toast">{toast}</div>}
 

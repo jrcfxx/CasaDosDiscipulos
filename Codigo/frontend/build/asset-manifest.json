@@ -1,0 +1,30 @@
+{
+  "files": {
+    "main.css": "/static/css/main.ae8110c1.css",
+    "main.js": "/static/js/main.44b1ee41.js",
+    "static/js/453.cbd1b867.chunk.js": "/static/js/453.cbd1b867.chunk.js",
+    "static/media/formulario_oficial.jpg": "/static/media/formulario_oficial.600586475397a08e9aff.jpg",
+    "static/media/quizz.jpg": "/static/media/quizz.79ce580e44fb522488a4.jpg",
+    "static/media/tres_mulheres.jpeg": "/static/media/tres_mulheres.e7eedd005cd8e3e0ca46.jpeg",
+    "static/media/casal.jpg": "/static/media/casal.39c0c699504f1ac1d8f0.jpg",
+    "static/media/casal_leitura.jpeg": "/static/media/casal_leitura.fac9662e0639110e3050.jpeg",
+    "static/media/lendo_biblia.jpeg": "/static/media/lendo_biblia.17941faa919a1a5930aa.jpeg",
+    "static/media/lendo_biblia.jpg": "/static/media/lendo_biblia.107f423ad9107e054992.jpg",
+    "static/media/lendo_biblia_.jpeg": "/static/media/lendo_biblia_.7955f94eb9693688756d.jpeg",
+    "static/media/presenca.jpeg": "/static/media/presenca.923571b3b31cdb12eaa9.jpeg",
+    "static/media/celulas.jpg": "/static/media/celulas.687ea542f69ccedc2821.jpg",
+    "static/media/maos_dadas.jpeg": "/static/media/maos_dadas.3c6e3c7a4f409f34bd2c.jpeg",
+    "static/media/4.png": "/static/media/4.c387334b6912d1bae6ca.png",
+    "static/media/icone_igreja.png": "/static/media/icone_igreja.0bdccc9d5a5df91f190b.png",
+    "static/media/logo_casa.png": "/static/media/logo_casa.9112f33da7ea1eeaf7cb.png",
+    "static/media/logo.png": "/static/media/logo.fcd1ed35ce1701623569.png",
+    "index.html": "/index.html",
+    "main.ae8110c1.css.map": "/static/css/main.ae8110c1.css.map",
+    "main.44b1ee41.js.map": "/static/js/main.44b1ee41.js.map",
+    "453.cbd1b867.chunk.js.map": "/static/js/453.cbd1b867.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ae8110c1.css",
+    "static/js/main.44b1ee41.js"
+  ]
+}

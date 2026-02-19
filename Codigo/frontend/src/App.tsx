@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 
 // Componentes
@@ -55,11 +55,12 @@ import Perfil from "./pages/Perfil";
  * - Módulos: Realização apenas
  */
 export default function App() {
+  const navigate = useNavigate();
   const { isAuthenticated, isAdmin, userType, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/";
+    navigate("/", { replace: true });
   };
 
   // Determina o portal correto baseado no tipo de usuário

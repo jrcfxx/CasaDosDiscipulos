@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import authService from "../services/authService";
+import { useAuth } from "../hooks/useAuth";
 import "../style/Login.css";
 import logo from "../assets/logo.png";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,6 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError("");
 
-    // Validação básica
     if (!email || !senha) {
       setError("Preencha todos os campos");
       return;
@@ -29,19 +29,15 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login({ email, senha });
+      const usuario = await login(email, senha);
 
-      console.log("Login bem-sucedido:", response.usuario);
-
-      // Redireciona baseado no tipo de usuário
-      if (response.usuario.tipo === "administrador") {
-        navigate("/portal/admin");
+      if (usuario.tipo === "administrador") {
+        navigate("/portal/admin", { replace: true });
       } else {
-        navigate("/portal/usuario");
+        navigate("/portal/usuario", { replace: true });
       }
-    } catch (err: any) {
-      setError(err.message || "Erro ao fazer login. Tente novamente.");
-      console.error("Erro no login:", err);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erro ao fazer login. Tente novamente.");
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,97 @@ import { NotFoundError, ValidationError } from "../utils/AppError.js";
  * Service para operações relacionadas a quizzes
  * Contém lógica de negócio para gerenciamento de quizzes e suas questões
  */
+const QUESTOES_TIPOS = [
+  "multipla_escolha",
+  "verdadeiro_falso",
+  "discursiva",
+  "checkbox",
+  "select",
+];
+const TIPO_TO_QUIZ_QUESTAO = {
+  multipla_escolha: "multipla_escolha",
+  checkbox: "multipla_escolha",
+  select: "multipla_escolha",
+  verdadeiro_falso: "verdadeiro_falso",
+  discursiva: "discursiva",
+};
+
 class QuizService {
+  /**
+   * Sincroniza campos do quiz (tipo questão) para quiz_questao
+   * Permite que quizzes criados na secretaria com campos apareçam ao realizar módulo
+   * @param {number} id_quiz - ID do quiz
+   * @param {Array} campos - Campos do quiz (de getByEntity, com tipo_campo)
+   */
+  async _syncCamposToQuestoes(id_quiz, campos) {
+    const questionCampos = (campos || []).filter(
+      (c) => c.tipo_campo && QUESTOES_TIPOS.includes(String(c.tipo_campo).toLowerCase())
+    );
+    if (questionCampos.length === 0) return;
+
+    await QuizQuestaoModel.deleteByQuiz(id_quiz);
+
+    for (let i = 0; i < questionCampos.length; i++) {
+      const c = questionCampos[i];
+      const tipoCampo = String(c.tipo_campo).toLowerCase();
+      const tipoQuestao =
+        TIPO_TO_QUIZ_QUESTAO[tipoCampo] || "multipla_escolha";
+      const enunciado = (c.label || "").trim() || `Questão ${i + 1}`;
+      let opcoes = null;
+      let resposta_correta = null;
+
+      if (tipoCampo === "multipla_escolha" || tipoCampo === "checkbox") {
+        try {
+          const parsed = typeof c.conteudo === "string" ? JSON.parse(c.conteudo || "{}") : c.conteudo;
+          const alternativas = parsed?.alternativas || [];
+          const ops = alternativas.map((alt, idx) => ({
+            id: String.fromCharCode(65 + idx),
+            texto: alt.texto || "",
+          }));
+          opcoes = JSON.stringify(ops);
+          const correta = alternativas.findIndex((a) => a.correta);
+          resposta_correta = correta >= 0 ? String.fromCharCode(65 + correta) : null;
+        } catch {
+          opcoes = JSON.stringify([{ id: "A", texto: "Opção A" }]);
+        }
+      } else if (tipoCampo === "select") {
+        try {
+          const parsed = typeof c.conteudo === "string" ? JSON.parse(c.conteudo || "{}") : c.conteudo;
+          const opcoesArr = parsed?.opcoes || [];
+          const ops = opcoesArr.map((o, idx) => ({
+            id: String(idx),
+            texto: typeof o === "string" ? o : String(o),
+          }));
+          opcoes = JSON.stringify(ops);
+          const corretaVal = parsed?.correta;
+          const corretaIdx = opcoesArr.findIndex(
+            (o) => String(o) === String(corretaVal)
+          );
+          resposta_correta =
+            corretaIdx >= 0 ? String(corretaIdx) : (opcoesArr[0] ? "0" : null);
+        } catch {
+          opcoes = JSON.stringify([{ id: "0", texto: "Opção" }]);
+        }
+      } else if (tipoCampo === "verdadeiro_falso") {
+        opcoes = JSON.stringify([
+          { id: "v", texto: "Verdadeiro" },
+          { id: "f", texto: "Falso" },
+        ]);
+        resposta_correta = String(c.conteudo || "").toLowerCase() === "true" ? "v" : "f";
+      }
+      // discursiva: opcoes e resposta_correta permanecem null
+
+      await QuizQuestaoModel.create({
+        id_quiz,
+        tipo_questao: tipoQuestao,
+        enunciado,
+        pontos: 10,
+        ordem: i,
+        opcoes,
+        resposta_correta,
+      });
+    }
+  }
   /**
    * Busca todos os quizzes com suas questões e campos
    * @returns {Promise<Array>} Lista de quizzes com questões e campos
@@ -45,8 +135,14 @@ class QuizService {
       throw new NotFoundError("Quiz não encontrado");
     }
 
-    const questoes = await QuizQuestaoModel.getByQuiz(parsedId);
+    let questoes = await QuizQuestaoModel.getByQuiz(parsedId);
     const campos = await CampoModel.getByEntity("quiz", parsedId);
+
+    // Se não há questões mas há campos tipo pergunta, sincroniza (quizzes antigos da secretaria)
+    if (questoes.length === 0 && campos.length > 0) {
+      await this._syncCamposToQuestoes(parsedId, campos);
+      questoes = await QuizQuestaoModel.getByQuiz(parsedId);
+    }
 
     return { ...quiz, questoes, campos };
   }
@@ -115,7 +211,11 @@ class QuizService {
       novoQuiz.id_quiz
     );
 
-    return { ...novoQuiz, questoes: [], campos: camposVinculados };
+    // Sincroniza campos tipo questão para quiz_questao (para exibir na página de realizar módulo)
+    await this._syncCamposToQuestoes(novoQuiz.id_quiz, camposVinculados);
+
+    const questoes = await QuizQuestaoModel.getByQuiz(novoQuiz.id_quiz);
+    return { ...novoQuiz, questoes, campos: camposVinculados };
   }
 
   /**
@@ -161,9 +261,13 @@ class QuizService {
           campo.id_campo,
           campo.conteudo || "",
           campo.label || "",
-          campo.ordem || 0
+          campo.ordem ?? 0
         );
       }
+
+      // Sincroniza campos tipo questão para quiz_questao
+      const camposAtualizados = await CampoModel.getByEntity("quiz", id);
+      await this._syncCamposToQuestoes(id, camposAtualizados);
     }
 
     // Retorna quiz atualizado com questões e campos

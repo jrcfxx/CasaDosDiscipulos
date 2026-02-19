@@ -84,13 +84,30 @@ body {
   flex: 1;
 }
 
+.modulos-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
 .page-title {
-  display: block;
-  text-align: center;
-  margin: 20px auto 40px;
+  margin: 20px 0 0;
   font-size: clamp(26px, 4vw, 42px);
   font-weight: 800;
   letter-spacing: .02em;
+}
+
+.nivel-badge {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--accent);
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: 1px solid var(--ring);
 }
 
 .loading-message {

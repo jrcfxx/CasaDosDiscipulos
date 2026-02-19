@@ -17,6 +17,8 @@ const ModuloModel = {
         "descricao",
         "ordem",
         "ativo",
+        "obrigatorio",
+        "id_nivel",
         "created_at",
         "updated_at"
       )
@@ -39,7 +41,7 @@ const ModuloModel = {
   async getActive() {
     return knex("modulo")
       .where({ ativo: true })
-      .select("id_modulo", "titulo", "descricao", "ordem")
+      .select("id_modulo", "titulo", "descricao", "ordem", "obrigatorio", "id_nivel")
       .orderBy("ordem", "asc");
   },
 
@@ -54,6 +56,8 @@ const ModuloModel = {
       descricao: data.descricao || null,
       ordem: data.ordem || 0,
       ativo: data.ativo ?? true,
+      obrigatorio: data.obrigatorio ?? true,
+      id_nivel: data.id_nivel ?? null,
     });
 
     return this.getById(id_modulo);

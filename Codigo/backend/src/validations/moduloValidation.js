@@ -22,6 +22,19 @@ export const createModuloSchema = Joi.object({
 
   ativo: Joi.boolean().default(true),
 
+  obrigatorio: Joi.boolean().default(true).messages({
+    "boolean.base": "obrigatorio deve ser true ou false",
+  }),
+
+  id_nivel: Joi.number().integer().positive().allow(null).messages({
+    "number.base": "id_nivel deve ser um número",
+    "number.positive": "id_nivel deve ser um ID válido de nível",
+  }),
+
+  pre_requisitos: Joi.array()
+    .items(Joi.number().integer().positive())
+    .optional(),
+
   campos: Joi.array()
     .items(
       Joi.object({
@@ -62,6 +75,14 @@ export const updateModuloSchema = Joi.object({
   }),
 
   ativo: Joi.boolean(),
+
+  obrigatorio: Joi.boolean(),
+
+  id_nivel: Joi.number().integer().positive().allow(null),
+
+  pre_requisitos: Joi.array()
+    .items(Joi.number().integer().positive())
+    .optional(),
 
   campos: Joi.array()
     .items(

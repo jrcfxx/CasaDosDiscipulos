@@ -4,6 +4,7 @@ import "../style/CriarQuizzesSecretariaCelulasAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import Toast from "../components/ui/Toast";
 
 type Campo = { id: number; rotulo: string };
 
@@ -29,6 +30,7 @@ export default function EditarQuizzesSecretariaCelulas() {
 
   // 🔹 Modal de exclusão
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const confirmBtnRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -87,7 +89,7 @@ export default function EditarQuizzesSecretariaCelulas() {
       arquivo_nome: arquivo?.name ?? null,
     };
     console.log("Alterações salvas:", payload);
-    alert("Alterações salvas com sucesso ✅");
+    setToast("Alterações salvas com sucesso ✅");
   };
 
   // --- EXCLUIR FORMULÁRIO ---
@@ -97,7 +99,7 @@ export default function EditarQuizzesSecretariaCelulas() {
     setCampos([]);
     setArquivo(null);
     setLiberado(false);
-    alert("Formulário excluído.");
+    setToast("Formulário excluído.");
   };
 
   useEffect(() => {
@@ -296,6 +298,9 @@ export default function EditarQuizzesSecretariaCelulas() {
             </div>
           </div>
         </div>
+      )}
+      {toast && (
+        <Toast message={toast} onClose={() => setToast(null)} variant="success" />
       )}
     </div>
   );

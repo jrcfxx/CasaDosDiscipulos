@@ -4,9 +4,12 @@ import "../style/CriarModulosEscolaDiscipulosAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import InputModal from "../components/ui/InputModal";
 
 import moduloService from "../services/moduloService";
 import campoService from "../services/campoService";
+import { showAllNiveis } from "../services/nivel";
+import { uploadCampo } from "../services/uploadService";
 import { Campo, FieldType } from "../types";
 
 // Import dos componentes de campo
@@ -42,10 +45,15 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [toast, setToast] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [obrigatorio, setObrigatorio] = useState(true);
+  const [idNivel, setIdNivel] = useState<number | "">("");
+  const [preRequisitos, setPreRequisitos] = useState<number[]>([]);
 
   const nameRef = useRef<HTMLInputElement>(null);
 
   const [availableFields, setAvailableFields] = useState<Campo[]>([]);
+  const [listaModulos, setListaModulos] = useState<{ id_modulo: number; titulo: string }[]>([]);
+  const [niveis, setNiveis] = useState<{ id_nivel: number; nome: string; ordem: number }[]>([]);
 
   useEffect(() => {
     const loadFields = async () => {
@@ -58,6 +66,30 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
       }
     };
     loadFields();
+  }, []);
+
+  useEffect(() => {
+    const loadModulos = async () => {
+      try {
+        const mods = await moduloService.getAll();
+        setListaModulos(mods.map((m) => ({ id_modulo: m.id_modulo, titulo: m.titulo })));
+      } catch {
+        setListaModulos([]);
+      }
+    };
+    loadModulos();
+  }, []);
+
+  useEffect(() => {
+    const loadNiveis = async () => {
+      try {
+        const n = await showAllNiveis();
+        setNiveis(Array.isArray(n) ? n : []);
+      } catch {
+        setNiveis([]);
+      }
+    };
+    loadNiveis();
   }, []);
 
   useEffect(() => {
@@ -74,6 +106,9 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
     window.setTimeout(() => setToast(null), 2200);
   };
 
+  const [labelModalOpen, setLabelModalOpen] = useState(false);
+  const [labelModalTipo, setLabelModalTipo] = useState<string | null>(null);
+
   const addField = (tipo: string) => {
     if (tipo === "QUIZ") {
       if (selectedQuizId) {
@@ -87,8 +122,15 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
       return;
     }
 
-    const label = prompt("Digite o label do campo:");
-    if (!label) return;
+    setLabelModalTipo(tipo);
+    setLabelModalOpen(true);
+  };
+
+  const confirmAddField = (label: string) => {
+    if (!label.trim()) return;
+    const tipo = labelModalTipo;
+    setLabelModalOpen(false);
+    setLabelModalTipo(null);
 
     const campo = availableFields.find((c) => c.tipo_campo === tipo);
 
@@ -101,8 +143,8 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
       ...prev,
       {
         id: `field-${Date.now()}`,
-        tipo,
-        label,
+        tipo: tipo!,
+        label: label.trim(),
         conteudo: "",
         campo,
       },
@@ -130,15 +172,37 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
       setError(false);
       setLoading(true);
 
-      // Preparar campos (excluindo Quiz que será enviado separadamente)
-      const camposParaEnviar = fields
-        .filter((f) => f.tipo !== "QUIZ" && f.campo)
-        .map((f, index) => ({
-          id_campo: f.campo!.id_campo,
-          label: f.label,
-          conteudo: f.conteudo || "",
-          ordem: index + 1, // Ordem sequencial começando em 1
-        }));
+      // Processar uploads antes de montar o payload
+      const camposProcessados = await Promise.all(
+        fields
+          .filter((f) => f.tipo !== "QUIZ" && f.campo)
+          .map(async (f, index) => {
+            let conteudo = f.conteudo ?? "";
+
+            // Se for File (upload), enviar primeiro e obter o caminho
+            if (conteudo instanceof File) {
+              try {
+                conteudo = await uploadCampo(conteudo);
+              } catch (err: any) {
+                const msg =
+                  err?.response?.data?.error ||
+                  err?.message ||
+                  "Falha ao enviar o arquivo";
+                showToast(`Erro no campo "${f.label}": ${msg}`);
+                throw err;
+              }
+            }
+
+            return {
+              id_campo: f.campo!.id_campo,
+              label: f.label,
+              conteudo: typeof conteudo === "string" ? conteudo : "",
+              ordem: index + 1,
+            };
+          })
+      );
+
+      const camposParaEnviar = camposProcessados;
 
       // Criar módulo com campos
       const moduloData = {
@@ -146,10 +210,11 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
         descricao: moduleDescription || "",
         ordem: moduleOrder,
         ativo: isActive,
+        obrigatorio,
+        id_nivel: obrigatorio && idNivel ? Number(idNivel) : undefined,
+        pre_requisitos: preRequisitos.length > 0 ? preRequisitos : undefined,
         campos: camposParaEnviar,
       };
-
-      console.log("Dados enviados:", moduloData);
 
       const moduloCriado = await moduloService.create(moduloData as any);
 
@@ -159,9 +224,6 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
           await moduloService.vincularQuiz(
             moduloCriado.id_modulo,
             selectedQuizId
-          );
-          console.log(
-            `Quiz ${selectedQuizId} vinculado ao módulo ${moduloCriado.id_modulo}`
           );
         } catch (error) {
           console.error("Erro ao vincular quiz:", error);
@@ -185,7 +247,6 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
         err.response?.data?.errors?.[0] ||
         "Erro ao criar módulo. Verifique os campos.";
 
-      console.log("Detalhes do erro:", err.response?.data);
       showToast(errorMessage);
     } finally {
       setLoading(false);
@@ -246,6 +307,80 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
               onChange={(e) => setModuleOrder(Number(e.target.value))}
               min="1"
             />
+
+            <div className="criar-modulo-toggle-row">
+              <label className="criar-modulo-label">Tipo do módulo</label>
+              <label className="criar-modulo-toggle" title={obrigatorio ? "Obrigatório: segue sequência e conta para o nível" : "Opcional: livre, não bloqueia, não conta para nível"}>
+                <input
+                  type="checkbox"
+                  checked={obrigatorio}
+                  onChange={(e) => setObrigatorio(e.target.checked)}
+                  aria-label="Módulo obrigatório"
+                />
+                <span className="criar-modulo-toggle-slider" />
+                <span className="criar-modulo-toggle-text">
+                  {obrigatorio ? "Obrigatório" : "Opcional"}
+                </span>
+              </label>
+              <p className="criar-modulo-hint">
+                {obrigatorio
+                  ? "Obrigatório: segue sequência e aumenta o nível do usuário."
+                  : "Opcional: livre, acessível a qualquer momento, não conta para o nível."}
+              </p>
+            </div>
+
+            {obrigatorio && (
+              <div className="criar-modulo-field-row">
+                <label className="criar-modulo-label" htmlFor="moduleNivel">
+                  Nível vinculado
+                </label>
+                <select
+                  id="moduleNivel"
+                  className="criar-modulo-input"
+                  value={idNivel}
+                  onChange={(e) => setIdNivel(e.target.value ? Number(e.target.value) : "")}
+                >
+                  <option value="">Nenhum (não conta para nível)</option>
+                  {niveis.map((n) => (
+                    <option key={n.id_nivel} value={n.id_nivel}>
+                      {n.nome}
+                    </option>
+                  ))}
+                </select>
+                <p className="criar-modulo-hint">
+                  Nível que o usuário atinge ao concluir este módulo (cadastrados em Gerenciar Usuários).
+                </p>
+              </div>
+            )}
+
+            <div className="criar-modulo-field-row">
+              <label className="criar-modulo-label">Pré-requisitos</label>
+              <p className="criar-modulo-hint" style={{ marginBottom: "0.5rem" }}>
+                Módulos que devem ser concluídos antes deste (deixe vazio para usar a ordem).
+              </p>
+              {listaModulos.length === 0 ? (
+                <p className="criar-modulo-hint">Nenhum outro módulo cadastrado.</p>
+              ) : (
+                <div className="criar-modulo-pre-req-list">
+                  {listaModulos.map((m) => (
+                    <label key={m.id_modulo} className="criar-modulo-pre-req-item">
+                      <input
+                        type="checkbox"
+                        checked={preRequisitos.includes(m.id_modulo)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPreRequisitos((prev) => [...prev, m.id_modulo]);
+                          } else {
+                            setPreRequisitos((prev) => prev.filter((id) => id !== m.id_modulo));
+                          }
+                        }}
+                      />
+                      <span>{m.titulo}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <h3 className="criar-modulo-section-title">Conteúdos</h3>
             {fields.map((f) => {
@@ -362,6 +497,17 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
       {toast && <div className="criar-modulo-toast">{toast}</div>}
 
+      <InputModal
+        open={labelModalOpen}
+        title="Label do campo"
+        label="Digite o label do campo"
+        placeholder="Ex: Nome completo"
+        onConfirm={confirmAddField}
+        onCancel={() => {
+          setLabelModalOpen(false);
+          setLabelModalTipo(null);
+        }}
+      />
       <Footer />
     </div>
   );

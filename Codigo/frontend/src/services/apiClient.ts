@@ -39,19 +39,20 @@ api.interceptors.request.use(
 
 /**
  * Interceptor de resposta
- * Trata erros globalmente e faz logout em caso de token inválido
+ * Trata erros globalmente e faz logout em caso de token inválido/expirado
  */
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // Se o token for inválido ou expirado, faz logout
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("usuario");
 
-      // Redireciona para login se não estiver já na página de login
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      const hash = window.location.hash || "#/";
+      const isLogin = hash.includes("#/login");
+      if (!isLogin) {
+        window.location.hash = "#/login";
+        window.location.reload();
       }
     }
 

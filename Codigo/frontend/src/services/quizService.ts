@@ -1,11 +1,22 @@
 import apiClient from "./apiClient";
 
+export interface QuizQuestao {
+  id_questao: number;
+  tipo_questao: string;
+  enunciado: string;
+  pontos?: number;
+  ordem?: number;
+  opcoes?: string | Array<{ id: string; texto: string }>;
+  resposta_correta?: string | null;
+}
+
 export interface Quiz {
   id_quiz: number;
   id_modulo?: number;
   titulo: string;
-  descricao: string;
+  descricao?: string;
   ativo: boolean | number;
+  questoes?: QuizQuestao[];
 }
 
 const quizService = {
@@ -48,7 +59,13 @@ const quizService = {
     idQuiz: number,
     idModulo: number,
     respostas: Array<{ id_questao: number; resposta: string }>
-  ): Promise<{ message: string; pontos_obtidos: number; total_questoes: number; eh_repeticao?: boolean }> {
+  ): Promise<{
+    message: string;
+    pontos_obtidos: number;
+    total_questoes: number;
+    pontuacao_maxima?: number;
+    eh_repeticao?: boolean;
+  }> {
     const userStr = localStorage.getItem("usuario");
     const usuario = userStr ? JSON.parse(userStr) : null;
     const id_usuario = usuario?.id_usuario;

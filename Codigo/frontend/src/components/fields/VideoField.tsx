@@ -100,25 +100,15 @@ const VideoField: React.FC<TextFieldProps> = ({
         aria-describedby={error ? `${fieldId}-error` : undefined}
       />
 
-      {/* Instruções para o usuário */}
-      <div
-        style={{
-          marginTop: "0.5rem",
-          padding: "0.75rem",
-          backgroundColor: "#f0f9ff",
-          borderLeft: "3px solid #0284c7",
-          borderRadius: "4px",
-          fontSize: "0.875rem",
-          color: "#0c4a6e",
-        }}
-      >
+      {/* Instruções para o usuário - sempre visíveis */}
+      <div className="video-field-instructions">
         <strong>💡 Como usar:</strong>
-        <ul style={{ margin: "0.5rem 0 0 0", paddingLeft: "1.5rem" }}>
+        <ul>
           <li>
-            Cole o link completo do vídeo do YouTube (ex:
-            https://www.youtube.com/watch?v=...)
+            Cole o link completo do vídeo do YouTube (ex:{" "}
+            <code>https://www.youtube.com/watch?v=...</code>)
           </li>
-          <li>Ou cole o link do Vimeo (ex: https://vimeo.com/...)</li>
+          <li>Ou cole o link do Vimeo (ex: <code>https://vimeo.com/...</code>)</li>
           <li>
             Ou use um link direto para arquivo de vídeo (.mp4, .webm, .ogg)
           </li>

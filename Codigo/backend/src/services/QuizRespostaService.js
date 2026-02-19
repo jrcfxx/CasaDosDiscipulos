@@ -1,6 +1,7 @@
 import QuizRespostaModel from "../models/QuizRespostaModel.js";
 import QuizQuestaoModel from "../models/QuizQuestaoModel.js";
 import QuizModel from "../models/QuizModel.js";
+import ModuloService from "./ModuloService.js";
 import knex from "../database/index.js";
 import AppError, { NotFoundError, ValidationError } from "../utils/AppError.js";
 
@@ -150,6 +151,16 @@ class QuizRespostaService {
       );
     }
 
+    const podeAcessar = await ModuloService.podeAcessarModulo(
+      id_modulo_efetivo,
+      id_usuario
+    );
+    if (!podeAcessar) {
+      throw new ValidationError(
+        "Complete os módulos anteriores na sequência para realizar este quiz."
+      );
+    }
+
     const questoesMap = new Map(questoes.map((q) => [q.id_questao, q]));
 
     const respostasExistentes = await QuizRespostaModel.getByUsuarioAndQuiz(
@@ -226,10 +237,12 @@ class QuizRespostaService {
         });
       }
 
+      const pontuacao_maxima = questoes.reduce((s, q) => s + (q.pontos || 0), 0);
       return {
         message: "Respostas submetidas com sucesso",
         total_questoes: respostas.length,
         pontos_obtidos: pontuacao_total,
+        pontuacao_maxima,
         eh_repeticao: ehRepeticao,
       };
     });

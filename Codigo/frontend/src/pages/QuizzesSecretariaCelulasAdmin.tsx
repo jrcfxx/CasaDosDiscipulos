@@ -3,6 +3,7 @@ import "../style/QuizzesSecretariaCelulasAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import InputModal from "../components/ui/InputModal";
 
 import axios from "axios";
 
@@ -210,12 +211,22 @@ export default function QuizzesSecretariaCelulasAdmin() {
     };
   };
 
+  const [labelModalOpen, setLabelModalOpen] = useState(false);
+  const [labelModalTipo, setLabelModalTipo] = useState<string | null>(null);
+
   const addField = (tipo: string) => {
-    const label = window.prompt("Digite o label do campo:");
-    if (!label) return;
+    setLabelModalTipo(tipo);
+    setLabelModalOpen(true);
+  };
+
+  const confirmAddField = (label: string) => {
+    if (!label.trim()) return;
+    const tipo = labelModalTipo;
+    setLabelModalOpen(false);
+    setLabelModalTipo(null);
 
     const campo = availableFields.find(
-      (c) => String(c.tipo_campo).toLowerCase() === tipo.toLowerCase()
+      (c) => String(c.tipo_campo).toLowerCase() === tipo!.toLowerCase()
     );
     if (!campo) {
       showToast(`Nenhum campo disponível para o tipo ${tipo}`);
@@ -241,7 +252,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
     setFields((prev) => [
       ...prev,
-      createLocalField(campo.id_campo, tipo, label, conteudoInicial),
+      createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
     ]);
   };
 
@@ -354,20 +365,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
       return;
     }
 
-    const seenKeys = new Map<string, number>();
-    const uniqueFields: LocalField[] = [];
-
-    fields.forEach((field) => {
-      const key = `${field.id_campo}_${field.label}`;
-      const existingIndex = seenKeys.get(key);
-
-      if (existingIndex !== undefined) {
-        uniqueFields[existingIndex] = field;
-      } else {
-        seenKeys.set(key, uniqueFields.length);
-        uniqueFields.push(field);
-      }
-    });
+    // Usar uid para preservar todos os campos (evita colapsar questões com mesmo tipo/label)
+    const uniqueFields = fields;
 
     // Processar uploads antes de montar o payload
     const processedFields = await Promise.all(
@@ -959,6 +958,18 @@ export default function QuizzesSecretariaCelulasAdmin() {
       <Footer />
 
       {toast && <div className="toast">{toast}</div>}
+
+      <InputModal
+        open={labelModalOpen}
+        title="Label do campo"
+        label="Digite o label do campo"
+        placeholder="Ex: Nome completo"
+        onConfirm={confirmAddField}
+        onCancel={() => {
+          setLabelModalOpen(false);
+          setLabelModalTipo(null);
+        }}
+      />
 
       {/* FORM MODAL */}
       {showFormModal && (

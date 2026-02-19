@@ -4,53 +4,31 @@ import "../style/PreencherModulosEscolaDiscipulosUser.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import Toast from "../components/ui/Toast";
 import moduloService from "../services/moduloService";
-import quizService from "../services/quizService";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
-
-type Campo = {
-  id?: number;
-  id_campo: number;
-  tipo_campo: string;
-  label: string;
-  conteudo: string | number | null;
-};
-
-type Questao = {
-  id_questao: number;
-  tipo_questao: string;
-  enunciado: string;
-  pontos?: number;
-  ordem?: number;
-  opcoes?: string | Array<{ id: string; texto: string }>;
-  resposta_correta?: string | null;
-};
+import quizService, { type Quiz, type QuizQuestao } from "../services/quizService";
+import { getUploadUrl } from "../services/uploadService";
+import { ASSETS_BASE } from "../config/api";
+import type { Modulo, Campo } from "../types";
 
 const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const idModulo = id ? parseInt(id, 10) : null;
 
-  const [modulo, setModulo] = useState<{
-    id_modulo: number;
-    titulo: string;
-    descricao?: string;
-    campos?: Campo[];
-  } | null>(null);
-  const [quiz, setQuiz] = useState<{
-    id_quiz: number;
-    titulo?: string;
-    questoes?: Questao[];
-  } | null>(null);
+  const [modulo, setModulo] = useState<Modulo | null>(null);
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [respostas, setRespostas] = useState<Record<number, string>>({});
   const [enviando, setEnviando] = useState(false);
+  const [concluindo, setConcluindo] = useState(false);
+  const [erroAcesso, setErroAcesso] = useState<string | null>(null);
   const [resultado, setResultado] = useState<{
     pontos: number;
     total: number;
     eh_repeticao?: boolean;
   } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     if (!idModulo || isNaN(idModulo)) {
@@ -62,6 +40,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setErroAcesso(null);
     try {
       const [moduloData, quizData] = await Promise.all([
         moduloService.getById(idModulo!),
@@ -70,22 +49,77 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       setModulo(moduloData);
 
       if (quizData?.id_quiz) {
-        moduloService.iniciar(idModulo!).catch(() => {});
+        try {
+          await moduloService.iniciar(idModulo!);
+        } catch (e: any) {
+          if (e?.response?.status === 409) {
+            // Módulo já iniciado/concluído — seguir normalmente
+          } else {
+            const msg = e?.response?.data?.error || e?.message || "Complete os módulos anteriores na sequência.";
+            setErroAcesso(msg);
+            return;
+          }
+        }
         const quizCompleto = await quizService.getById(quizData.id_quiz);
         setQuiz(quizCompleto);
         const init: Record<number, string> = {};
-        (quizCompleto.questoes || []).forEach((q) => {
+        (quizCompleto.questoes || []).forEach((q: QuizQuestao) => {
           init[q.id_questao] = "";
         });
         setRespostas(init);
       } else {
-        moduloService.iniciar(idModulo!).catch(() => {});
+        try {
+          await moduloService.iniciar(idModulo!);
+        } catch (e: any) {
+          if (e?.response?.status === 409) {
+            // Módulo já iniciado/concluído — seguir normalmente
+          } else {
+            const msg = e?.response?.data?.error || e?.message || "Complete os módulos anteriores na sequência.";
+            setErroAcesso(msg);
+            return;
+          }
+        }
       }
     } catch (err) {
       console.error("Erro ao carregar:", err);
       navigate("/usuario/modulos");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConcluirSemQuiz = async () => {
+    if (!idModulo) return;
+    setConcluindo(true);
+    try {
+      await moduloService.concluir(idModulo);
+      navigate("/usuario/modulos");
+    } catch (e: any) {
+      const msg = e?.response?.data?.error || e?.message || "Erro ao concluir módulo.";
+      setToast(msg);
+    } finally {
+      setConcluindo(false);
+    }
+  };
+
+  const convertVideoToEmbedUrl = (url: string): string | null => {
+    if (!url || typeof url !== "string") return null;
+    const u = url.trim();
+    if (!u) return null;
+    try {
+      // YouTube - vários formatos: watch?v=ID, youtu.be/ID, embed/ID, /v/ID
+      const ytId =
+        u.match(/(?:[?&]v=|\/embed\/|\/v\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1] ||
+        u.match(/^([a-zA-Z0-9_-]{11})$/)?.[1];
+      if (ytId) return `https://www.youtube.com/embed/${ytId}`;
+      // Vimeo
+      const vimeoId = u.match(/(?:vimeo\.com\/)(\d+)/)?.[1];
+      if (vimeoId) return `https://player.vimeo.com/video/${vimeoId}`;
+      // Vídeo direto (.mp4, .webm, .ogg)
+      if (/\.(mp4|webm|ogg)(\?|$)/i.test(u)) return u.startsWith("http") ? u : `${ASSETS_BASE}${u}`;
+      return null;
+    } catch {
+      return null;
     }
   };
 
@@ -100,35 +134,79 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     }
   };
 
+  const getVideoMimeType = (url: string): string => {
+    if (/\.webm(\?|$)/i.test(url)) return "video/webm";
+    if (/\.ogg(\?|$)/i.test(url)) return "video/ogg";
+    return "video/mp4";
+  };
+
+  const renderVideoEmbed = (valor: string, label?: string) => {
+    const rawUrl = String(valor).startsWith("http")
+      ? String(valor)
+      : `${ASSETS_BASE}${String(valor)}`;
+    const embedUrl = convertVideoToEmbedUrl(rawUrl);
+    if (!embedUrl) return null;
+    const isDirectVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(embedUrl);
+    return (
+      <div className="modulo-video" role="region" aria-label={label ?? "Reprodutor de vídeo"}>
+        {isDirectVideo ? (
+          <video controls playsInline>
+            <source src={embedUrl} type={getVideoMimeType(embedUrl)} />
+            Seu navegador não suporta o vídeo.
+          </video>
+        ) : (
+          <iframe
+            src={embedUrl}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title={label ?? "Vídeo"}
+          />
+        )}
+      </div>
+    );
+  };
+
   const renderConteudo = (campo: Campo) => {
-    const tipo = (campo.tipo_campo || "texto").toLowerCase();
+    const tipo = String(campo.tipo_campo || "texto").toLowerCase();
     const valor = campo.conteudo ?? "";
 
-    if (!valor) return null;
+    if (valor === null || valor === undefined || valor === "") return null;
 
     switch (tipo) {
-      case "link":
+      case "link": {
+        const videoEmbed = renderVideoEmbed(String(valor), campo.label);
+        if (videoEmbed) return videoEmbed;
         return (
           <a href={String(valor)} target="_blank" rel="noopener noreferrer" className="modulo-link">
             {String(valor)}
           </a>
         );
-      case "video":
+      }
+      case "video": {
+        const videoEmbed = renderVideoEmbed(String(valor), campo.label);
+        if (videoEmbed) return videoEmbed;
         return (
-          <div className="modulo-video">
-            <video controls src={String(valor).startsWith("http") ? valor : `${API_URL}${valor}`}>
-              Seu navegador não suporta o vídeo.
-            </video>
-          </div>
+          <a
+            href={String(valor).startsWith("http") ? String(valor) : `${ASSETS_BASE}${String(valor)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="modulo-link"
+          >
+            Assistir vídeo (link externo)
+          </a>
         );
+      }
       case "upload":
-        const url = String(valor).startsWith("http") ? valor : `${API_URL}${valor}`;
+        const url =
+          String(valor).startsWith("http")
+            ? String(valor)
+            : getUploadUrl(String(valor));
         const ext = String(valor).split(".").pop()?.toLowerCase();
         const isImg = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext || "");
         return (
           <div className="modulo-upload">
             {isImg ? (
-              <img src={url} alt={campo.label} />
+              <img src={url} alt={campo.label ?? ""} />
             ) : (
               <a href={url} target="_blank" rel="noopener noreferrer" download>
                 Baixar arquivo
@@ -150,7 +228,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       return !r || (typeof r === "string" && !r.trim());
     });
     if (faltando.length > 0) {
-      alert("Por favor, responda todas as questões.");
+      setToast("Por favor, responda todas as questões.");
       return;
     }
 
@@ -161,13 +239,15 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
         resposta: String(respostas[q.id_questao] || "").trim(),
       }));
       const res = await quizService.responder(quiz.id_quiz, idModulo, payload);
+      const totalPontos =
+        res.pontuacao_maxima ?? (quiz.questoes || []).reduce((s, q) => s + (q.pontos || 0), 0);
       setResultado({
         pontos: res.pontos_obtidos,
-        total: res.total_questoes,
+        total: totalPontos || res.total_questoes,
         eh_repeticao: res.eh_repeticao,
       });
     } catch (err) {
-      alert("Erro ao enviar respostas. Tente novamente.");
+      setToast("Erro ao enviar respostas. Tente novamente.");
       console.error(err);
     } finally {
       setEnviando(false);
@@ -187,6 +267,28 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
   }
 
   if (!modulo) return null;
+
+  if (erroAcesso) {
+    return (
+      <div className="modulo-user page-with-fixed-header">
+        <Header />
+        <main className="pfu-main">
+          <div className="modulo-erro-acesso">
+            <h2>Módulo bloqueado</h2>
+            <p>{erroAcesso}</p>
+            <button
+              type="button"
+              className="pfu-save"
+              onClick={() => navigate("/usuario/modulos")}
+            >
+              Voltar aos módulos
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="modulo-user page-with-fixed-header">
@@ -209,11 +311,15 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
 
           {quiz?.questoes?.length ? (
             resultado ? (
-              <div className="modulo-resultado">
-                <h2>Resultado</h2>
-                <p>
-                  Você obteve <strong>{resultado.pontos}</strong> pontos
-                  {resultado.eh_repeticao && " (participação - quiz já realizado antes)"}.
+              <div className="modulo-resultado modulo-resultado-sucesso">
+                <h2>Quiz concluído!</h2>
+                <p className="modulo-resultado-pontos">
+                  Você obteve <strong>{resultado.pontos}</strong> de {resultado.total} pontos
+                  {resultado.eh_repeticao && (
+                    <span className="modulo-resultado-repeticao">
+                      (participação - quiz já realizado antes)
+                    </span>
+                  )}
                 </p>
                 <button
                   type="button"
@@ -292,7 +398,15 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
             <div className="pfu-actions">
               <button
                 type="button"
-                className="pfu-save"
+                className="pfu-save pfu-concluir"
+                onClick={handleConcluirSemQuiz}
+                disabled={concluindo}
+              >
+                {concluindo ? "Concluindo..." : "Concluir módulo"}
+              </button>
+              <button
+                type="button"
+                className="pfu-cancel"
                 onClick={() => navigate("/usuario/modulos")}
               >
                 Voltar aos módulos
@@ -303,6 +417,14 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       </main>
 
       <Footer />
+
+      {toast && (
+        <Toast
+          message={toast}
+          onClose={() => setToast(null)}
+          variant={toast.includes("Erro") ? "error" : "info"}
+        />
+      )}
     </div>
   );
 };

@@ -39,23 +39,21 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB
   },
   fileFilter: (req, file, cb) => {
-    // Lista de tipos MIME seguros permitidos
     const allowedMimes = [
-      // Documentos
-      "application/pdf", // PDF
-      "application/msword", // DOC
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // DOCX
-      "application/vnd.ms-excel", // XLS
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // XLSX
-      "application/vnd.ms-powerpoint", // PPT
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation", // PPTX
-      "text/plain", // TXT
-      "application/rtf", // RTF
-      "application/vnd.oasis.opendocument.text", // ODT
-      "application/vnd.oasis.opendocument.spreadsheet", // ODS
-      "application/vnd.oasis.opendocument.presentation", // ODP
-
-      // Imagens
+      "application/pdf",
+      "application/x-pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "text/plain",
+      "text/csv",
+      "application/rtf",
+      "application/vnd.oasis.opendocument.text",
+      "application/vnd.oasis.opendocument.spreadsheet",
+      "application/vnd.oasis.opendocument.presentation",
       "image/jpeg",
       "image/jpg",
       "image/png",
@@ -63,32 +61,39 @@ const upload = multer({
       "image/webp",
       "image/svg+xml",
       "image/bmp",
-
-      // Áudio
-      "audio/mpeg", // MP3
+      "audio/mpeg",
       "audio/wav",
       "audio/ogg",
-      "audio/mp4", // M4A
-
-      // Vídeo
+      "audio/mp4",
       "video/mp4",
       "video/mpeg",
       "video/webm",
       "video/ogg",
-
-      // Compactados
       "application/zip",
       "application/x-zip-compressed",
       "application/x-rar-compressed",
       "application/x-7z-compressed",
     ];
 
-    if (allowedMimes.includes(file.mimetype)) {
+    // Extensões permitidas como fallback (alguns navegadores enviam MIME incorreto)
+    const ext = path.extname(file.originalname || "").toLowerCase();
+    const allowedExts = [
+      ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+      ".txt", ".csv", ".rtf", ".odt", ".ods", ".odp",
+      ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp",
+      ".mp3", ".wav", ".ogg", ".m4a", ".mp4", ".webm",
+      ".zip", ".rar", ".7z",
+    ];
+
+    const mimeOk = allowedMimes.includes(file.mimetype);
+    const extOk = allowedExts.includes(ext);
+
+    if (mimeOk || extOk) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          `Tipo de arquivo não permitido: ${file.mimetype}. Tipos permitidos: PDF, Word, Excel, PowerPoint, imagens, áudio e vídeo.`
+          `Tipo não permitido: ${file.mimetype}. Use PDF, Word, imagens, áudio ou vídeo.`
         ),
         false
       );
@@ -121,6 +126,13 @@ router.post("/campo", (req, res) => {
 
     try {
       if (!req.file) {
+        const contentType = req.get("Content-Type") || "";
+        if (!contentType.includes("multipart/form-data")) {
+          return res.status(400).json({
+            error:
+              "Requisição inválida. Use multipart/form-data com o campo 'file'.",
+          });
+        }
         return res.status(400).json({ error: "Nenhum arquivo enviado" });
       }
 

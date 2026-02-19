@@ -354,17 +354,37 @@
 /* File Upload Info */
 .form-field__file-info {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
+  align-items: flex-start;
+  gap: var(--spacing-3);
   margin-top: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-3);
+  padding: var(--spacing-3);
   background-color: var(--color-bg-secondary);
   border-radius: var(--border-radius-md);
   font-size: var(--font-size-sm);
 }
 
-.form-field__file-name {
+.form-field__file-preview {
+  flex-shrink: 0;
+}
+
+.form-field__file-preview img {
+  display: block;
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.form-field__file-meta {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.form-field__file-name {
   color: #1f2937;
   font-weight: 600;
   word-break: break-word;
@@ -393,4 +413,25 @@
 .form-field__counter--error {
   color: var(--color-error-600);
   font-weight: var(--font-weight-medium);
+}
+
+/* Instruções do campo de vídeo */
+.video-field-instructions {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #f0f9ff;
+  border-left: 3px solid #0284c7;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #0c4a6e;
+}
+.video-field-instructions ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.5rem;
+}
+.video-field-instructions code {
+  font-size: 0.8em;
+  background: rgba(2, 132, 199, 0.15);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
 }

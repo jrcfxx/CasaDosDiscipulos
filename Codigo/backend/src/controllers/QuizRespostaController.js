@@ -72,15 +72,21 @@ class QuizRespostaController {
   }
 
   /**
-   * Submete respostas de um quiz completo
+   * Submete respostas de um quiz completo (requer auth)
    * POST /api/quiz/:id/responder
-   * Body: { id_usuario, respostas: [{ id_questao, resposta }] }
+   * Body: { id_modulo?, respostas: [{ id_questao, resposta }] }
+   * id_usuario vem do token (req.usuario)
    */
   async submit(req, res, next) {
     try {
+      const id_usuario = req.usuario?.id_usuario;
+      if (!id_usuario) {
+        return res.status(401).json({ error: "Usuário não autenticado" });
+      }
+      const payload = { ...req.body, id_usuario };
       const result = await QuizRespostaService.submitResponses(
         req.params.id,
-        req.body
+        payload
       );
       res.status(HTTP_STATUS.CREATED).json(result);
     } catch (err) {

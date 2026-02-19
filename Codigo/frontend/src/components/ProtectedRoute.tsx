@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import authService, { UserType } from "../services/authService";
+import { useAuth } from "../hooks/useAuth";
+import type { UserType } from "../services/authService";
 
 type AllowedRole = UserType | UserType[];
 
@@ -18,17 +19,13 @@ interface ProtectedRouteProps {
  * - Administrador: Acessa todas as rotas de admin
  * - Líder: Acessa portal (módulos, formulários, lições)
  * - Membro: Acessa apenas realização de módulos
- *
- * @param requireAdmin - Requer que o usuário seja administrador
- * @param allowedRoles - Tipos de usuário permitidos (administrador, lider, membro)
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAdmin = false,
   allowedRoles,
 }) => {
-  const isAuthenticated = authService.isAuthenticated();
-  const userType = authService.getUserType();
+  const { isAuthenticated, userType } = useAuth();
 
   // Se não estiver autenticado, redireciona para login
   if (!isAuthenticated) {

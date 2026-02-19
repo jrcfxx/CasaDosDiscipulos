@@ -18,6 +18,9 @@ export interface CreateModuloData {
   descricao?: string;
   ordem?: number;
   ativo?: boolean;
+  obrigatorio?: boolean;
+  id_nivel?: number;
+  pre_requisitos?: number[];
   campos?: CampoModulo[]; // Campos personalizados com conteúdo
 }
 
@@ -75,6 +78,13 @@ const moduloService = {
   },
 
   /**
+   * Exclui módulo permanentemente
+   */
+  async deletePermanente(id: number): Promise<void> {
+    await apiClient.delete(`/modulo/${id}/permanente`);
+  },
+
+  /**
    * Vincula quiz a um módulo
    */
   async vincularQuiz(idModulo: number, idQuiz: number): Promise<void> {
@@ -98,8 +108,13 @@ const moduloService = {
 
   /**
    * Lista módulos ativos com progresso do usuário (requer auth)
+   * Retorna { modulos, nivel_escola }
    */
-  async getActiveWithProgress(): Promise<(Modulo & { status?: string; nota_quiz?: number | null; data_conclusao?: string | null })[]> {
+  async getActiveWithProgress(): Promise<{
+    modulos: (Modulo & { status?: string; nota_quiz?: number | null; data_conclusao?: string | null })[];
+    nivel_escola: number;
+    nivel_escola_nome?: string | null;
+  }> {
     const response = await apiClient.get("/modulo/ativos-com-progresso");
     return response.data;
   },
@@ -112,11 +127,37 @@ const moduloService = {
   },
 
   /**
+   * Conclui módulo sem quiz (apenas conteúdo)
+   */
+  async concluir(id: number): Promise<void> {
+    await apiClient.post(`/modulo/${id}/concluir`);
+  },
+
+  /**
    * Ranking de usuários por pontuação
    */
   async getRanking(limit = 10): Promise<Array<{ id_usuario: number; nome: string; pontuacao: number; foto?: string }>> {
     const response = await apiClient.get(`/modulo/ranking?limit=${limit}`);
     return response.data;
+  },
+
+  /**
+   * Posição do usuário autenticado no ranking (requer auth)
+   * Retorna { posicao, pontuacao, nivel_escola, pontuacao_primeiro, pontuacao_anterior }
+   */
+  async getMinhaPosicao(): Promise<{
+    posicao: number;
+    pontuacao: number;
+    nivel_escola: number;
+    pontuacao_primeiro: number;
+    pontuacao_anterior: number | null;
+  } | null> {
+    try {
+      const response = await apiClient.get("/modulo/ranking/minha-posicao");
+      return response.data;
+    } catch {
+      return null;
+    }
   },
 };
 

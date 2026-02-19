@@ -4,16 +4,18 @@ import "../style/ModulosEscolaDiscipulosAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-
+import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
+import ConfirmModal from "../components/ui/ConfirmModal";
+import Toast from "../components/ui/Toast";
+import { formatarConteudoCampo } from "../utils/moduloConteudoUtils";
 import moduloService from "../services/moduloService";
-import usuarioService, { Usuario } from "../services/usuarioService";
 import { Modulo } from "../types";
 
 const ModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [modulos, setModulos] = useState<Modulo[]>([]);
   const [selectedModulo, setSelectedModulo] = useState<Modulo | null>(null);
   const [quizVinculado, setQuizVinculado] = useState<any>(null);
-  const [ranking, setRanking] = useState<Usuario[]>([]);
+  const [ranking, setRanking] = useState<RankItem[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -34,7 +36,6 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
       if (data.length > 0 && !selectedModulo) {
         const primeiroModulo = data[0];
         setSelectedModulo(primeiroModulo);
-        // Carregar quiz vinculado ao primeiro módulo
         await loadQuizVinculado(primeiroModulo.id_modulo);
       }
     } catch (error) {
@@ -44,8 +45,8 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
 
   const fetchRanking = async () => {
     try {
-      const topUsuarios = await usuarioService.getRanking(20);
-      setRanking(topUsuarios);
+      const topUsuarios = await moduloService.getRanking(20);
+      setRanking(topUsuarios as RankItem[]);
     } catch (error) {
       console.error("Erro ao carregar ranking:", error);
     }
@@ -85,259 +86,31 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
     await loadQuizVinculado(modulo.id_modulo);
   };
 
-  const getIniciais = (nome: string): string => {
-    return nome
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
-  };
+  const [excluindo, setExcluindo] = useState(false);
+  const [showConfirmExcluir, setShowConfirmExcluir] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const formatarConteudoCampo = (conteudo: any): React.ReactNode => {
-    if (!conteudo) return "Sem conteúdo";
-
-    // Se for uma string, tenta parsear como JSON
-    let parsed = conteudo;
-    if (typeof conteudo === "string") {
-      // Verifica se é um arquivo de upload (caminho que começa com /uploads/)
-      if (conteudo.startsWith("/uploads/") || conteudo.includes("/uploads/")) {
-        const fileName = conteudo.split("/").pop() || "arquivo";
-        const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-        const isImage = [
-          "jpg",
-          "jpeg",
-          "png",
-          "gif",
-          "webp",
-          "svg",
-          "bmp",
-        ].includes(fileExtension);
-
-        return (
-          <div className="upload-preview-campo">
-            {isImage ? (
-              <div>
-                <img
-                  src={`http://localhost:3001${conteudo}`}
-                  alt={fileName}
-                  style={{
-                    maxWidth: "200px",
-                    maxHeight: "200px",
-                    borderRadius: "4px",
-                  }}
-                />
-                <br />
-              </div>
-            ) : null}
-            <a
-              href={`http://localhost:3001${conteudo}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#3b82f6",
-                textDecoration: "underline",
-                fontSize: "0.9rem",
-              }}
-            >
-              📄 {fileName}
-            </a>
-          </div>
-        );
+  const executarExclusao = async () => {
+    if (!selectedModulo) return;
+    setShowConfirmExcluir(false);
+    setExcluindo(true);
+    try {
+      await moduloService.deletePermanente(selectedModulo.id_modulo);
+      const data = await moduloService.getAll();
+      setModulos(data);
+      setSelectedModulo(data.length > 0 ? data[0] : null);
+      if (data.length > 0) {
+        await loadQuizVinculado(data[0].id_modulo);
+      } else {
+        setQuizVinculado(null);
       }
-
-      // Verifica se é uma URL de vídeo
-      const videoUrlRegex =
-        /(youtube\.com|youtu\.be|vimeo\.com|\.mp4|\.webm|\.ogg)/i;
-      if (videoUrlRegex.test(conteudo)) {
-        return renderVideoPreview(conteudo);
-      }
-
-      try {
-        parsed = JSON.parse(conteudo);
-      } catch {
-        // Não é JSON, retorna a string original
-        return conteudo;
-      }
+      setToast("Módulo excluído com sucesso.");
+    } catch (error) {
+      console.error("Erro ao excluir módulo:", error);
+      setToast("Erro ao excluir módulo. Tente novamente.");
+    } finally {
+      setExcluindo(false);
     }
-
-    // Se não for um objeto após o parse, retorna como está
-    if (typeof parsed !== "object" || parsed === null) {
-      return String(conteudo);
-    }
-
-    // Para outros tipos de objetos JSON, exibe formatado
-    return (
-      <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>
-    );
-  };
-
-  const renderVideoPreview = (url: string): React.ReactNode => {
-    const convertToEmbedUrl = (videoUrl: string): string | null => {
-      try {
-        // YouTube
-        const youtubeRegex =
-          /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
-        const youtubeMatch = videoUrl.match(youtubeRegex);
-        if (youtubeMatch && youtubeMatch[1]) {
-          return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-        }
-
-        // Vimeo
-        const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
-        const vimeoMatch = videoUrl.match(vimeoRegex);
-        if (vimeoMatch && vimeoMatch[1]) {
-          return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-        }
-
-        // Link direto de vídeo
-        if (videoUrl.match(/\.(mp4|webm|ogg)$/i)) {
-          return videoUrl;
-        }
-
-        return null;
-      } catch {
-        return null;
-      }
-    };
-
-    const embedUrl = convertToEmbedUrl(url);
-    if (!embedUrl) {
-      return (
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          {url}
-        </a>
-      );
-    }
-
-    const isDirectVideo = embedUrl.match(/\.(mp4|webm|ogg)$/i);
-
-    return (
-      <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
-        {isDirectVideo ? (
-          <video
-            controls
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "auto",
-              borderRadius: "8px",
-            }}
-          >
-            <source src={embedUrl} type="video/mp4" />
-            Seu navegador não suporta o elemento de vídeo.
-          </video>
-        ) : (
-          <iframe
-            src={embedUrl}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "225px",
-              border: "none",
-              borderRadius: "8px",
-            }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="Video preview"
-          />
-        )}
-      </div>
-    );
-  };
-
-  const getMedalIcon = (position: number) => {
-    if (position === 1) {
-      return (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="medal-icon gold"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            fill="#FFD700"
-            stroke="#FFA500"
-            strokeWidth="2"
-          />
-          <text
-            x="12"
-            y="17"
-            textAnchor="middle"
-            fill="#FFF"
-            fontSize="12"
-            fontWeight="bold"
-          >
-            1
-          </text>
-        </svg>
-      );
-    }
-    if (position === 2) {
-      return (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="medal-icon silver"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            fill="#C0C0C0"
-            stroke="#A8A8A8"
-            strokeWidth="2"
-          />
-          <text
-            x="12"
-            y="17"
-            textAnchor="middle"
-            fill="#FFF"
-            fontSize="12"
-            fontWeight="bold"
-          >
-            2
-          </text>
-        </svg>
-      );
-    }
-    if (position === 3) {
-      return (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="medal-icon bronze"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            fill="#CD7F32"
-            stroke="#B87333"
-            strokeWidth="2"
-          />
-          <text
-            x="12"
-            y="17"
-            textAnchor="middle"
-            fill="#FFF"
-            fontSize="12"
-            fontWeight="bold"
-          >
-            3
-          </text>
-        </svg>
-      );
-    }
-    return null;
   };
 
   return (
@@ -369,6 +142,9 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                   <div className="mod-item__info">
                     <span className="mod-item__ordem">#{modulo.ordem}</span>
                     <span className="mod-item__name">{modulo.titulo}</span>
+                    {modulo.obrigatorio === false && (
+                      <span className="mod-item__opcional-badge">Opcional</span>
+                    )}
                   </div>
                   <button
                     className={`btn-status ${
@@ -411,16 +187,26 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                       {selectedModulo.ativo ? "Ativo" : "Inativo"}
                     </span>
                   </div>
-                  <button
-                    className="btn-edit"
-                    onClick={() =>
-                      navigate(
-                        `/admin/modulos/editar/${selectedModulo.id_modulo}`
-                      )
-                    }
-                  >
-                    Editar
-                  </button>
+                  <div className="module-header-actions">
+                    <button
+                      className="btn-edit"
+                      onClick={() =>
+                        navigate(
+                          `/admin/modulos/editar/${selectedModulo.id_modulo}`
+                        )
+                      }
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="btn-excluir"
+                      onClick={() => setShowConfirmExcluir(true)}
+                      disabled={excluindo}
+                      title="Excluir módulo permanentemente"
+                    >
+                      {excluindo ? "Excluindo..." : "Excluir"}
+                    </button>
+                  </div>
                 </div>
 
                 {selectedModulo.descricao && (
@@ -431,6 +217,29 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                 )}
 
                 <div className="module-meta">
+                  {selectedModulo.obrigatorio === false && (
+                    <div className="meta-item">
+                      <span className="meta-label">Tipo:</span>
+                      <span className="meta-value meta-value-opcional">Opcional</span>
+                    </div>
+                  )}
+                  {selectedModulo.obrigatorio !== false && selectedModulo.id_nivel != null && (
+                    <div className="meta-item">
+                      <span className="meta-label">Nível:</span>
+                      <span className="meta-value">{selectedModulo.nivel_nome ?? `#${selectedModulo.id_nivel}`}</span>
+                    </div>
+                  )}
+                  {(selectedModulo as any).pre_requisitos?.length > 0 && (
+                    <div className="meta-item meta-item-block">
+                      <span className="meta-label">Pré-requisitos:</span>
+                      <span className="meta-value">
+                        {modulos
+                          .filter((m) => (selectedModulo as any).pre_requisitos?.includes(m.id_modulo))
+                          .map((m) => m.titulo)
+                          .join(", ")}
+                      </span>
+                    </div>
+                  )}
                   <div className="meta-item">
                     <span className="meta-label">Ordem:</span>
                     <span className="meta-value">{selectedModulo.ordem}</span>
@@ -488,98 +297,38 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
             )}
           </section>
 
-          {/* Coluna direita - Ranking */}
+          {/* Coluna direita - Ranking (igual ao User/Leader) */}
           <aside className="panel modules-right" aria-label="Ranking">
-            <div className="ranking-card">
-              <div className="ranking-header">
-                <div className="ranking-header-icon">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <defs>
-                      <linearGradient
-                        id="headerGoldGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#FFD700" />
-                        <stop offset="50%" stopColor="#FFA500" />
-                        <stop offset="100%" stopColor="#FFD700" />
-                      </linearGradient>
-                    </defs>
-                    <circle
-                      cx="20"
-                      cy="20"
-                      r="18"
-                      fill="rgba(255, 215, 0, 0.2)"
-                    />
-                    <path
-                      d="M15 15 L20 10 L25 15 L23 25 L17 25 Z"
-                      fill="url(#headerGoldGradient)"
-                      stroke="#FFA500"
-                      strokeWidth="2"
-                    />
-                    <circle cx="20" cy="17" r="3" fill="#FFF" opacity="0.5" />
-                  </svg>
-                </div>
-                <div>
-                  <h3>RANKING</h3>
-                  <span className="ranking-subtitle">Top 20 Discípulos</span>
-                </div>
-              </div>
-              <div className="ranking-list">
-                {ranking.length > 0 ? (
-                  ranking.map((usuario, index) => {
-                    const position = index + 1;
-                    const isTopThree = position <= 3;
-                    const medal = getMedalIcon(position);
-
-                    return (
-                      <div
-                        key={usuario.id_usuario}
-                        className={`rank-item ${
-                          isTopThree ? `top-${position}` : ""
-                        }`}
-                      >
-                        {medal ? (
-                          <div className="rank-medal">{medal}</div>
-                        ) : (
-                          <div className="rank-position">{position}º</div>
-                        )}
-                        <div
-                          className={`rank-avatar ${
-                            isTopThree ? "highlighted" : ""
-                          }`}
-                        >
-                          {usuario.foto ? (
-                            <img
-                              src={`http://localhost:3001${usuario.foto}`}
-                              alt={usuario.nome}
-                              className="rank-avatar-photo"
-                            />
-                          ) : (
-                            getIniciais(usuario.nome)
-                          )}
-                        </div>
-                        <div className="rank-info">
-                          <p className="rank-name">{usuario.nome}</p>
-                          <p className="rank-points">{usuario.pontuacao} pts</p>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="ranking-empty">
-                    <p>Nenhum usuário no ranking</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <RankingCard
+              ranking={ranking}
+              limit={20}
+              title="RANKING"
+              subtitle="Top 20 Discípulos"
+              theme="light"
+            />
           </aside>
         </section>
       </main>
 
       <Footer />
+
+      <ConfirmModal
+        open={showConfirmExcluir}
+        title="Tem certeza?"
+        message={`O módulo "${selectedModulo?.titulo ?? ""}" será excluído permanentemente. Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={executarExclusao}
+        onCancel={() => setShowConfirmExcluir(false)}
+      />
+      {toast && (
+        <Toast
+          message={toast}
+          onClose={() => setToast(null)}
+          variant={toast.includes("Erro") ? "error" : "success"}
+        />
+      )}
     </div>
   );
 };

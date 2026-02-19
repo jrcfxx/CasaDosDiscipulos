@@ -1,5 +1,7 @@
 import knex from "../database/index.js";
 import ModuloModel from "../models/ModuloModel.js";
+import ModuloPreRequisitoModel from "../models/ModuloPreRequisitoModel.js";
+import NivelModel from "../models/NivelModel.js";
 import CampoModel from "../models/CampoModel.js";
 import ModuloQuizModel from "../models/ModuloQuizModel.js";
 import UsuarioModuloModel from "../models/UsuarioModuloModel.js";
@@ -16,12 +18,17 @@ const ModuloService = {
    */
   async getAll() {
     const modulos = await ModuloModel.getAll();
+    const niveis = await NivelModel.findAll();
+    const nivelById = new Map(niveis.map((n) => [n.id_nivel, n.nome]));
 
-    // Busca campos de cada módulo
     const modulosComCampos = await Promise.all(
       modulos.map(async (modulo) => {
-        const campos = await CampoModel.getByEntity("modulo", modulo.id_modulo);
-        return { ...modulo, campos };
+        const [campos, pre_requisitos] = await Promise.all([
+          CampoModel.getByEntity("modulo", modulo.id_modulo),
+          ModuloPreRequisitoModel.getByModulo(modulo.id_modulo),
+        ]);
+        const nivel_nome = modulo.id_nivel ? nivelById.get(modulo.id_nivel) : null;
+        return { ...modulo, nivel_nome, campos, pre_requisitos };
       })
     );
 
@@ -29,12 +36,63 @@ const ModuloService = {
   },
 
   /**
+   * Verifica se o usuário pode acessar o módulo
+   * - Opcionais: apenas precisa ter pré-requisitos concluídos (se houver)
+   * - Obrigatórios: pré-requisitos OU obrigatórios anteriores por ordem (fallback)
+   * @param {number} id_modulo - ID do módulo
+   * @param {number} id_usuario - ID do usuário
+   * @returns {Promise<boolean>} true se pode acessar
+   */
+  async podeAcessarModulo(id_modulo, id_usuario) {
+    const modulo = await ModuloModel.getById(id_modulo);
+    if (!modulo) return false;
+
+    const preRequisitos = await ModuloPreRequisitoModel.getByModulo(id_modulo);
+
+    if (preRequisitos.length > 0) {
+      const progressos = await UsuarioModuloModel.getByUsuario(id_usuario);
+      const concluidos = new Set(
+        progressos
+          .filter((p) => p.status === "concluido")
+          .map((p) => p.id_modulo)
+      );
+      return preRequisitos.every((id) => concluidos.has(id));
+    }
+
+    const obrigatorio = modulo.obrigatorio !== false && modulo.obrigatorio !== 0;
+    if (!obrigatorio) return true;
+
+    const modulosAtivos = await ModuloModel.getActive();
+    const obrigatoriosAnteriores = modulosAtivos.filter(
+      (m) => m.obrigatorio !== false && m.obrigatorio !== 0 && m.ordem < modulo.ordem
+    );
+    if (obrigatoriosAnteriores.length === 0) return true;
+
+    const progressos = await UsuarioModuloModel.getByUsuario(id_usuario);
+    const concluidos = new Set(
+      progressos
+        .filter((p) => p.status === "concluido")
+        .map((p) => p.id_modulo)
+    );
+
+    return obrigatoriosAnteriores.every((m) => concluidos.has(m.id_modulo));
+  },
+
+  /**
    * Marca módulo como em_andamento para o usuário (ao acessar o conteúdo)
+   * Valida progressão sequencial antes de liberar
    * @param {number} id_modulo - ID do módulo
    * @param {number} id_usuario - ID do usuário
    */
   async iniciarModulo(id_modulo, id_usuario) {
-    await this.getById(id_modulo);
+    const modulo = await this.getById(id_modulo);
+    const podeAcessar = await this.podeAcessarModulo(id_modulo, id_usuario);
+    if (!podeAcessar) {
+      throw new ValidationError(
+        "Complete os módulos anteriores na sequência para desbloquear este."
+      );
+    }
+
     const existente = await UsuarioModuloModel.getByUsuarioAndModulo(
       id_usuario,
       id_modulo
@@ -47,6 +105,37 @@ const ModuloService = {
       });
     }
     return UsuarioModuloModel.getByUsuarioAndModulo(id_usuario, id_modulo);
+  },
+
+  /**
+   * Conclui módulo sem quiz (para módulos apenas com conteúdo)
+   * Valida progressão sequencial e que o módulo não possui quiz
+   * @param {number} id_modulo - ID do módulo
+   * @param {number} id_usuario - ID do usuário
+   */
+  async concluirModulo(id_modulo, id_usuario) {
+    const modulo = await this.getById(id_modulo);
+    const quiz = await this.getQuizVinculado(id_modulo);
+    if (quiz?.id_quiz) {
+      throw new ValidationError(
+        "Este módulo possui quiz. Conclua pelo quiz para finalizar."
+      );
+    }
+
+    const podeAcessar = await this.podeAcessarModulo(id_modulo, id_usuario);
+    if (!podeAcessar) {
+      throw new ValidationError(
+        "Complete os módulos anteriores na sequência para desbloquear este."
+      );
+    }
+
+    const now = new Date();
+    await UsuarioModuloModel.upsert(id_usuario, id_modulo, {
+      status: "concluido",
+      nota_quiz: null,
+      data_conclusao: now,
+    });
+    return { message: "Módulo concluído com sucesso" };
   },
 
   /**
@@ -69,8 +158,9 @@ const ModuloService = {
     }
 
     const campos = await CampoModel.getByEntity("modulo", parsedId);
+    const pre_requisitos = await ModuloPreRequisitoModel.getByModulo(parsedId);
 
-    return { ...modulo, campos };
+    return { ...modulo, campos, pre_requisitos };
   },
 
   /**
@@ -110,7 +200,14 @@ const ModuloService = {
       descricao: data.descricao?.trim() || null,
       ordem: data.ordem || 0,
       ativo: data.ativo ?? true,
+      obrigatorio: data.obrigatorio ?? true,
+      id_nivel: data.id_nivel ?? null,
     });
+
+    await ModuloPreRequisitoModel.setForModulo(
+      novoModulo.id_modulo,
+      data.pre_requisitos || []
+    );
 
     // Vincula campos se fornecidos
     if (data.campos && Array.isArray(data.campos) && data.campos.length > 0) {
@@ -157,9 +254,14 @@ const ModuloService = {
       dadosAtualizacao.descricao = data.descricao?.trim() || null;
     if (data.ordem !== undefined) dadosAtualizacao.ordem = data.ordem;
     if (data.ativo !== undefined) dadosAtualizacao.ativo = data.ativo;
+    if (data.obrigatorio !== undefined) dadosAtualizacao.obrigatorio = data.obrigatorio;
+    if (data.id_nivel !== undefined) dadosAtualizacao.id_nivel = data.id_nivel;
 
-    // Atualiza módulo
     await ModuloModel.update(id, dadosAtualizacao);
+
+    if (data.pre_requisitos && Array.isArray(data.pre_requisitos)) {
+      await ModuloPreRequisitoModel.setForModulo(id, data.pre_requisitos);
+    }
 
     // Se campos foram enviados, atualiza vínculos
     if (data.campos && Array.isArray(data.campos)) {
@@ -196,12 +298,19 @@ const ModuloService = {
   },
 
   /**
-   * Remove módulo permanentemente
+   * Remove módulo permanentemente (exclusão real)
+   * Remove registros dependentes antes de excluir o módulo
    * @param {number} id - ID do módulo
    * @returns {Promise<void>}
    */
   async delete(id) {
     await this.getById(id); // Verifica se existe
+    // usuario_modulo não tem CASCADE - remover antes
+    await knex("usuario_modulo").where({ id_modulo: id }).del();
+    await knex("modulo_pre_requisito")
+      .where({ id_modulo: id })
+      .orWhere({ id_modulo_requerido: id })
+      .del();
     await ModuloModel.delete(id);
   },
 
@@ -264,6 +373,7 @@ const ModuloService = {
 
   /**
    * Busca módulos ativos com progresso do usuário (para página do usuário)
+   * Inclui nivel_escola (qtd de módulos concluídos) quando id_usuario presente
    * @param {number} id_usuario - ID do usuário (opcional)
    * @returns {Promise<Array>} Módulos ordenados por ordem, com status de progresso
    */
@@ -271,18 +381,33 @@ const ModuloService = {
     const modulos = await ModuloModel.getActive();
 
     let progressMap = new Map();
+    let nivelEscola = null;
+    let nivelEscolaNome = null;
     if (id_usuario) {
       const progressos = await UsuarioModuloModel.getByUsuario(id_usuario);
       progressMap = new Map(progressos.map((p) => [p.id_modulo, p]));
+      nivelEscola = await this.getNivelEscola(id_usuario);
+      if (nivelEscola) {
+        const n = await NivelModel.findById(nivelEscola);
+        nivelEscolaNome = n?.nome ?? null;
+      }
     }
+
+    const niveis = await NivelModel.findAll();
+    const nivelById = new Map(niveis.map((n) => [n.id_nivel, n.nome]));
 
     const modulosComCampos = await Promise.all(
       modulos.map(async (modulo) => {
-        const campos = await CampoModel.getByEntity("modulo", modulo.id_modulo);
+        const [campos, pre_requisitos] = await Promise.all([
+          CampoModel.getByEntity("modulo", modulo.id_modulo),
+          ModuloPreRequisitoModel.getByModulo(modulo.id_modulo),
+        ]);
         const progresso = progressMap.get(modulo.id_modulo);
         return {
           ...modulo,
           campos,
+          pre_requisitos,
+          nivel_nome: modulo.id_nivel ? nivelById.get(modulo.id_nivel) : null,
           status: progresso?.status || "nao_iniciado",
           nota_quiz: progresso?.nota_quiz ?? null,
           data_conclusao: progresso?.data_conclusao ?? null,
@@ -290,20 +415,153 @@ const ModuloService = {
       })
     );
 
-    return modulosComCampos.sort((a, b) => a.ordem - b.ordem);
+    const ordenados = modulosComCampos.sort((a, b) => a.ordem - b.ordem);
+    return {
+      modulos: ordenados,
+      nivel_escola: nivelEscola,
+      nivel_escola_nome: nivelEscolaNome,
+    };
   },
 
   /**
    * Retorna ranking de usuários por pontuação (para gamificação)
+   * Inclui nivel_escola = quantidade de módulos concluídos
    * @param {number} limit - Quantidade de usuários (padrão 10)
    * @returns {Promise<Array>} Lista ordenada por pontuacao desc
    */
   async getRanking(limit = 10) {
-    return knex("usuario")
+    const usuarios = await knex("usuario")
       .where({ ativo: true })
       .select("id_usuario", "nome", "pontuacao", "foto")
       .orderBy("pontuacao", "desc")
+      .orderBy("id_usuario", "asc")
       .limit(limit);
+
+    const nivelPorUsuario = await Promise.all(
+      usuarios.map(async (u) => ({
+        id_usuario: u.id_usuario,
+        nivel_escola: await this.getNivelEscola(u.id_usuario),
+      }))
+    );
+    const mapaNivel = new Map(
+      nivelPorUsuario.map((r) => [r.id_usuario, r.nivel_escola])
+    );
+
+    const niveis = await NivelModel.findAll();
+    const nivelById = new Map(niveis.map((n) => [n.id_nivel, n.nome]));
+
+    return usuarios.map((u) => {
+      const idNivel = mapaNivel.get(u.id_usuario);
+      return {
+        ...u,
+        nivel_escola: idNivel,
+        nivel_escola_nome: idNivel ? nivelById.get(idNivel) || null : null,
+      };
+    });
+  },
+
+  /**
+   * Retorna posição e dados do usuário no ranking (para mensagens motivacionais)
+   * @param {number} id_usuario - ID do usuário autenticado
+   * @returns {Promise<Object>} { posicao, pontuacao, nivel_escola, pontuacao_primeiro, pontuacao_anterior }
+   */
+  async getMinhaPosicao(id_usuario) {
+    const usuario = await knex("usuario")
+      .where({ id_usuario, ativo: true })
+      .select("pontuacao")
+      .first();
+    if (!usuario) return null;
+
+    const pontuacao = Number(usuario.pontuacao) || 0;
+
+    /* Mesmo critério do ranking: pontuacao DESC, id_usuario ASC (desempate) */
+    const [posicaoRow] = await knex("usuario")
+      .where({ ativo: true })
+      .where(function () {
+        this.where("pontuacao", ">", pontuacao).orWhere(function () {
+          this.where("pontuacao", pontuacao).where("id_usuario", "<", id_usuario);
+        });
+      })
+      .count("* as total");
+    const posicao = 1 + (Number(posicaoRow?.total) || 0);
+
+    const primeiro = await knex("usuario")
+      .where({ ativo: true })
+      .orderBy("pontuacao", "desc")
+      .select("pontuacao")
+      .first();
+
+    const anterior = await knex("usuario")
+      .where({ ativo: true })
+      .where("pontuacao", ">", pontuacao)
+      .orderBy("pontuacao", "asc")
+      .select("pontuacao")
+      .first();
+
+    const nivelEscola = await this.getNivelEscola(id_usuario);
+    let nivelEscolaNome = null;
+    if (nivelEscola) {
+      const n = await NivelModel.findById(nivelEscola);
+      nivelEscolaNome = n?.nome ?? null;
+    }
+
+    return {
+      posicao,
+      pontuacao,
+      nivel_escola: nivelEscola,
+      nivel_escola_nome: nivelEscolaNome,
+      pontuacao_primeiro: primeiro ? Number(primeiro.pontuacao) : pontuacao,
+      pontuacao_anterior: anterior ? Number(anterior.pontuacao) : null,
+    };
+  },
+
+  /**
+   * Retorna o id_nivel da escola do usuário (entidade nivel desbloqueada)
+   * Se módulos têm id_nivel: maior ordem entre niveis desbloqueados
+   * Caso contrário: fallback por qtd consecutiva obrigatória
+   * @param {number} id_usuario - ID do usuário
+   * @returns {Promise<number|null>} id_nivel ou null
+   */
+  async getNivelEscola(id_usuario) {
+    const concluidos = await knex("usuario_modulo")
+      .where({ id_usuario, status: "concluido" })
+      .select("id_modulo")
+      .then((rows) => new Set(rows.map((r) => r.id_modulo)));
+
+    const modulosComNivel = await knex("modulo")
+      .where({ ativo: true })
+      .whereRaw("(obrigatorio IS NULL OR obrigatorio = 1)")
+      .whereNotNull("id_nivel")
+      .whereIn("id_modulo", Array.from(concluidos))
+      .select("id_nivel");
+
+    if (modulosComNivel.length > 0) {
+      const ids = [...new Set(modulosComNivel.map((m) => m.id_nivel).filter(Boolean))];
+      const niveis = await NivelModel.findAll();
+      const byOrdem = ids
+        .map((id) => niveis.find((n) => n.id_nivel === id))
+        .filter(Boolean)
+        .sort((a, b) => (b.ordem || 0) - (a.ordem || 0));
+      return byOrdem[0]?.id_nivel ?? null;
+    }
+
+    const modulosObrigatorios = await knex("modulo")
+      .where({ ativo: true })
+      .whereRaw("(obrigatorio IS NULL OR obrigatorio = 1)")
+      .orderBy("ordem", "asc")
+      .select("id_modulo");
+
+    let count = 0;
+    for (const m of modulosObrigatorios) {
+      if (!concluidos.has(m.id_modulo)) break;
+      count++;
+    }
+
+    if (count === 0) return null;
+    const niveis = await NivelModel.findAll();
+    const nivelByOrdem = niveis.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+    const idx = Math.min(count - 1, nivelByOrdem.length - 1);
+    return idx >= 0 ? nivelByOrdem[idx].id_nivel : null;
   },
 };
 

@@ -91,6 +91,10 @@ export interface Modulo {
   descricao?: string;
   ordem: number;
   ativo: boolean;
+  obrigatorio?: boolean;
+  id_nivel?: number | null;
+  nivel_nome?: string; // Nome do nível (quando carregado pelo backend)
+  pre_requisitos?: number[];
   imagem_url?: string;
   campos?: Campo[];
 }

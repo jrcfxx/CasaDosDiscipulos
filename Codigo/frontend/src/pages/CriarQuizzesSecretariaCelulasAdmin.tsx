@@ -4,6 +4,7 @@ import "../style/CriarQuizzesSecretariaCelulasAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import Toast from "../components/ui/Toast";
 
 type Campo = { id: number; rotulo: string };
 
@@ -26,6 +27,7 @@ export default function CriarQuizzesSecretariaCelulasAdmin() {
   const [arquivo, setArquivo] = useState<File | null>(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const confirmBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -79,7 +81,7 @@ export default function CriarQuizzesSecretariaCelulasAdmin() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    alert("Formulário exportado (JSON) ✅");
+    setToast("Formulário exportado (JSON) ✅");
   };
 
   const excluirFormulario = () => {
@@ -88,7 +90,7 @@ export default function CriarQuizzesSecretariaCelulasAdmin() {
     setCampos([]);
     setArquivo(null);
     setLiberado(false);
-    alert("Formulário excluído.");
+    setToast("Formulário excluído.");
   };
 
   useEffect(() => {
@@ -302,6 +304,9 @@ export default function CriarQuizzesSecretariaCelulasAdmin() {
             </div>
           </div>
         </div>
+      )}
+      {toast && (
+        <Toast message={toast} onClose={() => setToast(null)} variant="success" />
       )}
     </div>
   );

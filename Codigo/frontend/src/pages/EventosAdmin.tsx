@@ -3,6 +3,8 @@ import "../style/EventosAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import ConfirmModal from "../components/ui/ConfirmModal";
+import Toast from "../components/ui/Toast";
 import axios from "axios";
 
 interface Evento {
@@ -29,6 +31,9 @@ const EventosAdmin: React.FC = () => {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [eventoToDelete, setEventoToDelete] = useState<number | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const API_URL = "http://localhost:3001/api/evento";
 
@@ -43,7 +48,7 @@ const EventosAdmin: React.FC = () => {
       setEventos(response.data);
     } catch (error) {
       console.error("Erro ao carregar eventos:", error);
-      alert("Erro ao carregar eventos");
+      setToast("Erro ao carregar eventos");
     } finally {
       setLoading(false);
     }
@@ -88,7 +93,7 @@ const EventosAdmin: React.FC = () => {
       }
 
       if (!imagem_url && !editingEvento) {
-        alert("É necessário selecionar uma imagem");
+        setToast("É necessário selecionar uma imagem");
         return;
       }
 
@@ -107,21 +112,27 @@ const EventosAdmin: React.FC = () => {
       closeModal();
     } catch (error) {
       console.error("Erro ao salvar evento:", error);
-      alert("Erro ao salvar evento");
+      setToast("Erro ao salvar evento");
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Tem certeza que deseja excluir este evento?")) {
-      return;
-    }
+  const handleDeleteClick = (id: number) => {
+    setEventoToDelete(id);
+    setShowConfirmDelete(true);
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (eventoToDelete === null) return;
+    setShowConfirmDelete(false);
+    const id = eventoToDelete;
+    setEventoToDelete(null);
     try {
       await axios.delete(`${API_URL}/${id}`);
       await fetchEventos();
+      setToast("Evento excluído com sucesso.");
     } catch (error) {
       console.error("Erro ao deletar evento:", error);
-      alert("Erro ao deletar evento");
+      setToast("Erro ao deletar evento");
     }
   };
 
@@ -133,7 +144,7 @@ const EventosAdmin: React.FC = () => {
       await fetchEventos();
     } catch (error) {
       console.error("Erro ao alterar status do evento:", error);
-      alert("Erro ao alterar status do evento");
+      setToast("Erro ao alterar status do evento");
     }
   };
 
@@ -232,7 +243,7 @@ const EventosAdmin: React.FC = () => {
                     </button>
                     <button
                       className="btn-deletar"
-                      onClick={() => handleDelete(evento.id_evento)}
+                      onClick={() => handleDeleteClick(evento.id_evento)}
                     >
                       Excluir
                     </button>
@@ -330,6 +341,27 @@ const EventosAdmin: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      <ConfirmModal
+        open={showConfirmDelete}
+        title="Tem certeza?"
+        message="Deseja realmente excluir este evento? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => {
+          setShowConfirmDelete(false);
+          setEventoToDelete(null);
+        }}
+      />
+      {toast && (
+        <Toast
+          message={toast}
+          onClose={() => setToast(null)}
+          variant={toast.includes("Erro") ? "error" : "success"}
+        />
       )}
 
       <Footer />

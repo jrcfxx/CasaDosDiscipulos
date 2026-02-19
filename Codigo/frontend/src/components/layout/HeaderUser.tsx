@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import authService from "../../services/authService";
+import { useAuth } from "../../hooks/useAuth";
 import "../../style/layout.css";
 import iconeIgreja from "../../assets/logo.png";
 
@@ -23,10 +23,11 @@ const ProfileIcon = () => (
 
 const HeaderUser: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    authService.logout();
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   return (

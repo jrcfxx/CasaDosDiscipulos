@@ -5,6 +5,8 @@ import "../style/CriarFormulariosSecretariaCelulasAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import Toast from "../components/ui/Toast";
+import InputModal from "../components/ui/InputModal";
 
 // Components de campos
 import TextField from "../components/fields/TextField";
@@ -48,6 +50,7 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
 
   const [availableFields, setAvailableFields] = useState<any[]>([]);
   const [fields, setFields] = useState<CampoLocal[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
 
   const fieldOptions = [
     { label: "Texto", tipo: "texto", component: TextField },
@@ -65,7 +68,7 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
       .then((res) => setAvailableFields(res.data || []))
       .catch((err) => {
         console.error("Erro ao buscar campos:", err);
-        alert("Erro ao buscar tipos de campo.");
+        setToast("Erro ao buscar tipos de campo.");
       });
   }, []);
 
@@ -98,7 +101,7 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
       })
       .catch((err) => {
         console.error("Erro ao carregar formulário:", err);
-        alert("Erro ao carregar formulário.");
+        setToast("Erro ao carregar formulário.");
       });
   }, [params.id, isEdit, availableFields]);
 
@@ -115,21 +118,31 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
     conteudo,
   });
 
+  const [labelModalOpen, setLabelModalOpen] = useState(false);
+  const [labelModalTipo, setLabelModalTipo] = useState<string | null>(null);
+
   const addField = (tipo: string) => {
-    const label = window.prompt("Digite o label do campo:");
-    if (!label) return;
+    setLabelModalTipo(tipo);
+    setLabelModalOpen(true);
+  };
+
+  const confirmAddField = (label: string) => {
+    if (!label.trim()) return;
+    const tipo = labelModalTipo;
+    setLabelModalOpen(false);
+    setLabelModalTipo(null);
 
     const campo = availableFields.find(
-      (c) => String(c.tipo_campo).toLowerCase() === tipo.toLowerCase()
+      (c) => String(c.tipo_campo).toLowerCase() === tipo!.toLowerCase()
     );
     if (!campo) {
-      alert(`Nenhum campo disponível para o tipo ${tipo}`);
+      setToast(`Nenhum campo disponível para o tipo ${tipo}`);
       return;
     }
 
     setFields((prev) => [
       ...prev,
-      createLocalField(campo.id_campo, tipo, label),
+      createLocalField(campo.id_campo, tipo!, label.trim()),
     ]);
   };
 
@@ -171,7 +184,7 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
   };
 
   const salvarFormulario = async () => {
-    if (!formulario.titulo.trim()) return alert("O título é obrigatório.");
+    if (!formulario.titulo.trim()) return setToast("O título é obrigatório.");
 
     const payload: any = {
       titulo: formulario.titulo,
@@ -189,15 +202,15 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
     try {
       if (isEdit) {
         await axios.put(`${API}/${params.id}`, payload);
-        alert("Formulário atualizado!");
+        setToast("Formulário atualizado!");
       } else {
         await axios.post(API, payload);
-        alert("Formulário criado!");
+        setToast("Formulário criado!");
       }
       navigate("/admin/formularios");
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar formulário.");
+      setToast("Erro ao salvar formulário.");
     }
   };
 
@@ -205,11 +218,11 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
     if (!isEdit) return;
     try {
       await axios.delete(`${API}/${params.id}`);
-      alert("Formulário excluído.");
+      setToast("Formulário excluído.");
       navigate("/admin/formularios");
     } catch (err) {
       console.error(err);
-      alert("Erro ao excluir formulário.");
+      setToast("Erro ao excluir formulário.");
     }
   };
 
@@ -297,6 +310,24 @@ export default function CriarFormulariosSecretariaCelulasAdmin() {
           </aside>
         </div>
       </main>
+      {toast && (
+        <Toast
+          message={toast}
+          onClose={() => setToast(null)}
+          variant={toast.includes("Erro") ? "error" : "success"}
+        />
+      )}
+      <InputModal
+        open={labelModalOpen}
+        title="Label do campo"
+        label="Digite o label do campo"
+        placeholder="Ex: Nome completo"
+        onConfirm={confirmAddField}
+        onCancel={() => {
+          setLabelModalOpen(false);
+          setLabelModalTipo(null);
+        }}
+      />
       <Footer />
     </div>
   );
