@@ -99,7 +99,8 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       setModuleDescription(modulo.descricao || "");
       setModuleOrder(modulo.ordem || 1);
       setIsActive(modulo.ativo !== false);
-      setObrigatorio(modulo.obrigatorio !== false);
+      const obs = modulo.obrigatorio as boolean | number | undefined;
+      setObrigatorio(obs !== false && obs !== 0);
       setIdNivel((modulo as any).id_nivel ?? "");
       setPreRequisitos((modulo as any).pre_requisitos || []);
 
