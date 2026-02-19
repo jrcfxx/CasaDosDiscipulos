@@ -188,9 +188,28 @@ class QuizRespostaService {
       ? Number(moduloUsuario.nota_quiz)
       : 0;
 
+    const parseOpcoes = (opcoes) => {
+      if (!opcoes) return [];
+      if (Array.isArray(opcoes)) return opcoes;
+      try {
+        const parsed = typeof opcoes === "string" ? JSON.parse(opcoes) : opcoes;
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const getTextoOpcao = (questao, idOpcao) => {
+      if (!idOpcao) return idOpcao;
+      const opts = parseOpcoes(questao.opcoes);
+      const opt = opts.find((o) => (typeof o === "object" ? o.id : o) === idOpcao);
+      return typeof opt === "object" ? opt?.texto : opt ?? idOpcao;
+    };
+
     const now = new Date();
     const rows = [];
     let pontuacao_total = 0;
+    const questoesErradas = [];
 
     for (const r of respostas) {
       const questao = questoesMap.get(r.id_questao);
@@ -207,6 +226,18 @@ class QuizRespostaService {
         correta = String(r.resposta || "").trim() === String(questao.resposta_correta || "").trim();
         pontos_obtidos = correta ? (questao.pontos || 0) : 0;
         pontuacao_total += pontos_obtidos;
+
+        if (!correta) {
+          const pontosQuestao = questao.pontos || 0;
+          questoesErradas.push({
+            id_questao: questao.id_questao,
+            enunciado: questao.enunciado,
+            ordem: questao.ordem ?? 0,
+            resposta_usuario: getTextoOpcao(questao, String(r.resposta || "").trim()),
+            resposta_correta: getTextoOpcao(questao, String(questao.resposta_correta || "").trim()),
+            pontos_perdidos: pontosQuestao,
+          });
+        }
       }
 
       rows.push({
@@ -231,10 +262,14 @@ class QuizRespostaService {
 
       await QuizRespostaModel.createMany(rows, trx);
 
-      if (pontuacao_total > 0) {
+      const atingiu50 = pontuacao_maxima > 0 && pontuacao_total >= pontuacao_maxima * 0.5;
+      const bonusPrimeiraTentativa = atingiu50 && !ehRetentativa ? Math.max(1, Math.floor(pontuacao_total * 0.1)) : 0;
+      const pontuacaoFinalUsuario = pontuacao_total + bonusPrimeiraTentativa;
+
+      if (pontuacaoFinalUsuario > 0) {
         await trx("usuario")
           .where({ id_usuario })
-          .increment("pontuacao", pontuacao_total);
+          .increment("pontuacao", pontuacaoFinalUsuario);
       }
 
       const dadosProgresso = {
@@ -260,8 +295,10 @@ class QuizRespostaService {
         total_questoes: respostas.length,
         pontos_obtidos: pontuacao_total,
         pontuacao_maxima,
+        bonus_primeira_tentativa: bonusPrimeiraTentativa,
         eh_retentativa: ehRetentativa,
-        atingiu_50: pontuacao_maxima > 0 && pontuacao_total >= pontuacao_maxima * 0.5,
+        atingiu_50: atingiu50,
+        questoes_erradas: questoesErradas.sort((a, b) => a.ordem - b.ordem),
       };
     });
   }

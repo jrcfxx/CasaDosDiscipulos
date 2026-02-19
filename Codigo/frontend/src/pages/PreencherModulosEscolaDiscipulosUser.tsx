@@ -21,6 +21,8 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const idModulo = id ? parseInt(id, 10) : null;
+  const quizFormRef = React.useRef<HTMLFormElement>(null);
+  const loadDataInProgressRef = React.useRef(false);
 
   const [modulo, setModulo] = useState<Modulo | null>(null);
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -34,7 +36,17 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     total: number;
     atingiu_50?: boolean;
     eh_retentativa?: boolean;
+    bonus_primeira_tentativa?: number;
+    questoes_erradas?: Array<{
+      id_questao: number;
+      enunciado: string;
+      ordem: number;
+      resposta_usuario: string;
+      resposta_correta: string;
+      pontos_perdidos: number;
+    }>;
   } | null>(null);
+  const [tentativaNum, setTentativaNum] = useState(1);
   const [moduloJaConcluido, setModuloJaConcluido] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -47,6 +59,8 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
   }, [idModulo, navigate]);
 
   const loadData = async () => {
+    if (loadDataInProgressRef.current) return;
+    loadDataInProgressRef.current = true;
     setLoading(true);
     setErroAcesso(null);
     try {
@@ -88,35 +102,37 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
             init[q.id_questao] = "";
           });
           setRespostas(init);
+
+          if (!progresso) {
+            try {
+              await moduloService.iniciar(idModulo!);
+            } catch (e: unknown) {
+              const err = e as { response?: { status?: number; data?: { error?: string } }; message?: string };
+              if (err?.response?.status !== 409) {
+                const msg = err?.response?.data?.error || err?.message || "Complete os módulos anteriores na sequência.";
+                setErroAcesso(msg);
+                return;
+              }
+            }
+          }
         } catch (quizErr: unknown) {
           const err = quizErr as { response?: { data?: { error?: string } }; message?: string };
           setToast(err?.response?.data?.error || err?.message || "Erro ao carregar o quiz.");
           setLoading(false);
           return;
         }
-        try {
-          await moduloService.iniciar(idModulo!);
-        } catch (e: unknown) {
-          const err = e as { response?: { status?: number; data?: { error?: string } }; message?: string };
-          if (err?.response?.status === 409) {
-            // Módulo já iniciado/concluído — seguir normalmente
-          } else {
-            const msg = err?.response?.data?.error || err?.message || "Complete os módulos anteriores na sequência.";
-            setErroAcesso(msg);
-            return;
-          }
-        }
       } else {
-        try {
-          await moduloService.iniciar(idModulo!);
-        } catch (e: unknown) {
-          const err = e as { response?: { status?: number; data?: { error?: string } }; message?: string };
-          if (err?.response?.status === 409) {
-            // Módulo já iniciado/concluído — seguir normalmente
-          } else {
-            const msg = err?.response?.data?.error || err?.message || "Complete os módulos anteriores na sequência.";
-            setErroAcesso(msg);
-            return;
+        const progresso = await moduloService.getProgresso(idModulo!);
+        if (!progresso) {
+          try {
+            await moduloService.iniciar(idModulo!);
+          } catch (e: unknown) {
+            const err = e as { response?: { status?: number; data?: { error?: string } }; message?: string };
+            if (err?.response?.status !== 409) {
+              const msg = err?.response?.data?.error || err?.message || "Complete os módulos anteriores na sequência.";
+              setErroAcesso(msg);
+              return;
+            }
           }
         }
       }
@@ -129,6 +145,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       return;
     } finally {
       setLoading(false);
+      loadDataInProgressRef.current = false;
     }
   };
 
@@ -348,6 +365,20 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     return items;
   }, [quiz?.campos, quiz?.questoes]);
 
+  const handleTentarNovamente = () => {
+    setResultado(null);
+    if (quiz?.questoes?.length) {
+      const init: Record<number, string> = {};
+      quiz.questoes.forEach((q: QuizQuestao) => {
+        init[q.id_questao] = "";
+      });
+      setRespostas(init);
+    }
+    setTimeout(() => {
+      quizFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quiz?.questoes?.length || !idModulo) return;
@@ -375,7 +406,12 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
         total: totalPontos > 0 ? totalPontos : 1,
         atingiu_50: res.atingiu_50 ?? false,
         eh_retentativa: res.eh_retentativa,
+        questoes_erradas: res.questoes_erradas ?? [],
+        bonus_primeira_tentativa: res.bonus_primeira_tentativa ?? 0,
       });
+      if (!(res.atingiu_50 ?? false)) {
+        setTentativaNum((n) => n + 1);
+      }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } }; message?: string };
       const msg = error?.response?.data?.error || error?.message || "Erro ao enviar respostas. Tente novamente.";
@@ -465,47 +501,94 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
 
           {quiz?.questoes?.length ? (
             resultado?.atingiu_50 ? (
-              <div className="modulo-resultado modulo-resultado-sucesso">
-                <h2>Módulo concluído!</h2>
-                <p className="modulo-resultado-pontos">
-                  Você obteve <strong>{resultado.pontos}/{resultado.total}</strong> pontos.
+              <div className="quiz-resultado quiz-resultado-sucesso">
+                <div className="quiz-resultado-icon">🏆</div>
+                <h2>Parabéns! Módulo concluído!</h2>
+                <p className="quiz-resultado-subtitulo">
+                  Você acertou e está pronto para o próximo desafio.
+                </p>
+                <div className="quiz-resultado-pontos-card">
+                  <span className="quiz-pontos-valor">{resultado.pontos}</span>
+                  <span className="quiz-pontos-separador">/</span>
+                  <span className="quiz-pontos-total">{resultado.total}</span>
+                  <span className="quiz-pontos-label"> pontos</span>
+                </div>
+                <p className="quiz-resultado-extra">
+                  {resultado.eh_retentativa
+                    ? "Você conseguiu na nova tentativa!"
+                    : "Aprovado na primeira tentativa!"}
+                  {resultado.bonus_primeira_tentativa && resultado.bonus_primeira_tentativa > 0 && (
+                    <span className="quiz-bonus-badge"> +{resultado.bonus_primeira_tentativa} pts bônus!</span>
+                  )}
                 </p>
                 <button
                   type="button"
-                  className="pfu-save"
+                  className="pfu-save pfu-btn-sucesso"
                   onClick={() => navigate("/usuario/modulos")}
                 >
                   Voltar aos módulos
                 </button>
               </div>
             ) : resultado && !resultado.atingiu_50 ? (
-              <div className="modulo-resultado modulo-resultado-reprovar">
-                <h2>Você não atingiu 50% do quiz.</h2>
-                <p className="modulo-resultado-pontos">
-                  Você obteve <strong>{resultado.pontos}/{resultado.total}</strong> pontos.
-                  Tente novamente para concluir o módulo.
+              <div className="quiz-resultado quiz-resultado-falha">
+                <div className="quiz-resultado-icon quiz-icon-falha">🎯</div>
+                <h2>Tente novamente!</h2>
+                <p className="quiz-resultado-subtitulo">
+                  Você precisa de pelo menos 50% para passar. Revise as questões erradas abaixo.
                 </p>
-                <form className="modulo-quiz" onSubmit={handleSubmit} aria-labelledby="quizTitle">
+                <div className="quiz-resultado-pontos-card quiz-pontos-falha">
+                  <span className="quiz-pontos-valor">{resultado.pontos}</span>
+                  <span className="quiz-pontos-separador">/</span>
+                  <span className="quiz-pontos-total">{resultado.total}</span>
+                  <span className="quiz-pontos-label"> pontos</span>
+                </div>
+                <p className="quiz-resultado-tentativa">
+                  Tentativa {tentativaNum} • Faltam {Math.max(0, Math.ceil(resultado.total * 0.5) - resultado.pontos)} pontos para passar
+                </p>
+
+                {resultado.questoes_erradas && resultado.questoes_erradas.length > 0 && (
+                  <div className="quiz-questoes-erradas">
+                    <h3>📋 Questões que você errou</h3>
+                    {resultado.questoes_erradas.map((q, idx) => (
+                      <div key={q.id_questao} className="quiz-questao-errada">
+                        <p className="quiz-errada-enunciado">{idx + 1}. {q.enunciado}</p>
+                        <div className="quiz-errada-respostas">
+                          <div className="quiz-errada-item quiz-errada-usuario">
+                            <span className="quiz-errada-label">Sua resposta:</span>
+                            <span>{q.resposta_usuario || "(vazio)"}</span>
+                          </div>
+                        </div>
+                        <span className="quiz-errada-pontos">−{q.pontos_perdidos} pts</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="quiz-falha-actions">
+                  <button
+                    type="button"
+                    className="pfu-save pfu-btn-retry"
+                    onClick={handleTentarNovamente}
+                  >
+                    Refazer quiz
+                  </button>
+                  <p className="quiz-falha-hint">O quiz será exibido novamente com as respostas em branco para uma nova tentativa.</p>
+                </div>
+              </div>
+            ) : (
+              <form
+                ref={quizFormRef}
+                className="modulo-quiz modulo-quiz-desafio"
+                onSubmit={handleSubmit}
+                aria-labelledby="quizTitle"
+              >
+                <div className="quiz-desafio-header">
+                  <span className="quiz-desafio-badge">DESAFIO</span>
                   <h2 id="quizTitle" className="modulo-quiz-title">
                     {quiz.titulo || "Quiz"}
                   </h2>
-                  {quizMergedItems.map((item, idx) => (
-                    <React.Fragment key={idx}>
-                      {renderQuizItem(item, respostas, setRespostas)}
-                    </React.Fragment>
-                  ))}
-                  <div className="pfu-actions">
-                    <button type="submit" className="pfu-save" disabled={enviando}>
-                      {enviando ? "Enviando..." : "Tentar novamente"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            ) : (
-              <form className="modulo-quiz" onSubmit={handleSubmit} aria-labelledby="quizTitle">
-                <h2 id="quizTitle" className="modulo-quiz-title">
-                  {quiz.titulo || "Quiz"}
-                </h2>
+                  {quiz.descricao && <p className="quiz-desafio-desc">{quiz.descricao}</p>}
+                </div>
 
                 {quizMergedItems.map((item, idx) => (
                   <React.Fragment key={idx}>
@@ -514,8 +597,8 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
                 ))}
 
                 <div className="pfu-actions">
-                  <button type="submit" className="pfu-save" disabled={enviando}>
-                    {enviando ? "Enviando..." : "Enviar respostas"}
+                  <button type="submit" className="pfu-save pfu-btn-enviar" disabled={enviando}>
+                    {enviando ? "Verificando..." : "Enviar e ver resultado"}
                   </button>
                 </div>
               </form>

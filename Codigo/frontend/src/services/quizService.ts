@@ -67,6 +67,15 @@ const quizService = {
     pontuacao_maxima?: number;
     atingiu_50?: boolean;
     eh_retentativa?: boolean;
+    bonus_primeira_tentativa?: number;
+    questoes_erradas?: Array<{
+      id_questao: number;
+      enunciado: string;
+      ordem: number;
+      resposta_usuario: string;
+      resposta_correta: string;
+      pontos_perdidos: number;
+    }>;
   }> {
     const userStr = localStorage.getItem("usuario");
     const usuario = userStr ? JSON.parse(userStr) : null;

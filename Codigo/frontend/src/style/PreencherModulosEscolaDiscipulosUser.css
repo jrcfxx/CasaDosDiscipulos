@@ -265,6 +265,152 @@ body{
 .modulo-opcoes { display: flex; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; border: none; }
 .modulo-opcao { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
 .modulo-opcao input { width: 18px; height: 18px; }
+/* Quiz - Fluxo gamificado */
+.quiz-desafio-header {
+  text-align: center;
+  margin-bottom: 1.8rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--line);
+}
+.quiz-desafio-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--primary-teal), #036d7a);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1rem;
+}
+.quiz-desafio-desc { margin: 0.5rem 0 0; font-size: 0.95rem; color: var(--muted); }
+.pfu-btn-enviar {
+  background: linear-gradient(135deg, var(--primary-teal) 0%, #036d7a 100%);
+  font-size: 1rem;
+}
+
+/* Resultado sucesso */
+.quiz-resultado {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+}
+.quiz-resultado-sucesso {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.06) 100%);
+  border: 2px solid rgba(34, 197, 94, 0.4);
+}
+.quiz-resultado-icon {
+  font-size: 3.5rem;
+  margin-bottom: 0.75rem;
+  animation: quiz-bounce 0.5s ease;
+}
+@keyframes quiz-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.quiz-resultado h2 { margin: 0 0 0.5rem; font-size: 1.6rem; color: #166534; font-weight: 800; }
+.quiz-resultado-subtitulo { margin: 0 0 1.5rem; color: var(--muted); font-size: 1rem; }
+.quiz-resultado-pontos-card {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  padding: 1rem 2rem;
+  background: rgba(0,0,0,0.05);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+.quiz-pontos-valor { font-size: 2.2rem; font-weight: 800; color: #166534; }
+.quiz-pontos-separador { font-size: 1.5rem; color: var(--muted); }
+.quiz-pontos-total { font-size: 1.5rem; font-weight: 700; color: var(--muted); }
+.quiz-pontos-label { font-size: 1rem; color: var(--muted); margin-left: 0.25rem; }
+.quiz-resultado-extra { margin: 0 0 1.5rem; font-size: 0.95rem; color: #15803d; font-weight: 600; }
+.quiz-bonus-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  background: linear-gradient(135deg, var(--secondary-gold), #d9a002);
+  color: #1a1a1a;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.pfu-btn-sucesso {
+  background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+}
+
+/* Resultado falha */
+.quiz-resultado-falha {
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.12) 0%, rgba(239, 68, 68, 0.06) 100%);
+  border: 2px solid rgba(245, 158, 11, 0.4);
+}
+.quiz-icon-falha { font-size: 2.8rem; }
+.quiz-resultado-falha h2 { color: #b45309; }
+.quiz-pontos-falha .quiz-pontos-valor { color: #b45309; }
+.quiz-resultado-tentativa {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.quiz-questoes-erradas {
+  text-align: left;
+  margin: 1.5rem 0 2rem;
+  padding: 1.5rem;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+}
+.quiz-questoes-erradas h3 {
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  color: #b91c1c;
+}
+.quiz-questao-errada {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fff;
+  border-radius: 10px;
+  border-left: 4px solid #ef4444;
+  position: relative;
+}
+.quiz-questao-errada:last-child { margin-bottom: 0; }
+.quiz-errada-enunciado {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.quiz-errada-respostas { display: flex; flex-direction: column; gap: 0.5rem; }
+.quiz-errada-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.9rem;
+}
+.quiz-errada-label { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.quiz-errada-usuario span:last-child { color: #dc2626; }
+.quiz-errada-correta span:last-child { color: #166534; font-weight: 600; }
+.quiz-errada-pontos {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  font-size: 0.8rem;
+  color: #dc2626;
+  font-weight: 700;
+}
+.quiz-falha-actions {
+  margin-top: 2rem;
+  text-align: center;
+}
+.quiz-falha-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.pfu-btn-retry {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+}
+
 .modulo-resultado {
   margin-top: 2rem;
   text-align: center;
