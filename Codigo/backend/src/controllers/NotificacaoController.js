@@ -28,7 +28,10 @@ class NotificacaoController {
   async marcarLido(req, res, next) {
     try {
       const idUsuario = req.usuario?.id_usuario;
-      const id = req.params.id;
+      const id = parseInt(req.params.id, 10);
+      if (Number.isNaN(id) || id < 1) {
+        return res.status(400).json({ error: "ID de notificação inválido" });
+      }
       await NotificacaoModel.marcarLido(id, idUsuario);
       res.status(204).send();
     } catch (err) {

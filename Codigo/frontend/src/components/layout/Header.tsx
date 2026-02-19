@@ -37,6 +37,7 @@ const Header: React.FC = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifRefreshTrigger, setNotifRefreshTrigger] = useState(0);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const portalDropdownRef = useRef<HTMLDivElement>(null);
@@ -220,9 +221,15 @@ const Header: React.FC = () => {
 
         <div className="header-right-group">
           <div className="header-notif-container" ref={notifRef}>
-            <NotificationsBell count={0} onClick={() => setNotifOpen(!notifOpen)} />
+            <NotificationsBell
+              refreshTrigger={notifRefreshTrigger}
+              onClick={() => setNotifOpen(!notifOpen)}
+            />
             {notifOpen && (
-              <NotificationsDropdown onClose={() => setNotifOpen(false)} />
+              <NotificationsDropdown
+                onClose={() => setNotifOpen(false)}
+                onRefresh={() => setNotifRefreshTrigger((v) => v + 1)}
+              />
             )}
           </div>
           <div className="header-profile-container" ref={dropdownRef}>

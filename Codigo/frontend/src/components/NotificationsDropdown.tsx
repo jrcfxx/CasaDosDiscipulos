@@ -20,10 +20,14 @@ function formatarData(s: string) {
 
 interface NotificationsDropdownProps {
   onClose?: () => void;
+  onRefresh?: () => void;
 }
 
-const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }) => {
+const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, onRefresh }) => {
   const navigate = useNavigate();
+  const onRefreshRef = useRef(onRefresh);
+  onRefreshRef.current = onRefresh;
+
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -40,6 +44,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
       ]);
       setNotificacoes(list);
       setCount(cnt);
+      onRefreshRef.current?.();
     } catch {
       setNotificacoes([]);
       setCount(0);
@@ -53,8 +58,23 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
   }, [carregar]);
 
   const handleClickNotif = async (n: Notificacao) => {
-    if (!n.id_escala_evento) return;
     setDetalheNotif(n);
+    if (!n.id_escala_evento) {
+      if (!n.lido) {
+        try {
+          await notificacaoService.marcarLido(n.id_notificacao);
+          setNotificacoes((prev) =>
+            prev.map((x) => (x.id_notificacao === n.id_notificacao ? { ...x, lido: true } : x))
+          );
+          setCount((c) => Math.max(0, c - 1));
+          onRefreshRef.current?.();
+        } catch {
+          /* ignore */
+        }
+      }
+      setLoadingDetalhe(false);
+      return;
+    }
     setLoadingDetalhe(true);
     setEventoDetalhe(null);
     try {
@@ -66,6 +86,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
           prev.map((x) => (x.id_notificacao === n.id_notificacao ? { ...x, lido: true } : x))
         );
         setCount((c) => Math.max(0, c - 1));
+        onRefreshRef.current?.();
       }
     } catch {
       setEventoDetalhe(null);
@@ -79,6 +100,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
       await notificacaoService.marcarTodasLidas();
       setNotificacoes((prev) => prev.map((x) => ({ ...x, lido: true })));
       setCount(0);
+      onRefreshRef.current?.();
     } catch {
       /* ignore */
     }
@@ -145,10 +167,16 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
       </div>
 
       {detalheNotif && (
-        <div className="notif-modal-overlay" onClick={fecharDetalhe}>
+        <div
+          className="notif-modal-overlay"
+          onClick={fecharDetalhe}
+          role="dialog"
+          aria-modal
+          aria-labelledby="notif-modal-title"
+        >
           <div className="notif-modal" onClick={(e) => e.stopPropagation()}>
             <div className="notif-modal-header">
-              <h3>{detalheNotif.titulo}</h3>
+              <h3 id="notif-modal-title">{detalheNotif.titulo}</h3>
               <button type="button" className="notif-modal-close" onClick={fecharDetalhe} aria-label="Fechar">
                 ×
               </button>
@@ -156,6 +184,17 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
             {loadingDetalhe ? (
               <div className="notif-modal-body notif-modal-loading">
                 <div className="notif-loading-spinner" />
+              </div>
+            ) : !detalheNotif.id_escala_evento ? (
+              <div className="notif-modal-body">
+                {detalheNotif.mensagem && (
+                  <p className="notif-modal-simple-msg">{detalheNotif.mensagem}</p>
+                )}
+                <div className="notif-modal-footer">
+                  <button type="button" className="notif-modal-btn-secondary" onClick={fecharDetalhe}>
+                    Fechar
+                  </button>
+                </div>
               </div>
             ) : eventoDetalhe ? (
               <>
@@ -182,7 +221,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
                     )}
                     <div className="notif-evento-ministerios">
                       <span className="notif-evento-ministerios-label">Ministérios:</span>
-                      <div className="notif-evento-ministrios-chips">
+                      <div className="notif-evento-ministerios-chips">
                         {(eventoDetalhe.areas || []).map((ar) => (
                           <span key={ar.id_escala_area} className="notif-chip">
                             {ar.nome}
@@ -203,7 +242,12 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
               </>
             ) : (
               <div className="notif-modal-body">
-                <p className="notif-modal-erro">Não foi possível carregar os detalhes.</p>
+                <p className="notif-modal-erro">Evento não encontrado ou foi removido.</p>
+                <div className="notif-modal-footer">
+                  <button type="button" className="notif-modal-btn-secondary" onClick={fecharDetalhe}>
+                    Fechar
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -216,8 +260,14 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose }
 export default NotificationsDropdown;
 
 /** Botão do sino com badge - para usar no Header */
-export function NotificationsBell({ onClick, count }: { onClick: () => void; count: number }) {
-  const [num, setNum] = useState(count);
+export function NotificationsBell({
+  onClick,
+  refreshTrigger = 0,
+}: {
+  onClick: () => void;
+  refreshTrigger?: number;
+}) {
+  const [num, setNum] = useState(0);
   useEffect(() => {
     const fetchCount = async () => {
       try {
@@ -230,7 +280,7 @@ export function NotificationsBell({ onClick, count }: { onClick: () => void; cou
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
     return () => clearInterval(interval);
-  }, [count]);
+  }, [refreshTrigger]);
   return (
     <button
       type="button"
