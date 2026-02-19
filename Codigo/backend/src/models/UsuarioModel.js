@@ -20,7 +20,9 @@ const UsuarioModel = {
       "foto",
       "data_criacao",
       "ativo",
-      "ultimo_login"
+      "ultimo_login",
+      "lider_celula",
+      "lider_ministerio"
     );
   },
 
@@ -42,7 +44,9 @@ const UsuarioModel = {
         "foto",
         "data_criacao",
         "ativo",
-        "ultimo_login"
+        "ultimo_login",
+        "lider_celula",
+        "lider_ministerio"
       )
       .first();
   },

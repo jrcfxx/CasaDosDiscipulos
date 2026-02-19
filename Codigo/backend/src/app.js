@@ -14,9 +14,11 @@ import FormularioRoutes from "./routes/FormularioRoutes.js";
 import formularioRespostaRoutes from "./routes/formularioRespostaRoutes.js";
 import celulaRoutes from "./routes/celulaRoutes.js";
 import eventoRoutes from "./routes/eventoRoutes.js";
+import escalaRoutes from "./routes/escalaRoutes.js";
 import nivelRoutes from "./routes/nivelRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import usuarioCelulaRoutes from "./routes/usuarioCelulaRoutes.js";
+import ministerioRoutes from "./routes/ministerioRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -69,6 +71,9 @@ app.use("/api/celula", celulaRoutes);
 // Rotas de Eventos
 app.use("/api/evento", eventoRoutes);
 
+// Rotas de Escala (calendário, atribuições)
+app.use("/api/escala", escalaRoutes);
+
 // Rotas de Níveis
 app.use("/api/nivel", nivelRoutes);
 
@@ -77,6 +82,9 @@ app.use("/api/upload", uploadRoutes);
 
 // Célula principal do usuário (perfil)
 app.use("/api/usuario-celula", usuarioCelulaRoutes);
+
+// Ministérios
+app.use("/api/ministerios", ministerioRoutes);
 
 // Middleware de tratamento de erros deve vir por último
 app.use(errorHandler);

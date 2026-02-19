@@ -12,7 +12,14 @@ export async function seed() {
   await knex("formulario_resposta").del();
   await knex("quiz_resposta").del();
   await knex("usuario_modulo").del();
+  await knex("escala_atribuicao").del();
+  await knex("escala_evento_ministerio").del();
+  await knex("escala_area").del();
+  await knex("escala_evento").del();
+  await knex("usuario_ministerio").del();
+  await knex("ministerio_lider").del();
   await knex("usuario_celula").del();
+  await knex("celula_lider").del();
   await knex("celula").del();
   await knex("usuario").del();
 
@@ -40,6 +47,8 @@ export async function seed() {
       pontuacao: 0,
       ativo: true,
       id_nivel: nivelLider?.id_nivel ?? null,
+      lider_celula: true,
+      lider_ministerio: false,
     },
     {
       nome: "Líder Silva",
@@ -49,6 +58,8 @@ export async function seed() {
       pontuacao: 50,
       ativo: true,
       id_nivel: nivelDiscipulo?.id_nivel ?? null,
+      lider_celula: true,
+      lider_ministerio: true, // Será líder de ministério (vinculado via seed_ministerio)
     },
     {
       nome: "Membro Teste",

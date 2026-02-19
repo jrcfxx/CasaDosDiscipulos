@@ -31,6 +31,11 @@ export const createUsuarioSchema = Joi.object({
 
   id_nivel: Joi.number().integer().positive().allow(null).optional(),
 
+  lider_celula: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
+  lider_ministerio: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
+  id_ministerios_lider: Joi.array().items(Joi.number().integer().positive()).optional(),
+  id_ministerios_participa: Joi.array().items(Joi.number().integer().positive()).optional(),
+
   ativo: Joi.boolean().default(true),
   data_criacao: Joi.date().optional(),
 });
@@ -62,10 +67,16 @@ export const updateUsuarioSchema = Joi.object({
 
   id_nivel: Joi.number().integer().positive().allow(null).optional(),
 
+  lider_celula: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
+  lider_ministerio: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
+  id_ministerios_lider: Joi.array().items(Joi.number().integer().positive()).optional(),
+  id_ministerios_participa: Joi.array().items(Joi.number().integer().positive()).optional(),
+
   ativo: Joi.boolean(),
   pontuacao: Joi.number().integer().min(0),
   data_criacao: Joi.date().optional(),
-});
+})
+  .unknown(true);
 
 /**
  * Schema de validação para login

@@ -30,6 +30,7 @@ import ModulosEscolaDiscipulosUser from "./pages/ModulosEscolaDiscipulosUser";
 import PreencherModulosEscolaDiscipulosUser from "./pages/PreencherModulosEscolaDiscipulosUser";
 import LicaoSecretariaCelulaUser from "./pages/LicaoSecretariaCelulaUser";
 import FormulariosSecretariaCelulasLeader from "./pages/FormulariosSecretariaCelulasLeader";
+import EscalaUser from "./pages/EscalaUser";
 
 // Páginas Comuns
 import Perfil from "./pages/Perfil";
@@ -244,22 +245,32 @@ export default function App() {
         }
       />
 
-      {/* Lições - Apenas Líder */}
+      {/* Lições - Apenas Líder de Célula */}
       <Route
         path="/usuario/licoes"
         element={
-          <ProtectedRoute allowedRoles="lider">
+          <ProtectedRoute requireLiderCelula>
             <LicaoSecretariaCelulaUser />
           </ProtectedRoute>
         }
       />
 
-      {/* Formulários - Apenas Líder */}
+      {/* Formulários - Apenas Líder de Célula */}
       <Route
         path="/usuario/formularios"
         element={
-          <ProtectedRoute allowedRoles="lider">
+          <ProtectedRoute requireLiderCelula>
             <FormulariosSecretariaCelulasLeader />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Escala - Apenas Líder de Ministério */}
+      <Route
+        path="/usuario/escala"
+        element={
+          <ProtectedRoute requireLiderMinisterio>
+            <EscalaUser />
           </ProtectedRoute>
         }
       />

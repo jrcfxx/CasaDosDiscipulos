@@ -13,6 +13,8 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLider: boolean;
+  isLiderCelula: boolean;
+  isLiderMinisterio: boolean;
   isMembro: boolean;
   userType: UserType | null;
   loading: boolean;
@@ -55,6 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
     isAdmin: user?.tipo === "administrador",
     isLider: user?.tipo === "lider",
+    isLiderCelula: user?.tipo === "lider" && (user?.lider_celula ?? true),
+    isLiderMinisterio: user?.tipo === "lider" && !!user?.lider_ministerio,
     isMembro: user?.tipo === "membro",
     userType: user?.tipo ?? null,
     loading,

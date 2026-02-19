@@ -5,12 +5,13 @@ import "../style/PortalDoDiscipuloUser.css";
 import imgLicoes from "../assets/lendo_biblia.jpeg";
 import imgFormularios from "../assets/lendo_biblia_.jpeg";
 import imgModulos from "../assets/casal_leitura.jpeg";
+import imgEscala from "../assets/presenca.jpeg";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
 const PortalDoDiscipuloUser: React.FC = () => {
-  const { isLider, isMembro } = useAuth();
+  const { isLiderCelula, isLiderMinisterio } = useAuth();
 
   return (
     <div className="portal-user">
@@ -19,10 +20,29 @@ const PortalDoDiscipuloUser: React.FC = () => {
       <main className="portal-wrap">
         <h1 className="portal-title">PORTAL DO DISCÍPULO</h1>
 
-        {/* Secretaria das Células - Apenas para Líderes */}
-        {isLider && (
+        {/* Na Casa - Escala - Apenas para Líderes de Ministério */}
+        {isLiderMinisterio && (
           <>
-            <h2 className="portal-subtitle">SECRETARIA DAS CÉLULAS</h2>
+            <h2 className="portal-subtitle">NA CASA</h2>
+            <div className="grid-1">
+              <NavLink
+                to="/usuario/escala"
+                className="portal-card portal-card--wide"
+                style={{ backgroundImage: `url(${imgEscala})` }}
+              >
+                <span className="portal-card__overlay" />
+                <span className="portal-card__title">ESCALA</span>
+              </NavLink>
+            </div>
+          </>
+        )}
+
+        {/* Secretaria das Células - Apenas para Líderes de Célula */}
+        {isLiderCelula && (
+          <>
+            <h2 className={`portal-subtitle ${isLiderMinisterio ? "mt-section" : ""}`}>
+              SECRETARIA DAS CÉLULAS
+            </h2>
             <div className="grid-2">
               <NavLink
                 to="/usuario/licoes"
@@ -46,7 +66,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
         )}
 
         {/* Escola de Discípulos - Para Líderes e Membros */}
-        <h2 className={`portal-subtitle ${isLider ? "mt-section" : ""}`}>
+        <h2 className={`portal-subtitle ${(isLiderCelula || isLiderMinisterio) ? "mt-section" : ""}`}>
           ESCOLA DE DISCÍPULOS
         </h2>
         <div className="grid-1">

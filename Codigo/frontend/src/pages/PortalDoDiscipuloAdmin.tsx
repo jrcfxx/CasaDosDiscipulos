@@ -8,6 +8,7 @@ import imgFormularios from "../assets/formulario_oficial.jpg";
 import imgModulos from "../assets/casal_leitura.jpeg";
 import imgQuiz from "../assets/quizz.jpg";
 import imgEventos from "../assets/presenca.jpeg";
+import imgEscala from "../assets/presenca.jpeg";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -24,7 +25,21 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
       <main className="portal-wrap">
         <h1 className="portal-title">PORTAL DO DISCÍPULO</h1>
 
-        {}
+        <section className="portal-section">
+          <h2 className="portal-subtitle">NA CASA</h2>
+          <div className="portal-grid">
+            <Link
+              to="/usuario/escala"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgEscala})` }}
+              aria-label="Escala"
+            >
+              <div className="portal-card__overlay" />
+              <span className="portal-card__title">ESCALA</span>
+            </Link>
+          </div>
+        </section>
+
         <section className="portal-section">
           <h2 className="portal-subtitle">SECRETARIA DAS CÉLULAS</h2>
 

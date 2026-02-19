@@ -32,7 +32,7 @@ const ProfileIcon = () => (
  */
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const { isAdmin, isLider, logout } = useAuth();
+  const { isAdmin, isLiderCelula, isLiderMinisterio, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -138,8 +138,21 @@ const Header: React.FC = () => {
                   </Link>
                 </div>
 
-                {/* Secretaria das Células - Admin e Líder */}
-                {(isAdmin || isLider) && (
+                {/* Na Casa - Admin e Líder de Ministério */}
+                {(isAdmin || isLiderMinisterio) && (
+                  <div className="nav-dropdown-section">
+                    <p className="nav-dropdown-title">NA CASA</p>
+                    <Link
+                      to="/usuario/escala"
+                      onClick={() => setPortalDropdownOpen(false)}
+                    >
+                      Escala
+                    </Link>
+                  </div>
+                )}
+
+                {/* Secretaria das Células - Admin e Líder de Célula */}
+                {(isAdmin || isLiderCelula) && (
                   <div className="nav-dropdown-section">
                     <p className="nav-dropdown-title">SECRETARIA DAS CÉLULAS</p>
                     {isAdmin && (

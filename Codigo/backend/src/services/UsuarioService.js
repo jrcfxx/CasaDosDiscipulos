@@ -1,5 +1,7 @@
+import knex from "../database/index.js";
 import UsuarioModel from "../models/UsuarioModel.js";
 import NivelModel from "../models/NivelModel.js";
+import MinisterioModel from "../models/MinisterioModel.js";
 import ModuloService from "./ModuloService.js";
 import bcrypt from "bcrypt";
 import {
@@ -71,6 +73,18 @@ const UsuarioService = {
       throw new NotFoundError("Usuário não encontrado");
     }
 
+    try {
+      usuario.ministerios_lider = await MinisterioModel.getMinisteriosByUsuario(numericId);
+      usuario.ministerios_participa = await MinisterioModel.getMinisteriosParticipaByUsuario(numericId);
+      usuario.id_ministerios_lider = (usuario.ministerios_lider || []).map((m) => m.id_ministerio);
+      usuario.id_ministerios_participa = (usuario.ministerios_participa || []).map((m) => m.id_ministerio);
+    } catch {
+      usuario.ministerios_lider = [];
+      usuario.ministerios_participa = [];
+      usuario.id_ministerios_lider = [];
+      usuario.id_ministerios_participa = [];
+    }
+
     return usuario;
   },
 
@@ -122,7 +136,18 @@ const UsuarioService = {
       ativo: data.ativo ?? true,
     };
 
-    // Adiciona id_nivel se fornecido
+    // Permissões de líder (apenas quando tipo=lider)
+    if (data.tipo === USER_TYPES.LEADER) {
+      novoUsuarioData.lider_celula = data.lider_celula ?? true;
+      novoUsuarioData.lider_ministerio = data.lider_ministerio ?? false;
+    }
+
+    // Ministérios que o usuário participa
+    const idMinisteriosParticipa = Array.isArray(data.id_ministerios_participa)
+      ? data.id_ministerios_participa
+      : [];
+
+    // Cria usuário
     if (data.id_nivel !== undefined) {
       if (data.id_nivel !== null) {
         const id_nivel = Number(data.id_nivel);
@@ -138,7 +163,22 @@ const UsuarioService = {
     // Cria usuário
     const novoUsuario = await UsuarioModel.create(novoUsuarioData);
 
-    return novoUsuario;
+    if (data.tipo === USER_TYPES.LEADER && Array.isArray(data.id_ministerios_lider) && data.id_ministerios_lider.length) {
+      for (const idMin of data.id_ministerios_lider) {
+        const lideres = await MinisterioModel.getLideresByMinisterio(idMin);
+        const ids = lideres.map((l) => l.id_usuario);
+        if (!ids.includes(novoUsuario.id_usuario)) {
+          await knex("ministerio_lider").insert({ id_ministerio: idMin, id_usuario: novoUsuario.id_usuario });
+        }
+      }
+      await UsuarioModel.update(novoUsuario.id_usuario, { lider_ministerio: true });
+    }
+
+    if (idMinisteriosParticipa.length) {
+      await MinisterioModel.setMinisteriosParticipaByUsuario(novoUsuario.id_usuario, idMinisteriosParticipa);
+    }
+
+    return this.getById(novoUsuario.id_usuario);
   },
 
   /**
@@ -221,8 +261,31 @@ const UsuarioService = {
       dadosAtualizacao.foto = data.foto;
     }
 
+    // Permissões de líder (lider_celula = Secretaria, lider_ministerio = Escala)
+    if (data.lider_celula !== undefined) dadosAtualizacao.lider_celula = !!data.lider_celula;
+    if (data.lider_ministerio !== undefined) dadosAtualizacao.lider_ministerio = !!data.lider_ministerio;
+
     // Atualiza usuário
     await UsuarioModel.update(id_usuario, dadosAtualizacao);
+
+    // Ministérios que lidera (atualiza ministerio_lider)
+    if (data.id_ministerios_lider !== undefined) {
+      await knex("ministerio_lider").where("id_usuario", id_usuario).del();
+      const ids = Array.isArray(data.id_ministerios_lider) ? data.id_ministerios_lider : [];
+      if (ids.length) {
+        await knex("ministerio_lider").insert(ids.map((idMin) => ({ id_ministerio: idMin, id_usuario })));
+        dadosAtualizacao.lider_ministerio = true;
+      } else {
+        dadosAtualizacao.lider_ministerio = false;
+      }
+      await UsuarioModel.update(id_usuario, { lider_ministerio: ids.length > 0 });
+    }
+
+    // Ministérios em que participa
+    if (data.id_ministerios_participa !== undefined) {
+      const ids = Array.isArray(data.id_ministerios_participa) ? data.id_ministerios_participa : [];
+      await MinisterioModel.setMinisteriosParticipaByUsuario(id_usuario, ids);
+    }
 
     return this.getById(id_usuario);
   },

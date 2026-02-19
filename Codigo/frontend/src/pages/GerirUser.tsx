@@ -15,6 +15,7 @@ import {
   deleteNivel,
   reativarNivel,
 } from "../services/nivel";
+import ministerioService from "../services/ministerioService";
 
 interface Nivel {
   id_nivel: number;
@@ -37,6 +38,8 @@ interface Usuario {
   nivel_escola_nome?: string | null;
   nivel_exibir?: string | null;
   ativo?: boolean;
+  lider_celula?: boolean;
+  lider_ministerio?: boolean;
 }
 
 interface UsuarioModal {
@@ -48,6 +51,10 @@ interface UsuarioModal {
   confirmarSenha?: string;
   tipo: "lider" | "administrador" | "membro" | "";
   id_nivel?: number | null;
+  lider_celula?: boolean;
+  lider_ministerio?: boolean;
+  id_ministerios_lider?: number[];
+  id_ministerios_participa?: number[];
 }
 
 interface NivelModal {
@@ -57,8 +64,17 @@ interface NivelModal {
   ordem: number;
 }
 
+interface MinisterioModal {
+  id_ministerio?: number;
+  nome: string;
+  descricao: string;
+  ordem: number;
+  ativo: boolean;
+  id_lideres: number[];
+}
+
 export default function GerenciarUsuarios() {
-  const [abaAtiva, setAbaAtiva] = useState<"usuarios" | "niveis">("usuarios");
+  const [abaAtiva, setAbaAtiva] = useState<"usuarios" | "niveis" | "ministerios">("usuarios");
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [niveis, setNiveis] = useState<Nivel[]>([]);
   const [filtro, setFiltro] = useState("");
@@ -72,6 +88,10 @@ export default function GerenciarUsuarios() {
     confirmarSenha: "",
     tipo: "",
     id_nivel: null,
+    lider_celula: true,
+    lider_ministerio: false,
+    id_ministerios_lider: [],
+    id_ministerios_participa: [],
   });
   const [modalInativarAberto, setModalInativarAberto] = useState(false);
   const [usuarioInativar, setUsuarioInativar] = useState<Usuario | null>(null);
@@ -88,6 +108,17 @@ export default function GerenciarUsuarios() {
   const [nivelToInativar, setNivelToInativar] = useState<number | null>(null);
   const [showConfirmReativarNivel, setShowConfirmReativarNivel] = useState(false);
   const [nivelToReativar, setNivelToReativar] = useState<number | null>(null);
+  const [ministerios, setMinisterios] = useState<import("../services/ministerioService").Ministerio[]>([]);
+  const [modalMinisterioAberto, setModalMinisterioAberto] = useState(false);
+  const [ministerioModal, setMinisterioModal] = useState<MinisterioModal>({
+    nome: "",
+    descricao: "",
+    ordem: 0,
+    ativo: true,
+    id_lideres: [],
+  });
+  const [showConfirmExcluirMinisterio, setShowConfirmExcluirMinisterio] = useState(false);
+  const [ministerioToExcluir, setMinisterioToExcluir] = useState<number | null>(null);
 
   const tipoLabels: Record<string, string> = {
     lider: "Líder",
@@ -104,6 +135,16 @@ export default function GerenciarUsuarios() {
     fetchNiveis(abaAtiva === "niveis");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [abaAtiva]);
+
+  useEffect(() => {
+    fetchMinisterios(abaAtiva === "ministerios");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abaAtiva]);
+
+  useEffect(() => {
+    if (modalAberto) fetchMinisterios(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalAberto]);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
@@ -136,6 +177,16 @@ export default function GerenciarUsuarios() {
       if (abaAtiva === "niveis") {
         showToast("Erro ao carregar níveis", "error");
       }
+    }
+  }
+
+  async function fetchMinisterios(incluirInativos = false) {
+    try {
+      const data = await ministerioService.getAll(incluirInativos);
+      setMinisterios(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Erro ao carregar ministérios:", err);
+      if (abaAtiva === "ministerios") showToast("Erro ao carregar ministérios", "error");
     }
   }
 
@@ -177,6 +228,10 @@ export default function GerenciarUsuarios() {
       foto: null,
       tipo: "",
       id_nivel: null,
+      lider_celula: true,
+      lider_ministerio: false,
+      id_ministerios_lider: [],
+      id_ministerios_participa: [],
     });
     setModalAberto(true);
   };
@@ -200,6 +255,8 @@ export default function GerenciarUsuarios() {
           : Number(usuarioAtual.id_nivel))
         : null;
       const idNivelFinal = idNivel != null && !Number.isNaN(idNivel) && idNivel > 0 ? idNivel : null;
+      const idsLider = (usuarioAtual as Usuario & { id_ministerios_lider?: number[] }).id_ministerios_lider ?? [];
+      const idsParticipa = (usuarioAtual as Usuario & { id_ministerios_participa?: number[] }).id_ministerios_participa ?? [];
       setUsuarioModal({
         id_usuario: usuarioAtual.id_usuario,
         nome: usuarioAtual.nome,
@@ -209,6 +266,10 @@ export default function GerenciarUsuarios() {
         foto: usuarioAtual.foto || null,
         tipo: usuarioAtual.tipo,
         id_nivel: idNivelFinal,
+        lider_celula: (usuarioAtual as Usuario).lider_celula ?? true,
+        lider_ministerio: !!(usuarioAtual as Usuario).lider_ministerio,
+        id_ministerios_lider: Array.isArray(idsLider) ? idsLider : [],
+        id_ministerios_participa: Array.isArray(idsParticipa) ? idsParticipa : [],
       });
       setModalAberto(true);
     } catch (err) {
@@ -219,7 +280,7 @@ export default function GerenciarUsuarios() {
 
   const handleChange = (
     campo: keyof UsuarioModal,
-    valor: string | File | null | number
+    valor: string | File | null | number | boolean | number[]
   ) => {
     setUsuarioModal((prev) => ({ ...prev, [campo]: valor }));
   };
@@ -234,6 +295,10 @@ export default function GerenciarUsuarios() {
       confirmarSenha: "",
       tipo: "",
       id_nivel: null,
+      lider_celula: true,
+      lider_ministerio: false,
+      id_ministerios_lider: [],
+      id_ministerios_participa: [],
     });
   };
 
@@ -274,6 +339,14 @@ export default function GerenciarUsuarios() {
       id_nivel: usuarioModal.id_nivel,
       ativo: true,
     };
+
+    if (usuarioModal.tipo === "lider") {
+      userData.lider_celula = Boolean(usuarioModal.lider_celula ?? true);
+      const idsLider = usuarioModal.id_ministerios_lider ?? [];
+      userData.lider_ministerio = idsLider.length > 0;
+      userData.id_ministerios_lider = idsLider;
+    }
+    userData.id_ministerios_participa = usuarioModal.id_ministerios_participa ?? [];
 
     // Adiciona senha apenas se foi preenchida
     if (usuarioModal.senha) {
@@ -435,6 +508,55 @@ export default function GerenciarUsuarios() {
     }
   };
 
+  const lideresParaSelect = usuarios.filter((u) => u.tipo === "lider" && u.ativo);
+
+  const salvarMinisterio = async () => {
+    if (!ministerioModal.nome?.trim()) {
+      showToast("Preencha o nome do ministério");
+      return;
+    }
+    try {
+      if (ministerioModal.id_ministerio) {
+        await ministerioService.update(ministerioModal.id_ministerio, {
+          nome: ministerioModal.nome.trim(),
+          descricao: ministerioModal.descricao?.trim() || "",
+          ordem: ministerioModal.ordem,
+          ativo: ministerioModal.ativo,
+          id_lideres: ministerioModal.id_lideres,
+        });
+        showToast("Ministério atualizado!", "success");
+      } else {
+        await ministerioService.create({
+          nome: ministerioModal.nome.trim(),
+          descricao: ministerioModal.descricao?.trim() || "",
+          ordem: ministerioModal.ordem,
+          ativo: ministerioModal.ativo,
+          id_lideres: ministerioModal.id_lideres,
+        });
+        showToast("Ministério criado!", "success");
+      }
+      await fetchMinisterios(abaAtiva === "ministerios");
+      setModalMinisterioAberto(false);
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || "Erro ao salvar ministério";
+      showToast(msg, "error");
+    }
+  };
+
+  const excluirMinisterioConfirm = async () => {
+    if (ministerioToExcluir === null) return;
+    try {
+      await ministerioService.delete(ministerioToExcluir);
+      showToast("Ministério excluído!", "success");
+      await fetchMinisterios(true);
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || "Erro ao excluir ministério";
+      showToast(msg, "error");
+    }
+    setShowConfirmExcluirMinisterio(false);
+    setMinisterioToExcluir(null);
+  };
+
   return (
     <div className="gerir-container page-with-fixed-header">
       <Header />
@@ -455,6 +577,12 @@ export default function GerenciarUsuarios() {
             onClick={() => setAbaAtiva("niveis")}
           >
             Níveis
+          </button>
+          <button
+            className={`tab ${abaAtiva === "ministerios" ? "active" : ""}`}
+            onClick={() => setAbaAtiva("ministerios")}
+          >
+            Ministérios
           </button>
         </div>
 
@@ -626,6 +754,92 @@ export default function GerenciarUsuarios() {
             )}
           </>
         )}
+
+        {/* Conteúdo da aba Ministérios */}
+        {abaAtiva === "ministerios" && (
+          <>
+            <div className="busca-container">
+              <button
+                className="btn-add"
+                onClick={() => {
+                  setMinisterioModal({
+                    id_ministerio: undefined,
+                    nome: "",
+                    descricao: "",
+                    ordem: ministerios.length + 1,
+                    ativo: true,
+                    id_lideres: [],
+                  });
+                  setModalMinisterioAberto(true);
+                }}
+                title="Criar novo ministério"
+              >
+                +
+              </button>
+            </div>
+
+            {ministerios.length === 0 ? (
+              <div className="empty-state">
+                <h3>Nenhum ministério cadastrado</h3>
+                <p>Clique em + para criar o primeiro ministério</p>
+              </div>
+            ) : (
+              <div className="niveis-table-container">
+                <table className="niveis-table">
+                  <thead>
+                    <tr>
+                      <th>Ordem</th>
+                      <th>Nome</th>
+                      <th>Líderes</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ministerios.map((m) => (
+                      <tr key={m.id_ministerio} className={!m.ativo ? "nivel-inativo" : ""}>
+                        <td>{m.ordem}</td>
+                        <td>
+                          {m.nome}
+                          {!m.ativo && <span className="badge-inativo">Inativo</span>}
+                        </td>
+                        <td>
+                          {(m.lideres || []).map((l) => l.nome).join(", ") || "-"}
+                        </td>
+                        <td className="acoes">
+                          <button
+                            className="btn-edit"
+                            onClick={() => {
+                              setMinisterioModal({
+                                id_ministerio: m.id_ministerio,
+                                nome: m.nome,
+                                descricao: m.descricao || "",
+                                ordem: m.ordem,
+                                ativo: m.ativo,
+                                id_lideres: (m.lideres || []).map((l) => l.id_usuario),
+                              });
+                              setModalMinisterioAberto(true);
+                            }}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn-delete"
+                            onClick={() => {
+                              setMinisterioToExcluir(m.id_ministerio);
+                              setShowConfirmExcluirMinisterio(true);
+                            }}
+                          >
+                            Excluir
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        )}
       </main>
 
       {/* Modal de Cadastro/Edição de Usuário */}
@@ -663,6 +877,65 @@ export default function GerenciarUsuarios() {
                 <option value="lider">Líder</option>
                 <option value="administrador">Administrador</option>
               </select>
+
+              {usuarioModal.tipo === "lider" && (
+                <div className="lider-permissoes">
+                  <p className="lider-permissoes-title">Permissões do líder</p>
+                  <label className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={usuarioModal.lider_celula ?? true}
+                      onChange={(e) => handleChange("lider_celula", e.target.checked)}
+                    />
+                    <span>Líder de célula (acesso à Secretaria das Células)</span>
+                  </label>
+                  <div className="ministerios-lider-box">
+                    <p className="lider-permissoes-title">Ministérios que lidera (acesso à Escala)</p>
+                    {ministerios.filter((m) => m.ativo).map((m) => (
+                      <label key={m.id_ministerio} className="checkbox-row">
+                        <input
+                          type="checkbox"
+                          checked={(usuarioModal.id_ministerios_lider ?? []).includes(m.id_ministerio)}
+                          onChange={(e) => {
+                            const prev = usuarioModal.id_ministerios_lider ?? [];
+                            const next = e.target.checked
+                              ? [...prev, m.id_ministerio]
+                              : prev.filter((id) => id !== m.id_ministerio);
+                            handleChange("id_ministerios_lider", next);
+                          }}
+                        />
+                        <span>{m.nome}</span>
+                      </label>
+                    ))}
+                    {ministerios.filter((m) => m.ativo).length === 0 && (
+                      <p className="hint">Cadastre ministérios na aba Ministérios</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <label>Ministérios em que participa</label>
+              <div className="ministerios-participa-box">
+                {ministerios.filter((m) => m.ativo).map((m) => (
+                  <label key={m.id_ministerio} className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={(usuarioModal.id_ministerios_participa ?? []).includes(m.id_ministerio)}
+                      onChange={(e) => {
+                        const prev = usuarioModal.id_ministerios_participa ?? [];
+                        const next = e.target.checked
+                          ? [...prev, m.id_ministerio]
+                          : prev.filter((id) => id !== m.id_ministerio);
+                        handleChange("id_ministerios_participa", next);
+                      }}
+                    />
+                    <span>{m.nome}</span>
+                  </label>
+                ))}
+                {ministerios.filter((m) => m.ativo).length === 0 && (
+                  <p className="hint">Nenhum ministério cadastrado</p>
+                )}
+              </div>
 
               <label>Nível</label>
               <select
@@ -829,6 +1102,93 @@ export default function GerenciarUsuarios() {
         onCancel={() => {
           setShowConfirmReativarNivel(false);
           setNivelToReativar(null);
+        }}
+      />
+
+      {/* Modal de Cadastro/Edição de Ministério */}
+      {modalMinisterioAberto && (
+        <div className="modal-fundo" onClick={() => setModalMinisterioAberto(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>{ministerioModal.id_ministerio ? "Editar Ministério" : "Novo Ministério"}</h2>
+            <div className="modal-content">
+              <label>Nome</label>
+              <input
+                type="text"
+                value={ministerioModal.nome || ""}
+                onChange={(e) => setMinisterioModal((p) => ({ ...p, nome: e.target.value }))}
+                placeholder="Ex: Louvor"
+              />
+              <label>Descrição</label>
+              <textarea
+                value={ministerioModal.descricao || ""}
+                onChange={(e) => setMinisterioModal((p) => ({ ...p, descricao: e.target.value }))}
+                placeholder="Opcional"
+                rows={2}
+              />
+              <label>Ordem</label>
+              <input
+                type="number"
+                value={ministerioModal.ordem || 0}
+                onChange={(e) =>
+                  setMinisterioModal((p) => ({
+                    ...p,
+                    ordem: Math.max(0, parseInt(e.target.value, 10) || 0),
+                  }))
+                }
+                min="0"
+              />
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={ministerioModal.ativo}
+                  onChange={(e) => setMinisterioModal((p) => ({ ...p, ativo: e.target.checked }))}
+                />
+                <span>Ativo</span>
+              </label>
+              <label>Líderes do ministério</label>
+              <div className="ministerios-participa-box">
+                {lideresParaSelect.map((u) => (
+                  <label key={u.id_usuario!} className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={ministerioModal.id_lideres.includes(u.id_usuario!)}
+                      onChange={(e) => {
+                        const prev = ministerioModal.id_lideres;
+                        const next = e.target.checked
+                          ? [...prev, u.id_usuario!]
+                          : prev.filter((id) => id !== u.id_usuario);
+                        setMinisterioModal((p) => ({ ...p, id_lideres: next }));
+                      }}
+                    />
+                    <span>{u.nome}</span>
+                  </label>
+                ))}
+                {lideresParaSelect.length === 0 && (
+                  <p className="hint">Nenhum líder cadastrado. Crie usuários do tipo Líder primeiro.</p>
+                )}
+              </div>
+            </div>
+            <div className="modal-buttons">
+              <button onClick={() => setModalMinisterioAberto(false)}>Cancelar</button>
+              <button onClick={salvarMinisterio}>
+                {ministerioModal.id_ministerio ? "Salvar" : "Criar Ministério"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        open={showConfirmExcluirMinisterio}
+        title="Excluir ministério?"
+        message="Esta ação não pode ser desfeita. As vinculações com usuários e eventos serão removidas."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={excluirMinisterioConfirm}
+        onCancel={() => {
+          setShowConfirmExcluirMinisterio(false);
+          setMinisterioToExcluir(null);
         }}
       />
 

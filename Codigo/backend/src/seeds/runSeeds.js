@@ -1,3 +1,4 @@
+import { seed as seedClean } from "./seed_clean.js";
 import { seed as seedNivel } from "./seed_nivel.js";
 import { seed as seedUsuario } from "./seed_usuario.js";
 import { seed as seedCampo } from "./seed_campo_personalizado.js";
@@ -11,8 +12,12 @@ import { seed as seedLicaoCampo } from "./seed_licao_campo.js";
 import { seed as seedFormulario } from "./seed_formulario.js";
 import { seed as seedFormularioCampo } from "./seed_formulario_campo.js";
 import { seed as seedEvento } from "./seed_evento.js";
+import { seed as seedMinisterio } from "./seed_ministerio.js";
+import { seed as seedEscala } from "./seed_escala.js";
 import { seed as seedUsuarioCelula } from "./seed_usuario_celula.js";
 import { seed as seedFormularioResposta } from "./seed_formulario_resposta.js";
+import { seed as seedUsuarioModulo } from "./seed_usuario_modulo.js";
+import { seed as seedQuizResposta } from "./seed_quiz_resposta.js";
 
 /**
  * Executa todos os seeders na ordem correta
@@ -20,6 +25,9 @@ import { seed as seedFormularioResposta } from "./seed_formulario_resposta.js";
  */
 async function run() {
   console.log("Iniciando seeders...\n");
+
+  // 0. Limpa todas as tabelas (ordem reversa de FK)
+  await seedClean();
 
   // 1. Níveis (usuario e modulo referenciam)
   await seedNivel();
@@ -41,6 +49,9 @@ async function run() {
   await seedQuiz();
   await seedQuizQuestao();
 
+  // 6b. Respostas de quiz (depende de quiz_questao e usuario)
+  await seedQuizResposta();
+
   // 7. Lições
   await seedLicao();
   await seedLicaoCampo();
@@ -52,10 +63,19 @@ async function run() {
   // 9. Eventos
   await seedEvento();
 
-  // 10. Usuário-Célula (vincula membros/líderes às células)
+  // 10. Ministérios (depende de usuario)
+  await seedMinisterio();
+
+  // 11. Escala - eventos de calendário (depende de usuario e ministério)
+  await seedEscala();
+
+  // 12. Usuário-Célula (vincula membros/líderes às células)
   await seedUsuarioCelula();
 
-  // 11. Respostas de formulário (dados de exemplo para o dashboard)
+  // 12b. Usuário-Módulo (progresso em módulos)
+  await seedUsuarioModulo();
+
+  // 13. Respostas de formulário (dados de exemplo para o dashboard)
   await seedFormularioResposta();
 
   console.log("\n✅ Todos os seeders executados com sucesso!");

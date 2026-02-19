@@ -7,6 +7,8 @@ import knex from "../database/index.js";
  */
 export async function seed() {
   await knex("modulo_pre_requisito").del();
+  await knex("modulo_campo").del();
+  await knex("modulo_quiz").del();
   await knex("modulo").del();
 
   const nivel1 = await knex("nivel").where({ ordem: 1 }).first();

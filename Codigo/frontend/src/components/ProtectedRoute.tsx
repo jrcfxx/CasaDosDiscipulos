@@ -8,6 +8,8 @@ type AllowedRole = UserType | UserType[];
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
+  requireLiderCelula?: boolean;
+  requireLiderMinisterio?: boolean;
   allowedRoles?: AllowedRole;
 }
 
@@ -17,15 +19,17 @@ interface ProtectedRouteProps {
  *
  * Regras de acesso:
  * - Administrador: Acessa todas as rotas de admin
- * - Líder: Acessa portal (módulos, formulários, lições)
+ * - Líder: Acessa portal (módulos, formulários, lições) conforme permissões
  * - Membro: Acessa apenas realização de módulos
  */
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireAdmin = false,
+  requireLiderCelula = false,
+  requireLiderMinisterio = false,
   allowedRoles,
 }) => {
-  const { isAuthenticated, userType } = useAuth();
+  const { isAuthenticated, userType, isAdmin, isLiderCelula, isLiderMinisterio } = useAuth();
 
   // Se não estiver autenticado, redireciona para login
   if (!isAuthenticated) {
@@ -33,7 +37,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Se requer admin e não é admin, bloqueia acesso
-  if (requireAdmin && userType !== "administrador") {
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/portal/usuario" replace />;
+  }
+
+  // Se requer líder de célula (ex: Lições, Formulários), apenas líderes com essa permissão ou admin
+  if (requireLiderCelula && !isAdmin && !isLiderCelula) {
+    return <Navigate to="/portal/usuario" replace />;
+  }
+
+  // Se requer líder de ministério (ex: Escala), apenas líderes com essa permissão ou admin
+  if (requireLiderMinisterio && !isAdmin && !isLiderMinisterio) {
     return <Navigate to="/portal/usuario" replace />;
   }
 

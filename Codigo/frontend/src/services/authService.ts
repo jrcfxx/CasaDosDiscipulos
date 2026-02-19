@@ -22,7 +22,9 @@ export interface Usuario {
   email: string;
   tipo: UserType;
   ativo: boolean;
-  data_cadastro: string;
+  data_cadastro?: string;
+  lider_celula?: boolean;
+  lider_ministerio?: boolean;
 }
 
 export interface LoginResponse {
