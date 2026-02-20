@@ -1,30 +1,35 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "../../style/layout.css";
-import iconeIgreja from "../../assets/icone_igreja.png";
+import logo from "../../assets/logo.png";
 
 const Footer: React.FC = () => {
   return (
     <footer className="cd-footer">
-      <div className="footer-container">
-        <div className="footer-brand-info">
-          <img
-            src={iconeIgreja}
-            alt="Casa dos Discípulos"
-            className="footer-logo-icon"
-          />
+      <div className="footer-main">
+        <div className="footer-brand">
+          <Link to="/" className="footer-logo-wrap">
+            <img src={logo} alt="Casa dos Discípulos" className="footer-logo-icon" />
+          </Link>
           <div className="footer-info">
-            <p className="footer-text footer-name">
-              <strong>COMUNIDADE CRISTÃ CASA DOS DISCÍPULOS</strong>
-            </p>
-            <p className="footer-text">
-              Rua Albertino Teixeira Dias, 381 - B. Teixeira Dias - Belo
-              Horizonte - MG
-            </p>
-            <p className="footer-text">CNPJ: 34.655.477/0001-08</p>
-            <p className="footer-copyright">
-              © {new Date().getFullYear()} Todos os direitos reservados.
-            </p>
+            <p className="footer-text footer-name">COMUNIDADE CRISTÃ CASA DOS DISCÍPULOS</p>
+            <p className="footer-text">Rua Albertino Teixeira Dias, 381 – Tx. Dias – Belo Horizonte/MG</p>
+            <p className="footer-text footer-cnpj">CNPJ: 34.455.752/0001-69</p>
           </div>
+        </div>
+
+        <div className="footer-horarios">
+          <h4 className="footer-col-title">Nossos Cultos</h4>
+          <p className="footer-text">Domingo – Culto 18h30</p>
+          <p className="footer-text">Terça-feira – Células 20h</p>
+          <p className="footer-text">Sexta-feira – Vigília 20h</p>
+        </div>
+
+        <div className="footer-contribua">
+          <h4 className="footer-col-title">Contribua</h4>
+          <p className="footer-text">PIX: 34.455.752/0001-69</p>
+          <p className="footer-text footer-contribua-sub">Banco Stone (197) · Ag. 0001 · CC 574293-7</p>
+          <Link to="/#contribua" className="footer-contribua-link">Saiba mais</Link>
         </div>
 
         <div className="footer-social">
@@ -74,6 +79,11 @@ const Footer: React.FC = () => {
             </svg>
           </a>
         </div>
+      </div>
+      <div className="footer-bottom">
+        <p className="footer-copyright">
+          © {new Date().getFullYear()} Casa dos Discípulos. Todos os direitos reservados.
+        </p>
       </div>
     </footer>
   );

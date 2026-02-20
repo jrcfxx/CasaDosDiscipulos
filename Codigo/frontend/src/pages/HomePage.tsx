@@ -46,13 +46,13 @@ const HomePage: React.FC = () => {
           />
           <div className="home-hero__overlay" />
           <div className="home-hero__content">
+            <p className="home-hero__sub">— Comunidade Cristã</p>
             <h1 className="home-hero__title">
-              Seguindo o
-              <br />
-              Mestre por
-              <br />
-              Amor
+              Aqui é a nossa Casa.
             </h1>
+            <p className="home-hero__tagline">
+              Juntos estamos construindo algo eterno.
+            </p>
             <button
               className="home-hero__cta"
               onClick={() => navigate("/sobre-nos")}
@@ -63,7 +63,36 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Participe - Cultos / Ministérios */}
+        {/* Participe dos cultos - estilo Central */}
+        <section className="home-cultos">
+          <h2 className="home-cultos__titulo">Participe dos nossos cultos</h2>
+          <p className="home-cultos__texto">
+            Cada oportunidade de estar em comunhão com a igreja de Cristo é única e especial.
+            Confira a nossa agenda e programe-se para estar conosco.
+          </p>
+          <div className="home-cultos__grid">
+            <div className="home-culto-card">
+              <span className="home-culto-card__dia">Domingo</span>
+              <span className="home-culto-card__hora">18h30</span>
+              <span className="home-culto-card__tipo">Culto</span>
+            </div>
+            <div className="home-culto-card">
+              <span className="home-culto-card__dia">Terça-feira</span>
+              <span className="home-culto-card__hora">20h</span>
+              <span className="home-culto-card__tipo">Células</span>
+            </div>
+            <div className="home-culto-card">
+              <span className="home-culto-card__dia">Sexta-feira</span>
+              <span className="home-culto-card__hora">20h</span>
+              <span className="home-culto-card__tipo">Vigília</span>
+            </div>
+          </div>
+          <p className="home-cultos__endereco">
+            Rua Albertino Teixeira Dias, 381 – Tx. Dias – Belo Horizonte/MG
+          </p>
+        </section>
+
+        {/* Participe - Discipulado / Células */}
         <section className="home-participe">
           <h2 className="home-participe__titulo">
             Participe dos nossos ministérios
@@ -151,6 +180,23 @@ const HomePage: React.FC = () => {
             >
               Faça Parte da Nossa Comunidade
             </button>
+          </div>
+        </section>
+
+        {/* Contribua - Campanha Nova Sede */}
+        <section id="contribua" className="home-contribua">
+          <div className="home-contribua__wrap">
+            <p className="home-contribua__label">— Campanha Nova Sede</p>
+            <h2 className="home-contribua__titulo">Quer contribuir com a Casa?</h2>
+            <p className="home-contribua__subtitulo">Faça parte deste novo tempo</p>
+            <p className="home-contribua__texto">
+              Iniciamos a campanha de ofertas para a conquista do nosso novo espaço, um lugar para acolher vidas e viver tudo o que Deus ainda fará entre nós. Participe desse passo de fé!
+            </p>
+            <div className="home-contribua__pix">
+              <p className="home-contribua__pix-label">Chave PIX</p>
+              <p className="home-contribua__pix-chave">34.455.752/0001-69</p>
+              <p className="home-contribua__pix-sub">Conta Corrente · Stone (197) · Ag. 0001 · CC 574293-7</p>
+            </div>
           </div>
         </section>
 

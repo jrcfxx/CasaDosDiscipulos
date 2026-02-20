@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import "../style/Login.css";
 import logo from "../assets/logo.png";
@@ -45,9 +45,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <div className="logo">
-        <img src={logo} alt="Logo Casa dos Discípulos" />
-      </div>
+      <Link to="/" className="logo">
+        <img src={logo} alt="Casa dos Discípulos" />
+      </Link>
 
       <div className="login-form">
         <h2>Seja bem-vindo!</h2>

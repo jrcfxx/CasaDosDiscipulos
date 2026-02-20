@@ -57,13 +57,30 @@
   max-width: 800px;
 }
 
+.home-hero__sub {
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(235, 235, 235, 0.85);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.08em;
+}
+
 .home-hero__title {
   font-family: "Montserrat", sans-serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
   font-weight: 700;
-  color: #ebebeb;
-  line-height: 1.1;
+  color: #fff;
+  line-height: 1.15;
   letter-spacing: -0.03em;
+  margin: 0 0 0.75rem 0;
+}
+
+.home-hero__tagline {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: rgba(235, 235, 235, 0.9);
   margin: 0 0 2rem 0;
 }
 
@@ -84,6 +101,153 @@
 .home-hero__cta:hover {
   background: #ebebeb;
   transform: translateY(-2px);
+}
+
+/* ==================== CULTOS ==================== */
+
+.home-cultos {
+  padding: 5rem 1.5rem;
+  background: #1a1a1a;
+}
+
+.home-cultos__titulo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.02em;
+}
+
+.home-cultos__texto {
+  font-size: 1.05rem;
+  color: #ebebeb;
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
+}
+
+.home-cultos__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto 1.5rem;
+}
+
+.home-culto-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+.home-culto-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(2, 134, 155, 0.3);
+}
+
+.home-culto-card__dia {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+
+.home-culto-card__hora {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #02869b;
+  margin-bottom: 0.25rem;
+}
+
+.home-culto-card__tipo {
+  display: block;
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.home-cultos__endereco {
+  font-size: 0.9rem;
+  color: #999;
+  text-align: center;
+  margin: 0;
+}
+
+/* ==================== CONTRIBUA ==================== */
+
+.home-contribua {
+  padding: 5rem 1.5rem;
+  background: #0a0a0a;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.home-contribua__wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-contribua__label {
+  font-size: 0.9rem;
+  color: #02869b;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.06em;
+}
+
+.home-contribua__titulo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.35rem 0;
+  line-height: 1.2;
+}
+
+.home-contribua__subtitulo {
+  font-size: 1.1rem;
+  color: #ebebeb;
+  margin: 0 0 1.5rem 0;
+}
+
+.home-contribua__texto {
+  font-size: 1rem;
+  color: #ccc;
+  line-height: 1.7;
+  margin: 0 0 2rem 0;
+}
+
+.home-contribua__pix {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 1.75rem;
+}
+
+.home-contribua__pix-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #02869b;
+  margin: 0 0 0.5rem 0;
+}
+
+.home-contribua__pix-chave {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+  font-family: monospace;
+}
+
+.home-contribua__pix-sub {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 0;
 }
 
 /* ==================== PARTICIPE ==================== */
@@ -280,9 +444,15 @@
     padding: 3rem 1rem;
   }
 
+  .home-cultos__grid {
+    grid-template-columns: 1fr;
+  }
+
   .home-participe,
   .home-plataforma,
-  .home-eventos {
+  .home-eventos,
+  .home-cultos,
+  .home-contribua {
     padding: 3rem 1rem;
   }
 

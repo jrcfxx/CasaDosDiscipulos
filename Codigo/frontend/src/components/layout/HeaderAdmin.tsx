@@ -98,9 +98,9 @@ const HeaderAdmin: React.FC = () => {
   return (
     <div className="top-bar-wrapper">
       <header className="cd-header">
-        <div className="header-icone">
-          <img src={iconeIgreja} alt="Igreja" />
-        </div>
+        <Link to="/" className="header-icone header-logo-link">
+          <img src={iconeIgreja} alt="Casa dos Discípulos" />
+        </Link>
 
         <nav className="header-links">
           <Link to="/home">HOME</Link>
