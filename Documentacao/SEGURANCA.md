@@ -38,10 +38,10 @@ Medidas de segurança implementadas na aplicação e checklist para produção.
 
 ## Rate limiting
 
-| Endpoint | Limite | Janela |
-|----------|--------|--------|
-| API geral | 100 requisições | 15 min por IP |
-| Login e registro | 10 requisições | 15 min por IP |
+| Endpoint | Limite | Janela | Configurável |
+|----------|--------|--------|--------------|
+| API geral | 300 requisições | 15 min por IP | `RATE_LIMIT_MAX` no `.env` |
+| Login e registro | 10 requisições | 15 min por IP | — |
 
 Objetivo: reduzir risco de brute-force e abuso da API.
 
@@ -115,4 +115,4 @@ JWT_SECRET=valor_gerado_acima
 
 ---
 
-*[Voltar ao índice](./README.md)*
+[← Voltar ao índice](./README.md)

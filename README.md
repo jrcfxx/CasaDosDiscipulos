@@ -19,11 +19,14 @@
 
 ## ✨ Principais Módulos
 
-- **Página institucional**: Apresentação visual e informações da igreja
-- **Escola de Discípulos**: Cursos, lições, quizzes e ranking de membros
-- **Secretaria das Células**: Formulários de acompanhamento, presença e desempenho
-- **Eventos**: Organização e divulgação de cultos e atividades
-- **Gestão de usuários**: Cadastro, autenticação, permissões por perfil (admin, líder, membro)
+| Módulo | Descrição |
+|--------|-----------|
+| **Escola de Discípulos** | Módulos educacionais, quizzes e ranking gamificado |
+| **Secretaria das Células** | Lições, formulários dinâmicos e relatórios semanais |
+| **Eventos** | Carrossel na home e divulgação de cultos e atividades |
+| **Fala Aí, Discípulo** | Devocional e palavra do dia |
+| **Escala** | Calendário e escalas de ministérios com notificações WhatsApp |
+| **Gestão** | Usuários, células, níveis e ministérios (admin, líder, membro) |
 
 ## 🚀 Stack Tecnológica
 
@@ -39,12 +42,11 @@
 **Backend**
 
 - Node.js 18+
-- Express
-- TypeScript
+- Express 5
 - MySQL 8+ (Knex.js)
 - JWT, Bcrypt
 - Joi (validação)
-- Dotenv, CORS
+- Helmet, CORS, express-rate-limit
 
 ## 🛠️ Instalação Rápida
 
@@ -101,12 +103,13 @@ JWT_SECRET=minimo_32_caracteres_aleatorios_seguros
 
 - Autenticação segura (JWT, Bcrypt)
 - Cadastro e gestão de membros
-- Módulos, lições, quizzes, ranking
-- Formulários dinâmicos para células
-- Upload de arquivos, vídeos, imagens
+- Módulos, lições, quizzes e ranking gamificado
+- Formulários dinâmicos (admin define campos: texto, textarea, número, data, etc.)
+- Upload de arquivos, vídeos e imagens
 - Painel administrativo completo
-- Visualização e preenchimento de formulários por líderes
-- Dashboard de desempenho
+- Escala de ministérios com exportação para calendário (.ics)
+- Notificações WhatsApp (Evolution API)
+- Acessibilidade WCAG 2.1 (Skip Link, alto contraste, tamanho de texto)
 
 ## 🏗️ Estrutura do Projeto
 

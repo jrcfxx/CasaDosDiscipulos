@@ -8,19 +8,19 @@ Visão técnica do sistema e organização do código.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         FRONTEND (React)                         │
-│  React Router · TypeScript · Hooks · Context API · Axios         │
+│                     FRONTEND (React)                             │
+│  React Router 6 · TypeScript · Hooks · Context API · Axios        │
 └─────────────────────────────┬───────────────────────────────────┘
                               │ HTTP/REST + JWT
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      BACKEND (Node.js + Express)                 │
-│  Rotas · Controllers · Services · Models · Middlewares           │
+│                   BACKEND (Node.js + Express 5)                  │
+│  Rotas · Controllers · Services · Models · Middlewares          │
 └─────────────────────────────┬───────────────────────────────────┘
                               │ Knex (Query Builder)
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                         MySQL 8+                                 │
+│                        MySQL 8+                                  │
 │  Usuários · Módulos · Quizzes · Lições · Formulários · Células   │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -31,11 +31,13 @@ Visão técnica do sistema e organização do código.
 
 ### Stack
 
-- **React 18** — Biblioteca UI
-- **TypeScript** — Tipagem estática
-- **React Router 6** — Roteamento (HashRouter)
-- **Axios** — Cliente HTTP com interceptors JWT
-- **CSS Modules / CSS** — Estilos (tokens em `tokens.css`)
+| Tecnologia | Uso |
+|------------|-----|
+| **React 18** | Biblioteca UI |
+| **TypeScript** | Tipagem estática |
+| **React Router 6** | Roteamento (HashRouter) |
+| **Axios** | Cliente HTTP com interceptors JWT |
+| **CSS Modules / CSS** | Estilos (tokens em `tokens.css`) |
 
 ### Estrutura
 
@@ -43,17 +45,17 @@ Visão técnica do sistema e organização do código.
 frontend/src/
 ├── components/         # Componentes reutilizáveis
 │   ├── accessibility/  # SkipLink, LiveAnnouncer, AccessibilityBar
-│   ├── fields/        # Campos de formulário (TextField, DateField, etc.)
-│   ├── layout/        # Header, Footer
-│   └── ui/            # Toast, ConfirmModal, InputModal
-├── config/            # api.ts, constantes
-├── contexts/          # AuthContext, AccessibilityContext
-├── hooks/             # useAuth, usePageTitle
-├── pages/             # Telas da aplicação
-├── services/          # API (authService, eventoService, etc.)
-├── style/             # CSS global e por página
-├── types/             # Interfaces TypeScript
-└── utils/             # generateUid, errorUtils
+│   ├── fields/         # Campos de formulário (TextField, TextareaField, etc.)
+│   ├── layout/         # Header, Footer, Layout
+│   └── ui/             # Toast, ConfirmModal, InputModal
+├── config/             # api.ts, constantes
+├── contexts/           # AuthContext, AccessibilityContext
+├── hooks/              # useAuth, usePageTitle
+├── pages/              # Telas da aplicação
+├── services/           # API (authService, eventoService, etc.)
+├── style/              # CSS global e por página
+├── types/              # Interfaces TypeScript
+└── utils/              # generateUid, errorUtils
 ```
 
 ### Padrões
@@ -61,7 +63,7 @@ frontend/src/
 - **Serviços:** Um por entidade (eventoService, licaoService, etc.)
 - **Rotas protegidas:** `ProtectedRoute` com verificação de auth
 - **Títulos dinâmicos:** `usePageTitle` para leitores de tela
-- **Design:** Tokens CSS, Montserrat, cores teal (#02869b) e dourado (#f4b002)
+- **Design:** Tokens CSS, Montserrat, teal (#02869b) e dourado (#f4b002)
 
 ---
 
@@ -69,13 +71,15 @@ frontend/src/
 
 ### Stack
 
-- **Express 5** — Framework web
-- **Knex.js** — Query builder para MySQL
-- **JWT** — Autenticação
-- **Bcrypt** — Hash de senhas
-- **Joi** — Validação de entrada
-- **Helmet** — Headers de segurança
-- **express-rate-limit** — Rate limiting
+| Tecnologia | Uso |
+|------------|-----|
+| **Express 5** | Framework web |
+| **Knex.js** | Query builder para MySQL |
+| **JWT** | Autenticação |
+| **Bcrypt** | Hash de senhas |
+| **Joi** | Validação de entrada |
+| **Helmet** | Headers de segurança |
+| **express-rate-limit** | Rate limiting |
 
 ### Arquitetura (MVC + Service Layer)
 
@@ -89,8 +93,8 @@ Response ←──────────────────────�
 
 ```
 backend/src/
-├── app.js             # Configuração Express, CORS, rate limit, rotas
-├── controllers/       # Lógica HTTP (recebe req, chama service, retorna res)
+├── app.js             # Express, CORS, rate limit, rotas
+├── controllers/      # Lógica HTTP (recebe req, chama service, retorna res)
 ├── models/            # Acesso ao banco (Knex)
 ├── services/          # Lógica de negócio
 ├── routes/            # Definição de rotas e middlewares
@@ -143,7 +147,7 @@ Authorization: Bearer <token_jwt>
 | `/api/fala-ai` | Fala Aí, Discípulo |
 | `/api/upload` | Upload de arquivos |
 
-Detalhes completos em [backend/README.md](../Codigo/backend/README.md).
+Detalhes em [backend/README.md](../Codigo/backend/README.md).
 
 ---
 
@@ -158,7 +162,7 @@ Detalhes completos em [backend/README.md](../Codigo/backend/README.md).
 - `celula`, `usuario_celula` — Células e vínculos
 - `evento` — Eventos do carrossel
 - `escala_evento`, `escala_atribuicao` — Escalas
-- `campo_personalizado` — Campos reutilizáveis
+- `campo_personalizado` — Campos reutilizáveis (texto, textarea, número, data, etc.)
 
 ### Migrations
 
@@ -186,4 +190,4 @@ npm run migrate:rollback  # Reverter
 
 ---
 
-*[Voltar ao índice](./README.md)*
+[← Voltar ao índice](./README.md)

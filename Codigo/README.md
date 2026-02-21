@@ -64,7 +64,7 @@ API em: `http://localhost:3001`
 ```bash
 cd frontend
 cp .env.example .env
-# REACT_APP_API_URL=http://localhost:3001 (ou /api em produção)
+# REACT_APP_API_URL=http://localhost:3001/api (ou /api em produção com proxy)
 npm install
 npm start
 ```
@@ -91,4 +91,4 @@ App em: `http://localhost:3000`
 
 ---
 
-*[Voltar à documentação principal](../Documentacao/README.md)*
+[← Voltar à documentação principal](../Documentacao/README.md)

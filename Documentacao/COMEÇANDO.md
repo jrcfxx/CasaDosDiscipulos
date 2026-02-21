@@ -53,8 +53,6 @@ npm install
 
 ### 3.2 Configurar variáveis de ambiente
 
-Copie o exemplo e ajuste os valores:
-
 ```bash
 cp .env.example .env
 ```
@@ -122,7 +120,7 @@ REACT_APP_API_URL=http://localhost:3001/api
 npm start
 ```
 
-A aplicação abrirá em `http://localhost:3000` (ou outra porta se 3000 estiver em uso).
+A aplicação abrirá em `http://localhost:3000`.
 
 ---
 
@@ -140,7 +138,7 @@ A aplicação abrirá em `http://localhost:3000` (ou outra porta se 3000 estiver
 
 1. **Backend:** `http://localhost:3001` deve retornar `{"message":"API Casa dos Discípulos - Online"}`
 2. **Frontend:** Acesse `http://localhost:3000` e faça login com um dos usuários acima
-3. **Login como admin:** Acesse o portal admin e gere o conteúdo desejado
+3. **Admin:** Acesse o portal admin e explore os módulos
 
 ---
 
@@ -168,7 +166,8 @@ CasaDosDiscipulos/
 │       ├── migrations/
 │       └── seeds/
 ├── Documentacao/
-└── .env (em cada subprojeto)
+├── evolution-whatsapp/ # Docker WhatsApp (opcional)
+└── deploy/             # Docker produção
 ```
 
 ---
@@ -177,48 +176,32 @@ CasaDosDiscipulos/
 
 ### Backend
 
-```bash
-npm run dev          # Desenvolvimento com hot reload
-npm run migrate      # Executar migrations
-npm run migrate:rollback  # Reverter última migration
-npm run seed         # Popular banco
-npm start            # Produção
-```
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Desenvolvimento com hot reload |
+| `npm run migrate` | Executar migrations |
+| `npm run migrate:rollback` | Reverter última migration |
+| `npm run seed` | Popular banco |
+| `npm start` | Produção |
 
 ### Frontend
 
-```bash
-npm start            # Desenvolvimento
-npm run build        # Build para produção
-```
+| Comando | Descrição |
+|---------|-----------|
+| `npm start` | Desenvolvimento |
+| `npm run build` | Build para produção |
 
 ---
 
 ## 9. Problemas comuns
 
-### Erro de conexão com MySQL
-
-- Verifique se o MySQL está em execução
-- Confirme `DB_HOST`, `DB_USER` e `DB_PASSWORD` no `.env`
-- Teste: `mysql -u casadiscipulos -p -e "USE CasaDosDiscipulos;"`
-
-### Porta em uso
-
-- Altere `PORT` no `.env` do backend
-- No frontend, crie `.env` com `PORT=3002` para usar outra porta
-
-### CORS no desenvolvimento
-
-- Em desenvolvimento, CORS aceita qualquer origem
-- Se houver erro de CORS, verifique se o frontend está em `http://localhost:3000` e o backend em `http://localhost:3001`
-
-### Migrations falham
-
-```bash
-npm run migrate:rollback
-npm run migrate
-```
+| Problema | Solução |
+|----------|---------|
+| Erro de conexão MySQL | Verifique MySQL em execução e credenciais no `.env`; teste: `mysql -u casadiscipulos -p -e "USE CasaDosDiscipulos;"` |
+| Porta em uso | Altere `PORT` no `.env` do backend; no frontend, crie `.env` com `PORT=3002` |
+| CORS | Em desenvolvimento, CORS aceita qualquer origem; confirme frontend em `:3000` e backend em `:3001` |
+| Migrations falham | `npm run migrate:rollback` e depois `npm run migrate` |
 
 ---
 
-*Próximo passo: [Arquitetura](./ARQUITETURA.md) | [Hospedagem](./HOSPEDAGEM.md)*
+[← Voltar ao índice](./README.md) · [Arquitetura →](./ARQUITETURA.md) · [Hospedagem →](./HOSPEDAGEM.md)

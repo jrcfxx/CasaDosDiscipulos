@@ -157,7 +157,7 @@ backend/
 
 - **JWT** — Autenticação em rotas protegidas
 - **Helmet** — Headers de segurança
-- **Rate limiting** — 100 req/15min (API geral); 10 req/15min (login/registro)
+- **Rate limiting** — 300 req/15min (API geral); 10 req/15min (login/registro)
 - **CORS** — Configure `CORS_ORIGIN` em produção
 - **Validação** — Joi em rotas sensíveis
 

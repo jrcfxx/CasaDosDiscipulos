@@ -100,4 +100,4 @@ Para um guia passo a passo (Docker, criação de instância, QR Code, .env), con
 
 ---
 
-*[Voltar ao índice](./README.md)*
+[← Voltar ao índice](./README.md)

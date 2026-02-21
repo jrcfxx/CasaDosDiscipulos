@@ -304,4 +304,4 @@ docker compose run --rm -v casadiscipulos_backend_uploads:/data -v $(pwd):/backu
 
 ---
 
-*[Voltar ao índice](./README.md)*
+[← Voltar ao índice](./README.md)

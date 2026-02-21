@@ -248,4 +248,4 @@ As notificações **in-app** continuam funcionando. Apenas o envio via WhatsApp 
 
 ---
 
-*[Voltar ao índice](./README.md)*
+[← Voltar ao índice](./README.md)

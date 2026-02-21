@@ -114,4 +114,4 @@ Com `npm start`, o **@axe-core/react** analisa a página e reporta violações n
 
 ---
 
-*[Voltar ao índice](./README.md)*
+[← Voltar ao índice](./README.md)
