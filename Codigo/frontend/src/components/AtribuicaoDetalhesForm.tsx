@@ -88,6 +88,7 @@ export function DetalhesResumo({
   if (!detalhes || Object.keys(detalhes).length === 0) return null;
 
   const campos = getCamposPorArea(nomeArea);
+
   const items: string[] = [];
 
   campos.forEach((c) => {

@@ -497,7 +497,7 @@ const EscalaUser: React.FC = () => {
                   <div key={ar.id_escala_area} className={`escala-ministerio-card ${corClasse}`}>
                     <div className="ministerio-card-header">
                       <span className="ministerio-icon">
-                        {ar.nome === "Louvor" ? "🎵" : ar.nome === "Som" ? "🔊" : ar.nome === "Recepção" ? "🤝" : "📋"}
+                        {ar.nome === "Louvor" ? "🎵" : ar.nome === "Som" ? "🔊" : ar.nome === "Recepção" || ar.nome === "Voluntários" ? "🤝" : "📋"}
                       </span>
                       <h3 className="ministerio-nome">{ar.nome}</h3>
                       <span className="ministerio-count">{total} {total === 1 ? "pessoa" : "pessoas"}</span>

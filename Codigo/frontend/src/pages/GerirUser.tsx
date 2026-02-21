@@ -523,23 +523,18 @@ export default function GerenciarUsuarios() {
       return;
     }
     try {
+      const payload = {
+        nome: ministerioModal.nome.trim(),
+        descricao: ministerioModal.descricao?.trim() || "",
+        ordem: ministerioModal.ordem,
+        ativo: !!ministerioModal.ativo,
+        id_lideres: ministerioModal.id_lideres || [],
+      };
       if (ministerioModal.id_ministerio) {
-        await ministerioService.update(ministerioModal.id_ministerio, {
-          nome: ministerioModal.nome.trim(),
-          descricao: ministerioModal.descricao?.trim() || "",
-          ordem: ministerioModal.ordem,
-          ativo: ministerioModal.ativo,
-          id_lideres: ministerioModal.id_lideres,
-        });
+        await ministerioService.update(ministerioModal.id_ministerio, payload);
         showToast("Ministério atualizado!", "success");
       } else {
-        await ministerioService.create({
-          nome: ministerioModal.nome.trim(),
-          descricao: ministerioModal.descricao?.trim() || "",
-          ordem: ministerioModal.ordem,
-          ativo: ministerioModal.ativo,
-          id_lideres: ministerioModal.id_lideres,
-        });
+        await ministerioService.create(payload);
         showToast("Ministério criado!", "success");
       }
       await fetchMinisterios(abaAtiva === "ministerios");
@@ -1155,7 +1150,7 @@ export default function GerenciarUsuarios() {
                   type="text"
                   value={ministerioModal.nome || ""}
                   onChange={(e) => setMinisterioModal((p) => ({ ...p, nome: e.target.value }))}
-                  placeholder="Ex: Louvor, Som, Recepção"
+                  placeholder="Ex: Louvor, Som, Voluntários"
                 />
               </div>
               <div className="modal-ministerio-form-group">

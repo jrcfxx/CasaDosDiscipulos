@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import HeaderHome from "../components/layout/HeaderHome";
 import Footer from "../components/layout/Footer";
 import Carousel from "../components/Carousel";
@@ -18,11 +18,19 @@ import imagemCelulas from "../assets/celulas.jpg";
  */
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [eventos, setEventos] = useState<any[]>([]);
 
   useEffect(() => {
     fetchEventos();
   }, []);
+
+  useEffect(() => {
+    if (location.hash === "#campanha-nova-sede") {
+      const el = document.getElementById("campanha-nova-sede");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.hash]);
 
   const fetchEventos = async () => {
     try {
@@ -92,54 +100,54 @@ const HomePage: React.FC = () => {
           </p>
         </section>
 
-        {/* Participe - Discipulado / Células */}
+        {/* Participe - Escola de Discípulos / Células */}
         <section className="home-participe">
+          <p className="home-participe__label">— Nossos ministérios</p>
           <h2 className="home-participe__titulo">
-            Participe dos nossos ministérios
+            Participe e encontre seu lugar
           </h2>
           <p className="home-participe__texto">
-            Cada oportunidade de estar em comunhão com a igreja de Cristo é
-            única e especial. Confira nossas áreas e encontre seu lugar.
+            A Escola de Discípulos e as Células são pilares da nossa comunhão.
+            Encontre o seu lugar e cresça conosco.
           </p>
 
-          <div className="home-cards">
-            <article className="home-card">
-              <div className="home-card__img-wrap">
+          <div className="home-ministerios-grid">
+            <article className="home-ministerio-card">
+              <div className="home-ministerio-card__img-wrap">
                 <img
                   src={imagemDiscipulado}
                   alt="Escola de Discípulos"
-                  className="home-card__img"
+                  className="home-ministerio-card__img"
                   loading="lazy"
                 />
               </div>
-              <div className="home-card__body">
-                <h3 className="home-card__titulo">Discipulado</h3>
-                <p className="home-card__texto">
-                  Na Escola de Discípulos, você aprende a seguir os passos de
-                  Cristo, aprofundando sua fé e crescendo espiritualmente em
-                  comunhão com outros irmãos.
+              <div className="home-ministerio-card__body">
+                <h3 className="home-ministerio-card__titulo">Escola de Discípulos</h3>
+                <p className="home-ministerio-card__texto">
+                  Aprenda a seguir os passos de Cristo, aprofundando sua fé e
+                  crescendo espiritualmente em comunhão com outros irmãos.
                 </p>
               </div>
             </article>
 
-            <article className="home-card">
-              <div className="home-card__img-wrap">
+            <article className="home-ministerio-card">
+              <div className="home-ministerio-card__img-wrap">
                 <img
                   src={imagemCelulas}
                   alt="Células de Comunhão"
-                  className="home-card__img"
+                  className="home-ministerio-card__img"
                   loading="lazy"
                 />
               </div>
-              <div className="home-card__body">
-                <h3 className="home-card__titulo">Células</h3>
-                <p className="home-card__texto">
+              <div className="home-ministerio-card__body">
+                <h3 className="home-ministerio-card__titulo">Células</h3>
+                <p className="home-ministerio-card__texto">
                   Pequenos grupos que se reúnem para compartilhar a vida,
                   estudar a Palavra e fortalecer os laços de amor e comunhão na
                   família de Deus.
                 </p>
                 <button
-                  className="home-card__cta"
+                  className="home-ministerio-card__cta"
                   onClick={() =>
                     window.open(
                       "https://my.forms.app/form/6156f37483c907649990ca8f",
@@ -158,13 +166,13 @@ const HomePage: React.FC = () => {
 
         {/* Plataforma de Estudos */}
         <section className="home-plataforma">
-          <div className="home-plataforma__wrap">
+          <div className="home-plataforma__card">
+            <p className="home-plataforma__label">— Aprendizado bíblico</p>
             <h2 className="home-plataforma__titulo">
-              Cresça na Fé com Nossa Plataforma de Estudos
+              Cresça na Fé com Nossa Plataforma
             </h2>
             <p className="home-plataforma__texto">
-              Junte-se à nossa comunidade e tenha acesso exclusivo a módulos
-              interativos, quizzes desafiadores e um sistema de pontuação que
+              Módulos interativos, quizzes desafiadores e um sistema de pontuação que
               torna o aprendizado bíblico envolvente e gratificante.
             </p>
             <button
@@ -183,19 +191,67 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Contribua - Campanha Nova Sede */}
-        <section id="contribua" className="home-contribua">
-          <div className="home-contribua__wrap">
-            <p className="home-contribua__label">— Campanha Nova Sede</p>
-            <h2 className="home-contribua__titulo">Quer contribuir com a Casa?</h2>
-            <p className="home-contribua__subtitulo">Faça parte deste novo tempo</p>
-            <p className="home-contribua__texto">
-              Iniciamos a campanha de ofertas para a conquista do nosso novo espaço, um lugar para acolher vidas e viver tudo o que Deus ainda fará entre nós. Participe desse passo de fé!
+        {/* Campanha Nova Sede */}
+        <section id="campanha-nova-sede" className="home-campanha">
+          <div className="home-campanha__wrap">
+            <p className="home-campanha__label">— Campanha Nova Sede!</p>
+            <h2 className="home-campanha__titulo">
+              <span className="home-campanha__titulo-light">Aqui é a </span>
+              <span className="home-campanha__titulo-bold">nossa Casa.</span>
+            </h2>
+            <p className="home-campanha__tagline">
+              O novo espaço começa no nosso coração e se manifesta nas nossas atitudes.
             </p>
-            <div className="home-contribua__pix">
-              <p className="home-contribua__pix-label">Chave PIX</p>
-              <p className="home-contribua__pix-chave">34.455.752/0001-69</p>
-              <p className="home-contribua__pix-sub">Conta Corrente · Stone (197) · Ag. 0001 · CC 574293-7</p>
+            <button
+              type="button"
+              className="home-campanha__expand"
+              onClick={() => document.getElementById("home-campanha-detalhes")?.scrollIntoView({ behavior: "smooth" })}
+              aria-label="Ver detalhes da campanha"
+            >
+              Leia a Legenda
+            </button>
+          </div>
+
+          <div id="home-campanha-detalhes" className="home-campanha__detalhes">
+            <div className="home-campanha__detalhes-wrap">
+              <h3 className="home-campanha__detalhes-titulo">Quer contribuir com a Casa?</h3>
+              <p className="home-campanha__detalhes-sub">Faça parte deste novo tempo</p>
+              <p className="home-campanha__detalhes-texto">
+                Iniciamos a campanha de ofertas para a conquista do nosso novo espaço, um lugar para acolher vidas e viver tudo o que Deus ainda fará entre nós.
+              </p>
+              <p className="home-campanha__detalhes-texto home-campanha__detalhes-cta">
+                Participe desse passo de fé! Contribua mensalmente e semeie nesse propósito.
+              </p>
+
+              <div className="home-campanha__pix-area">
+                <div className="home-campanha__pix-box">
+                  <p className="home-campanha__pix-label">Chave PIX</p>
+                  <p className="home-campanha__pix-chave">34.455.752/0001-69</p>
+                  <div className="home-campanha__qr-wrap" aria-hidden="true">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent("34.455.752/0001-69")}`}
+                      alt="QR Code PIX - Chave 34.455.752/0001-69"
+                      className="home-campanha__qr-img"
+                      width={180}
+                      height={180}
+                    />
+                  </div>
+                  <p className="home-campanha__qr-hint">Escaneie o QR CODE</p>
+                </div>
+
+                <div className="home-campanha__conta">
+                  <p className="home-campanha__conta-titulo">Conta Corrente</p>
+                  <p className="home-campanha__conta-item"><strong>Banco:</strong> Stone (197)</p>
+                  <p className="home-campanha__conta-item"><strong>Agência:</strong> 0001</p>
+                  <p className="home-campanha__conta-item"><strong>Conta Corrente:</strong> 574293-7</p>
+                  <p className="home-campanha__conta-item"><strong>CNPJ:</strong> 34.455.752/0001-69</p>
+                  <p className="home-campanha__conta-item home-campanha__conta-razao">Comunidade Cristã Casa dos Discípulos</p>
+                </div>
+              </div>
+
+              <p className="home-campanha__footer-text">
+                Aqui é a nossa casa e juntos estamos construindo algo eterno!
+              </p>
             </div>
           </div>
         </section>

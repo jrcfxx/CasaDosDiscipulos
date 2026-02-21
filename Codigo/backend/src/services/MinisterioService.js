@@ -1,3 +1,4 @@
+import knex from "../database/index.js";
 import MinisterioModel from "../models/MinisterioModel.js";
 import { NotFoundError, ValidationError } from "../utils/AppError.js";
 
@@ -41,7 +42,9 @@ const MinisterioService = {
 
   async update(id, data) {
     const parsed = this._parseId(id);
-    await this.getById(parsed);
+    const atual = await MinisterioModel.getById(parsed);
+    if (!atual) throw new NotFoundError("Ministério não encontrado");
+
     const update = {};
     if (data.nome !== undefined) update.nome = data.nome.trim();
     if (data.descricao !== undefined) update.descricao = data.descricao?.trim() || null;
@@ -51,6 +54,12 @@ const MinisterioService = {
     if (data.id_lideres !== undefined) {
       await MinisterioModel.setLideres(parsed, data.id_lideres || []);
     }
+
+    // Sincroniza escala_area: quando o nome do ministério muda, atualiza as áreas da escala que usam o nome antigo
+    if (update.nome && atual.nome !== update.nome) {
+      await knex("escala_area").where("nome", atual.nome).update({ nome: update.nome });
+    }
+
     return await this.getById(parsed);
   },
 

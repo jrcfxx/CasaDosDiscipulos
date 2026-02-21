@@ -31,7 +31,8 @@ function getMinisterioIcon(nome: string) {
   switch (nome) {
     case "Louvor": return "🎵";
     case "Som": return "🔊";
-    case "Recepção": return "🤝";
+    case "Recepção":
+    case "Voluntários": return "🤝";
     default: return "📋";
   }
 }
@@ -40,7 +41,8 @@ function getMinisterioCor(nome: string) {
   switch (nome) {
     case "Louvor": return "ministerio-louvor";
     case "Som": return "ministerio-som";
-    case "Recepção": return "ministerio-recepcao";
+    case "Recepção":
+    case "Voluntários": return "ministerio-recepcao";
     default: return "ministerio-generico";
   }
 }

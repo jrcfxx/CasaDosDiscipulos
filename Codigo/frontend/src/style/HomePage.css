@@ -179,56 +179,131 @@
   margin: 0;
 }
 
-/* ==================== CONTRIBUA ==================== */
+/* ==================== CAMPANHA NOVA SEDE ==================== */
+/* Design alinhado ao tema escuro da página */
 
-.home-contribua {
-  padding: 5rem 1.5rem;
-  background: #0a0a0a;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+.home-campanha {
+  background: #0f0f0f;
+  color: #e2e8f0;
+  padding: 6rem 1.5rem 4rem;
 }
 
-.home-contribua__wrap {
-  max-width: 640px;
+.home-campanha__wrap {
+  max-width: 720px;
   margin: 0 auto;
   text-align: center;
 }
 
-.home-contribua__label {
-  font-size: 0.9rem;
+.home-campanha__label {
+  font-size: 0.95rem;
+  font-weight: 400;
   color: #02869b;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1rem 0;
   letter-spacing: 0.06em;
 }
 
-.home-contribua__titulo {
-  font-size: 2rem;
+.home-campanha__titulo {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1.1;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.03em;
+}
+
+.home-campanha__titulo-light {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+.home-campanha__titulo-bold {
+  font-weight: 700;
+  color: #fff;
+}
+
+.home-campanha__tagline {
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: #94a3b8;
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+}
+
+.home-campanha__expand {
+  display: inline-block;
+  padding: 0.75rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  letter-spacing: 0.02em;
+}
+
+.home-campanha__expand:hover {
+  background: #fff;
+  color: #0f0f0f;
+  border-color: #fff;
+}
+
+/* Detalhes (PIX, Conta) */
+.home-campanha__detalhes {
+  margin-top: 4rem;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-campanha__detalhes-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.home-campanha__detalhes-titulo {
+  font-size: 1.9rem;
   font-weight: 700;
   color: #fff;
   margin: 0 0 0.35rem 0;
-  line-height: 1.2;
 }
 
-.home-contribua__subtitulo {
+.home-campanha__detalhes-sub {
   font-size: 1.1rem;
-  color: #ebebeb;
+  color: #94a3b8;
   margin: 0 0 1.5rem 0;
 }
 
-.home-contribua__texto {
+.home-campanha__detalhes-texto {
   font-size: 1rem;
-  color: #ccc;
+  color: #cbd5e1;
   line-height: 1.7;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1rem 0;
 }
 
-.home-contribua__pix {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+.home-campanha__detalhes-cta {
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.home-campanha__pix-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.home-campanha__pix-box {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   padding: 1.75rem;
+  min-width: 240px;
 }
 
-.home-contribua__pix-label {
+.home-campanha__pix-label {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -236,138 +311,219 @@
   margin: 0 0 0.5rem 0;
 }
 
-.home-contribua__pix-chave {
+.home-campanha__pix-chave {
   font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
-  margin: 0 0 0.5rem 0;
-  font-family: monospace;
+  margin: 0 0 1.25rem 0;
+  font-family: "Monaco", "Consolas", monospace;
+  letter-spacing: 0.02em;
 }
 
-.home-contribua__pix-sub {
+.home-campanha__qr-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.home-campanha__qr-img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+}
+
+.home-campanha__qr-hint {
   font-size: 0.8rem;
-  color: #888;
+  color: #64748b;
   margin: 0;
 }
 
-/* ==================== PARTICIPE ==================== */
+.home-campanha__conta {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.75rem;
+  min-width: 260px;
+}
+
+.home-campanha__conta-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 1rem 0;
+}
+
+.home-campanha__conta-item {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  margin: 0 0 0.4rem 0;
+  line-height: 1.5;
+}
+
+.home-campanha__conta-item strong {
+  color: #cbd5e1;
+}
+
+.home-campanha__conta-razao {
+  margin-top: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.home-campanha__footer-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ==================== PARTICIPE - MINISTÉRIOS ==================== */
+/* Escola de Discípulos e Células - visual moderno alinhado à página */
 
 .home-participe {
   padding: 5rem 1.5rem;
-  background: #000;
+  background: #0f0f0f;
+}
+
+.home-participe__label {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #02869b;
+  text-align: center;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.06em;
 }
 
 .home-participe__titulo {
-  font-size: 1.75rem;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
   font-weight: 700;
   color: #fff;
   text-align: center;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.75rem 0;
   letter-spacing: -0.02em;
 }
 
 .home-participe__texto {
   font-size: 1.05rem;
-  color: #ebebeb;
+  color: #94a3b8;
   text-align: center;
-  max-width: 600px;
+  max-width: 540px;
   margin: 0 auto 3rem;
   line-height: 1.6;
 }
 
-.home-cards {
+.home-ministerios-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
-  max-width: 900px;
+  max-width: 920px;
   margin: 0 auto;
 }
 
-.home-card {
-  background: #1a1a1a;
-  border-radius: 12px;
+.home-ministerio-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: all 0.3s ease;
 }
 
-.home-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+.home-ministerio-card:hover {
+  border-color: rgba(2, 134, 155, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
 }
 
-.home-card__img-wrap {
-  aspect-ratio: 16 / 10;
+.home-ministerio-card__img-wrap {
+  aspect-ratio: 16 / 9;
   overflow: hidden;
 }
 
-.home-card__img {
+.home-ministerio-card__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
 }
 
-.home-card:hover .home-card__img {
-  transform: scale(1.03);
+.home-ministerio-card:hover .home-ministerio-card__img {
+  transform: scale(1.04);
 }
 
-.home-card__body {
+.home-ministerio-card__body {
   padding: 1.75rem 1.5rem;
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.home-card__titulo {
-  font-size: 1.35rem;
+.home-ministerio-card__titulo {
+  font-size: 1.4rem;
   font-weight: 700;
   color: #fff;
   margin: 0 0 0.75rem 0;
+  letter-spacing: -0.01em;
 }
 
-.home-card__texto {
+.home-ministerio-card__texto {
   font-size: 0.95rem;
-  color: #ebebeb;
-  line-height: 1.6;
+  color: #cbd5e1;
+  line-height: 1.65;
   margin: 0 0 1.25rem 0;
   flex: 1;
 }
 
-.home-card__cta {
+.home-ministerio-card__cta {
   align-self: flex-start;
   padding: 0.6rem 1.25rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #000;
-  background: #fff;
-  border: none;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(2, 134, 155, 0.5);
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
-.home-card__cta:hover {
+.home-ministerio-card__cta:hover {
   background: #02869b;
-  color: #fff;
+  border-color: #02869b;
 }
 
-/* ==================== PLATAFORMA ==================== */
+/* ==================== PLATAFORMA DE ESTUDOS ==================== */
 
 .home-plataforma {
   padding: 5rem 1.5rem;
-  background: #2b2f30;
+  background: #000;
 }
 
-.home-plataforma__wrap {
+.home-plataforma__card {
   max-width: 640px;
   margin: 0 auto;
+  padding: 3rem 2rem;
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
   text-align: center;
 }
 
+.home-plataforma__label {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #02869b;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.06em;
+}
+
 .home-plataforma__titulo {
-  font-size: 2rem;
+  font-size: clamp(1.6rem, 3.5vw, 2rem);
   font-weight: 700;
   color: #fff;
   margin: 0 0 1rem 0;
@@ -377,13 +533,13 @@
 
 .home-plataforma__texto {
   font-size: 1.05rem;
-  color: #ebebeb;
+  color: #94a3b8;
   line-height: 1.7;
   margin: 0 0 2rem 0;
 }
 
 .home-plataforma__cta {
-  padding: 1rem 2rem;
+  padding: 0.9rem 1.75rem;
   font-size: 1rem;
   font-weight: 600;
   color: #000;
@@ -392,10 +548,12 @@
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.25s ease;
+  letter-spacing: 0.02em;
 }
 
 .home-plataforma__cta:hover {
-  background: #ebebeb;
+  background: #02869b;
+  color: #fff;
   transform: translateY(-2px);
 }
 
@@ -452,8 +610,13 @@
   .home-plataforma,
   .home-eventos,
   .home-cultos,
-  .home-contribua {
+  .home-campanha {
     padding: 3rem 1rem;
+  }
+
+  .home-campanha__pix-area {
+    flex-direction: column;
+    align-items: center;
   }
 
   .home-acesso-rapido__wrap {
@@ -470,11 +633,15 @@
     font-size: 2rem;
   }
 
-  .home-cards {
+  .home-ministerios-grid {
     grid-template-columns: 1fr;
   }
 
   .home-plataforma__titulo {
     font-size: 1.5rem;
+  }
+
+  .home-plataforma__card {
+    padding: 2rem 1.25rem;
   }
 }

@@ -93,7 +93,7 @@ export const MINISTERIO_CAMPOS: MinisteriosCamposConfig[] = [
     ],
   },
   {
-    palavrasChave: ["recepção", "recepcao", "acolhida", "portaria"],
+    palavrasChave: ["recepção", "recepcao", "acolhida", "portaria", "voluntários", "voluntarios"],
     campos: [
       {
         chave: "funcao",

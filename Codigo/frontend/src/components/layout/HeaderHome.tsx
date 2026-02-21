@@ -6,7 +6,7 @@ import "../../style/layout.css";
 
 /**
  * Header minimalista para Home e Sobre nós - estilo Central
- * Logo + Home, Sobre nós, Contribua, Entrar
+ * Logo + Home, A Casa, Campanha Nova Sede, Entrar
  */
 const HeaderHome: React.FC = () => {
   const navigate = useNavigate();
@@ -32,9 +32,9 @@ const HeaderHome: React.FC = () => {
         <Link to="/sobre-nos" className="header-home__link">
           A Casa
         </Link>
-        <a href="#contribua" className="header-home__link">
-          Contribua
-        </a>
+        <Link to="/#campanha-nova-sede" className="header-home__link">
+          Campanha Nova Sede
+        </Link>
         <button
           className="header-home__btn-login"
           onClick={handleLogin}

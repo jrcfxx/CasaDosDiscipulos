@@ -7,10 +7,12 @@ import "../style/SobreNos.css";
 import imagem01 from "../assets/lendo_biblia_.jpeg";
 import imagem02 from "../assets/casal_leitura.jpeg";
 import imagem03 from "../assets/tres_mulheres.jpeg";
-import imagem04 from "../assets/4.png";
+
+const INSTAGRAM_REEL = "https://www.instagram.com/reel/DPJpTVdESov/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==";
+const INSTAGRAM_PERFIL = "https://www.instagram.com/casadosdiscipulos?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
 
 /**
- * SobreNos - Página sobre a Casa dos Discípulos (layout moderno e clean)
+ * SobreNos - Página sobre a Casa dos Discípulos (layout moderno, branding Casa)
  */
 const SobreNos: React.FC = () => {
   return (
@@ -18,7 +20,7 @@ const SobreNos: React.FC = () => {
       <HeaderHome />
 
       <main className="sobre-nos-content">
-        {/* Hero */}
+        {/* Hero - mantido */}
         <section className="sobre-nos-hero">
           <div
             className="sobre-nos-hero__bg"
@@ -32,6 +34,35 @@ const SobreNos: React.FC = () => {
             <p className="sobre-nos-hero__subtitulo">
               Uma comunidade que compartilha o amor de Cristo
             </p>
+          </div>
+        </section>
+
+        {/* Instagram - Nossa História */}
+        <section className="sobre-nos-instagram">
+          <p className="sobre-nos-instagram__label">— Conecte-se</p>
+          <h2 className="sobre-nos-instagram__titulo">Nossa história</h2>
+          <p className="sobre-nos-instagram__texto">
+            Assista ao Reel que conta a trajetória da Casa dos Discípulos.
+          </p>
+          <div className="sobre-nos-instagram__links">
+            <a
+              href={INSTAGRAM_REEL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sobre-nos-instagram__btn"
+              aria-label="Ver Reel no Instagram"
+            >
+              Assistir Reel
+            </a>
+            <a
+              href={INSTAGRAM_PERFIL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sobre-nos-instagram__btn sobre-nos-instagram__btn--outline"
+              aria-label="Visitar perfil no Instagram"
+            >
+              @casadosdiscipulos
+            </a>
           </div>
         </section>
 
@@ -78,14 +109,28 @@ const SobreNos: React.FC = () => {
           </div>
         </section>
 
-        {/* Comunidade - full width */}
-        <section className="sobre-nos-full">
-          <img
-            src={imagem04}
-            alt="Nossa Comunidade"
-            className="sobre-nos-full__img"
-            loading="lazy"
-          />
+        {/* Dízimos e Ofertas */}
+        <section className="sobre-nos-dizimos">
+          <p className="sobre-nos-dizimos__label">— Contribua</p>
+          <h2 className="sobre-nos-dizimos__titulo">Dízimos e Ofertas</h2>
+          <p className="sobre-nos-dizimos__texto">
+            Contribua com a obra da Casa através do PIX.
+          </p>
+          <div className="sobre-nos-dizimos__box">
+            <div className="sobre-nos-dizimos__qr-wrap">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent("34.455.752/0001-69")}`}
+                alt="QR Code PIX"
+                className="sobre-nos-dizimos__qr"
+                width={160}
+                height={160}
+              />
+            </div>
+            <div className="sobre-nos-dizimos__chave">
+              <p className="sobre-nos-dizimos__chave-label">Chave PIX</p>
+              <p className="sobre-nos-dizimos__chave-valor">34.455.752/0001-69</p>
+            </div>
+          </div>
         </section>
 
         {/* Voltar para Home */}

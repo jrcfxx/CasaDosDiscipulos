@@ -1,6 +1,5 @@
 /**
- * SobreNos - Layout moderno e clean
- * Marca: Montserrat (fonte oficial Casa dos Discípulos)
+ * SobreNos - Layout super moderno, branding Casa dos Discípulos
  */
 
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
@@ -13,9 +12,8 @@
 
 .sobre-nos-content {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  /* Espaço para o header fixo/sticky */
   padding-top: 90px;
 }
 
@@ -55,7 +53,6 @@
 }
 
 .sobre-nos-hero__titulo {
-  font-family: "Montserrat", sans-serif;
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 700;
   color: #ebebeb;
@@ -69,14 +66,82 @@
 }
 
 .sobre-nos-hero__subtitulo {
-  font-family: "Montserrat", sans-serif;
   font-size: 1.15rem;
   font-weight: 400;
   color: rgba(235, 235, 235, 0.9);
   margin: 0;
 }
 
-/* ==================== SEÇÕES MISSÃO / VISÃO ==================== */
+/* ==================== INSTAGRAM ==================== */
+
+.sobre-nos-instagram {
+  padding: 4rem 1.5rem;
+  background: #0f0f0f;
+  text-align: center;
+}
+
+.sobre-nos-instagram__label {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #02869b;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.06em;
+}
+
+.sobre-nos-instagram__titulo {
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.sobre-nos-instagram__texto {
+  font-size: 1.05rem;
+  color: #94a3b8;
+  margin: 0 auto 1.5rem;
+  max-width: 480px;
+  line-height: 1.6;
+}
+
+.sobre-nos-instagram__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.sobre-nos-instagram__btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000;
+  background: #fff;
+  border: none;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.sobre-nos-instagram__btn:hover {
+  background: #02869b;
+  color: #fff;
+}
+
+.sobre-nos-instagram__btn--outline {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.sobre-nos-instagram__btn--outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #02869b;
+  color: #fff;
+}
+
+/* ==================== MISSÃO / VISÃO ==================== */
 
 .sobre-nos-section {
   padding: 4rem 1.5rem;
@@ -84,7 +149,7 @@
 }
 
 .sobre-nos-section--alt {
-  background: #1a1a1a;
+  background: #0f0f0f;
 }
 
 .sobre-nos-section__grid {
@@ -92,7 +157,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   align-items: center;
-  max-width: 1100px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -105,17 +170,22 @@
 }
 
 .sobre-nos-section__img-wrap {
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sobre-nos-section__img {
   width: 100%;
-  height: 320px;
+  height: 300px;
   object-fit: cover;
   object-position: center;
   display: block;
+  transition: transform 0.4s ease;
+}
+
+.sobre-nos-section__img-wrap:hover .sobre-nos-section__img {
+  transform: scale(1.03);
 }
 
 .sobre-nos-section__body {
@@ -123,8 +193,7 @@
 }
 
 .sobre-nos-section__titulo {
-  font-family: "Montserrat", sans-serif;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #fff;
   margin: 0 0 1.25rem 0;
@@ -132,29 +201,81 @@
 }
 
 .sobre-nos-section__texto {
-  font-family: "Montserrat", sans-serif;
   font-size: 1.05rem;
-  color: #ebebeb;
+  color: #cbd5e1;
   line-height: 1.75;
   margin: 0;
 }
 
-/* ==================== FULL WIDTH IMAGEM ==================== */
+/* ==================== DÍZIMOS E OFERTAS ==================== */
 
-.sobre-nos-full {
-  padding: 0 1.5rem 4rem;
+.sobre-nos-dizimos {
+  padding: 4rem 1.5rem;
+  background: #0f0f0f;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.sobre-nos-full__img {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  display: block;
-  border-radius: 12px;
-  object-fit: cover;
-  object-position: center;
-  height: 400px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+.sobre-nos-dizimos__label {
+  font-size: 0.9rem;
+  color: #02869b;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.06em;
+}
+
+.sobre-nos-dizimos__titulo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.sobre-nos-dizimos__texto {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+}
+
+.sobre-nos-dizimos__box {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+}
+
+.sobre-nos-dizimos__qr-wrap {
+  flex-shrink: 0;
+}
+
+.sobre-nos-dizimos__qr {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
+.sobre-nos-dizimos__chave {
+  text-align: left;
+}
+
+.sobre-nos-dizimos__chave-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #02869b;
+  margin: 0 0 0.35rem 0;
+}
+
+.sobre-nos-dizimos__chave-valor {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  font-family: "Monaco", "Consolas", monospace;
+  margin: 0;
 }
 
 /* ==================== CTA VOLTAR ==================== */
@@ -165,7 +286,6 @@
 }
 
 .sobre-nos-cta__link {
-  font-family: "Montserrat", sans-serif;
   color: #02869b;
   text-decoration: none;
   font-size: 0.95rem;
@@ -200,8 +320,24 @@
     font-size: 1.5rem;
   }
 
-  .sobre-nos-full__img {
-    height: 280px;
+  .sobre-nos-dizimos__box {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+
+  .sobre-nos-dizimos__chave {
+    text-align: center;
+  }
+
+  .sobre-nos-instagram__links {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sobre-nos-instagram__btn {
+    width: 100%;
+    max-width: 240px;
+    text-align: center;
   }
 }
 
@@ -214,7 +350,8 @@
     height: 220px;
   }
 
-  .sobre-nos-full__img {
-    height: 220px;
+  .sobre-nos-dizimos__qr {
+    width: 140px;
+    height: 140px;
   }
 }
