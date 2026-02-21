@@ -1,6 +1,6 @@
-# Guia de Hospedagem - Casa dos Discípulos
+# Hospedagem — Casa dos Discípulos
 
-Este documento explica como hospedar a aplicação de forma profissional, com suporte a **até ~50 acessos simultâneos** e **notificações WhatsApp**.
+Guia para hospedar a aplicação em produção, com suporte a **~50 acessos simultâneos** e **notificações WhatsApp**.
 
 ---
 
@@ -134,14 +134,17 @@ DB_NAME=CasaDosDiscipulos
 
 JWT_SECRET=MINIMO_32_CARACTERES_ALEATORIOS_SEGUROS
 
+CORS_ORIGIN=https://app.seudominio.com.br,https://seudominio.com.br
+
 REACT_APP_API_URL=/api
 
 EVOLUTION_API_KEY=chave-que-voce-escolher
 EVOLUTION_INSTANCE_NAME=casadosdiscipulos
 ```
 
-- **JWT_SECRET**: gere com `openssl rand -base64 32`
-- **EVOLUTION_API_KEY**: use a mesma chave que configurar na Evolution
+- **JWT_SECRET**: gere com `openssl rand -hex 32`
+- **CORS_ORIGIN**: domínios permitidos separados por vírgula
+- **EVOLUTION_API_KEY**: use a mesma chave configurada na Evolution
 
 ---
 
@@ -277,17 +280,16 @@ docker compose run --rm -v casadiscipulos_backend_uploads:/data -v $(pwd):/backu
 1. **Firewall (UFW)**:
    ```bash
    ufw allow 22    # SSH
-   ufw allow 80     # HTTP
-   ufw allow 443    # HTTPS
+   ufw allow 80    # HTTP
+   ufw allow 443   # HTTPS
    ufw enable
    ```
 
-2. **Restringir Evolution**: Após conectar o WhatsApp, feche a porta 8080 no firewall se não precisar acessá-la:
-   ```bash
-   # Remova a exposição da porta 8080 no docker-compose se não for acessar pela internet
-   ```
+2. **CORS_ORIGIN** no `.env` com o(s) domínio(s) do frontend.
 
-3. **Senhas fortes** para `DB_PASSWORD` e `JWT_SECRET`.
+3. **Restringir Evolution**: Após conectar o WhatsApp, considere fechar a porta 8080 no firewall se não precisar acessá-la externamente.
+
+4. **Senhas fortes** para `DB_PASSWORD` e `JWT_SECRET` (mín. 32 caracteres aleatórios).
 
 ---
 
@@ -299,3 +301,7 @@ docker compose run --rm -v casadiscipulos_backend_uploads:/data -v $(pwd):/backu
 | Erro 502 | Backend pode não ter iniciado; `docker compose logs backend` |
 | Migrations falham | MySQL pode ainda não estar pronto; aguardar e `docker compose restart backend` |
 | WhatsApp não envia | Verificar Evolution em `http://IP:8080`; conferir `EVOLUTION_INSTANCE_NAME` e `EVOLUTION_API_KEY` no `.env` |
+
+---
+
+*[Voltar ao índice](./README.md)*

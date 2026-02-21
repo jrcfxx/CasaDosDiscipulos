@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js" />
     <img src="https://img.shields.io/badge/MySQL-8+-00758f?style=flat-square&logo=mysql" />
     <img src="https://img.shields.io/badge/TypeScript-4+-3178c6?style=flat-square&logo=typescript" />
-    <img src="https://img.shields.io/badge/Express-4+-000?style=flat-square&logo=express" />
+    <img src="https://img.shields.io/badge/Express-5+-000?style=flat-square&logo=express" />
     <img src="https://img.shields.io/badge/JWT-Auth-ffb300?style=flat-square&logo=jsonwebtokens" />
   </p>
 </div>
@@ -72,11 +72,13 @@ npm start
 ```env
 PORT=3001
 DB_HOST=localhost
-DB_USER=seu_usuario
+DB_USER=root
 DB_PASSWORD=sua_senha
-DB_DATABASE=nome_do_banco
-JWT_SECRET=umasecretfortoken
+DB_NAME=CasaDosDiscipulos
+JWT_SECRET=minimo_32_caracteres_aleatorios_seguros
 ```
+
+> **Documentação completa:** [Documentacao/README.md](Documentacao/README.md) — instalação detalhada, hospedagem, segurança e acessibilidade.
 
 ## 👤 Equipe
 

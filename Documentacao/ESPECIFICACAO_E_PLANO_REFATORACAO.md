@@ -1,5 +1,6 @@
-# Especificação do Sistema & Plano de Refatoração
-## Casa dos Discípulos
+# Especificação e Plano de Refatoração — Casa dos Discípulos
+
+> Visão técnica dos módulos e histórico de refatoração.
 
 **Última atualização:** 18/02/2025
 
@@ -157,3 +158,7 @@ Plataforma web para gestão de igrejas: formação (Escola de Discípulos), acom
 1. Validar este documento com o cliente/equipe.
 2. Iniciar Fase 1 (remoção de código obsoleto e padronização).
 3. Seguir com Fases 2–6 conforme prioridade e disponibilidade.
+
+---
+
+*[Voltar ao índice](./README.md)*
