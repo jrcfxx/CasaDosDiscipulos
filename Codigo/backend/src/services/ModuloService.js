@@ -613,10 +613,11 @@ const ModuloService = {
     for (const u of usuarios) {
       const { modulos } = await this.getActiveWithProgress(u.id_usuario);
       const obrigatorio = (m) => m.obrigatorio !== false && m.obrigatorio !== 0;
+      const ativo = (m) => m.ativo !== false && m.ativo !== 0;
       const pendentes = modulos.filter(
         (m) =>
           (m.status === "nao_iniciado" || m.status === "em_andamento") &&
-          m.ativo &&
+          ativo(m) &&
           obrigatorio(m)
       );
       // Só incluir módulos que o usuário pode acessar (pré-requisitos ok)

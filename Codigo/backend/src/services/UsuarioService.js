@@ -14,6 +14,7 @@ import {
   ForbiddenError,
 } from "../utils/AppError.js";
 import { USER_TYPES } from "../utils/constants.js";
+import { normalizarTelefone } from "../utils/formatUtils.js";
 
 /**
  * Marca módulos dos níveis anteriores/inclusivo ao do usuário como concluídos.
@@ -277,7 +278,11 @@ const UsuarioService = {
     }
 
     if (data.telefone !== undefined && data.telefone !== null && String(data.telefone).trim()) {
-      novoUsuarioData.telefone = String(data.telefone).trim();
+      const telNorm = normalizarTelefone(data.telefone);
+      if (!telNorm) {
+        throw new ValidationError("Telefone inválido. Use apenas números com DDD (ex: 11999999999)");
+      }
+      novoUsuarioData.telefone = telNorm;
     }
 
     // Cria usuário
@@ -385,7 +390,15 @@ const UsuarioService = {
     }
 
     if (data.telefone !== undefined) {
-      dadosAtualizacao.telefone = data.telefone === "" || data.telefone === null ? null : String(data.telefone).trim();
+      if (data.telefone === "" || data.telefone === null) {
+        dadosAtualizacao.telefone = null;
+      } else {
+        const telNorm = normalizarTelefone(data.telefone);
+        if (!telNorm) {
+          throw new ValidationError("Telefone inválido. Use apenas números com DDD (ex: 11999999999)");
+        }
+        dadosAtualizacao.telefone = telNorm;
+      }
     }
 
     // Permissões de líder (lider_celula = Secretaria, lider_ministerio = Escala)

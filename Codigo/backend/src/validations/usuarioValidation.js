@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { USER_TYPES } from "../utils/constants.js";
+import { normalizarTelefone } from "../utils/formatUtils.js";
 
 /**
  * Schema de validação para criação de usuário
@@ -31,7 +32,18 @@ export const createUsuarioSchema = Joi.object({
 
   id_nivel: Joi.number().integer().positive().allow(null).optional(),
 
-  telefone: Joi.string().max(20).allow("", null).optional(),
+  telefone: Joi.string()
+    .max(20)
+    .allow("", null)
+    .optional()
+    .custom((valor, helpers) => {
+      if (valor == null || String(valor).trim() === "") return valor;
+      if (!normalizarTelefone(valor)) {
+        return helpers.error("any.invalid");
+      }
+      return valor;
+    })
+    .messages({ "any.invalid": "Telefone inválido. Use apenas números com DDD (ex: 11999999999)" }),
 
   lider_celula: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
   lider_ministerio: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
@@ -69,7 +81,18 @@ export const updateUsuarioSchema = Joi.object({
 
   id_nivel: Joi.number().integer().positive().allow(null).optional(),
 
-  telefone: Joi.string().max(20).allow("", null).optional(),
+  telefone: Joi.string()
+    .max(20)
+    .allow("", null)
+    .optional()
+    .custom((valor, helpers) => {
+      if (valor == null || String(valor).trim() === "") return valor;
+      if (!normalizarTelefone(valor)) {
+        return helpers.error("any.invalid");
+      }
+      return valor;
+    })
+    .messages({ "any.invalid": "Telefone inválido. Use apenas números com DDD (ex: 11999999999)" }),
 
   lider_celula: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),
   lider_ministerio: Joi.boolean().truthy(1, "1").falsy(0, "0").optional(),

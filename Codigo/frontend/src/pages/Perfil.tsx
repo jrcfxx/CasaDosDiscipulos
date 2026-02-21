@@ -13,6 +13,7 @@ import { showAllNiveis } from "../services/nivel";
 import celulaService from "../services/celulaService";
 import usuarioCelulaService from "../services/usuarioCelulaService";
 import { ASSETS_BASE } from "../config/api";
+import { formatarTelefoneInput, normalizarTelefoneParaEnvio } from "../utils/telefoneUtils";
 
 function buildFotoUrl(foto: string | undefined): string | null {
   if (!foto) return null;
@@ -86,7 +87,7 @@ export default function Perfil() {
           setPerfil(data);
           setNome(data.nome);
           setEmail(data.email);
-          setTelefone(data.telefone ?? "");
+          setTelefone(formatarTelefoneInput(data.telefone ?? ""));
           setCelulaPrincipalId(
             data.celula_principal?.id_celula ?? ""
           );
@@ -137,7 +138,7 @@ export default function Perfil() {
         setPerfil(data);
         setNome(data.nome);
         setEmail(data.email);
-        setTelefone(data.telefone ?? "");
+        setTelefone(formatarTelefoneInput(data.telefone ?? ""));
         setCelulaPrincipalId(data.celula_principal?.id_celula ?? "");
         setFotoPreview(buildFotoUrl(data.foto) ?? null);
       }
@@ -180,7 +181,7 @@ export default function Perfil() {
     // Resetar campos
     setNome(perfil.nome);
     setEmail(perfil.email);
-    setTelefone(perfil.telefone ?? "");
+    setTelefone(formatarTelefoneInput(perfil.telefone ?? ""));
     setCelulaPrincipalId(perfil.celula_principal?.id_celula ?? "");
     setSenhaAtual("");
     setNovaSenha("");
@@ -199,6 +200,12 @@ export default function Perfil() {
 
     if (!email || !email.includes("@")) {
       showToast("Email inválido");
+      return;
+    }
+
+    const telefoneNorm = normalizarTelefoneParaEnvio(telefone);
+    if (telefone.trim() && !telefoneNorm) {
+      showToast("Telefone inválido. Use apenas números com DDD (ex: 11999999999)");
       return;
     }
 
@@ -226,7 +233,7 @@ export default function Perfil() {
       const updateData: any = {
         nome: nome.trim(),
         email: email.trim(),
-        telefone: telefone.trim() || null,
+        telefone: telefoneNorm,
       };
 
       // Adiciona senha apenas se foi alterada
@@ -390,10 +397,12 @@ export default function Perfil() {
               <input
                 id="perfil-telefone"
                 type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
                 value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
+                onChange={(e) => setTelefone(formatarTelefoneInput(e.target.value))}
                 className="form-input"
-                placeholder="(11) 99999-9999"
+                placeholder="11999999999 (apenas números)"
               />
               <p className="password-hint">
                 Opcional. Para receber notificações no WhatsApp (escalação, lembretes de módulos).

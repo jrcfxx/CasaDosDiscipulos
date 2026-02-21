@@ -10,7 +10,8 @@
     "migrate": "knex --knexfile knexfile.cjs migrate:latest",
     "migrate:rollback": "knex --knexfile knexfile.cjs migrate:rollback",
     "db:reset": "node scripts/dbReset.cjs",
-    "seed": "node ./src/seeds/runSeeds.js"
+    "seed": "node ./src/seeds/runSeeds.js",
+    "test:whatsapp-modulos": "node scripts/testWhatsAppModulos.js"
   },
   "keywords": [],
   "author": "",

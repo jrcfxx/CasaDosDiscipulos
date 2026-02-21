@@ -270,13 +270,15 @@ const EventosAdmin: React.FC = () => {
                 <input
                   id="evento-ordem"
                   type="number"
+                  min={0}
                   value={formData.ordem}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
                     setFormData({
                       ...formData,
-                      ordem: parseInt(e.target.value),
-                    })
-                  }
+                      ordem: Number.isNaN(v) || v < 0 ? 0 : v,
+                    });
+                  }}
                 />
               </div>
 

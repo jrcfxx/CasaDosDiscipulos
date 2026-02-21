@@ -5,6 +5,7 @@ import "../style/GerirUser.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
+import { formatarTelefoneInput, normalizarTelefoneParaEnvio } from "../utils/telefoneUtils";
 import Toast from "../components/ui/Toast";
 import perfil from "../assets/perfil-preto.png";
 import { ASSETS_BASE } from "../config/api";
@@ -279,7 +280,7 @@ export default function GerenciarUsuarios() {
         id_usuario: usuarioAtual.id_usuario,
         nome: usuarioAtual.nome,
         email: usuarioAtual.email,
-        telefone: (usuarioAtual as Usuario).telefone ?? "",
+        telefone: formatarTelefoneInput((usuarioAtual as Usuario).telefone ?? ""),
         senha: "",
         confirmarSenha: "",
         foto: usuarioAtual.foto || null,
@@ -337,18 +338,11 @@ export default function GerenciarUsuarios() {
       return;
     }
 
-    // Valida telefone quando preenchido (não aceita email)
-    const tel = usuarioModal.telefone?.trim();
-    if (tel) {
-      if (tel.includes("@")) {
-        showToast("O campo Telefone não pode conter email. Use o campo Email.");
-        return;
-      }
-      const apenasDigitos = tel.replace(/\D/g, "");
-      if (apenasDigitos.length < 10) {
-        showToast("Telefone inválido. Informe o número com DDD (ex: 11999999999)");
-        return;
-      }
+    // Telefone: normaliza (apenas dígitos) e valida
+    const telefoneNorm = normalizarTelefoneParaEnvio(usuarioModal.telefone);
+    if (usuarioModal.telefone?.trim() && !telefoneNorm) {
+      showToast("Telefone inválido. Use apenas números com DDD (ex: 11999999999)");
+      return;
     }
 
     // Valida senha apenas para novo usuário ou se estiver preenchida
@@ -378,7 +372,7 @@ export default function GerenciarUsuarios() {
     const userData: any = {
       nome: usuarioModal.nome,
       email: usuarioModal.email,
-      telefone: usuarioModal.telefone?.trim() || null,
+      telefone: telefoneNorm,
       tipo: usuarioModal.tipo,
       id_nivel: usuarioModal.id_nivel,
       ativo: true,
@@ -916,9 +910,11 @@ export default function GerenciarUsuarios() {
                 <input
                   id="usuarioModalTelefone"
                   type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
                   value={usuarioModal.telefone || ""}
-                  onChange={(e) => handleChange("telefone", e.target.value)}
-                  placeholder="(11) 99999-9999"
+                  onChange={(e) => handleChange("telefone", formatarTelefoneInput(e.target.value))}
+                  placeholder="11999999999 (apenas números)"
                 />
               </div>
 
