@@ -1168,8 +1168,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
       {/* FORM MODAL */}
       {showFormModal && (
-        <div className="modal-overlay" onClick={closeFormModal}>
-          <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal modal-large">
             <h2>
               {formularioToEdit ? "Editar Formulário" : "Criar Novo Formulário"}
             </h2>

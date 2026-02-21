@@ -34,16 +34,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     if (e.key === "Escape") onCancel();
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onCancel();
-  };
-
   if (!open) return null;
 
   return (
     <div
       className="confirm-modal-overlay"
-      onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-modal-title"

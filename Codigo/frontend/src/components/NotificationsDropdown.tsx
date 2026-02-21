@@ -169,12 +169,11 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, 
       {detalheNotif && (
         <div
           className="notif-modal-overlay"
-          onClick={fecharDetalhe}
           role="dialog"
           aria-modal
           aria-labelledby="notif-modal-title"
         >
-          <div className="notif-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="notif-modal">
             <div className="notif-modal-header">
               <h3 id="notif-modal-title">{detalheNotif.titulo}</h3>
               <button type="button" className="notif-modal-close" onClick={fecharDetalhe} aria-label="Fechar">

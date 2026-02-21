@@ -260,8 +260,8 @@ const EventosAdmin: React.FC = () => {
       </main>
 
       {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             <h2>{editingEvento ? "Editar Evento" : "Novo Evento"}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">

@@ -314,8 +314,8 @@ export default function GerirCelulas() {
 
       {/* Modal Cadastro/Edição */}
       {modalAberto && (
-        <div className="modal-fundo" onClick={fecharModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-fundo">
+          <div className="modal">
             <h2>{celulaModal.id_celula ? "Editar Célula" : "Nova Célula"}</h2>
 
             <div className="modal-content">

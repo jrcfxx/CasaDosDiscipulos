@@ -251,16 +251,12 @@ export default function EditarQuizzesSecretariaCelulas() {
       <Footer />
 
       {showDeleteModal && (
-        <div
-          className="cf-modal-overlay"
-          onClick={() => setShowDeleteModal(false)}
-        >
+        <div className="cf-modal-overlay">
           <div
             className="cf-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="cf-modal-title"
-            onClick={(e) => e.stopPropagation()}
             onKeyDown={onModalKeyDown}
           >
             <h3 id="cf-modal-title" className="cf-modal-title center">

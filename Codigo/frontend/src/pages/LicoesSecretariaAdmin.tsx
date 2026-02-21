@@ -594,8 +594,8 @@ const LicoesSecretariaAdmin: React.FC = () => {
       />
 
       {showFormModal && (
-        <div className="modal-overlay" onClick={closeFormModal}>
-          <div className="modal modal-large" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal modal-large">
             <h2>{licaoToEdit ? "Editar lição" : "Criar nova lição"}</h2>
 
             <form onSubmit={saveForm}>

@@ -48,10 +48,6 @@ const InputModal: React.FC<InputModalProps> = ({
     }
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onCancel();
-  };
-
   const handleConfirm = () => {
     onConfirm(value.trim());
   };
@@ -61,7 +57,6 @@ const InputModal: React.FC<InputModalProps> = ({
   return (
     <div
       className="input-modal-overlay"
-      onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="input-modal-title"

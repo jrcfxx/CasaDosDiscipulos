@@ -450,8 +450,8 @@ const EscalaUser: React.FC = () => {
       </main>
 
       {eventoSelecionado && (
-        <div className="modal-overlay modal-escala-overlay" onClick={fecharEvento}>
-          <div className="modal-escala-dashboard" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay modal-escala-overlay">
+          <div className="modal-escala-dashboard">
             <div className="escala-dashboard-header">
               <div className="escala-dashboard-titulo">
                 <h2>{eventoSelecionado.titulo}</h2>
@@ -584,8 +584,8 @@ const EscalaUser: React.FC = () => {
       )}
 
       {showModalEvento && (
-        <div className="modal-evento-overlay" onClick={fecharModalEvento}>
-          <div className="modal-escala-evento" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-evento-overlay">
+          <div className="modal-escala-evento">
             <div className="modal-evento-header">
               <div className="modal-evento-header-content">
                 <span className="modal-evento-icon" aria-hidden>📅</span>
@@ -678,8 +678,8 @@ const EscalaUser: React.FC = () => {
       )}
 
       {showModalAtribuicao && areaParaAtribuir && !atribuicaoEditando && (
-        <div className="modal-overlay modal-evento-overlay" onClick={fecharModalAtribuicao}>
-          <div className="modal-content modal-atribuicao modal-atribuicao-completo" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay modal-evento-overlay">
+          <div className="modal-content modal-atribuicao modal-atribuicao-completo">
             <h2>Escalar em {areaParaAtribuir.nome}</h2>
             <div className="form-group">
               <label>Selecione a pessoa</label>
@@ -721,8 +721,8 @@ const EscalaUser: React.FC = () => {
       )}
 
       {atribuicaoEditando && areaParaAtribuir && (
-        <div className="modal-overlay modal-evento-overlay" onClick={fecharModalEditarDetalhes}>
-          <div className="modal-content modal-atribuicao modal-atribuicao-editar" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay modal-evento-overlay">
+          <div className="modal-content modal-atribuicao modal-atribuicao-editar">
             <h2>Editar informações — {atribuicaoEditando.usuario_nome}</h2>
             <p className="modal-atribuicao-contexto">Em {areaParaAtribuir.nome}</p>
             <AtribuicaoDetalhesForm

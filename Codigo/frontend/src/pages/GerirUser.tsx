@@ -846,8 +846,8 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Cadastro/Edição de Usuário */}
       {modalAberto && (
-        <div className="modal-fundo" onClick={fecharModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-fundo">
+          <div className="modal">
             <h2>
               {usuarioModal.id_usuario ? "Editar Usuário" : "Novo Usuário"}
             </h2>
@@ -1008,11 +1008,8 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Inativar/Reativar */}
       {modalInativarAberto && usuarioInativar && (
-        <div
-          className="modal-fundo"
-          onClick={() => setModalInativarAberto(false)}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-fundo">
+          <div className="modal">
             <h2>
               {usuarioInativar.ativo ? "Inativar" : "Reativar"}{" "}
               Usuário
@@ -1034,8 +1031,8 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Cadastro/Edição de Nível */}
       {modalNivelAberto && (
-        <div className="modal-fundo" onClick={fecharModalNivel}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-fundo">
+          <div className="modal">
             <h2>{nivelModal.id_nivel ? "Editar Nível" : "Novo Nível"}</h2>
 
             <div className="modal-content">
@@ -1117,8 +1114,8 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Cadastro/Edição de Ministério */}
       {modalMinisterioAberto && (
-        <div className="modal-ministerio-overlay" onClick={() => setModalMinisterioAberto(false)}>
-          <div className="modal-ministerio" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-ministerio-overlay">
+          <div className="modal-ministerio">
             <div className="modal-ministerio-header">
               <div className="modal-ministerio-header-content">
                 <span className="modal-ministerio-icon" aria-hidden>⛪</span>
