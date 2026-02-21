@@ -1,6 +1,8 @@
 import { Router } from "express";
 import FormularioController from "../controllers/FormularioController.js";
 import validate from "../middlewares/validate.js";
+import verificarToken from "../middlewares/authMiddleware.js";
+import { adminOnly, authenticatedOnly } from "../middlewares/checkRole.js";
 import {
   createFormularioSchema,
   updateFormularioSchema,
@@ -8,14 +10,10 @@ import {
 
 const router = Router();
 
-router.get("/", FormularioController.getAll);
-router.get("/:id", FormularioController.getById);
-router.post("/", validate(createFormularioSchema), FormularioController.create);
-router.put(
-  "/:id",
-  validate(updateFormularioSchema),
-  FormularioController.update
-);
-router.delete("/:id", FormularioController.delete);
+router.get("/", verificarToken, authenticatedOnly, FormularioController.getAll);
+router.get("/:id", verificarToken, authenticatedOnly, FormularioController.getById);
+router.post("/", verificarToken, adminOnly, validate(createFormularioSchema), FormularioController.create);
+router.put("/:id", verificarToken, adminOnly, validate(updateFormularioSchema), FormularioController.update);
+router.delete("/:id", verificarToken, adminOnly, FormularioController.delete);
 
 export default router;

@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -30,8 +32,31 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(helmet({ contentSecurityPolicy: false }));
+
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN?.split(",") || true,
+    credentials: true,
+  })
+);
 app.use(express.json());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  message: { error: "Muitas requisições. Tente novamente em alguns minutos." },
+});
+app.use("/api/", limiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message: { error: "Muitas tentativas de login. Tente novamente em alguns minutos." },
+});
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
 
 // Servir arquivos estáticos da pasta uploads
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));

@@ -1,6 +1,8 @@
 import { Router } from "express";
 import EventoController from "../controllers/EventoController.js";
 import multer from "multer";
+import verificarToken from "../middlewares/authMiddleware.js";
+import { adminOnly } from "../middlewares/checkRole.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
@@ -46,11 +48,11 @@ const upload = multer({
 
 const router = Router();
 
-// Rota pública para buscar eventos ativos
+// Rota pública para buscar eventos ativos (homepage)
 router.get("/ativos", EventoController.getAtivos);
 
-// Upload de imagem (rota específica antes de /:id para não ser capturada)
-router.post("/upload", (req, res, next) => {
+// Upload de imagem - apenas admin
+router.post("/upload", verificarToken, adminOnly, (req, res, next) => {
   upload.single("imagem")(req, res, (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
@@ -79,11 +81,11 @@ router.post("/upload", (req, res, next) => {
   }
 });
 
-// CRUD
-router.get("/", EventoController.getAll);
-router.get("/:id", EventoController.getById);
-router.post("/", EventoController.create);
-router.put("/:id", EventoController.update);
-router.delete("/:id", EventoController.delete);
+// CRUD - apenas admin
+router.get("/", verificarToken, adminOnly, EventoController.getAll);
+router.get("/:id", verificarToken, adminOnly, EventoController.getById);
+router.post("/", verificarToken, adminOnly, EventoController.create);
+router.put("/:id", verificarToken, adminOnly, EventoController.update);
+router.delete("/:id", verificarToken, adminOnly, EventoController.delete);
 
 export default router;

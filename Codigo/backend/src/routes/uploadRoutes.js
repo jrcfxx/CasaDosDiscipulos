@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import verificarToken from "../middlewares/authMiddleware.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -103,9 +104,9 @@ const upload = multer({
 
 /**
  * POST /api/upload/campo
- * Upload de arquivo para campo personalizado
+ * Upload de arquivo para campo personalizado - requer autenticação
  */
-router.post("/campo", (req, res) => {
+router.post("/campo", verificarToken, (req, res) => {
   upload.single("file")(req, res, (err) => {
     if (err) {
       console.error("Erro ao fazer upload:", err);
