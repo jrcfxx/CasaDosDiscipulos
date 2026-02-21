@@ -1,0 +1,82 @@
+# Evolution API v2 - requer PostgreSQL e Redis
+# Use: cd evolution-whatsapp && docker compose up -d
+
+version: "3.9"
+
+services:
+  evolution-api:
+    container_name: evolution_api
+    image: atendai/evolution-api:latest
+    restart: always
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - evolution_instances:/evolution/instances
+    environment:
+      AUTHENTICATION_API_KEY: casadosdiscipulos-local
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution:evolution123@postgres:5432/evolution?schema=public
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379
+      SERVER_URL: http://localhost:8080
+      QRCODE_LIMIT: "30"
+      # Obrigatório para o QR Code aparecer (bug conhecido - issue #1602)
+      CONFIG_SESSION_PHONE_VERSION: "2.3000.1033541177"
+    networks:
+      - evolution-net
+
+  evolution-manager:
+    container_name: evolution_manager
+    image: evoapicloud/evolution-manager:latest
+    restart: always
+    ports:
+      - "3090:80"
+    environment:
+      EVOLUTION_API_URL: http://localhost:8080
+    # Workaround: nginx do Manager tem "must-revalidate" inválido em gzip_proxied (bug #2093)
+    entrypoint: ["/bin/sh", "-c", "sed -i 's/ must-revalidate//g' /etc/nginx/conf.d/nginx.conf 2>/dev/null; exec nginx -g 'daemon off;'"]
+    networks:
+      - evolution-net
+
+  postgres:
+    container_name: evolution_postgres
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: evolution
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: evolution123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evolution"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - evolution-net
+
+  redis:
+    container_name: evolution_redis
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - evolution-net
+
+volumes:
+  evolution_instances:
+  postgres_data:
+  redis_data:
+
+networks:
+  evolution-net:
+    driver: bridge

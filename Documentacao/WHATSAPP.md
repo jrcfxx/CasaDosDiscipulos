@@ -8,8 +8,12 @@ O sistema envia notificações automáticas por WhatsApp aos usuários usando a 
 
 | Tipo | Descrição |
 |------|-----------|
-| **Escalação** | Quando o usuário é escalado para um evento, recebe mensagem com título, área e data |
-| **Módulos pendentes** | Lembrete semanal (configurável) para usuários com módulos da Escola de Discípulos pendentes |
+| **Escalação** | Ao ser escalado: título do evento, área, data, horário e detalhes (instrumento, observações etc.) |
+| **Atualização da atribuição** | Quando os detalhes da participação são alterados (ex.: instrumento, função, observações) |
+| **Remoção da escala** | Quando o usuário é removido de um evento |
+| **Evento atualizado** | Quando o evento (data, horário, título, descrição ou áreas) é alterado — todos os escalados recebem |
+| **Evento cancelado** | Quando o evento é excluído — todos os escalados recebem |
+| **Módulos pendentes** | Lembrete semanal (segundas às 9h) para usuários com módulos obrigatórios da Escola de Discípulos pendentes |
 
 ---
 
@@ -80,6 +84,12 @@ Timezone padrão: `America/Sao_Paulo`.
 ## Desativar WhatsApp
 
 Se `EVOLUTION_API_URL` não estiver definido, todas as chamadas ao WhatsApp são ignoradas. As notificações in-app continuam funcionando.
+
+---
+
+## Configurar no ambiente local
+
+Para um guia passo a passo (Docker, criação de instância, QR Code, .env), consulte **[Configurar WhatsApp local](./CONFIGURAR_WHATSAPP_LOCAL.md)**.
 
 ---
 

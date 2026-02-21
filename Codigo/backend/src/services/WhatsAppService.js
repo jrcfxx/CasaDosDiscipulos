@@ -56,9 +56,7 @@ async function enviarMensagem(numero, mensagem) {
   };
   const body = {
     number: numeroE164,
-    text: {
-      message: String(mensagem).slice(0, 4096),
-    },
+    text: String(mensagem).slice(0, 4096),
   };
 
   try {
@@ -71,59 +69,285 @@ async function enviarMensagem(numero, mensagem) {
     const data = await res.json().catch(() => ({}));
 
     if (res.ok) {
+      console.log("[WhatsApp] Mensagem enviada com sucesso para", numeroE164);
       return { ok: true };
     }
 
     const errMsg = data?.message || data?.error || res.statusText || `HTTP ${res.status}`;
+    console.error("[WhatsApp] Erro ao enviar:", errMsg, "| Resposta:", JSON.stringify(data));
     return { ok: false, error: errMsg };
   } catch (err) {
+    console.error("[WhatsApp] Exceção ao conectar:", err.message);
     return { ok: false, error: err.message || "Erro ao conectar com Evolution API" };
   }
+}
+
+/** Labels amigáveis para campos de detalhes da atribuição */
+const LABELS_DETALHES = {
+  instrumento: "Instrumento",
+  musicas: "Músicas",
+  tom: "Tom",
+  observacoes: "Observações",
+  funcao: "Função",
+  equipamentos: "Equipamentos",
+};
+
+/**
+ * Formata o objeto detalhes em linhas legíveis
+ * @param {Object} detalhes - { instrumento, observacoes, funcao, etc. }
+ */
+function formatarValor(val) {
+  const s = String(val).trim();
+  return s
+    .split(/[\s_]+/)
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function formatarDetalhes(detalhes) {
+  if (!detalhes || typeof detalhes !== "object") return [];
+  const linhas = [];
+  for (const [chave, valor] of Object.entries(detalhes)) {
+    if (valor === null || valor === undefined || String(valor).trim() === "") continue;
+    const label = LABELS_DETALHES[chave] || chave.charAt(0).toUpperCase() + chave.slice(1).replace(/_/g, " ");
+    const valorFmt = chave === "musicas" || chave === "observacoes" || chave === "equipamentos"
+      ? String(valor).trim()
+      : formatarValor(valor);
+    linhas.push(`• ${label}: ${valorFmt}`);
+  }
+  return linhas;
 }
 
 /**
  * Envia notificação de escalação para o usuário
  * @param {Object} usuario - { nome, telefone }
- * @param {Object} evento - { titulo, data_hora }
+ * @param {Object} evento - { titulo, data_hora, data_hora_fim, descricao }
  * @param {string} areaNome - Nome da área
+ * @param {Object} detalhesAtribuicao - { instrumento, observacoes, funcao, musicas, etc. }
  */
-async function notificarEscalacao(usuario, evento, areaNome) {
+async function notificarEscalacao(usuario, evento, areaNome, detalhesAtribuicao = null) {
   if (!usuario?.telefone) return { ok: false, error: "Usuário sem telefone" };
 
-  const dataFmt = evento?.data_hora
-    ? new Date(evento.data_hora).toLocaleDateString("pt-BR", {
+  const primeiroNome = (usuario.nome || "Discípulo").split(/\s+/)[0];
+  const titulo = evento?.titulo || "Evento";
+
+  const opts = {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    weekday: "long",
+  };
+  const dataHoraFmt = evento?.data_hora
+    ? new Date(evento.data_hora).toLocaleDateString("pt-BR", opts)
+    : null;
+  const dataHoraFimFmt = evento?.data_hora_fim
+    ? new Date(evento.data_hora_fim).toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "short",
-        year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "";
+    : null;
 
-  const mensagem = `Casa dos Discípulos\n\nOlá, ${usuario.nome || "você"}!\n\nVocê foi escalado(a) para *${evento?.titulo || "evento"}*.\n\nÁrea: ${areaNome}\nData: ${dataFmt || "A definir"}\n\nAcesse o sistema para mais detalhes.`;
+  const linhasDetalhes = formatarDetalhes(detalhesAtribuicao);
 
+  const linhas = [
+    "🏠 *Casa dos Discípulos*",
+    "",
+    `Olá, *${primeiroNome}*! 👋`,
+    "",
+    "Você foi escalado(a)! Seguem os detalhes:",
+    "",
+    `📌 *${titulo}*`,
+    `📍 Área: ${areaNome}`,
+    dataHoraFmt ? `📅 ${dataHoraFmt}` : null,
+    dataHoraFimFmt ? `⏰ Até ${dataHoraFimFmt}` : null,
+    evento?.descricao ? `\n📝 ${evento.descricao}` : null,
+    linhasDetalhes.length ? `\n✨ *Sua participação:*\n${linhasDetalhes.join("\n")}` : null,
+    "",
+    "Acesse o sistema para confirmar e ver mais informações.",
+    "",
+    "— Casa dos Discípulos",
+  ].filter(Boolean);
+
+  const mensagem = linhas.join("\n");
   return enviarMensagem(usuario.telefone, mensagem);
 }
 
 /**
- * Envia lembrete de módulos pendentes
+ * Envia notificação de atualização da atribuição (detalhes alterados)
+ */
+async function notificarAtribuicaoAtualizada(usuario, evento, areaNome, detalhesNovos) {
+  if (!usuario?.telefone) return { ok: false, error: "Usuário sem telefone" };
+
+  const primeiroNome = (usuario.nome || "Discípulo").split(/\s+/)[0];
+  const titulo = evento?.titulo || "Evento";
+  const opts = { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit", weekday: "long" };
+  const dataHoraFmt = evento?.data_hora ? new Date(evento.data_hora).toLocaleDateString("pt-BR", opts) : "";
+  const linhasDetalhes = formatarDetalhes(detalhesNovos);
+
+  const linhas = [
+    "🏠 *Casa dos Discípulos*",
+    "",
+    `Olá, *${primeiroNome}*! 👋`,
+    "",
+    "⚠️ *Atualização na sua escala*",
+    "",
+    `Sua participação em *${titulo}* (${areaNome}) foi *atualizada*:`,
+    "",
+    dataHoraFmt ? `📅 ${dataHoraFmt}` : null,
+    linhasDetalhes.length ? `\n✨ *Novos detalhes:*\n${linhasDetalhes.join("\n")}` : null,
+    "",
+    "Confira as alterações no sistema.",
+    "",
+    "— Casa dos Discípulos",
+  ].filter(Boolean);
+
+  return enviarMensagem(usuario.telefone, linhas.join("\n"));
+}
+
+/**
+ * Envia notificação de remoção da escala
+ */
+async function notificarAtribuicaoRemovida(usuario, evento, areaNome) {
+  if (!usuario?.telefone) return { ok: false, error: "Usuário sem telefone" };
+
+  const primeiroNome = (usuario.nome || "Discípulo").split(/\s+/)[0];
+  const titulo = evento?.titulo || "Evento";
+  const dataFmt = evento?.data_hora
+    ? new Date(evento.data_hora).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+    : "";
+
+  const linhas = [
+    "🏠 *Casa dos Discípulos*",
+    "",
+    `Olá, *${primeiroNome}*! 👋`,
+    "",
+    "📋 *Alteração na escala*",
+    "",
+    `Você foi *removido(a)* da escala de *${titulo}* (${areaNome})${dataFmt ? ` — ${dataFmt}` : ""}.`,
+    "",
+    "Caso tenha dúvidas, entre em contato com a liderança.",
+    "",
+    "— Casa dos Discípulos",
+  ];
+
+  return enviarMensagem(usuario.telefone, linhas.join("\n"));
+}
+
+/**
+ * Envia notificação de evento atualizado (para cada escalado)
  * @param {Object} usuario - { nome, telefone }
- * @param {Array<{ titulo: string }>} modulosPendentes - Lista de módulos
+ * @param {Object} evento - dados do evento
+ * @param {string} areaNome - nome da área (pode ser vazio se áreas foram substituídas)
+ * @param {Object|null} detalhesAtribuicao - detalhes da participação (null se áreas foram reformuladas)
+ */
+async function notificarEventoAtualizado(usuario, evento, areaNome, detalhesAtribuicao) {
+  if (!usuario?.telefone) return { ok: false, error: "Usuário sem telefone" };
+
+  const primeiroNome = (usuario.nome || "Discípulo").split(/\s+/)[0];
+  const titulo = evento?.titulo || "Evento";
+  const opts = { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit", weekday: "long" };
+  const dataHoraFmt = evento?.data_hora ? new Date(evento.data_hora).toLocaleDateString("pt-BR", opts) : null;
+  const dataHoraFimFmt = evento?.data_hora_fim
+    ? new Date(evento.data_hora_fim).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+    : null;
+  const linhasDetalhes = formatarDetalhes(detalhesAtribuicao);
+  const areasReformuladas = detalhesAtribuicao === null;
+
+  const msgParticipacao = areasReformuladas
+    ? `O evento *${titulo}* teve alterações significativas (áreas reformuladas). Confira no sistema se sua participação foi mantida.`
+    : `O evento *${titulo}* teve alterações. Sua participação em *${areaNome}* continua confirmada.`;
+
+  const linhas = [
+    "🏠 *Casa dos Discípulos*",
+    "",
+    `Olá, *${primeiroNome}*! 👋`,
+    "",
+    "🔄 *Evento atualizado*",
+    "",
+    msgParticipacao,
+    "",
+    `📌 *${titulo}*`,
+    areaNome ? `📍 Área: ${areaNome}` : null,
+    dataHoraFmt ? `📅 ${dataHoraFmt}` : null,
+    dataHoraFimFmt ? `⏰ Até ${dataHoraFimFmt}` : null,
+    evento?.descricao ? `\n📝 ${evento.descricao}` : null,
+    linhasDetalhes.length ? `\n✨ *Sua participação:*\n${linhasDetalhes.join("\n")}` : null,
+    "",
+    "Confira os detalhes atualizados no sistema.",
+    "",
+    "— Casa dos Discípulos",
+  ].filter(Boolean);
+
+  return enviarMensagem(usuario.telefone, linhas.join("\n"));
+}
+
+/**
+ * Envia notificação de evento cancelado/removido
+ */
+async function notificarEventoCancelado(usuario, eventoTitulo, dataFmt) {
+  if (!usuario?.telefone) return { ok: false, error: "Usuário sem telefone" };
+
+  const primeiroNome = (usuario.nome || "Discípulo").split(/\s+/)[0];
+
+  const linhas = [
+    "🏠 *Casa dos Discípulos*",
+    "",
+    `Olá, *${primeiroNome}*! 👋`,
+    "",
+    "❌ *Evento cancelado*",
+    "",
+    `O evento *${eventoTitulo}*${dataFmt ? ` (${dataFmt})` : ""} foi *cancelado* e removido da escala.`,
+    "",
+    "Você não precisa mais se apresentar para este evento. Em caso de dúvidas, fale com a liderança.",
+    "",
+    "— Casa dos Discípulos",
+  ];
+
+  return enviarMensagem(usuario.telefone, linhas.join("\n"));
+}
+
+/**
+ * Envia lembrete semanal de módulos pendentes (Escola de Discípulos)
+ * @param {Object} usuario - { nome, telefone }
+ * @param {Array<{ titulo: string }>} modulosPendentes - Módulos obrigatórios pendentes
  */
 async function notificarModulosPendentes(usuario, modulosPendentes) {
   if (!usuario?.telefone) return { ok: false, error: "Usuário sem telefone" };
   if (!modulosPendentes?.length) return { ok: false, error: "Nenhum módulo pendente" };
 
-  const listaModulos = modulosPendentes.map((m) => `• ${m.titulo}`).join("\n");
+  const primeiroNome = (usuario.nome || "Discípulo").split(/\s+/)[0];
+  const listaModulos = modulosPendentes.map((m) => `  • ${m.titulo}`).join("\n");
 
-  const mensagem = `Casa dos Discípulos\n\nOlá, ${usuario.nome || "você"}!\n\nVocê tem *${modulosPendentes.length} módulo(s)* pendente(s) na Escola de Discípulos:\n\n${listaModulos}\n\nQue tal continuar sua formação? Acesse o sistema e prossiga com os estudos!`;
+  const linhas = [
+    "🏠 *Casa dos Discípulos*",
+    "",
+    `Olá, *${primeiroNome}*! 👋`,
+    "",
+    "📚 *Lembrete: Escola de Discípulos*",
+    "",
+    `Você tem *${modulosPendentes.length} módulo(s)* pendente(s) na sua formação:`,
+    "",
+    listaModulos,
+    "",
+    "Estes módulos fazem parte do seu percurso. Acesse o sistema e conclua para avançar no seu nível.",
+    "",
+    "— Casa dos Discípulos",
+  ];
 
-  return enviarMensagem(usuario.telefone, mensagem);
+  return enviarMensagem(usuario.telefone, linhas.join("\n"));
 }
 
 export default {
   enviarMensagem,
   notificarEscalacao,
+  notificarAtribuicaoAtualizada,
+  notificarAtribuicaoRemovida,
+  notificarEventoAtualizado,
+  notificarEventoCancelado,
   notificarModulosPendentes,
   normalizarTelefone,
   estaConfigurado,

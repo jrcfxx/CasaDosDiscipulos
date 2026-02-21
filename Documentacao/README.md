@@ -32,6 +32,7 @@ Esta documentação cobre o sistema **Casa dos Discípulos** em sua totalidade: 
 |-----------|-----------|
 | **[Acessibilidade](./ACESSIBILIDADE.md)** | Recursos para cegos, surdos, baixa visão e mobilidade reduzida |
 | **[WhatsApp](./WHATSAPP.md)** | Notificações por WhatsApp (Evolution API) |
+| **[Configurar WhatsApp local](./CONFIGURAR_WHATSAPP_LOCAL.md)** | Guia passo a passo para ambiente local |
 | **[Especificação](./ESPECIFICACAO_E_PLANO_REFATORACAO.md)** | Visão geral dos módulos e plano de refatoração |
 
 ### Referência

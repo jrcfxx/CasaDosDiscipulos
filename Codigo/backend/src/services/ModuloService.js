@@ -598,8 +598,8 @@ const ModuloService = {
   },
 
   /**
-   * Retorna usuários com módulos pendentes e telefone cadastrado (para notificação WhatsApp semanal)
-   * Módulos pendentes = nao_iniciado ou em_andamento que o usuário pode acessar
+   * Retorna usuários com módulos obrigatórios pendentes e telefone (para lembrete WhatsApp semanal)
+   * Considera apenas módulos obrigatórios (obrigatorio !== false) na progressão de nível
    * @returns {Promise<Array<{ id_usuario, nome, telefone, modulos: Array<{ titulo }> }>>}
    */
   async getUsuariosComModulosPendentes() {
@@ -612,10 +612,12 @@ const ModuloService = {
     const resultado = [];
     for (const u of usuarios) {
       const { modulos } = await this.getActiveWithProgress(u.id_usuario);
+      const obrigatorio = (m) => m.obrigatorio !== false && m.obrigatorio !== 0;
       const pendentes = modulos.filter(
         (m) =>
           (m.status === "nao_iniciado" || m.status === "em_andamento") &&
-          m.ativo
+          m.ativo &&
+          obrigatorio(m)
       );
       // Só incluir módulos que o usuário pode acessar (pré-requisitos ok)
       const pendentesAcessiveis = [];

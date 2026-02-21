@@ -91,9 +91,12 @@ class EscalaService {
 
   async updateEvento(id, dados, tipoUsuario) {
     const parsed = this._parseId(id);
-    const evento = await EscalaEventoModel.getById(parsed);
-    if (!evento) throw new NotFoundError("Evento não encontrado");
+    const eventoAntes = await EscalaEventoModel.getById(parsed);
+    if (!eventoAntes) throw new NotFoundError("Evento não encontrado");
 
+    const atribuicoesAntes = await EscalaAtribuicaoModel.getByEventoId(parsed);
+
+    const evento = { ...eventoAntes };
     if (dados.titulo !== undefined) evento.titulo = dados.titulo;
     if (dados.data_hora !== undefined) evento.data_hora = toMysqlDatetime(dados.data_hora);
     if (dados.data_hora_fim !== undefined) evento.data_hora_fim = dados.data_hora_fim ? toMysqlDatetime(dados.data_hora_fim) : null;
@@ -127,7 +130,23 @@ class EscalaService {
       await EscalaEventoModel.setMinisterios(parsed, dados.id_ministerios || []);
     }
 
-    return this._enrichEvento(await EscalaEventoModel.getById(parsed));
+    const eventoAtualizado = await EscalaEventoModel.getById(parsed);
+    const areasForamSubstituidas = dados.areas && Array.isArray(dados.areas);
+    const houveAlteracaoRelevante =
+      dados.titulo !== undefined ||
+      dados.data_hora !== undefined ||
+      dados.data_hora_fim !== undefined ||
+      dados.descricao !== undefined ||
+      areasForamSubstituidas;
+    if (houveAlteracaoRelevante && atribuicoesAntes.length > 0) {
+      await this._notificarEventoAtualizadoParaEscalados(
+        atribuicoesAntes,
+        eventoAtualizado,
+        areasForamSubstituidas
+      );
+    }
+
+    return this._enrichEvento(eventoAtualizado);
   }
 
   async deleteEvento(id, tipoUsuario) {
@@ -137,7 +156,13 @@ class EscalaService {
     if (tipoUsuario !== USER_TYPES.ADMIN) {
       throw new ForbiddenError("Apenas administradores podem excluir eventos");
     }
+
+    const atribuicoes = await EscalaAtribuicaoModel.getByEventoId(parsed);
     await EscalaEventoModel.delete(parsed);
+
+    if (atribuicoes.length > 0) {
+      await this._notificarEventoCanceladoParaEscalados(atribuicoes, evento);
+    }
   }
 
   // ---------- Áreas ----------
@@ -207,7 +232,7 @@ class EscalaService {
       id_usuario: parsedUsuario,
       detalhes: detalhesObj,
     });
-    await this._notificarEscalado(parsedUsuario, area.id_escala_evento, area.nome);
+    await this._notificarEscalado(parsedUsuario, area.id_escala_evento, area.nome, atrib?.detalhes);
     return atrib;
   }
 
@@ -215,7 +240,7 @@ class EscalaService {
     const parsed = this._parseId(idAtribuicao);
     const atribuicao = await knex("escala_atribuicao as a")
       .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
-      .select("a.*", "ar.nome as area_nome")
+      .select("a.*", "ar.nome as area_nome", "ar.id_escala_evento")
       .where("a.id_escala_atribuicao", parsed)
       .first();
     if (!atribuicao) throw new NotFoundError("Atribuição não encontrada");
@@ -230,14 +255,20 @@ class EscalaService {
       }
     }
 
-    return await EscalaAtribuicaoModel.update(parsed, { detalhes: detalhes || {} });
+    const detalhesObj = detalhes && typeof detalhes === "object" ? detalhes : {};
+    const row = await EscalaAtribuicaoModel.update(parsed, { detalhes: detalhesObj });
+
+    const evento = await EscalaEventoModel.getById(atribuicao.id_escala_evento);
+    await this._notificarAtribuicaoAtualizada(atribuicao.id_usuario, evento, atribuicao.area_nome, detalhesObj);
+
+    return row;
   }
 
   async removeAtribuicao(idAtribuicao, idUsuarioLogado, tipoUsuario) {
     const parsed = this._parseId(idAtribuicao);
     const atribuicao = await knex("escala_atribuicao as a")
       .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
-      .select("a.*", "ar.nome as area_nome")
+      .select("a.*", "ar.nome as area_nome", "ar.id_escala_evento")
       .where("a.id_escala_atribuicao", parsed)
       .first();
     if (!atribuicao) throw new NotFoundError("Atribuição não encontrada");
@@ -251,6 +282,9 @@ class EscalaService {
         throw new ForbiddenError("Você só pode remover atribuições dos ministérios em que é líder");
       }
     }
+
+    const evento = await EscalaEventoModel.getById(atribuicao.id_escala_evento);
+    await this._notificarAtribuicaoRemovida(atribuicao.id_usuario, evento, atribuicao.area_nome);
 
     await EscalaAtribuicaoModel.delete(parsed);
   }
@@ -403,7 +437,7 @@ class EscalaService {
     }
   }
 
-  async _notificarEscalado(idUsuario, idEvento, areaNome) {
+  async _notificarEscalado(idUsuario, idEvento, areaNome, detalhesAtribuicao = null) {
     const evento = await EscalaEventoModel.getById(idEvento);
     if (!evento) return;
     const dataFmt = evento.data_hora
@@ -428,11 +462,128 @@ class EscalaService {
     if (WhatsAppService.estaConfigurado()) {
       const usuario = await UsuarioModel.getById(idUsuario);
       if (usuario?.telefone) {
-        WhatsAppService.notificarEscalacao(
+        const resultado = await WhatsAppService.notificarEscalacao(
           { nome: usuario.nome, telefone: usuario.telefone },
-          { titulo: evento.titulo, data_hora: evento.data_hora },
+          {
+            titulo: evento.titulo,
+            data_hora: evento.data_hora,
+            data_hora_fim: evento.data_hora_fim,
+            descricao: evento.descricao,
+          },
+          areaNome,
+          detalhesAtribuicao
+        ).catch((err) => {
+          console.error("[WhatsApp] Erro ao notificar escalação:", err?.message || err);
+          return { ok: false, error: err?.message };
+        });
+        if (!resultado?.ok) {
+          console.error("[WhatsApp] Escalação não enviada:", resultado?.error);
+        }
+      } else {
+        console.warn("[WhatsApp] Usuário", usuario?.nome, "sem telefone cadastrado — notificação ignorada");
+      }
+    }
+  }
+
+  async _notificarAtribuicaoAtualizada(idUsuario, evento, areaNome, detalhesNovos) {
+    await NotificacaoModel.create({
+      id_usuario: idUsuario,
+      tipo: "escala_atualizada",
+      id_escala_evento: evento?.id_escala_evento,
+      titulo: `Atualização na sua escala: ${evento?.titulo}`,
+      mensagem: `Sua participação em ${areaNome} foi atualizada. Confira os detalhes no sistema.`,
+      area_nome: areaNome,
+    });
+
+    if (WhatsAppService.estaConfigurado()) {
+      const usuario = await UsuarioModel.getById(idUsuario);
+      if (usuario?.telefone) {
+        WhatsAppService.notificarAtribuicaoAtualizada(
+          { nome: usuario.nome, telefone: usuario.telefone },
+          evento,
+          areaNome,
+          detalhesNovos
+        ).catch((err) => console.error("[WhatsApp] Erro ao notificar atualização:", err?.message || err));
+      }
+    }
+  }
+
+  async _notificarAtribuicaoRemovida(idUsuario, evento, areaNome) {
+    await NotificacaoModel.create({
+      id_usuario: idUsuario,
+      tipo: "escala_removida",
+      id_escala_evento: evento?.id_escala_evento,
+      titulo: `Você foi removido(a) da escala: ${evento?.titulo}`,
+      mensagem: `Área ${areaNome}. Entre em contato com a liderança em caso de dúvidas.`,
+      area_nome: areaNome,
+    });
+
+    if (WhatsAppService.estaConfigurado()) {
+      const usuario = await UsuarioModel.getById(idUsuario);
+      if (usuario?.telefone) {
+        WhatsAppService.notificarAtribuicaoRemovida(
+          { nome: usuario.nome, telefone: usuario.telefone },
+          evento,
           areaNome
-        ).catch((err) => console.error("[WhatsApp] Erro ao notificar escalação:", err?.message || err));
+        ).catch((err) => console.error("[WhatsApp] Erro ao notificar remoção:", err?.message || err));
+      }
+    }
+  }
+
+  async _notificarEventoAtualizadoParaEscalados(atribuicoes, evento, areasSubstituidas = false) {
+    for (const attr of atribuicoes) {
+      await NotificacaoModel.create({
+        id_usuario: attr.id_usuario,
+        tipo: "evento_atualizado",
+        id_escala_evento: evento?.id_escala_evento,
+        titulo: `Evento atualizado: ${evento?.titulo}`,
+        mensagem: areasSubstituidas
+          ? "O evento teve alterações nas áreas. Confira no sistema se sua participação foi mantida."
+          : `Sua participação em ${attr.area_nome} continua confirmada. Confira as alterações no sistema.`,
+        area_nome: attr.area_nome,
+      });
+    }
+
+    if (WhatsAppService.estaConfigurado()) {
+      for (const attr of atribuicoes) {
+        const usuario = await UsuarioModel.getById(attr.id_usuario);
+        if (usuario?.telefone) {
+          WhatsAppService.notificarEventoAtualizado(
+            { nome: usuario.nome, telefone: usuario.telefone },
+            evento,
+            attr.area_nome,
+            areasSubstituidas ? null : attr.detalhes
+          ).catch((err) => console.error("[WhatsApp] Erro ao notificar evento atualizado:", err?.message || err));
+        }
+      }
+    }
+  }
+
+  async _notificarEventoCanceladoParaEscalados(atribuicoes, evento) {
+    const dataFmt = evento?.data_hora
+      ? new Date(evento.data_hora).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+      : "";
+    for (const attr of atribuicoes) {
+      await NotificacaoModel.create({
+        id_usuario: attr.id_usuario,
+        tipo: "evento_cancelado",
+        id_escala_evento: null,
+        titulo: `Evento cancelado: ${evento?.titulo}`,
+        mensagem: "O evento foi removido da escala. Você não precisa se apresentar.",
+        area_nome: attr.area_nome,
+      });
+    }
+
+    if (WhatsAppService.estaConfigurado()) {
+      for (const attr of atribuicoes) {
+        const usuario = await UsuarioModel.getById(attr.id_usuario);
+        if (usuario?.telefone) {
+          WhatsAppService.notificarEventoCancelado(
+            { nome: usuario.nome, telefone: usuario.telefone },
+            evento?.titulo || "Evento",
+            dataFmt
+          ).catch((err) => console.error("[WhatsApp] Erro ao notificar evento cancelado:", err?.message || err));
+        }
       }
     }
   }
