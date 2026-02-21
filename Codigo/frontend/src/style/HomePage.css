@@ -197,7 +197,7 @@
 .home-campanha__label {
   font-size: 0.95rem;
   font-weight: 400;
-  color: #02869b;
+  color: #2dd4bf;
   margin: 0 0 1rem 0;
   letter-spacing: 0.06em;
 }
@@ -307,7 +307,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #02869b;
+  color: #2dd4bf;
   margin: 0 0 0.5rem 0;
 }
 
@@ -335,7 +335,7 @@
 
 .home-campanha__qr-hint {
   font-size: 0.8rem;
-  color: #64748b;
+  color: #94a3b8;
   margin: 0;
 }
 
@@ -391,7 +391,7 @@
 .home-participe__label {
   font-size: 0.9rem;
   font-weight: 400;
-  color: #02869b;
+  color: #2dd4bf;
   text-align: center;
   margin: 0 0 0.5rem 0;
   letter-spacing: 0.06em;

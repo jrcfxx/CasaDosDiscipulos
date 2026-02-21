@@ -19,14 +19,14 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="footer-horarios">
-          <h4 className="footer-col-title">Nossos Cultos</h4>
+          <h2 className="footer-col-title">Nossos Cultos</h2>
           <p className="footer-text">Domingo – Culto 18h30</p>
           <p className="footer-text">Terça-feira – Células 20h</p>
           <p className="footer-text">Sexta-feira – Vigília 20h</p>
         </div>
 
         <div className="footer-contribua">
-          <h4 className="footer-col-title">Campanha Nova Sede</h4>
+          <h2 className="footer-col-title">Campanha Nova Sede</h2>
           <p className="footer-text">PIX: 34.455.752/0001-69</p>
           <p className="footer-text footer-contribua-sub">Banco Stone (197) · Ag. 0001 · CC 574293-7</p>
           <Link to="/#campanha-nova-sede" className="footer-contribua-link">Saiba mais</Link>

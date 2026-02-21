@@ -4,11 +4,11 @@
  */
 import React, { useEffect, useState, useRef } from "react";
 import { FocusTrap } from "focus-trap-react";
+import usuarioService from "../../services/usuarioService";
 import "./DarPontosModal.css";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FocusTrapComponent = FocusTrap as any;
-import usuarioService from "../../services/usuarioService";
 
 export interface DarPontosModalProps {
   open: boolean;

@@ -441,7 +441,7 @@ body {
 
 .footer-cnpj {
   font-size: 0.7rem;
-  color: #666;
+  color: #999;
 }
 
 .footer-col-title {
@@ -463,7 +463,7 @@ body {
 
 .footer-contribua-sub {
   font-size: 0.7rem;
-  color: #777;
+  color: #999;
 }
 
 .footer-contribua-link {
@@ -490,7 +490,7 @@ body {
   font-family: "Montserrat", sans-serif;
   font-size: 0.7rem;
   font-weight: 300;
-  color: #555;
+  color: #999;
   margin: 0;
   text-align: center;
 }
