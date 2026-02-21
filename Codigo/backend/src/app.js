@@ -45,7 +45,7 @@ app.use(express.json());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 100,
+  limit: Number(process.env.RATE_LIMIT_MAX) || 300,
   message: { error: "Muitas requisições. Tente novamente em alguns minutos." },
 });
 app.use("/api/", limiter);

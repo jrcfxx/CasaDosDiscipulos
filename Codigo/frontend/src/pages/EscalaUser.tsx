@@ -98,8 +98,10 @@ const EscalaUser: React.FC = () => {
   const abrirEventoId = (location.state as { abrirEventoId?: number })?.abrirEventoId;
 
   useEffect(() => {
-    ministerioService.getAll().then(setMinisterios).catch(() => setMinisterios([]));
-  }, []);
+    if (podeEditar) {
+      ministerioService.getAll().then(setMinisterios).catch(() => setMinisterios([]));
+    }
+  }, [podeEditar]);
 
   const carregarUsuariosParaEscalar = useCallback(async (idEvento: number, nomeArea?: string) => {
     try {
