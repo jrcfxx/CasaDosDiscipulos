@@ -115,6 +115,16 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, 
     }
   };
 
+  const ehNotifFalaAi = (n: Notificacao) =>
+    n.tipo === "fala_ai_devocional" || n.tipo === "fala_ai_palavra";
+
+  const handleIrParaFalaAi = () => {
+    setDetalheNotif(null);
+    setEventoDetalhe(null);
+    onClose?.();
+    navigate("/usuario/fala-ai");
+  };
+
   const fecharDetalhe = () => {
     setDetalheNotif(null);
     setEventoDetalhe(null);
@@ -193,6 +203,11 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, 
                   <button type="button" className="notif-modal-btn-secondary" onClick={fecharDetalhe}>
                     Fechar
                   </button>
+                  {ehNotifFalaAi(detalheNotif) && (
+                    <button type="button" className="notif-modal-btn-primary" onClick={handleIrParaFalaAi}>
+                      Ir para Fala Aí
+                    </button>
+                  )}
                 </div>
               </div>
             ) : eventoDetalhe ? (

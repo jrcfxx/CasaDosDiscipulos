@@ -133,6 +133,38 @@ const HeaderAdmin: React.FC = () => {
                 </div>
 
                 <div className="nav-dropdown-section">
+                  <p className="nav-dropdown-title">NA CASA</p>
+                  <Link
+                    to="/usuario/escala"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Escala (Calendário)
+                  </Link>
+                  <Link
+                    to="/usuario/escala/mapa"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Mapa da Escala
+                  </Link>
+                  <Link
+                    to="/usuario/fala-ai"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Fala Aí, Discípulo
+                  </Link>
+                </div>
+
+                <div className="nav-dropdown-section">
+                  <p className="nav-dropdown-title">EVENTOS</p>
+                  <Link
+                    to="/admin/eventos"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Gerenciar Eventos
+                  </Link>
+                </div>
+
+                <div className="nav-dropdown-section">
                   <p className="nav-dropdown-title">SECRETARIA DAS CÉLULAS</p>
                   <Link
                     to="/admin/celulas"

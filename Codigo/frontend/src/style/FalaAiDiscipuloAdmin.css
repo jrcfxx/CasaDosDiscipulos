@@ -19,17 +19,20 @@
 }
 
 .fala-ai-admin-back {
+  display: inline-block;
   background: none;
   border: none;
   color: #02869b;
   font-size: 0.9rem;
-  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
   padding: 0.5rem 0;
   margin-bottom: 1rem;
+  transition: color 0.2s;
 }
 
 .fala-ai-admin-back:hover {
-  text-decoration: underline;
+  color: #2dd4bf;
 }
 
 .fala-ai-admin-title {
@@ -160,13 +163,15 @@
 }
 
 .fala-ai-admin-btn-cancel {
+  display: inline-block;
   padding: 0.65rem 1.25rem;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #9ca3af;
   font-size: 0.95rem;
+  font-weight: 500;
   border-radius: 10px;
-  cursor: pointer;
+  text-decoration: none;
   transition: color 0.2s, border-color 0.2s;
 }
 

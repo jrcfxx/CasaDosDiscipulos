@@ -27,6 +27,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
             to="/usuario/escala"
             className="portal-card"
             style={{ backgroundImage: `url(${imgEscala})` }}
+            aria-label="Escala"
           >
             <span className="portal-card__overlay" />
             <span className="portal-card__title">ESCALA</span>
@@ -35,6 +36,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
             to="/usuario/escala/mapa"
             className="portal-card"
             style={{ backgroundImage: `url(${imgEscala})` }}
+            aria-label="Mapa da Escala"
           >
             <span className="portal-card__overlay" />
             <span className="portal-card__title">MAPA DA ESCALA</span>
@@ -43,6 +45,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
             to="/usuario/fala-ai"
             className="portal-card"
             style={{ backgroundImage: `url(${imgModulos})` }}
+            aria-label="Fala Aí, Discípulo"
           >
             <span className="portal-card__overlay" />
             <span className="portal-card__title">FALA AÍ, DISCÍPULO</span>
@@ -60,6 +63,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
                 to="/usuario/licoes"
                 className="portal-card"
                 style={{ backgroundImage: `url(${imgLicoes})` }}
+                aria-label="Lições"
               >
                 <span className="portal-card__overlay" />
                 <span className="portal-card__title">LIÇÕES</span>
@@ -69,6 +73,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
                 to="/usuario/formularios"
                 className="portal-card"
                 style={{ backgroundImage: `url(${imgFormularios})` }}
+                aria-label="Formulários"
               >
                 <span className="portal-card__overlay" />
                 <span className="portal-card__title">FORMULÁRIOS</span>
@@ -86,6 +91,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
             to="/usuario/modulos"
             className="portal-card portal-card--wide"
             style={{ backgroundImage: `url(${imgModulos})` }}
+            aria-label="Módulos"
           >
             <span className="portal-card__overlay" />
             <span className="portal-card__title">MÓDULOS</span>

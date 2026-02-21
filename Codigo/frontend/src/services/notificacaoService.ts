@@ -3,7 +3,7 @@ import apiClient from "./apiClient";
 export interface Notificacao {
   id_notificacao: number;
   id_usuario: number;
-  tipo: "evento_criado" | "escalado" | "pontuacao_manual";
+  tipo: "evento_criado" | "escalado" | "pontuacao_manual" | "fala_ai_devocional" | "fala_ai_palavra";
   id_escala_evento: number | null;
   titulo: string;
   mensagem: string | null;

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import falaAiService, {
@@ -11,8 +11,21 @@ import "../style/FalaAiDiscipuloAdmin.css";
 
 const FalaAiDiscipuloAdmin: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [tipo, setTipo] = useState<TipoPost>("devocional");
+  const tipoFromUrl = searchParams.get("tipo");
+  const [tipo, setTipo] = useState<TipoPost>(() => {
+    if (tipoFromUrl === "palavra_do_dia" || tipoFromUrl === "devocional") {
+      return tipoFromUrl;
+    }
+    return "devocional";
+  });
+
+  useEffect(() => {
+    if (tipoFromUrl === "palavra_do_dia" || tipoFromUrl === "devocional") {
+      setTipo(tipoFromUrl);
+    }
+  }, [tipoFromUrl]);
   const [titulo, setTitulo] = useState("");
   const [conteudo, setConteudo] = useState("");
   const [referencia, setReferencia] = useState("");
@@ -71,13 +84,12 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
       <Header />
       <main id="main-content" className="fala-ai-admin-main" tabIndex={-1}>
         <div className="fala-ai-admin-header">
-          <button
-            type="button"
+          <Link
+            to="/usuario/fala-ai"
             className="fala-ai-admin-back"
-            onClick={() => navigate(-1)}
           >
             ← Voltar
-          </button>
+          </Link>
           <h1 className="fala-ai-admin-title">Novo post</h1>
           <p className="fala-ai-admin-subtitle">
             Devocional ou Palavra do dia
@@ -177,13 +189,12 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
           </div>
 
           <div className="fala-ai-admin-actions">
-            <button
-              type="button"
+            <Link
+              to="/usuario/fala-ai"
               className="fala-ai-admin-btn-cancel"
-              onClick={() => navigate(-1)}
             >
               Cancelar
-            </button>
+            </Link>
             <button
               type="submit"
               className="fala-ai-admin-btn-submit"

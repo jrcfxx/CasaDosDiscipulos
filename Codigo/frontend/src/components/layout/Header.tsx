@@ -161,6 +161,12 @@ const Header: React.FC = () => {
                   >
                     Mapa da Escala
                   </Link>
+                  <Link
+                    to="/usuario/fala-ai"
+                    onClick={() => setPortalDropdownOpen(false)}
+                  >
+                    Fala Aí, Discípulo
+                  </Link>
                 </div>
 
                 {/* Secretaria das Células - Admin e Líder de Célula */}

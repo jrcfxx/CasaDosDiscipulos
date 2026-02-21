@@ -145,7 +145,8 @@ body {
 }
 
 .grid-na-casa {
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, minmax(200px, 280px));
+  justify-content: center;
 }
 
 .grid-1 {
