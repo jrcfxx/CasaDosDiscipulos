@@ -4,17 +4,8 @@ import "../style/LicoesSecretariaCelulaUser.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
-import axios from "axios";
-import { API_BASE, ASSETS_BASE } from "../config/api";
-
-/* TYPES */
-type Licao = {
-  id: number;
-  titulo: string;
-  descricao?: string | null;
-  ativo?: number;
-  campos?: any[];
-};
+import licaoService, { type Licao } from "../services/licaoService";
+import { ASSETS_BASE } from "../config/api";
 
 const LicaoSecretariaCelulaUser: React.FC = () => {
   const [licoes, setLicoes] = useState<Licao[]>([]);
@@ -34,20 +25,13 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
 
   const fetchLicoes = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/licao`);
-      const mapped: Licao[] = (res.data || []).map((l: any) => ({
-        id: l.id_licao ?? l.id ?? 0,
-        titulo: l.titulo,
-        descricao: l.descricao ?? "",
-        ativo: l.ativo ?? 1,
-        campos: l.campos ?? [],
-      }));
-      setLicoes(mapped);
-      if (mapped.length > 0 && !selectedLicao) {
-        setSelectedLicao(mapped[0]);
+      const list = await licaoService.getAll();
+      setLicoes(list);
+      if (list.length > 0 && !selectedLicao) {
+        setSelectedLicao(list[0]);
       }
-    } catch (err) {
-      console.error("Erro ao buscar lições:", err);
+    } catch {
+      setLicoes([]);
     }
   };
 
@@ -222,9 +206,9 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
             <div className="list">
               {licoes.map((licao) => (
                 <div
-                  key={licao.id}
+                  key={licao.id_licao}
                   className={`licao-item ${
-                    selectedLicao?.id === licao.id ? "selected" : ""
+                    selectedLicao?.id_licao === licao.id_licao ? "selected" : ""
                   }`}
                   role="button"
                   tabIndex={0}

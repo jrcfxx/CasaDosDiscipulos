@@ -70,7 +70,6 @@ const EntityController = {
 - **LicaoController.js** - CRUD de lições
 - **FormularioController.js** - CRUD de formulários
 - **FormularioRespostaController.js** - Submissão e consulta de respostas
-- **FormularioSecretariaController.js** - Gerenciamento de formulários da secretaria
 - **CampoController.js** - CRUD de campos personalizados
 - **CelulaController.js** - CRUD de células
 

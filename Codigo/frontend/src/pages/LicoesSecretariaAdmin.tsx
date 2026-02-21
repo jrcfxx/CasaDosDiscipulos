@@ -14,6 +14,7 @@ import licaoService, {
 import campoService from "../services/campoService";
 import { uploadCampo, isImagePath } from "../services/uploadService";
 import { ASSETS_BASE } from "../config/api";
+import { generateUid } from "../utils/generateUid";
 
 import TextField from "../components/fields/TextField";
 import NumberField from "../components/fields/NumberField";
@@ -302,7 +303,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
     label = "",
     conteudo: unknown = ""
   ): LocalField => ({
-    uid: Date.now() + Math.floor(Math.random() * 10000),
+    uid: generateUid(),
     id_campo,
     tipo,
     label,

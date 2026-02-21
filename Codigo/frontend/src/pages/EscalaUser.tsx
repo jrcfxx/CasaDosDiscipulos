@@ -14,7 +14,7 @@ import escalaService, {
 } from "../services/escalaService";
 import ministerioService from "../services/ministerioService";
 import AtribuicaoDetalhesForm, { DetalhesResumo } from "../components/AtribuicaoDetalhesForm";
-import axios from "axios";
+import { getErrorMessage } from "../utils/errorUtils";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -194,11 +194,7 @@ const EscalaUser: React.FC = () => {
       fecharModalEvento();
       fetchEventos();
     } catch (err) {
-      const msg =
-        axios.isAxiosError(err) && err.response?.data?.error
-          ? String(err.response.data.error)
-          : "Erro ao salvar evento";
-      showToast(msg, "error");
+      showToast(getErrorMessage(err, "Erro ao salvar evento"), "error");
     }
   };
 
@@ -210,11 +206,7 @@ const EscalaUser: React.FC = () => {
       setEventoSelecionado(null);
       fetchEventos();
     } catch (err) {
-      const msg =
-        axios.isAxiosError(err) && err.response?.data?.error
-          ? String(err.response.data.error)
-          : "Erro ao excluir";
-      showToast(msg, "error");
+      showToast(getErrorMessage(err, "Erro ao excluir"), "error");
     }
     setShowConfirmExcluir(false);
     setEventoToExcluir(null);
@@ -288,11 +280,10 @@ const EscalaUser: React.FC = () => {
         setEventoSelecionado(ev);
       }
     } catch (err) {
-      const msg =
-        axios.isAxiosError(err) && err.response?.data?.error
-          ? String(err.response.data.error)
-          : "Não foi possível escalar. A pessoa já está em outro ministério no mesmo horário.";
-      showToast(msg, "error");
+      showToast(
+        getErrorMessage(err, "Não foi possível escalar. A pessoa já está em outro ministério no mesmo horário."),
+        "error"
+      );
     }
   };
 

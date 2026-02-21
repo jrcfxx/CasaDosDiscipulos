@@ -4,8 +4,7 @@ import HeaderHome from "../components/layout/HeaderHome";
 import Footer from "../components/layout/Footer";
 import Carousel from "../components/Carousel";
 import "../style/HomePage.css";
-import axios from "axios";
-import { API_BASE } from "../config/api";
+import { getEventosAtivos } from "../services/eventoService";
 
 import logoCasa from "../assets/logo_casa.png";
 import imagemHero from "../assets/casal.jpg";
@@ -34,10 +33,10 @@ const HomePage: React.FC = () => {
 
   const fetchEventos = async () => {
     try {
-      const response = await axios.get(`${API_BASE}/evento/ativos`);
-      setEventos(response.data);
-    } catch (error) {
-      console.error("Erro ao carregar eventos:", error);
+      const data = await getEventosAtivos();
+      setEventos(data);
+    } catch {
+      setEventos([]);
     }
   };
 

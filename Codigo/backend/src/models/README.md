@@ -54,7 +54,6 @@ export default EntityModel;
 - **LicaoModel.js** - Lições para líderes
 - **FormularioModel.js** - Formulários da secretaria
 - **FormularioRespostaModel.js** - Respostas de formulários
-- **FormularioSecretariaModel.js** - Gestão de formulários
 - **CampoModel.js** - Campos personalizados
 
 ## Boas Práticas

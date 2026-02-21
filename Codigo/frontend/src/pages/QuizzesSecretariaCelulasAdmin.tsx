@@ -24,6 +24,7 @@ import usuarioService from "../services/usuarioService";
 import moduloService from "../services/moduloService";
 import { API_BASE, ASSETS_BASE } from "../config/api";
 import type { Usuario } from "../services/usuarioService";
+import { generateUid } from "../utils/generateUid";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
 import DarPontosModal from "../components/ui/DarPontosModal";
 
@@ -214,7 +215,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
     conteudo: any = ""
   ): LocalField => {
     return {
-      uid: Date.now() + Math.floor(Math.random() * 10000),
+      uid: generateUid(),
       id_campo,
       tipo,
       label,

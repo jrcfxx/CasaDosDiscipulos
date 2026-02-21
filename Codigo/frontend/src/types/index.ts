@@ -236,6 +236,19 @@ export interface DateFieldProps extends BaseFieldProps {
   max?: string;
 }
 
+// ==================== EVENTO ====================
+
+export interface Evento {
+  id_evento: number;
+  titulo: string;
+  descricao?: string;
+  imagem_url: string;
+  ordem: number;
+  ativo: boolean;
+  data_criacao?: string;
+  data_atualizacao?: string;
+}
+
 // ==================== API RESPONSE ====================
 
 export interface ApiResponse<T = any> {

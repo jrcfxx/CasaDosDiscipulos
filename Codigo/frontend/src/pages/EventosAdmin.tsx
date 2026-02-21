@@ -5,19 +5,16 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import Toast from "../components/ui/Toast";
-import axios from "axios";
-import { API_BASE, ASSETS_BASE } from "../config/api";
-
-interface Evento {
-  id_evento: number;
-  titulo: string;
-  descricao?: string;
-  imagem_url: string;
-  ordem: number;
-  ativo: boolean;
-  data_criacao?: string;
-  data_atualizacao?: string;
-}
+import { ASSETS_BASE } from "../config/api";
+import {
+  type Evento,
+  listarEventos,
+  criarEvento,
+  atualizarEvento,
+  excluirEvento,
+  uploadImagemEvento,
+} from "../services/eventoService";
+import { getErrorMessage } from "../utils/errorUtils";
 
 const EventosAdmin: React.FC = () => {
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -36,8 +33,6 @@ const EventosAdmin: React.FC = () => {
   const [eventoToDelete, setEventoToDelete] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const API_URL = `${API_BASE}/evento`;
-
   useEffect(() => {
     fetchEventos();
   }, []);
@@ -45,10 +40,9 @@ const EventosAdmin: React.FC = () => {
   const fetchEventos = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_URL);
-      setEventos(response.data);
-    } catch (error) {
-      console.error("Erro ao carregar eventos:", error);
+      const data = await listarEventos();
+      setEventos(data);
+    } catch {
       setToast("Erro ao carregar eventos");
     } finally {
       setLoading(false);
@@ -65,21 +59,8 @@ const EventosAdmin: React.FC = () => {
 
   const uploadImage = async (): Promise<string | null> => {
     if (!selectedFile) return null;
-
-    const formData = new FormData();
-    formData.append("imagem", selectedFile);
-
-    try {
-      // Não definir Content-Type manualmente - axios adiciona boundary automaticamente
-      const response = await axios.post(`${API_URL}/upload`, formData);
-      return response.data.imagem_url;
-    } catch (error: unknown) {
-      const msg = axios.isAxiosError(error) && error.response?.data?.error
-        ? error.response.data.error
-        : "Erro ao fazer upload da imagem";
-      console.error("Erro ao fazer upload da imagem:", error);
-      throw new Error(msg);
-    }
+    const { imagem_url } = await uploadImagemEvento(selectedFile);
+    return imagem_url;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,23 +112,19 @@ const EventosAdmin: React.FC = () => {
     const id = eventoToDelete;
     setEventoToDelete(null);
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await excluirEvento(id);
       await fetchEventos();
       setToast("Evento excluído com sucesso.");
-    } catch (error) {
-      console.error("Erro ao deletar evento:", error);
+    } catch {
       setToast("Erro ao deletar evento");
     }
   };
 
   const handleToggleAtivo = async (evento: Evento) => {
     try {
-      await axios.put(`${API_URL}/${evento.id_evento}`, {
-        ativo: !evento.ativo,
-      });
+      await atualizarEvento(evento.id_evento, { ativo: !evento.ativo });
       await fetchEventos();
-    } catch (error) {
-      console.error("Erro ao alterar status do evento:", error);
+    } catch {
       setToast("Erro ao alterar status do evento");
     }
   };

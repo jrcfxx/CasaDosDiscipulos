@@ -87,7 +87,6 @@ export default EntityService;
 - **LicaoService.js** - Gestão de lições
 - **FormularioService.js** - Gestão de formulários
 - **FormularioRespostaService.js** - Processamento de respostas
-- **FormularioSecretariaService.js** - Formulários da secretaria
 
 ## Validações
 
