@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { FocusTrap } from "focus-trap-react";
 import "./InputModal.css";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FocusTrapComponent = FocusTrap as any;
+
 export interface InputModalProps {
   open: boolean;
   title: string;
@@ -56,7 +59,7 @@ const InputModal: React.FC<InputModalProps> = ({
   if (!open) return null;
 
   return (
-    <FocusTrap
+    <FocusTrapComponent
       active={open}
       focusTrapOptions={{
         allowOutsideClick: true,
@@ -111,7 +114,7 @@ const InputModal: React.FC<InputModalProps> = ({
         </div>
       </div>
       </div>
-    </FocusTrap>
+    </FocusTrapComponent>
   );
 };
 

@@ -2,6 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { FocusTrap } from "focus-trap-react";
 import "./ConfirmModal.css";
 
+// Compatibilidade TypeScript com React 18 (@types/react vs focus-trap-react)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FocusTrapComponent = FocusTrap as any;
+
 export interface ConfirmModalProps {
   open: boolean;
   title: string;
@@ -38,7 +42,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!open) return null;
 
   return (
-    <FocusTrap
+    <FocusTrapComponent
       active={open}
       focusTrapOptions={{
         allowOutsideClick: true,
@@ -83,7 +87,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
       </div>
       </div>
-    </FocusTrap>
+    </FocusTrapComponent>
   );
 };
 

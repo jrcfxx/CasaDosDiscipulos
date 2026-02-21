@@ -5,6 +5,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FocusTrap } from "focus-trap-react";
 import "./DarPontosModal.css";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FocusTrapComponent = FocusTrap as any;
 import usuarioService from "../../services/usuarioService";
 
 export interface DarPontosModalProps {
@@ -127,7 +130,7 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
   if (!open) return null;
 
   return (
-    <FocusTrap
+    <FocusTrapComponent
       active={open}
       focusTrapOptions={{
         allowOutsideClick: true,
@@ -262,7 +265,7 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
         </form>
       </div>
       </div>
-    </FocusTrap>
+    </FocusTrapComponent>
   );
 };
 
