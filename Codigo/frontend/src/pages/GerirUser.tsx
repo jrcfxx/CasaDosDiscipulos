@@ -890,8 +890,9 @@ export default function GerenciarUsuarios() {
 
             <div className="modal-content modal-usuario-grid">
               <div className="form-field">
-                <label>Nome Completo</label>
+                <label htmlFor="usuarioModalNome">Nome Completo</label>
                 <input
+                  id="usuarioModalNome"
                   type="text"
                   value={usuarioModal.nome || ""}
                   onChange={(e) => handleChange("nome", e.target.value)}
@@ -900,8 +901,9 @@ export default function GerenciarUsuarios() {
               </div>
 
               <div className="form-field">
-                <label>Email</label>
+                <label htmlFor="usuarioModalEmail">Email</label>
                 <input
+                  id="usuarioModalEmail"
                   type="email"
                   value={usuarioModal.email || ""}
                   onChange={(e) => handleChange("email", e.target.value)}
@@ -910,8 +912,9 @@ export default function GerenciarUsuarios() {
               </div>
 
               <div className="form-field">
-                <label>Telefone / WhatsApp</label>
+                <label htmlFor="usuarioModalTelefone">Telefone / WhatsApp</label>
                 <input
+                  id="usuarioModalTelefone"
                   type="tel"
                   value={usuarioModal.telefone || ""}
                   onChange={(e) => handleChange("telefone", e.target.value)}
@@ -920,8 +923,9 @@ export default function GerenciarUsuarios() {
               </div>
 
               <div className="form-field">
-                <label>Tipo de Usuário</label>
+                <label htmlFor="usuarioModalTipo">Tipo de Usuário</label>
                 <select
+                  id="usuarioModalTipo"
                   value={usuarioModal.tipo}
                   onChange={(e) => handleChange("tipo", e.target.value)}
                 >
@@ -933,8 +937,9 @@ export default function GerenciarUsuarios() {
               </div>
 
               <div className="form-field">
-                <label>Nível</label>
+                <label htmlFor="usuarioModalNivel">Nível</label>
                 <select
+                  id="usuarioModalNivel"
                   key={`nivel-${usuarioModal.id_usuario ?? "new"}-${usuarioModal.id_nivel ?? "x"}`}
                   value={
                     usuarioModal.id_nivel != null && usuarioModal.id_nivel !== 0
@@ -994,7 +999,7 @@ export default function GerenciarUsuarios() {
               )}
 
               <div className="form-field form-field-full">
-                <label>Ministérios em que participa</label>
+                <span>Ministérios em que participa</span>
                 <div className="ministerios-participa-box ministerios-grid">
                 {ministerios.filter((m) => m.ativo).map((m) => (
                   <label key={m.id_ministerio} className="checkbox-row">
@@ -1020,12 +1025,13 @@ export default function GerenciarUsuarios() {
 
               <div className="form-field form-field-full form-field-senhas">
                 <div className="form-field">
-                  <label>
+                  <label htmlFor="usuarioModalSenha">
                     Senha{" "}
                     {usuarioModal.id_usuario && "(Deixar vazio para não alterar)"}
                   </label>
                   <div className="password-input-wrapper">
                     <input
+                      id="usuarioModalSenha"
                       type={showSenha ? "text" : "password"}
                       value={usuarioModal.senha || ""}
                       onChange={(e) => handleChange("senha", e.target.value)}
@@ -1057,9 +1063,10 @@ export default function GerenciarUsuarios() {
                   </div>
                 </div>
                 <div className="form-field">
-                  <label>Confirmar Senha</label>
+                  <label htmlFor="usuarioModalConfirmarSenha">Confirmar Senha</label>
                   <div className="password-input-wrapper">
                     <input
+                      id="usuarioModalConfirmarSenha"
                       type={showConfirmarSenha ? "text" : "password"}
                       value={usuarioModal.confirmarSenha || ""}
                       onChange={(e) => handleChange("confirmarSenha", e.target.value)}
@@ -1132,8 +1139,9 @@ export default function GerenciarUsuarios() {
             <h2>{nivelModal.id_nivel ? "Editar Nível" : "Novo Nível"}</h2>
 
             <div className="modal-content">
-              <label>Nome do Nível</label>
+              <label htmlFor="nivelModalNome">Nome do Nível</label>
               <input
+                id="nivelModalNome"
                 type="text"
                 value={nivelModal.nome || ""}
                 onChange={(e) =>
@@ -1142,8 +1150,9 @@ export default function GerenciarUsuarios() {
                 placeholder="Ex: Discípulo"
               />
 
-              <label>Descrição</label>
+              <label htmlFor="nivelModalDescricao">Descrição</label>
               <textarea
+                id="nivelModalDescricao"
                 value={nivelModal.descricao || ""}
                 onChange={(e) =>
                   setNivelModal((prev) => ({
@@ -1155,8 +1164,9 @@ export default function GerenciarUsuarios() {
                 rows={3}
               />
 
-              <label>Ordem de Progressão</label>
+              <label htmlFor="nivelModalOrdem">Ordem de Progressão</label>
               <input
+                id="nivelModalOrdem"
                 type="number"
                 value={nivelModal.ordem || 0}
                 onChange={(e) => {
@@ -1238,8 +1248,9 @@ export default function GerenciarUsuarios() {
             </div>
             <div className="modal-ministerio-body">
               <div className="modal-ministerio-form-group">
-                <label>Nome *</label>
+                <label htmlFor="ministerioModalNome">Nome *</label>
                 <input
+                  id="ministerioModalNome"
                   type="text"
                   value={ministerioModal.nome || ""}
                   onChange={(e) => setMinisterioModal((p) => ({ ...p, nome: e.target.value }))}
@@ -1247,8 +1258,9 @@ export default function GerenciarUsuarios() {
                 />
               </div>
               <div className="modal-ministerio-form-group">
-                <label>Descrição</label>
+                <label htmlFor="ministerioModalDescricao">Descrição</label>
                 <textarea
+                  id="ministerioModalDescricao"
                   value={ministerioModal.descricao || ""}
                   onChange={(e) => setMinisterioModal((p) => ({ ...p, descricao: e.target.value }))}
                   placeholder="Descrição opcional do ministério"
@@ -1257,8 +1269,9 @@ export default function GerenciarUsuarios() {
               </div>
               <div className="modal-ministerio-row">
                 <div className="modal-ministerio-form-group modal-ministerio-form-group--sm">
-                  <label>Ordem</label>
+                  <label htmlFor="ministerioModalOrdem">Ordem</label>
                   <input
+                    id="ministerioModalOrdem"
                     type="number"
                     value={ministerioModal.ordem || 0}
                     onChange={(e) =>
@@ -1280,7 +1293,7 @@ export default function GerenciarUsuarios() {
                 </label>
               </div>
               <div className="modal-ministerio-form-group">
-                <label>Líderes do ministério</label>
+                <span>Líderes do ministério</span>
                 <div className="modal-ministerio-lideres">
                   {lideresParaSelect.map((u) => (
                     <label key={u.id_usuario!} className="modal-ministerio-lider-chip">

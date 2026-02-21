@@ -265,8 +265,9 @@ const EventosAdmin: React.FC = () => {
             <h2>{editingEvento ? "Editar Evento" : "Novo Evento"}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Título</label>
+                <label htmlFor="evento-titulo">Título</label>
                 <input
+                  id="evento-titulo"
                   type="text"
                   value={formData.titulo}
                   onChange={(e) =>
@@ -277,8 +278,9 @@ const EventosAdmin: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>Descrição</label>
+                <label htmlFor="evento-descricao">Descrição</label>
                 <textarea
+                  id="evento-descricao"
                   value={formData.descricao}
                   onChange={(e) =>
                     setFormData({ ...formData, descricao: e.target.value })
@@ -289,8 +291,9 @@ const EventosAdmin: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label>Posição no Carrossel</label>
+                <label htmlFor="evento-ordem">Posição no Carrossel</label>
                 <input
+                  id="evento-ordem"
                   type="number"
                   value={formData.ordem}
                   onChange={(e) =>

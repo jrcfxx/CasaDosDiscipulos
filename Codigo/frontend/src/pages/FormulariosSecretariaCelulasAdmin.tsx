@@ -497,16 +497,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
     return (
       <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
         {isDirectVideo ? (
-          <video
-            controls
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "auto",
-              borderRadius: "8px",
-            }}
-          >
+          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
             <source src={embedUrl} type="video/mp4" />
+            <track kind="captions" srcLang="pt-BR" label="Legendas" />
             Seu navegador não suporta o elemento de vídeo.
           </video>
         ) : (
@@ -781,7 +774,10 @@ export default function FormulariosSecretariaCelulasAdmin() {
                   className={`formulario-item ${
                     selectedFormulario?.id === formulario.id ? "selected" : ""
                   } ${!isAtivo(formulario) ? "inactive" : ""}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectFormulario(formulario)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
                 >
                   <div className="formulario-item__info">
                     <span className="formulario-item__name">
@@ -1218,8 +1214,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
             </h2>
 
             <form onSubmit={saveForm}>
-              <label>Título</label>
+              <label htmlFor="formModalTitulo">Título</label>
               <input
+                id="formModalTitulo"
                 ref={nameRef}
                 value={currentForm.nome}
                 onChange={(e) =>
@@ -1228,8 +1225,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 required
               />
 
-              <label>Descrição</label>
+              <label htmlFor="formModalDescricao">Descrição</label>
               <textarea
+                id="formModalDescricao"
                 value={currentForm.descricao}
                 onChange={(e) =>
                   setCurrentForm({ ...currentForm, descricao: e.target.value })
@@ -1237,8 +1235,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 rows={4}
               />
 
-              <label>Ativo</label>
+              <label htmlFor="formModalAtivo">Ativo</label>
               <select
+                id="formModalAtivo"
                 value={currentForm.ativo}
                 onChange={(e) =>
                   setCurrentForm({
@@ -1251,8 +1250,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 <option value={0}>Inativo</option>
               </select>
 
-              <label>Frequência de envio esperada</label>
+              <label htmlFor="formModalFrequencia">Frequência de envio esperada</label>
               <select
+                id="formModalFrequencia"
                 value={currentForm.frequencia}
                 onChange={(e) =>
                   setCurrentForm({

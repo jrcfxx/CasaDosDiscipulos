@@ -49,17 +49,19 @@ const Login: React.FC = () => {
         <img src={logo} alt="Casa dos Discípulos" />
       </Link>
 
-      <div id="main-content" className="login-form" tabIndex={-1}>
+      <main id="main-content" className="login-form" tabIndex={-1}>
         <h2>Seja bem-vindo!</h2>
 
         {error && (
-          <div className="error-message" role="alert">
+          <div id="login-error" className="error-message" role="alert" aria-live="assertive">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} aria-label="Formulário de login">
+          <label htmlFor="login-email" className="sr-only">Email</label>
           <input
+            id="login-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -67,8 +69,11 @@ const Login: React.FC = () => {
             disabled={loading}
             autoComplete="email"
             required
+            aria-describedby={error ? "login-error" : undefined}
           />
+          <label htmlFor="login-senha" className="sr-only">Senha</label>
           <input
+            id="login-senha"
             type="password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
@@ -76,12 +81,13 @@ const Login: React.FC = () => {
             disabled={loading}
             autoComplete="current-password"
             required
+            aria-describedby={error ? "login-error" : undefined}
           />
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading} aria-busy={loading}>
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
-      </div>
+      </main>
     </div>
   );
 };

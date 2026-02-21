@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { usePageTitle } from "./hooks/usePageTitle";
 
 // Componentes
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -59,6 +60,7 @@ import Perfil from "./pages/Perfil";
 export default function App() {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin, userType, logout } = useAuth();
+  usePageTitle(); // Atualiza título para leitores de tela
 
   const handleLogout = () => {
     logout();

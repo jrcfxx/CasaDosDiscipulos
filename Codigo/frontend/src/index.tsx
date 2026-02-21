@@ -8,6 +8,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
+import { LiveAnnouncerProvider } from "./components/accessibility/LiveAnnouncer";
 import SkipLink from "./components/accessibility/SkipLink";
 import AccessibilityBar from "./components/accessibility/AccessibilityBar";
 
@@ -23,9 +24,11 @@ root.render(
     <HashRouter>
       <AuthProvider>
         <AccessibilityProvider>
-          <SkipLink />
-          <App />
-          <AccessibilityBar />
+          <LiveAnnouncerProvider>
+            <SkipLink />
+            <App />
+            <AccessibilityBar />
+          </LiveAnnouncerProvider>
         </AccessibilityProvider>
       </AuthProvider>
     </HashRouter>

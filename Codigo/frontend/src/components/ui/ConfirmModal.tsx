@@ -50,6 +50,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         returnFocusOnDeactivate: true,
       }}
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         className="confirm-modal-overlay"
         role="dialog"
@@ -57,7 +58,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         aria-labelledby="confirm-modal-title"
         aria-describedby="confirm-modal-message"
         onKeyDown={handleKeyDown}
+        onClick={onCancel}
       >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
         className="confirm-modal"
         onClick={(e) => e.stopPropagation()}

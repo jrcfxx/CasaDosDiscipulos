@@ -101,20 +101,16 @@ const VideoField: React.FC<TextFieldProps> = ({
       />
 
       {/* Instruções para o usuário - sempre visíveis */}
-      <div className="video-field-instructions">
-        <strong>💡 Como usar:</strong>
+      <div className="video-field-instructions" role="region" aria-label="Instruções de acessibilidade para vídeos">
+        <strong>Como usar:</strong>
         <ul>
+          <li>Cole o link do YouTube, Vimeo ou arquivo (.mp4, .webm, .ogg)</li>
+          <li>O vídeo aparecerá automaticamente abaixo</li>
           <li>
-            Cole o link completo do vídeo do YouTube (ex:{" "}
-            <code>https://www.youtube.com/watch?v=...</code>)
-          </li>
-          <li>Ou cole o link do Vimeo (ex: <code>https://vimeo.com/...</code>)</li>
-          <li>
-            Ou use um link direto para arquivo de vídeo (.mp4, .webm, .ogg)
-          </li>
-          <li>O vídeo aparecerá automaticamente abaixo após colar o link</li>
-          <li>
-            <strong>Acessibilidade:</strong> use vídeos com legendas quando possível (YouTube carrega legendas automaticamente quando disponíveis)
+            <strong>Importante para usuários surdos:</strong> use apenas vídeos legendados.
+            No YouTube, as legendas são carregadas automaticamente quando disponíveis.
+            No Vimeo, adicione legendas na configuração do vídeo. Para vídeos próprios
+            (.mp4), inclua um arquivo de legendas (.vtt) e referencie no player.
           </li>
         </ul>
       </div>
@@ -137,8 +133,10 @@ const VideoField: React.FC<TextFieldProps> = ({
                 height: "auto",
                 borderRadius: "8px",
               }}
+              aria-label={label || "Vídeo"}
             >
               <source src={embedUrl} type="video/mp4" />
+              <track kind="captions" srcLang="pt-BR" label="Legendas" />
               Seu navegador não suporta o elemento de vídeo.
             </video>
           ) : (

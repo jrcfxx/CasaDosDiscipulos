@@ -624,16 +624,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
     return (
       <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
         {isDirectVideo ? (
-          <video
-            controls
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "auto",
-              borderRadius: "8px",
-            }}
-          >
+          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
             <source src={embedUrl} type="video/mp4" />
+            <track kind="captions" srcLang="pt-BR" label="Legendas" />
             Seu navegador não suporta o elemento de vídeo.
           </video>
         ) : (
@@ -771,7 +764,10 @@ export default function QuizzesSecretariaCelulasAdmin() {
                   className={`quiz-item ${
                     selectedQuiz?.id === quiz.id ? "selected" : ""
                   } ${!quiz.ativo ? "inactive" : ""}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectQuiz(quiz)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
                 >
                   <div className="quiz-item__info">
                     <span className="quiz-item__name">{quiz.titulo}</span>
@@ -923,8 +919,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
             <h2>{quizToEdit ? "Editar Quiz" : "Criar Novo Quiz"}</h2>
 
             <form onSubmit={saveForm}>
-              <label>Título</label>
+              <label htmlFor="quizModalTitulo">Título</label>
               <input
+                id="quizModalTitulo"
                 ref={nameRef}
                 value={currentForm.nome}
                 onChange={(e) =>
@@ -933,8 +930,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
                 required
               />
 
-              <label>Descrição</label>
+              <label htmlFor="quizModalDescricao">Descrição</label>
               <textarea
+                id="quizModalDescricao"
                 value={currentForm.descricao}
                 onChange={(e) =>
                   setCurrentForm({ ...currentForm, descricao: e.target.value })
@@ -942,8 +940,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
                 rows={4}
               />
 
-              <label>Ativo</label>
+              <label htmlFor="quizModalAtivo">Ativo</label>
               <select
+                id="quizModalAtivo"
                 value={currentForm.ativo}
                 onChange={(e) =>
                   setCurrentForm({

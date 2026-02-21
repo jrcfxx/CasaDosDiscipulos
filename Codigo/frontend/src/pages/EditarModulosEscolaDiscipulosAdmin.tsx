@@ -423,9 +423,10 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
               />
 
               <div className="editar-modulo-toggle-row">
-                <label className="editar-modulo-label">Tipo do módulo</label>
+                <label className="editar-modulo-label" htmlFor="moduleTipo">Tipo do módulo</label>
                 <label className="editar-modulo-toggle" title={obrigatorio ? "Obrigatório: segue sequência e conta para o nível" : "Opcional: livre, não bloqueia, não conta para nível"}>
                   <input
+                    id="moduleTipo"
                     type="checkbox"
                     checked={obrigatorio}
                     onChange={(e) => setObrigatorio(e.target.checked)}
@@ -468,7 +469,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
               )}
 
               <div className="editar-modulo-field-row">
-                <label className="editar-modulo-label">Pré-requisitos</label>
+                <span className="editar-modulo-label">Pré-requisitos</span>
                 <p className="editar-modulo-hint" style={{ marginBottom: "0.5rem" }}>
                   Módulos que devem ser concluídos antes deste (deixe vazio para usar a ordem).
                 </p>
@@ -479,8 +480,9 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
                     {listaModulos
                       .filter((m) => m.id_modulo !== (id_modulo ? Number(id_modulo) : 0))
                       .map((m) => (
-                        <label key={m.id_modulo} className="editar-modulo-pre-req-item">
+                        <label key={m.id_modulo} className="editar-modulo-pre-req-item" htmlFor={`pre-req-${m.id_modulo}`}>
                           <input
+                            id={`pre-req-${m.id_modulo}`}
                             type="checkbox"
                             checked={preRequisitos.includes(m.id_modulo)}
                             onChange={(e) => {

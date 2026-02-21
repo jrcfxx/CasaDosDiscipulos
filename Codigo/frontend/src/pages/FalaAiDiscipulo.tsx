@@ -185,9 +185,8 @@ const FalaAiDiscipulo: React.FC = () => {
                             }))
                           }
                           placeholder="Escreva seu comentário..."
-                          rows={2}
-                          autoFocus
-                          aria-label="Escreva seu comentário"
+                        rows={2}
+                        aria-label="Escreva seu comentário"
                         />
                         <div className="fala-ai-comentar-actions">
                           <button

@@ -146,7 +146,10 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                       ? "selected"
                       : ""
                   } ${!modulo.ativo ? "inactive" : ""}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectModulo(modulo)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
                 >
                   <div className="mod-item__info">
                     <span className="mod-item__ordem">#{modulo.ordem}</span>

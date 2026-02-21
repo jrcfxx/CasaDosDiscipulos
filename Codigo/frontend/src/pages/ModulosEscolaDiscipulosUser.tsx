@@ -140,7 +140,10 @@ const ModulosEscolaDiscipulosUser: React.FC = () => {
                   <div
                     key={m.id_modulo}
                     className={`mod-item ${isSelected ? "selected" : ""} ${!disponivel ? "locked" : ""} ${concluido ? "concluido" : ""}`}
+                    role={disponivel ? "button" : undefined}
+                    tabIndex={disponivel ? 0 : undefined}
                     onClick={() => disponivel && handleSelectModulo(m)}
+                    onKeyDown={disponivel ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } } : undefined}
                     style={{
                       cursor: disponivel ? "pointer" : "not-allowed",
                       opacity: disponivel ? 1 : 0.6,

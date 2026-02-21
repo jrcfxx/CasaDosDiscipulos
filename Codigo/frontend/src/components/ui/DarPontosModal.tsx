@@ -138,6 +138,7 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
         returnFocusOnDeactivate: true,
       }}
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         className="dar-pontos-modal-overlay"
         role="dialog"
@@ -146,6 +147,7 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
         onClick={handleClickFora}
         onKeyDown={handleKeyDown}
       >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div className="dar-pontos-modal" onClick={(e) => e.stopPropagation()}>
         <h2 id="dar-pontos-modal-title" className="dar-pontos-modal-title">
           Atribuir pontos

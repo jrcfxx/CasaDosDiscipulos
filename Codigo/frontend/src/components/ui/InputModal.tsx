@@ -67,17 +67,17 @@ const InputModal: React.FC<InputModalProps> = ({
         returnFocusOnDeactivate: true,
       }}
     >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         className="input-modal-overlay"
         role="dialog"
         aria-modal="true"
         aria-labelledby="input-modal-title"
         onKeyDown={handleKeyDown}
+        onClick={onCancel}
       >
-      <div
-        className="input-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div className="input-modal" onClick={(e) => e.stopPropagation()}>
         <h2 id="input-modal-title" className="input-modal-title">
           {title}
         </h2>

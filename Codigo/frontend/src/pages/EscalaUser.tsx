@@ -410,7 +410,10 @@ const EscalaUser: React.FC = () => {
                     <div
                       key={dia}
                       className={`calendario-celula ${evs.length > 0 ? "tem-evento" : ""} ${isAdmin ? "clicavel" : ""}`}
+                      role={isAdmin ? "button" : undefined}
+                      tabIndex={isAdmin ? 0 : undefined}
                       onClick={() => isAdmin && abrirModalEvento(undefined, d)}
+                      onKeyDown={isAdmin ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } } : undefined}
                     >
                       <span className="dia-numero">{dia}</span>
                       {evs.length > 0 && (
@@ -447,13 +450,15 @@ const EscalaUser: React.FC = () => {
               ) : (
                 <ul className="escala-lista-eventos">
                   {eventos.map((ev) => (
-                    <li
-                      key={ev.id_escala_evento}
-                      className="escala-item-evento"
-                      onClick={() => abrirEvento(ev.id_escala_evento)}
-                    >
-                      <span className="ev-data">{formatarDataHora(ev.data_hora, ev.data_hora_fim)}</span>
-                      <span className="ev-titulo">{ev.titulo}</span>
+                    <li key={ev.id_escala_evento} className="escala-item-evento">
+                      <button
+                        type="button"
+                        className="escala-item-evento-btn"
+                        onClick={() => abrirEvento(ev.id_escala_evento)}
+                      >
+                        <span className="ev-data">{formatarDataHora(ev.data_hora, ev.data_hora_fim)}</span>
+                        <span className="ev-titulo">{ev.titulo}</span>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -616,8 +621,9 @@ const EscalaUser: React.FC = () => {
             </div>
             <form onSubmit={handleSalvarEvento} className="modal-evento-form">
               <div className="form-group">
-                <label>Título *</label>
+                <label htmlFor="formEventoTitulo">Título *</label>
                 <input
+                  id="formEventoTitulo"
                   type="text"
                   value={formEvento.titulo}
                   onChange={(e) => setFormEvento({ ...formEvento, titulo: e.target.value })}
@@ -625,16 +631,18 @@ const EscalaUser: React.FC = () => {
                 />
               </div>
               <div className="form-group">
-                <label>Data e hora início *</label>
+                <label htmlFor="formEventoDataInicio">Data e hora início *</label>
                 <input
+                  id="formEventoDataInicio"
                   type="datetime-local"
                   value={formEvento.data_hora}
                   onChange={(e) => setFormEvento({ ...formEvento, data_hora: e.target.value })}
                 />
               </div>
               <div className="form-group">
-                <label>Data e hora término</label>
+                <label htmlFor="formEventoDataFim">Data e hora término</label>
                 <input
+                  id="formEventoDataFim"
                   type="datetime-local"
                   value={formEvento.data_hora_fim}
                   onChange={(e) => setFormEvento({ ...formEvento, data_hora_fim: e.target.value })}
@@ -642,8 +650,9 @@ const EscalaUser: React.FC = () => {
                 <p className="form-hint">Opcional. Usado para verificar sobreposição de horários ao escalar.</p>
               </div>
               <div className="form-group">
-                <label>Descrição</label>
+                <label htmlFor="formEventoDescricao">Descrição</label>
                 <textarea
+                  id="formEventoDescricao"
                   value={formEvento.descricao}
                   onChange={(e) => setFormEvento({ ...formEvento, descricao: e.target.value })}
                   rows={2}
@@ -651,7 +660,7 @@ const EscalaUser: React.FC = () => {
                 />
               </div>
               <div className="form-group">
-                <label>Ministérios presentes *</label>
+                <span>Ministérios presentes *</span>
                 {editandoEventoId && (
                   <p className="form-hint">Alterar os ministérios removerá as atribuições existentes.</p>
                 )}
@@ -705,8 +714,9 @@ const EscalaUser: React.FC = () => {
           <div className="modal-content modal-atribuicao modal-atribuicao-completo">
             <h2>Escalar em {areaParaAtribuir.nome}</h2>
             <div className="form-group">
-              <label>Selecione a pessoa</label>
+              <label htmlFor="atribuicaoUsuarioSelect">Selecione a pessoa</label>
               <select
+                id="atribuicaoUsuarioSelect"
                 value={usuarioSelecionado ?? ""}
                 onChange={(e) => setUsuarioSelecionado(Number(e.target.value) || null)}
               >
@@ -719,7 +729,7 @@ const EscalaUser: React.FC = () => {
               </select>
             </div>
             <div className="form-group">
-              <label>Informações da escala</label>
+              <span>Informações da escala</span>
               <AtribuicaoDetalhesForm
                 nomeArea={areaParaAtribuir.nome}
                 value={formDetalhes}

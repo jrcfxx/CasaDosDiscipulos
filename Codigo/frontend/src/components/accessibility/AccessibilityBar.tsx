@@ -15,8 +15,17 @@ const AccessibilityBar: React.FC = () => {
     const handleClickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-    if (open) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, [open]);
 
   if (!ctx) return null;
@@ -24,15 +33,15 @@ const AccessibilityBar: React.FC = () => {
   const { fontSize, highContrast, setFontSize, setHighContrast } = ctx;
 
   return (
-    <div className="a11y-bar" ref={ref} role="region" aria-label="Recursos de acessibilidade">
+    <div className="a11y-bar" ref={ref} role="region" aria-label="Recursos de acessibilidade: tamanho do texto e alto contraste">
       <button
         type="button"
         className="a11y-bar__trigger"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label="Abrir opções de acessibilidade"
-        title="Recursos de acessibilidade"
+        aria-label="Abrir opções de acessibilidade: alterar tamanho do texto e alto contraste"
+        title="Recursos de acessibilidade (tamanho do texto, alto contraste)"
       >
         <span className="a11y-bar__icon" aria-hidden>
           ♿

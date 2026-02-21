@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { getUserProfile } from "../../services/usuario";
 import { ASSETS_BASE } from "../../config/api";
 import { useAuth } from "../../hooks/useAuth";
@@ -34,6 +34,7 @@ const ProfileIcon = () => (
  */
 const Header: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAdmin, isLiderCelula, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
@@ -120,7 +121,13 @@ const Header: React.FC = () => {
           <Link to="/home">HOME</Link>
 
           <div className="nav-dropdown-container" ref={portalDropdownRef}>
-            <button className="nav-dropdown-btn" onClick={togglePortalDropdown}>
+            <button
+              className="nav-dropdown-btn"
+              onClick={togglePortalDropdown}
+              aria-expanded={portalDropdownOpen}
+              aria-haspopup="true"
+              aria-label="Abrir menu Portal do Discípulo"
+            >
               PORTAL DO DISCÍPULO
               <svg
                 className={`dropdown-arrow ${portalDropdownOpen ? "open" : ""}`}
@@ -223,7 +230,14 @@ const Header: React.FC = () => {
           </div>
 
           {/* Gerenciar Usuários - Apenas Admin */}
-          {isAdmin && <Link to="/admin/usuarios">GERENCIAMENTO</Link>}
+          {isAdmin && (
+            <Link
+              to="/admin/usuarios"
+              aria-current={location.pathname === "/admin/usuarios" ? "page" : undefined}
+            >
+              GERENCIAMENTO
+            </Link>
+          )}
         </nav>
 
         <div className="header-right-group">
@@ -231,6 +245,7 @@ const Header: React.FC = () => {
             <NotificationsBell
               refreshTrigger={notifRefreshTrigger}
               onClick={() => setNotifOpen(!notifOpen)}
+              ariaExpanded={notifOpen}
             />
             {notifOpen && (
               <NotificationsDropdown
@@ -244,6 +259,9 @@ const Header: React.FC = () => {
             className="header-profile-btn"
             title="Perfil"
             onClick={toggleDropdown}
+            aria-expanded={dropdownOpen}
+            aria-haspopup="true"
+            aria-label="Abrir menu do perfil"
           >
             {userPhoto ? (
               <img

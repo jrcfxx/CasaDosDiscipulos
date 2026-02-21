@@ -141,7 +141,9 @@ export default function FormulariosSecretariaCelulasLeader() {
         : `${ASSETS_BASE}${campo.conteudo}`;
       return (
         <div className="video-preview-campo">
-          <video controls src={url} style={{ maxWidth: 400 }} />
+          <video controls src={url} style={{ maxWidth: 400 }} aria-label="Vídeo">
+            <track kind="captions" srcLang="pt-BR" label="Legendas" />
+          </video>
         </div>
       );
     }
@@ -204,7 +206,10 @@ export default function FormulariosSecretariaCelulasLeader() {
                       ? "selected"
                       : ""
                   } ${!formulario.ativo ? "inactive" : ""}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectFormulario(formulario)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
                 >
                   <span className="formulario-item__name">{formulario.titulo}</span>
                 </div>

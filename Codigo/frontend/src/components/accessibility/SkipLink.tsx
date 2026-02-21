@@ -6,7 +6,11 @@ import "./SkipLink.css";
  * Aparece ao receber foco (teclado) para usuários de leitores de tela e navegação por teclado.
  */
 const SkipLink: React.FC = () => (
-  <a href="#main-content" className="skip-link">
+  <a
+    href="#main-content"
+    className="skip-link"
+    aria-label="Pular navegação e ir para o conteúdo principal"
+  >
     Pular para o conteúdo principal
   </a>
 );

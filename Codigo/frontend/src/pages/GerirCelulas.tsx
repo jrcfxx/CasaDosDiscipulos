@@ -319,15 +319,16 @@ export default function GerirCelulas() {
             <h2>{celulaModal.id_celula ? "Editar Célula" : "Nova Célula"}</h2>
 
             <div className="modal-content">
-              <label>Nome da célula *</label>
+              <label htmlFor="celulaModalNome">Nome da célula *</label>
               <input
+                id="celulaModalNome"
                 type="text"
                 value={celulaModal.nome || ""}
                 onChange={(e) => handleChange("nome", e.target.value)}
                 placeholder="Ex: Célula Esperança"
               />
 
-              <label>Líderes *</label>
+              <span>Líderes *</span>
               <div className="lideres-select-wrapper">
                 <div className="lideres-search">
                   <span className="lideres-search-icon" aria-hidden>🔍</span>
@@ -350,8 +351,9 @@ export default function GerirCelulas() {
                         : l.nome.toLowerCase().includes(buscaLider.toLowerCase())
                     )
                     .map((l) => (
-                      <label key={l.id_usuario} className={`lider-item ${(celulaModal.id_lideres ?? []).includes(l.id_usuario) ? "selected" : ""}`}>
+                      <label key={l.id_usuario} htmlFor={`lider-${l.id_usuario}`} className={`lider-item ${(celulaModal.id_lideres ?? []).includes(l.id_usuario) ? "selected" : ""}`}>
                         <input
+                          id={`lider-${l.id_usuario}`}
                           type="checkbox"
                           checked={(celulaModal.id_lideres ?? []).includes(l.id_usuario)}
                           onChange={() => toggleLider(l.id_usuario)}
@@ -373,8 +375,9 @@ export default function GerirCelulas() {
                 </div>
               </div>
 
-              <label>Dia da reunião</label>
+              <label htmlFor="celulaModalDia">Dia da reunião</label>
               <select
+                id="celulaModalDia"
                 value={celulaModal.dia_reuniao || ""}
                 onChange={(e) => handleChange("dia_reuniao", e.target.value)}
               >
@@ -385,15 +388,17 @@ export default function GerirCelulas() {
                 ))}
               </select>
 
-              <label>Horário (HH:MM)</label>
+              <label htmlFor="celulaModalHorario">Horário (HH:MM)</label>
               <input
+                id="celulaModalHorario"
                 type="time"
                 value={celulaModal.horario_reuniao || ""}
                 onChange={(e) => handleChange("horario_reuniao", e.target.value)}
               />
 
-              <label>Endereço / Local</label>
+              <label htmlFor="celulaModalEndereco">Endereço / Local</label>
               <input
+                id="celulaModalEndereco"
                 type="text"
                 value={celulaModal.endereco || ""}
                 onChange={(e) => handleChange("endereco", e.target.value)}

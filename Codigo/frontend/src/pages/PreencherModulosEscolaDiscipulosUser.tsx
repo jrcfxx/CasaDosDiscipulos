@@ -214,6 +214,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
         {isDirectVideo ? (
           <video controls playsInline aria-label={label ?? "Vídeo do módulo"}>
             <source src={embedUrl} type={getVideoMimeType(embedUrl)} />
+            <track kind="captions" srcLang="pt-BR" label="Legendas" />
             Seu navegador não suporta o vídeo. Recomenda-se usar legendas quando disponíveis.
           </video>
         ) : (

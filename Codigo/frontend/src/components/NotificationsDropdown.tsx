@@ -277,9 +277,11 @@ export default NotificationsDropdown;
 export function NotificationsBell({
   onClick,
   refreshTrigger = 0,
+  ariaExpanded = false,
 }: {
   onClick: () => void;
   refreshTrigger?: number;
+  ariaExpanded?: boolean;
 }) {
   const [num, setNum] = useState(0);
   useEffect(() => {
@@ -302,6 +304,8 @@ export function NotificationsBell({
       onClick={onClick}
       title="Notificações"
       aria-label={`Notificações${num > 0 ? `, ${num} não lidas` : ""}`}
+      aria-expanded={ariaExpanded}
+      aria-haspopup="true"
     >
       <svg
         className="header-notif-icon"

@@ -177,16 +177,9 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
     return (
       <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
         {isDirectVideo ? (
-          <video
-            controls
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "auto",
-              borderRadius: "8px",
-            }}
-          >
+          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
             <source src={embedUrl} type="video/mp4" />
+            <track kind="captions" srcLang="pt-BR" label="Legendas" />
             Seu navegador não suporta o elemento de vídeo.
           </video>
         ) : (
@@ -233,7 +226,10 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
                   className={`licao-item ${
                     selectedLicao?.id === licao.id ? "selected" : ""
                   }`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectLicao(licao)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
                 >
                   <div className="licao-item__info">
                     <span className="licao-item__name">{licao.titulo}</span>

@@ -100,8 +100,9 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
           {erro && <div className="fala-ai-admin-erro">{erro}</div>}
 
           <div className="fala-ai-admin-field">
-            <label>Tipo</label>
+            <label htmlFor="fala-tipo">Tipo</label>
             <select
+              id="fala-tipo"
               value={tipo}
               onChange={(e) => setTipo(e.target.value as TipoPost)}
             >
@@ -145,13 +146,15 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
           </div>
 
           <div className="fala-ai-admin-field">
-            <label>Imagem (opcional)</label>
+            <label htmlFor="fala-imagem">Imagem (opcional)</label>
             <input
               ref={fileInputRef}
+              id="fala-imagem"
               type="file"
               accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
               onChange={handleUpload}
               style={{ display: "none" }}
+              aria-label="Selecionar imagem"
             />
             <button
               type="button"

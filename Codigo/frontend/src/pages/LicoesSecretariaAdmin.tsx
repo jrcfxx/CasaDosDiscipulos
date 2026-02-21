@@ -278,8 +278,9 @@ const LicoesSecretariaAdmin: React.FC = () => {
     return (
       <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
         {isDirectVideo ? (
-          <video controls style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
+          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
             <source src={embedUrl} type="video/mp4" />
+            <track kind="captions" srcLang="pt-BR" label="Legendas" />
             Seu navegador não suporta o elemento de vídeo.
           </video>
         ) : (
@@ -480,7 +481,10 @@ const LicoesSecretariaAdmin: React.FC = () => {
                 <div
                   key={licao.id_licao}
                   className={`licao-item ${selectedLicao?.id_licao === licao.id_licao ? "selected" : ""} ${!isAtivo(licao) ? "inactive" : ""}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectLicao(licao)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
                 >
                   <div className="licao-item__info">
                     <span className="licao-item__name">{licao.titulo}</span>
@@ -599,23 +603,26 @@ const LicoesSecretariaAdmin: React.FC = () => {
             <h2>{licaoToEdit ? "Editar lição" : "Criar nova lição"}</h2>
 
             <form onSubmit={saveForm}>
-              <label>Título</label>
+              <label htmlFor="licaoModalTitulo">Título</label>
               <input
+                id="licaoModalTitulo"
                 ref={nameRef}
                 value={currentForm.nome}
                 onChange={(e) => setCurrentForm({ ...currentForm, nome: e.target.value })}
                 required
               />
 
-              <label>Descrição</label>
+              <label htmlFor="licaoModalDescricao">Descrição</label>
               <textarea
+                id="licaoModalDescricao"
                 value={currentForm.descricao}
                 onChange={(e) => setCurrentForm({ ...currentForm, descricao: e.target.value })}
                 rows={4}
               />
 
-              <label>Ativo</label>
+              <label htmlFor="licaoModalAtivo">Ativo</label>
               <select
+                id="licaoModalAtivo"
                 value={currentForm.ativo}
                 onChange={(e) => setCurrentForm({ ...currentForm, ativo: Number(e.target.value) })}
               >

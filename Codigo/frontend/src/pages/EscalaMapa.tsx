@@ -123,9 +123,10 @@ const EscalaMapa: React.FC = () => {
 
         <div className="escala-mapa-seletor">
           <div className="seletor-periodo">
-            <label className="seletor-label">Período</label>
+            <label htmlFor="escala-mapa-mes" className="seletor-label">Período</label>
             <div className="seletor-mes-ano">
               <select
+                id="escala-mapa-mes"
                 className="seletor-mes"
                 value={mes}
                 onChange={(e) => setMes(Number(e.target.value))}

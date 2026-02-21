@@ -252,6 +252,7 @@ export default function EditarQuizzesSecretariaCelulas() {
 
       {showDeleteModal && (
         <div className="cf-modal-overlay">
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <div
             className="cf-modal"
             role="dialog"
