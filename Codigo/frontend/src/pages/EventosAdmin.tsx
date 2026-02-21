@@ -83,21 +83,19 @@ const EventosAdmin: React.FC = () => {
 
       const eventoData = {
         ...formData,
-        imagem_url,
+        imagem_url: imagem_url!,
       };
 
       if (editingEvento) {
-        await axios.put(`${API_URL}/${editingEvento.id_evento}`, eventoData);
+        await atualizarEvento(editingEvento.id_evento, eventoData);
       } else {
-        await axios.post(API_URL, eventoData);
+        await criarEvento(eventoData);
       }
 
       await fetchEventos();
       closeModal();
     } catch (error) {
-      console.error("Erro ao salvar evento:", error);
-      const msg = error instanceof Error ? error.message : "Erro ao salvar evento";
-      setToast(msg);
+      setToast(getErrorMessage(error, "Erro ao salvar evento"));
     }
   };
 
