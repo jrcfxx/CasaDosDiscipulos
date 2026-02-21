@@ -65,6 +65,7 @@ class EscalaService {
     const evento = await EscalaEventoModel.create({
       titulo: dados.titulo,
       data_hora: toMysqlDatetime(dados.data_hora),
+      data_hora_fim: dados.data_hora_fim ? toMysqlDatetime(dados.data_hora_fim) : null,
       descricao: dados.descricao || null,
       ativo: dados.ativo !== undefined ? dados.ativo : true,
       id_criador: idUsuario,
@@ -95,12 +96,14 @@ class EscalaService {
 
     if (dados.titulo !== undefined) evento.titulo = dados.titulo;
     if (dados.data_hora !== undefined) evento.data_hora = toMysqlDatetime(dados.data_hora);
+    if (dados.data_hora_fim !== undefined) evento.data_hora_fim = dados.data_hora_fim ? toMysqlDatetime(dados.data_hora_fim) : null;
     if (dados.descricao !== undefined) evento.descricao = dados.descricao;
     if (dados.ativo !== undefined) evento.ativo = dados.ativo;
 
     await EscalaEventoModel.update(parsed, {
       titulo: evento.titulo,
       data_hora: evento.data_hora,
+      data_hora_fim: evento.data_hora_fim,
       descricao: evento.descricao,
       ativo: evento.ativo,
     });
@@ -185,13 +188,16 @@ class EscalaService {
       }
     }
 
-    const jaAtribuido = await EscalaAtribuicaoModel.usuarioJaNoEvento(
+    const evento = await EscalaEventoModel.getById(area.id_escala_evento);
+    const conflitoHorario = await EscalaAtribuicaoModel.usuarioEmEventoComHorarioSobreposto(
+      parsedUsuario,
       area.id_escala_evento,
-      parsedUsuario
+      evento?.data_hora,
+      evento?.data_hora_fim
     );
-    if (jaAtribuido) {
+    if (conflitoHorario) {
       throw new ConflictError(
-        `Esta pessoa já está escalada em outra área (${jaAtribuido.area_nome}). Cada membro pode participar de apenas uma área por evento.`
+        `Esta pessoa já está escalada em ${conflitoHorario.area_nome} no mesmo horário (${conflitoHorario.evento_titulo || "evento"}). Só é possível participar de um ministério por horário.`
       );
     }
 

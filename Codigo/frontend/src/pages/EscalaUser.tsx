@@ -21,15 +21,21 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
-function formatarDataHora(s: string) {
+function formatarDataHora(s: string, fim?: string | null) {
   const d = new Date(s);
-  return d.toLocaleString("pt-BR", {
+  const str = d.toLocaleString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+  if (fim) {
+    const df = new Date(fim);
+    const strFim = df.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return `${str} – ${strFim}`;
+  }
+  return str;
 }
 
 function formatarData(s: string) {
@@ -58,6 +64,7 @@ const EscalaUser: React.FC = () => {
   const [formEvento, setFormEvento] = useState({
     titulo: "",
     data_hora: "",
+    data_hora_fim: "",
     descricao: "",
     ativo: true,
     id_ministerios: [] as number[],
@@ -106,15 +113,18 @@ const EscalaUser: React.FC = () => {
   const abrirModalEvento = (evento?: EscalaEvento, dataAlvo?: Date) => {
     if (!evento && !isAdmin) return; // criar: apenas admin
     if (evento && !podeEditar) return; // editar: admin ou líder
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const fmtDateTime = (d: Date) =>
+      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
     if (evento) {
       setEditandoEventoId(evento.id_escala_evento);
       const dh = new Date(evento.data_hora);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      const dataStr = `${dh.getFullYear()}-${pad(dh.getMonth() + 1)}-${pad(dh.getDate())}T${pad(dh.getHours())}:${pad(dh.getMinutes())}`;
+      const dhFim = evento.data_hora_fim ? new Date(evento.data_hora_fim) : new Date(dh.getTime() + 2 * 60 * 60 * 1000);
       const idsMin = (evento as EscalaEvento & { ministerios?: { id_ministerio: number }[] }).ministerios?.map((m) => m.id_ministerio) ?? [];
       setFormEvento({
         titulo: evento.titulo,
-        data_hora: dataStr,
+        data_hora: fmtDateTime(dh),
+        data_hora_fim: fmtDateTime(dhFim),
         descricao: evento.descricao || "",
         ativo: evento.ativo,
         id_ministerios: idsMin,
@@ -122,11 +132,13 @@ const EscalaUser: React.FC = () => {
     } else {
       setEditandoEventoId(null);
       const n = dataAlvo ?? new Date();
-      const pad = (x: number) => String(x).padStart(2, "0");
-      const dataStr = `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}T19:00`;
+      const inicio = `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}T19:00`;
+      const fimDate = new Date(n);
+      fimDate.setHours(21, 0, 0, 0);
       setFormEvento({
         titulo: "",
-        data_hora: dataStr,
+        data_hora: inicio,
+        data_hora_fim: fmtDateTime(fimDate),
         descricao: "",
         ativo: true,
         id_ministerios: [],
@@ -160,6 +172,7 @@ const EscalaUser: React.FC = () => {
         await escalaService.updateEvento(editandoEventoId, {
           titulo: formEvento.titulo.trim(),
           data_hora: formEvento.data_hora.slice(0, 16).replace("T", " ") + ":00",
+          data_hora_fim: formEvento.data_hora_fim?.trim() ? formEvento.data_hora_fim.slice(0, 16).replace("T", " ") + ":00" : null,
           descricao: formEvento.descricao.trim() || undefined,
           ativo: Boolean(formEvento.ativo),
           areas,
@@ -170,6 +183,7 @@ const EscalaUser: React.FC = () => {
         await escalaService.createEvento({
           titulo: formEvento.titulo.trim(),
           data_hora: formEvento.data_hora.slice(0, 16).replace("T", " ") + ":00",
+          data_hora_fim: formEvento.data_hora_fim?.trim() ? formEvento.data_hora_fim.slice(0, 16).replace("T", " ") + ":00" : null,
           descricao: formEvento.descricao.trim() || undefined,
           ativo: Boolean(formEvento.ativo),
           areas,
@@ -277,7 +291,7 @@ const EscalaUser: React.FC = () => {
       const msg =
         axios.isAxiosError(err) && err.response?.data?.error
           ? String(err.response.data.error)
-          : "Esta pessoa já está escalada em outra área. Cada membro pode participar de apenas uma área por evento.";
+          : "Não foi possível escalar. A pessoa já está em outro ministério no mesmo horário.";
       showToast(msg, "error");
     }
   };
@@ -438,7 +452,7 @@ const EscalaUser: React.FC = () => {
                       className="escala-item-evento"
                       onClick={() => abrirEvento(ev.id_escala_evento)}
                     >
-                      <span className="ev-data">{formatarDataHora(ev.data_hora)}</span>
+                      <span className="ev-data">{formatarDataHora(ev.data_hora, ev.data_hora_fim)}</span>
                       <span className="ev-titulo">{ev.titulo}</span>
                     </li>
                   ))}
@@ -455,7 +469,7 @@ const EscalaUser: React.FC = () => {
             <div className="escala-dashboard-header">
               <div className="escala-dashboard-titulo">
                 <h2>{eventoSelecionado.titulo}</h2>
-                <span className="escala-dashboard-data">{formatarDataHora(eventoSelecionado.data_hora)}</span>
+                <span className="escala-dashboard-data">{formatarDataHora(eventoSelecionado.data_hora, eventoSelecionado.data_hora_fim)}</span>
               </div>
               <button type="button" className="btn-fechar-dashboard" onClick={fecharEvento} title="Fechar">
                 ×
@@ -611,12 +625,21 @@ const EscalaUser: React.FC = () => {
                 />
               </div>
               <div className="form-group">
-                <label>Data e hora *</label>
+                <label>Data e hora início *</label>
                 <input
                   type="datetime-local"
                   value={formEvento.data_hora}
                   onChange={(e) => setFormEvento({ ...formEvento, data_hora: e.target.value })}
                 />
+              </div>
+              <div className="form-group">
+                <label>Data e hora término</label>
+                <input
+                  type="datetime-local"
+                  value={formEvento.data_hora_fim}
+                  onChange={(e) => setFormEvento({ ...formEvento, data_hora_fim: e.target.value })}
+                />
+                <p className="form-hint">Opcional. Usado para verificar sobreposição de horários ao escalar.</p>
               </div>
               <div className="form-group">
                 <label>Descrição</label>

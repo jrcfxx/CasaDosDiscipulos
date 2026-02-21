@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import "../style/GerirUser.css";
 
 import Header from "../components/layout/Header";
@@ -82,6 +83,8 @@ export default function GerenciarUsuarios() {
   const [filtro, setFiltro] = useState("");
   const [filtroNivel, setFiltroNivel] = useState<string>("");
   const [modalAberto, setModalAberto] = useState(false);
+  const [showSenha, setShowSenha] = useState(false);
+  const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
   const [usuarioModal, setUsuarioModal] = useState<UsuarioModal>({
     nome: "",
     email: "",
@@ -148,6 +151,17 @@ export default function GerenciarUsuarios() {
     if (modalAberto) fetchMinisterios(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalAberto]);
+
+  useEffect(() => {
+    if (modalAberto || modalNivelAberto || modalInativarAberto || modalMinisterioAberto) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [modalAberto, modalNivelAberto, modalInativarAberto, modalMinisterioAberto]);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
     setToast(msg);
@@ -292,6 +306,8 @@ export default function GerenciarUsuarios() {
 
   const fecharModal = () => {
     setModalAberto(false);
+    setShowSenha(false);
+    setShowConfirmarSenha(false);
     setUsuarioModal({
       nome: "",
       email: "",
@@ -844,52 +860,85 @@ export default function GerenciarUsuarios() {
         )}
       </main>
 
-      {/* Modal de Cadastro/Edição de Usuário */}
-      {modalAberto && (
-        <div className="modal-fundo">
-          <div className="modal">
+      {/* Modal de Cadastro/Edição de Usuário - renderizado no body para não herdar estilos do container */}
+      {modalAberto && createPortal(
+        <div className="modal-fundo" role="dialog" aria-modal="true">
+          <div className="modal modal-usuario">
             <h2>
               {usuarioModal.id_usuario ? "Editar Usuário" : "Novo Usuário"}
             </h2>
 
-            <div className="modal-content">
-              <label>Nome Completo</label>
-              <input
-                type="text"
-                value={usuarioModal.nome || ""}
-                onChange={(e) => handleChange("nome", e.target.value)}
-                placeholder="Digite o nome completo"
-              />
+            <div className="modal-content modal-usuario-grid">
+              <div className="form-field">
+                <label>Nome Completo</label>
+                <input
+                  type="text"
+                  value={usuarioModal.nome || ""}
+                  onChange={(e) => handleChange("nome", e.target.value)}
+                  placeholder="Digite o nome completo"
+                />
+              </div>
 
-              <label>Email</label>
-              <input
-                type="email"
-                value={usuarioModal.email || ""}
-                onChange={(e) => handleChange("email", e.target.value)}
-                placeholder="Digite o email"
-              />
+              <div className="form-field">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={usuarioModal.email || ""}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  placeholder="Digite o email"
+                />
+              </div>
 
-              <label>Telefone / WhatsApp</label>
-              <input
-                type="tel"
-                value={usuarioModal.telefone || ""}
-                onChange={(e) => handleChange("telefone", e.target.value)}
-                placeholder="(11) 99999-9999"
-              />
+              <div className="form-field">
+                <label>Telefone / WhatsApp</label>
+                <input
+                  type="tel"
+                  value={usuarioModal.telefone || ""}
+                  onChange={(e) => handleChange("telefone", e.target.value)}
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
 
-              <label>Tipo de Usuário</label>
-              <select
-                value={usuarioModal.tipo}
-                onChange={(e) => handleChange("tipo", e.target.value)}
-              >
-                <option value="">Selecione o tipo</option>
-                <option value="membro">Membro</option>
-                <option value="lider">Líder</option>
-                <option value="administrador">Administrador</option>
-              </select>
+              <div className="form-field">
+                <label>Tipo de Usuário</label>
+                <select
+                  value={usuarioModal.tipo}
+                  onChange={(e) => handleChange("tipo", e.target.value)}
+                >
+                  <option value="">Selecione o tipo</option>
+                  <option value="membro">Membro</option>
+                  <option value="lider">Líder</option>
+                  <option value="administrador">Administrador</option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label>Nível</label>
+                <select
+                  key={`nivel-${usuarioModal.id_usuario ?? "new"}-${usuarioModal.id_nivel ?? "x"}`}
+                  value={
+                    usuarioModal.id_nivel != null && usuarioModal.id_nivel !== 0
+                      ? String(usuarioModal.id_nivel)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    handleChange(
+                      "id_nivel",
+                      e.target.value ? parseInt(e.target.value, 10) : null
+                    )
+                  }
+                >
+                  <option value="">Sem nível atribuído</option>
+                  {niveisAtivos.map((nivel) => (
+                    <option key={nivel.id_nivel} value={String(nivel.id_nivel)}>
+                      {nivel.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {usuarioModal.tipo === "lider" && (
-                <div className="lider-permissoes">
+                <div className="form-field form-field-full lider-permissoes">
                   <p className="lider-permissoes-title">Permissões do líder</p>
                   <label className="checkbox-row">
                     <input
@@ -899,7 +948,7 @@ export default function GerenciarUsuarios() {
                     />
                     <span>Líder de célula (acesso à Secretaria das Células)</span>
                   </label>
-                  <div className="ministerios-lider-box">
+                  <div className="ministerios-lider-box ministerios-grid">
                     <p className="lider-permissoes-title">Ministérios que lidera (acesso à Escala)</p>
                     {ministerios.filter((m) => m.ativo).map((m) => (
                       <label key={m.id_ministerio} className="checkbox-row">
@@ -924,8 +973,9 @@ export default function GerenciarUsuarios() {
                 </div>
               )}
 
-              <label>Ministérios em que participa</label>
-              <div className="ministerios-participa-box">
+              <div className="form-field form-field-full">
+                <label>Ministérios em que participa</label>
+                <div className="ministerios-participa-box ministerios-grid">
                 {ministerios.filter((m) => m.ativo).map((m) => (
                   <label key={m.id_ministerio} className="checkbox-row">
                     <input
@@ -945,53 +995,78 @@ export default function GerenciarUsuarios() {
                 {ministerios.filter((m) => m.ativo).length === 0 && (
                   <p className="hint">Nenhum ministério cadastrado</p>
                 )}
+                </div>
               </div>
 
-              <label>Nível</label>
-              <select
-                key={`nivel-${usuarioModal.id_usuario ?? "new"}-${usuarioModal.id_nivel ?? "x"}`}
-                value={
-                  usuarioModal.id_nivel != null && usuarioModal.id_nivel !== 0
-                    ? String(usuarioModal.id_nivel)
-                    : ""
-                }
-                onChange={(e) =>
-                  handleChange(
-                    "id_nivel",
-                    e.target.value ? parseInt(e.target.value, 10) : null
-                  )
-                }
-              >
-                <option value="">Sem nível atribuído</option>
-                {niveisAtivos.map((nivel) => (
-                  <option key={nivel.id_nivel} value={String(nivel.id_nivel)}>
-                    {nivel.nome}
-                  </option>
-                ))}
-              </select>
-
-              <label>
-                Senha{" "}
-                {usuarioModal.id_usuario && "(Deixar vazio para não alterar)"}
-              </label>
-              <input
-                type="password"
-                value={usuarioModal.senha || ""}
-                onChange={(e) => handleChange("senha", e.target.value)}
-                placeholder={
-                  usuarioModal.id_usuario
-                    ? "Nova senha (opcional)"
-                    : "Mínimo 6 caracteres"
-                }
-              />
-
-              <label>Confirmar Senha</label>
-              <input
-                type="password"
-                value={usuarioModal.confirmarSenha || ""}
-                onChange={(e) => handleChange("confirmarSenha", e.target.value)}
-                placeholder="Repita a senha"
-              />
+              <div className="form-field form-field-full form-field-senhas">
+                <div className="form-field">
+                  <label>
+                    Senha{" "}
+                    {usuarioModal.id_usuario && "(Deixar vazio para não alterar)"}
+                  </label>
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showSenha ? "text" : "password"}
+                      value={usuarioModal.senha || ""}
+                      onChange={(e) => handleChange("senha", e.target.value)}
+                      placeholder={
+                        usuarioModal.id_usuario
+                          ? "Nova senha (opcional)"
+                          : "Mínimo 6 caracteres"
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowSenha((v) => !v)}
+                      tabIndex={-1}
+                      aria-label={showSenha ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showSenha ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="form-field">
+                  <label>Confirmar Senha</label>
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showConfirmarSenha ? "text" : "password"}
+                      value={usuarioModal.confirmarSenha || ""}
+                      onChange={(e) => handleChange("confirmarSenha", e.target.value)}
+                      placeholder="Repita a senha"
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowConfirmarSenha((v) => !v)}
+                      tabIndex={-1}
+                      aria-label={showConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showConfirmarSenha ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="modal-buttons">
@@ -1003,7 +1078,8 @@ export default function GerenciarUsuarios() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Modal de Inativar/Reativar */}

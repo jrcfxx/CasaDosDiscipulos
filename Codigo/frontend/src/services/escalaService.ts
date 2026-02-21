@@ -4,6 +4,7 @@ export interface EscalaEvento {
   id_escala_evento: number;
   titulo: string;
   data_hora: string;
+  data_hora_fim?: string | null;
   descricao?: string | null;
   ativo: boolean;
   id_criador?: number | null;
@@ -61,6 +62,7 @@ const escalaService = {
   async createEvento(data: {
     titulo: string;
     data_hora: string;
+    data_hora_fim?: string | null;
     descricao?: string;
     ativo?: boolean;
     areas?: string[];
@@ -75,6 +77,7 @@ const escalaService = {
     data: Partial<{
       titulo: string;
       data_hora: string;
+      data_hora_fim?: string | null;
       descricao: string;
       ativo: boolean;
       areas: string[];

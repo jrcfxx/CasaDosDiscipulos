@@ -41,22 +41,35 @@ const EscalaAtribuicaoModel = {
     }));
   },
 
-  async usuarioJaNoEvento(idEvento, idUsuario) {
-    const areas = await knex("escala_area")
-      .select("id_escala_area")
-      .where("id_escala_evento", idEvento);
+  /**
+   * Verifica se o usuário já está em algum evento com HORÁRIO SOBREPOSTO.
+   * Usa data_hora e data_hora_fim. Se data_hora_fim for null, assume 2h de duração.
+   * Dois intervalos [s1,e1] e [s2,e2] sobrepõem se s1 < e2 E e1 > s2.
+   */
+  async usuarioEmEventoComHorarioSobreposto(idUsuario, idEventoAlvo, dataHoraInicioAlvo, dataHoraFimAlvo) {
+    if (!dataHoraInicioAlvo) return null;
+    const inicioAlvo = this._toTime(dataHoraInicioAlvo);
+    const fimAlvo = dataHoraFimAlvo ? this._toTime(dataHoraFimAlvo) : inicioAlvo + 2 * 60 * 60 * 1000; // 2h default
 
-    const areaIds = areas.map((a) => a.id_escala_area);
-    if (areaIds.length === 0) return null;
+    const rows = await knex("escala_atribuicao as a")
+      .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
+      .join("escala_evento as e", "ar.id_escala_evento", "e.id_escala_evento")
+      .where("a.id_usuario", idUsuario)
+      .select("ar.nome as area_nome", "e.titulo as evento_titulo", "e.data_hora", "e.data_hora_fim");
 
-    const atrib = await knex("escala_atribuicao")
-      .join("escala_area", "escala_atribuicao.id_escala_area", "escala_area.id_escala_area")
-      .select("escala_area.nome as area_nome")
-      .whereIn("escala_atribuicao.id_escala_area", areaIds)
-      .where("escala_atribuicao.id_usuario", idUsuario)
-      .first();
+    for (const r of rows) {
+      if (!r.data_hora) continue;
+      const inicio = this._toTime(r.data_hora);
+      const fim = r.data_hora_fim ? this._toTime(r.data_hora_fim) : inicio + 2 * 60 * 60 * 1000;
+      if (inicioAlvo < fim && fimAlvo > inicio) {
+        return { area_nome: r.area_nome, evento_titulo: r.evento_titulo };
+      }
+    }
+    return null;
+  },
 
-    return atrib;
+  _toTime(val) {
+    return new Date(val).getTime();
   },
 
   async create(atribuicao) {

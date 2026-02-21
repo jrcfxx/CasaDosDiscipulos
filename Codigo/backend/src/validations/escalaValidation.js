@@ -8,6 +8,9 @@ export const createEscalaEventoSchema = Joi.object({
   data_hora: Joi.date().required().messages({
     "date.base": "Data e hora são obrigatórias",
   }),
+  data_hora_fim: Joi.date().allow(null).optional().messages({
+    "date.base": "Horário de término deve ser uma data/hora válida",
+  }),
   descricao: Joi.string().max(2000).allow("").optional(),
   ativo: Joi.boolean().default(true),
   areas: Joi.array()
@@ -31,6 +34,7 @@ export const updateEscalaEventoSchema = Joi.object({
     "string.max": "Título deve ter no máximo 255 caracteres",
   }),
   data_hora: Joi.date(),
+  data_hora_fim: Joi.date().allow(null).optional(),
   descricao: Joi.string().max(2000).allow("").optional(),
   ativo: Joi.boolean(),
   areas: Joi.array().items(Joi.string().min(1).max(100)).optional(),

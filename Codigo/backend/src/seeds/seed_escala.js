@@ -40,13 +40,18 @@ export async function seed() {
       .toISOString()
       .slice(0, 19)
       .replace("T", " ");
+  const formatDtFim = (d, h = 21, m = 0) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0)
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
 
   const eventosData = [
-    { titulo: "Culto de Celebração", data: proximoDomingo, desc: "Culto dominical de louvor e pregação" },
-    { titulo: "Ensaio de Louvor", data: new Date(proximoDomingo.getTime() - 86400000), desc: "Ensaio do ministério de louvor", h: 18, m: 30 },
-    { titulo: "Culto de Oração", data: new Date(proximoDomingo.getTime() + 7 * 86400000), desc: "Noite de oração e intercessão" },
-    { titulo: "Culto Especial Jovens", data: new Date(proximoDomingo.getTime() + 14 * 86400000), desc: "Culto temático para juventude" },
-    { titulo: "Ensaio Geral", data: new Date(proximoDomingo.getTime() - 2 * 86400000), desc: "Ensaio geral da equipe de louvor", h: 19, m: 0 },
+    { titulo: "Culto de Celebração", data: proximoDomingo, desc: "Culto dominical de louvor e pregação", h: 18, hf: 20, m: 30 },
+    { titulo: "Ensaio de Louvor", data: new Date(proximoDomingo.getTime() - 86400000), desc: "Ensaio do ministério de louvor", h: 18, hf: 20, m: 30 },
+    { titulo: "Culto de Oração", data: new Date(proximoDomingo.getTime() + 7 * 86400000), desc: "Noite de oração e intercessão", h: 19, hf: 21 },
+    { titulo: "Culto Especial Jovens", data: new Date(proximoDomingo.getTime() + 14 * 86400000), desc: "Culto temático para juventude", h: 19, hf: 21 },
+    { titulo: "Ensaio Geral", data: new Date(proximoDomingo.getTime() - 2 * 86400000), desc: "Ensaio geral da equipe de louvor", h: 19, hf: 21, m: 0 },
   ];
 
   const idsEventos = [];
@@ -54,6 +59,7 @@ export async function seed() {
     const [id] = await knex("escala_evento").insert({
       titulo: ev.titulo,
       data_hora: formatDt(ev.data, ev.h ?? 19, ev.m ?? 0),
+      data_hora_fim: formatDtFim(ev.data, ev.hf ?? 21, ev.m ?? 0),
       descricao: ev.desc,
       ativo: true,
       id_criador: admin.id_usuario,

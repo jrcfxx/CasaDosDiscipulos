@@ -15,9 +15,9 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
-function formatarDataHora(s: string) {
+function formatarDataHora(s: string, fim?: string | null) {
   const d = new Date(s);
-  return d.toLocaleString("pt-BR", {
+  const str = d.toLocaleString("pt-BR", {
     weekday: "long",
     day: "2-digit",
     month: "long",
@@ -25,6 +25,12 @@ function formatarDataHora(s: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+  if (fim) {
+    const df = new Date(fim);
+    const strFim = df.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    return `${str} – ${strFim}`;
+  }
+  return str;
 }
 
 function getMinisterioIcon(nome: string) {
@@ -197,7 +203,7 @@ const EscalaMapa: React.FC = () => {
               <div className="evento-hero-info">
                 <h2 className="evento-hero-titulo">{eventoSelecionado.titulo}</h2>
                 <p className="evento-hero-data">
-                  {formatarDataHora(eventoSelecionado.data_hora)}
+                  {formatarDataHora(eventoSelecionado.data_hora, eventoSelecionado.data_hora_fim)}
                 </p>
                 {eventoSelecionado.descricao && (
                   <p className="evento-hero-desc">{eventoSelecionado.descricao}</p>

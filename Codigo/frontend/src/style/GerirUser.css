@@ -342,91 +342,285 @@
   border-color: rgba(16, 185, 129, 0.5);
 }
 
-/* Modal */
+/* Modal - tema escuro, alinhado ao sistema */
 .modal-fundo {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   backdrop-filter: blur(8px);
+  overflow: hidden;
+  padding: 1.5rem;
 }
 
-.modal {
-  background: #fff;
-  border: none;
+.modal-fundo .modal {
+  background: rgba(26, 30, 35, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   width: 480px;
   max-width: calc(100% - 2rem);
-  padding: 2rem;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  color: #1e293b;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  color: #e2e8f0 !important;
 }
 
-.modal h2 {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-gray);
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+/* Modal usuário: tamanho moderado */
+.modal-fundo .modal.modal-usuario {
+  width: 90vw !important;
+  max-width: 1000px !important;
+  min-width: 600px !important;
+  height: calc(100vh - 2rem) !important;
+  max-height: calc(100vh - 2rem) !important;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
-.modal-content {
-  margin-bottom: 1.5rem;
+.modal-fundo .modal.modal-usuario .modal-content.modal-usuario-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem 1.5rem;
+  overflow-y: auto;
+  padding: 0 1.75rem 0.75rem;
+  align-content: start;
+  flex: 1;
+  min-height: 0;
+  justify-items: stretch;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
 }
 
-.lider-permissoes {
-  padding: 1rem;
-  background: rgba(2, 134, 155, 0.08);
-  border: 1px solid rgba(2, 134, 155, 0.2);
-  border-radius: 8px;
-  margin-top: 0.5rem;
+/* Garante que todo o conteúdo preencha a largura do modal */
+.modal-fundo .modal.modal-usuario .form-field,
+.modal-fundo .modal.modal-usuario .form-field-full {
+  width: 100%;
+  min-width: 0;
 }
 
-.lider-permissoes-title {
-  margin: 0 0 0.75rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #1e293b;
+
+.modal-fundo .modal.modal-usuario .modal-content.modal-usuario-grid::-webkit-scrollbar {
+  width: 6px;
 }
 
-.lider-permissoes .checkbox-row {
+.modal-fundo .modal.modal-usuario .modal-content.modal-usuario-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+
+.modal-fundo .modal.modal-usuario .modal-content.modal-usuario-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.modal-fundo .modal.modal-usuario .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Tipo e Nível na 2ª linha - ocupam colunas 1 e 2, distribuindo no espaço */
+
+/* Nível, Senha, Confirmar Senha em linha */
+.modal-fundo .modal.modal-usuario .form-field-full {
+  grid-column: 1 / -1;
+}
+
+.modal-fundo .modal.modal-usuario .form-field-senhas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 1.5rem;
+  width: 100%;
+}
+
+/* Password input com ícone de visualizar */
+.modal-fundo .modal .password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modal-fundo .modal .password-input-wrapper input {
+  padding-right: 2.75rem;
+}
+
+.modal-fundo .modal .password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0.35rem;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.modal-fundo .modal .password-toggle:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.modal-fundo .modal .password-toggle:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(2, 134, 155, 0.3);
+}
+
+/* Ministérios: grid com colunas fixas para alinhamento consistente */
+.modal-fundo .modal.modal-usuario .ministerios-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.4rem 1rem;
+  margin-top: 0.35rem;
+  width: 100%;
+}
+
+.modal-fundo .modal.modal-usuario .ministerios-participa-box.ministerios-grid,
+.modal-fundo .modal.modal-usuario .ministerios-lider-box.ministerios-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.4rem 1rem;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+}
+
+/* Cada checkbox ocupa uma célula, alinhamento uniforme */
+.modal-fundo .modal.modal-usuario .ministerios-lider-box .checkbox-row,
+.modal-fundo .modal.modal-usuario .ministerios-participa-box .checkbox-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+}
+
+.modal-fundo .modal.modal-usuario .ministerios-lider-box .checkbox-row input,
+.modal-fundo .modal.modal-usuario .ministerios-participa-box .checkbox-row input {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+}
+
+.modal-fundo .modal.modal-usuario .ministerios-lider-box .lider-permissoes-title:first-child {
+  grid-column: 1 / -1;
+  margin-bottom: 0.25rem;
+}
+
+.modal-fundo .modal h2 {
+  margin: 0;
+  padding: 1.25rem 1.5rem 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff !important;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  border-bottom: 2px solid rgba(2, 134, 155, 0.5);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-fundo .modal .modal-content {
+  padding: 0 1.5rem;
+  margin-bottom: 1rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+
+.modal-fundo .modal .lider-permissoes {
+  padding: 0.75rem 1.25rem;
+  background: rgba(2, 134, 155, 0.1);
+  border: 1px solid rgba(2, 134, 155, 0.2);
+  border-radius: 8px;
+  margin-top: 0;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+.modal-fundo .modal .lider-permissoes .ministerios-lider-box,
+.modal-fundo .modal .form-field-full .ministerios-participa-box {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.modal-fundo .modal .lider-permissoes-title {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #94a3b8 !important;
+}
+
+.modal-fundo .modal .lider-permissoes .checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
   cursor: pointer;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   font-weight: 500;
-  color: #334155;
+  font-size: 0.85rem;
+  color: #cbd5e1 !important;
+}
+
+.modal-fundo .modal .lider-permissoes > .checkbox-row {
+  align-items: center;
 }
 
 .lider-permissoes .checkbox-row:last-child {
   margin-bottom: 0;
 }
 
-.lider-permissoes .checkbox-row input {
+.modal-fundo .modal .lider-permissoes .checkbox-row input {
   width: 1rem;
   height: 1rem;
+  min-width: 1rem;
+  flex-shrink: 0;
+  margin: 0;
   accent-color: var(--primary-teal);
+}
+
+.modal-fundo .modal .lider-permissoes .checkbox-row span {
+  line-height: 1.25rem;
 }
 
 .ministerios-lider-box,
 .ministerios-participa-box {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
 
-.ministerios-lider-box .checkbox-row,
-.ministerios-participa-box .checkbox-row {
+.modal-fundo .modal .ministerios-grid {
+  margin-top: 0.25rem;
+}
+
+.modal-fundo .modal .ministerios-lider-box .checkbox-row,
+.modal-fundo .modal .ministerios-participa-box .checkbox-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   cursor: pointer;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
   font-weight: 500;
+  font-size: 0.85rem;
+  color: #cbd5e1 !important;
 }
 
 .ministerios-participa-box .checkbox-row input,
@@ -436,79 +630,103 @@
   accent-color: var(--primary-teal);
 }
 
-.hint {
+.modal-fundo .modal .hint {
   font-size: 0.8rem;
-  color: #64748b;
+  color: #94a3b8 !important;
   margin: 0.5rem 0 0;
 }
 
-.modal label {
+.modal-fundo .modal label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  margin-bottom: 0;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: var(--primary-gray);
+  color: #94a3b8 !important;
 }
 
-.modal input[type="text"],
-.modal input[type="email"],
-.modal input[type="password"],
-.modal input[type="number"],
-.modal select {
+.modal-fundo .modal input[type="text"],
+.modal-fundo .modal input[type="email"],
+.modal-fundo .modal input[type="tel"],
+.modal-fundo .modal input[type="password"],
+.modal-fundo .modal input[type="number"],
+.modal-fundo .modal select {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.6rem 0.75rem;
   border-radius: 8px;
-  border: 2px solid #e2e8f0;
-  background: #fff;
-  color: #1e293b;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+  margin-bottom: 0;
+  font-size: 0.9rem;
   font-family: "Montserrat", sans-serif;
   transition: all 0.2s;
 }
 
-.modal input::placeholder {
-  color: #94a3b8;
+.modal-fundo .modal.modal-usuario input,
+.modal-fundo .modal.modal-usuario select {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.875rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.modal input:focus,
-.modal select:focus {
+.modal-fundo .modal input::placeholder {
+  color: #64748b;
+}
+
+.modal-fundo .modal input:focus,
+.modal-fundo .modal select:focus {
   outline: none;
   border-color: var(--primary-teal);
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.1);
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 0 2px rgba(2, 134, 155, 0.25);
 }
 
-.modal select {
+.modal-fundo .modal select {
   cursor: pointer;
 }
 
-.modal select option {
-  background: #fff;
-  color: #1e293b;
+.modal-fundo .modal select option {
+  background: #1e293b;
+  color: #e2e8f0;
 }
 
-.modal p {
-  color: #475569;
+.modal-fundo .modal p {
+  color: #94a3b8 !important;
 }
 
-.modal-confirm-text {
+.modal-fundo .modal .modal-confirm-text {
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #475569;
+  color: #94a3b8 !important;
 }
 
-.modal p strong {
+.modal-fundo .modal p strong {
   color: var(--primary-teal);
 }
 
 /* Modal Buttons */
-.modal-buttons {
+.modal-fundo .modal .modal-buttons {
+  flex-shrink: 0;
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
+  padding: 1rem 1.75rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent !important;
 }
 
-.modal-buttons button {
+.modal-fundo .modal.modal-usuario .modal-buttons {
+  padding: 0.9rem 2rem 1rem;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-fundo .modal.modal-usuario .modal-buttons button {
+  max-width: 220px;
+}
+
+.modal-fundo .modal .modal-buttons button {
   flex: 1;
   padding: 0.85rem 1.5rem;
   border: none;
@@ -522,23 +740,24 @@
   letter-spacing: 0.5px;
 }
 
-.modal-buttons button:first-child {
-  background: #e2e8f0;
-  color: var(--primary-gray);
-  border: none;
+.modal-fundo .modal .modal-buttons button:first-child {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.modal-buttons button:first-child:hover {
-  background: #cbd5e1;
+.modal-fundo .modal .modal-buttons button:first-child:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
-.modal-buttons button:last-child {
+.modal-fundo .modal .modal-buttons button:last-child {
   background: var(--primary-teal);
   color: white;
   border: none;
 }
 
-.modal-buttons button:last-child:hover {
+.modal-fundo .modal .modal-buttons button:last-child:hover {
   background: var(--primary-teal-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(2, 134, 155, 0.4);
@@ -588,7 +807,7 @@
 }
 
 .niveis-table thead {
-  background: rgba(2, 134, 155, 0.15);
+  background: rgba(2, 134, 155, 0.2);
 }
 
 .niveis-table th {
@@ -598,8 +817,8 @@
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--primary-teal);
-  border-bottom: 2px solid rgba(2, 134, 155, 0.3);
+  color: #a5f3fc;
+  border-bottom: 2px solid rgba(2, 134, 155, 0.4);
 }
 
 .niveis-table td {
@@ -697,13 +916,13 @@
 }
 
 /* Modal - Textarea */
-.modal-content textarea {
+.modal-fundo .modal .modal-content textarea {
   width: 100%;
   padding: 0.85rem 1.25rem;
   border-radius: 8px;
-  border: 2px solid #e2e8f0;
-  background: #fff;
-  color: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #e2e8f0 !important;
   outline: none;
   font-size: 0.95rem;
   font-family: "Montserrat", sans-serif;
@@ -711,13 +930,14 @@
   transition: all 0.2s;
 }
 
-.modal-content textarea::placeholder {
-  color: #94a3b8;
+.modal-fundo .modal .modal-content textarea::placeholder {
+  color: #64748b;
 }
 
-.modal-content textarea:focus {
+.modal-fundo .modal .modal-content textarea:focus {
   border-color: var(--primary-teal);
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.1);
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 0 2px rgba(2, 134, 155, 0.25);
 }
 
 /* ========== Modal Ministério — Design moderno, dark theme, branding ========== */
