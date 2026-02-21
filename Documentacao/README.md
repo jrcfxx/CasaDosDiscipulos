@@ -1,6 +1,6 @@
 <div align="center">
 
-![Logo Casa dos Discípulos](../Codigo/frontend/src/assets/logo.png)
+![Logo Casa dos Discípulos](./assets/logo.png)
 
 # Casa dos Discípulos — Documentação
 
