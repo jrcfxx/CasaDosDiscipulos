@@ -407,6 +407,7 @@ const EscalaUser: React.FC = () => {
                   const key = d.toLocaleDateString("pt-BR");
                   const evs = eventosPorDia[key] || [];
                   return (
+                    /* eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role -- célula do calendário contém botões; não pode ser <button> */
                     <div
                       key={dia}
                       className={`calendario-celula ${evs.length > 0 ? "tem-evento" : ""} ${isAdmin ? "clicavel" : ""}`}

@@ -1,7 +1,9 @@
 /**
  * Fala Aí Discípulo - Feed de devocional e palavra do dia
- * Branding Casa dos Discípulos - clean, moderno
+ * Branding Casa dos Discípulos: Montserrat (fonte oficial)
  */
+
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
 
 :root {
   --fala-ai-teal: #02869b;
@@ -17,6 +19,7 @@
   min-height: 100vh;
   background: var(--fala-ai-dark);
   color: var(--fala-ai-text);
+  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
 }
 
 .fala-ai-main {
