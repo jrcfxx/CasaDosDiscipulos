@@ -600,7 +600,7 @@ export default function GerenciarUsuarios() {
     <div className="gerir-container page-with-fixed-header">
       <Header />
 
-      <main className="gerir-main">
+      <main id="main-content" className="gerir-main" tabIndex={-1}>
         <h1 className="gerir-title">Gerenciamento</h1>
 
         {/* Tabs de navegação */}

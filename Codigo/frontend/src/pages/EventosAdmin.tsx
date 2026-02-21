@@ -193,7 +193,7 @@ const EventosAdmin: React.FC = () => {
     <div className="page-with-fixed-header">
       <Header />
 
-      <main className="container eventos-admin">
+      <main id="main-content" className="container eventos-admin" tabIndex={-1}>
         <h1 className="page-title">Gerenciar Eventos</h1>
 
         <div className="eventos-actions">

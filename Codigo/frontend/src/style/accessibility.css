@@ -1,0 +1,80 @@
+/**
+ * Recursos de acessibilidade - Casa dos Discípulos
+ * Suporte a leitores de tela, navegação por teclado, baixa visão
+ */
+
+/* ==================== PREFERE REDUZIR MOVIMENTO (enjoo, vertigem, epilepsia) ==================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================== TAMANHO DO TEXTO (baixa visão) ==================== */
+html[data-font-size="110"] {
+  font-size: 110%;
+}
+
+html[data-font-size="125"] {
+  font-size: 125%;
+}
+
+html[data-font-size="150"] {
+  font-size: 150%;
+}
+
+/* ==================== ALTO CONTRASTE (baixa visão / cegos) ==================== */
+html[data-high-contrast="true"] {
+  --color-text: #000;
+  --color-surface: #fff;
+  --color-bg: #fff;
+  --color-border: #000;
+}
+
+html[data-high-contrast="true"] body,
+html[data-high-contrast="true"] .home-page,
+html[data-high-contrast="true"] .sobre-nos-content {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+html[data-high-contrast="true"] a,
+html[data-high-contrast="true"] button {
+  border: 2px solid #000 !important;
+}
+
+html[data-high-contrast="true"] a:focus-visible,
+html[data-high-contrast="true"] button:focus-visible {
+  outline: 4px solid #000 !important;
+  outline-offset: 2px !important;
+}
+
+/* ==================== FOCO VISÍVEL (navegação por teclado / leitores de tela) ==================== */
+:focus {
+  outline: 2px solid var(--color-primary-600, #2563eb);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary-600, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Evitar que outline seja removido por estilos de botão */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-primary-600, #2563eb);
+  outline-offset: 2px;
+}

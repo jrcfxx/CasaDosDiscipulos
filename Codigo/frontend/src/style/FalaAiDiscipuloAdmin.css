@@ -1,0 +1,197 @@
+/**
+ * Fala Aí Discípulo - Admin (criar post)
+ */
+
+.fala-ai-admin-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #f5f5f5;
+}
+
+.fala-ai-admin-main {
+  width: min(560px, 94vw);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.fala-ai-admin-header {
+  margin-bottom: 2rem;
+}
+
+.fala-ai-admin-back {
+  background: none;
+  border: none;
+  color: #02869b;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.fala-ai-admin-back:hover {
+  text-decoration: underline;
+}
+
+.fala-ai-admin-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.fala-ai-admin-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+.fala-ai-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fala-ai-admin-erro {
+  padding: 0.75rem 1rem;
+  background: rgba(185, 28, 28, 0.2);
+  border: 1px solid rgba(185, 28, 28, 0.5);
+  border-radius: 10px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
+.fala-ai-admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fala-ai-admin-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.fala-ai-admin-field input,
+.fala-ai-admin-field select,
+.fala-ai-admin-field textarea {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.fala-ai-admin-field input::placeholder,
+.fala-ai-admin-field textarea::placeholder {
+  color: #6b7280;
+}
+
+.fala-ai-admin-field input:focus,
+.fala-ai-admin-field select:focus,
+.fala-ai-admin-field textarea:focus {
+  outline: none;
+  border-color: #02869b;
+}
+
+.fala-ai-admin-field select {
+  cursor: pointer;
+}
+
+.fala-ai-admin-field textarea {
+  resize: vertical;
+  min-height: 160px;
+}
+
+.fala-ai-admin-btn-upload {
+  padding: 0.6rem 1rem;
+  background: rgba(2, 134, 155, 0.2);
+  border: 1px dashed #02869b;
+  color: #02869b;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-self: flex-start;
+}
+
+.fala-ai-admin-btn-upload:hover:not(:disabled) {
+  background: rgba(2, 134, 155, 0.3);
+}
+
+.fala-ai-admin-btn-upload:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fala-ai-admin-preview {
+  position: relative;
+  margin-top: 0.5rem;
+  max-width: 280px;
+}
+
+.fala-ai-admin-preview img {
+  width: 100%;
+  border-radius: 10px;
+  display: block;
+}
+
+.fala-ai-admin-remove-img {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(185, 28, 28, 0.3);
+  border: none;
+  color: #fca5a5;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.fala-ai-admin-remove-img:hover {
+  background: rgba(185, 28, 28, 0.5);
+}
+
+.fala-ai-admin-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.fala-ai-admin-btn-cancel {
+  padding: 0.65rem 1.25rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #9ca3af;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.fala-ai-admin-btn-cancel:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.fala-ai-admin-btn-submit {
+  padding: 0.65rem 1.5rem;
+  background: #02869b;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.fala-ai-admin-btn-submit:hover:not(:disabled) {
+  background: #026d7d;
+}
+
+.fala-ai-admin-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

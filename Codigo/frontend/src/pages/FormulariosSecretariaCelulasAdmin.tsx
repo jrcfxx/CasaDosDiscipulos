@@ -462,7 +462,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
           /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
         const youtubeMatch = videoUrl.match(youtubeRegex);
         if (youtubeMatch && youtubeMatch[1]) {
-          return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+          return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
         }
 
         // Vimeo
@@ -759,7 +759,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
   return (
     <div className="formularios-page page-with-fixed-header">
       <Header />
-      <main className="page">
+      <main id="main-content" className="page" tabIndex={-1}>
         <h1 className="page-title">SECRETARIA DAS CÉLULAS</h1>
 
         {loading && <p className="loading-message">Carregando...</p>}

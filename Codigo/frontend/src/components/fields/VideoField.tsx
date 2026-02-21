@@ -45,7 +45,7 @@ const VideoField: React.FC<TextFieldProps> = ({
         /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
       const youtubeMatch = url.match(youtubeRegex);
       if (youtubeMatch && youtubeMatch[1]) {
-        return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
       }
 
       // Vimeo
@@ -113,6 +113,9 @@ const VideoField: React.FC<TextFieldProps> = ({
             Ou use um link direto para arquivo de vídeo (.mp4, .webm, .ogg)
           </li>
           <li>O vídeo aparecerá automaticamente abaixo após colar o link</li>
+          <li>
+            <strong>Acessibilidade:</strong> use vídeos com legendas quando possível (YouTube carrega legendas automaticamente quando disponíveis)
+          </li>
         </ul>
       </div>
 

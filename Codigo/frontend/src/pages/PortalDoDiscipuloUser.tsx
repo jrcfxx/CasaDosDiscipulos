@@ -17,12 +17,12 @@ const PortalDoDiscipuloUser: React.FC = () => {
     <div className="portal-user">
       <Header />
 
-      <main className="portal-wrap">
+      <main id="main-content" className="portal-wrap" tabIndex={-1}>
         <h1 className="portal-title">PORTAL DO DISCÍPULO</h1>
 
-        {/* Na Casa - Escala - Todos os usuários */}
+        {/* Na Casa - Escala + Fala Aí - Todos os usuários */}
         <h2 className="portal-subtitle">NA CASA</h2>
-        <div className="grid-2">
+        <div className="grid-2 grid-na-casa">
           <NavLink
             to="/usuario/escala"
             className="portal-card"
@@ -38,6 +38,14 @@ const PortalDoDiscipuloUser: React.FC = () => {
           >
             <span className="portal-card__overlay" />
             <span className="portal-card__title">MAPA DA ESCALA</span>
+          </NavLink>
+          <NavLink
+            to="/usuario/fala-ai"
+            className="portal-card"
+            style={{ backgroundImage: `url(${imgModulos})` }}
+          >
+            <span className="portal-card__overlay" />
+            <span className="portal-card__title">FALA AÍ, DISCÍPULO</span>
           </NavLink>
         </div>
 

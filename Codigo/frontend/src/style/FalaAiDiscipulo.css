@@ -1,0 +1,294 @@
+/**
+ * Fala Aí Discípulo - Feed de devocional e palavra do dia
+ * Branding Casa dos Discípulos - clean, moderno
+ */
+
+:root {
+  --fala-ai-teal: #02869b;
+  --fala-ai-teal-dim: rgba(2, 134, 155, 0.15);
+  --fala-ai-dark: #0a0a0a;
+  --fala-ai-panel: #141414;
+  --fala-ai-border: rgba(255, 255, 255, 0.08);
+  --fala-ai-text: #f5f5f5;
+  --fala-ai-muted: #9ca3af;
+}
+
+.fala-ai-page {
+  min-height: 100vh;
+  background: var(--fala-ai-dark);
+  color: var(--fala-ai-text);
+}
+
+.fala-ai-main {
+  width: min(600px, 94vw);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.fala-ai-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.fala-ai-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.75rem, 4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+.fala-ai-subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: var(--fala-ai-muted);
+}
+
+.fala-ai-btn-novo {
+  display: inline-block;
+  padding: 0.6rem 1.25rem;
+  background: var(--fala-ai-teal);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.fala-ai-btn-novo:hover {
+  background: #026d7d;
+  transform: translateY(-1px);
+}
+
+.fala-ai-loading,
+.fala-ai-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--fala-ai-muted);
+}
+
+.fala-ai-empty .fala-ai-btn-novo {
+  margin-top: 1rem;
+}
+
+.fala-ai-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.fala-ai-card {
+  background: var(--fala-ai-panel);
+  border-radius: 16px;
+  border: 1px solid var(--fala-ai-border);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.fala-ai-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.fala-ai-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--fala-ai-teal-dim);
+}
+
+.fala-ai-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.fala-ai-card__autor {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.fala-ai-card__tipo {
+  font-size: 0.75rem;
+  color: var(--fala-ai-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fala-ai-card__data {
+  font-size: 0.8rem;
+  color: var(--fala-ai-muted);
+}
+
+.fala-ai-card__imagem {
+  width: 100%;
+  max-height: 400px;
+  overflow: hidden;
+  background: #000;
+}
+
+.fala-ai-card__imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.fala-ai-card__body {
+  padding: 1rem 1.25rem 0;
+}
+
+.fala-ai-card__titulo {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.fala-ai-card__ref {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--fala-ai-teal);
+  font-style: italic;
+}
+
+.fala-ai-card__conteudo {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.fala-ai-card__conteudo p {
+  margin: 0 0 0.75rem;
+}
+
+.fala-ai-card__conteudo p:last-child {
+  margin-bottom: 0;
+}
+
+.fala-ai-card__comentarios {
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid var(--fala-ai-border);
+}
+
+.fala-ai-comentarios {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.fala-ai-comentario {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.fala-ai-comentario:last-child {
+  margin-bottom: 0;
+}
+
+.fala-ai-comentario__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.fala-ai-comentario__autor {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-right: 0.35rem;
+}
+
+.fala-ai-comentario__texto {
+  font-size: 0.9rem;
+  color: var(--fala-ai-text);
+}
+
+.fala-ai-comentar-form textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--fala-ai-border);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.fala-ai-comentar-form textarea::placeholder {
+  color: var(--fala-ai-muted);
+}
+
+.fala-ai-comentar-form textarea:focus {
+  outline: none;
+  border-color: var(--fala-ai-teal);
+}
+
+.fala-ai-comentar-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.fala-ai-btn-cancel {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--fala-ai-border);
+  color: var(--fala-ai-muted);
+  font-size: 0.875rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.fala-ai-btn-cancel:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.fala-ai-btn-send {
+  padding: 0.5rem 1rem;
+  background: var(--fala-ai-teal);
+  border: none;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.fala-ai-btn-send:hover:not(:disabled) {
+  background: #026d7d;
+}
+
+.fala-ai-btn-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fala-ai-btn-add-coment {
+  width: 100%;
+  padding: 0.6rem;
+  background: transparent;
+  border: none;
+  color: var(--fala-ai-muted);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.fala-ai-btn-add-coment:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}

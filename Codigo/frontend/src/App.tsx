@@ -32,6 +32,8 @@ import LicaoSecretariaCelulaUser from "./pages/LicaoSecretariaCelulaUser";
 import FormulariosSecretariaCelulasLeader from "./pages/FormulariosSecretariaCelulasLeader";
 import EscalaUser from "./pages/EscalaUser";
 import EscalaMapa from "./pages/EscalaMapa";
+import FalaAiDiscipulo from "./pages/FalaAiDiscipulo";
+import FalaAiDiscipuloAdmin from "./pages/FalaAiDiscipuloAdmin";
 
 // Páginas Comuns
 import Perfil from "./pages/Perfil";
@@ -280,6 +282,24 @@ export default function App() {
         element={
           <ProtectedRoute>
             <EscalaMapa />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Fala Aí Discípulo - Devocional e Palavra do dia */}
+      <Route
+        path="/usuario/fala-ai"
+        element={
+          <ProtectedRoute>
+            <FalaAiDiscipulo />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/usuario/fala-ai/admin"
+        element={
+          <ProtectedRoute allowedRoles={["lider", "administrador"]}>
+            <FalaAiDiscipuloAdmin />
           </ProtectedRoute>
         }
       />

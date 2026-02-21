@@ -340,7 +340,7 @@ const EscalaUser: React.FC = () => {
   return (
     <div className="page-with-fixed-header escala-page">
       <Header />
-      <main className="container escala-user">
+      <main id="main-content" className="container escala-user" tabIndex={-1}>
         <div className="escala-header">
           <h1 className="page-title">ESCALA</h1>
           <div className="escala-header-actions">

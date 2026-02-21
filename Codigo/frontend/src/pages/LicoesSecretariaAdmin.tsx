@@ -252,7 +252,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
         const youtubeRegex =
           /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
         const youtubeMatch = videoUrl.match(youtubeRegex);
-        if (youtubeMatch?.[1]) return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+        if (youtubeMatch?.[1]) return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
 
         const vimeoMatch = videoUrl.match(/vimeo\.com\/(\d+)/);
         if (vimeoMatch?.[1]) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
@@ -464,7 +464,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
   return (
     <div className="licoes-page page-with-fixed-header">
       <Header />
-      <main className="licoes-main">
+      <main id="main-content" className="licoes-main" tabIndex={-1}>
         <h1 className="licoes-title">Secretaria das Células – Lições</h1>
 
         {loading && <p className="loading-message">Carregando...</p>}

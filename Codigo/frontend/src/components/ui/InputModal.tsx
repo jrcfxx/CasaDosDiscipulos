@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { FocusTrap } from "focus-trap-react";
 import "./InputModal.css";
 
 export interface InputModalProps {
@@ -55,16 +56,24 @@ const InputModal: React.FC<InputModalProps> = ({
   if (!open) return null;
 
   return (
-    <div
-      className="input-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="input-modal-title"
+    <FocusTrap
+      active={open}
+      focusTrapOptions={{
+        allowOutsideClick: true,
+        escapeDeactivates: false,
+        returnFocusOnDeactivate: true,
+      }}
     >
+      <div
+        className="input-modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="input-modal-title"
+        onKeyDown={handleKeyDown}
+      >
       <div
         className="input-modal"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
       >
         <h2 id="input-modal-title" className="input-modal-title">
           {title}
@@ -101,7 +110,8 @@ const InputModal: React.FC<InputModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </FocusTrap>
   );
 };
 

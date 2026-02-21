@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { FocusTrap } from "focus-trap-react";
 import "./ConfirmModal.css";
 
 export interface ConfirmModalProps {
@@ -37,17 +38,25 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   if (!open) return null;
 
   return (
-    <div
-      className="confirm-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-modal-title"
-      aria-describedby="confirm-modal-message"
+    <FocusTrap
+      active={open}
+      focusTrapOptions={{
+        allowOutsideClick: true,
+        escapeDeactivates: false,
+        returnFocusOnDeactivate: true,
+      }}
     >
+      <div
+        className="confirm-modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        aria-describedby="confirm-modal-message"
+        onKeyDown={handleKeyDown}
+      >
       <div
         className="confirm-modal"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
       >
         <h2 id="confirm-modal-title" className="confirm-modal-title">
           {title}
@@ -73,7 +82,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </FocusTrap>
   );
 };
 

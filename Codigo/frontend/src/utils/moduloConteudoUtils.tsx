@@ -93,7 +93,7 @@ function renderVideoPreview(url: string): React.ReactNode {
         /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
       const youtubeMatch = videoUrl.match(youtubeRegex);
       if (youtubeMatch?.[1]) {
-        return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
       }
       const vimeoMatch = videoUrl.match(/(?:vimeo\.com\/)(\d+)/);
       if (vimeoMatch?.[1]) {

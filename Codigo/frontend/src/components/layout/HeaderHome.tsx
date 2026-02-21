@@ -25,7 +25,7 @@ const HeaderHome: React.FC = () => {
       <Link to="/" className="header-home__logo">
         <img src={logoCasa} alt="Casa dos Discípulos" />
       </Link>
-      <nav className="header-home__nav">
+      <nav className="header-home__nav" aria-label="Menu principal">
         <Link to="/" className="header-home__link">
           Home
         </Link>

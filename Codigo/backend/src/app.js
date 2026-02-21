@@ -20,6 +20,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import usuarioCelulaRoutes from "./routes/usuarioCelulaRoutes.js";
 import ministerioRoutes from "./routes/ministerioRoutes.js";
 import notificacaoRoutes from "./routes/notificacaoRoutes.js";
+import falaAiRoutes from "./routes/falaAiRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import { iniciarJobModulosWhatsApp } from "./jobs/whatsappModulosJob.js";
 
@@ -90,6 +91,9 @@ app.use("/api/ministerios", ministerioRoutes);
 
 // Notificações
 app.use("/api/notificacoes", notificacaoRoutes);
+
+// Fala Aí Discípulo (devocional e palavra do dia)
+app.use("/api/fala-ai", falaAiRoutes);
 
 // Middleware de tratamento de erros deve vir por último
 app.use(errorHandler);

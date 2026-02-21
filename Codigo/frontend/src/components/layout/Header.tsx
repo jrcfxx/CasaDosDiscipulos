@@ -116,7 +116,7 @@ const Header: React.FC = () => {
           <img src={iconeIgreja} alt="Casa dos Discípulos" />
         </Link>
 
-        <nav className="header-links">
+        <nav className="header-links" aria-label="Menu principal">
           <Link to="/home">HOME</Link>
 
           <div className="nav-dropdown-container" ref={portalDropdownRef}>

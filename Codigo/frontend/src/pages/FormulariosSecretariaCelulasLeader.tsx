@@ -186,7 +186,7 @@ export default function FormulariosSecretariaCelulasLeader() {
   return (
     <div className="formularios-page page-with-fixed-header">
       <Header />
-      <main className="page">
+      <main id="main-content" className="page" tabIndex={-1}>
         <h1 className="page-title">SECRETARIA DAS CÉLULAS</h1>
         {loading && <p className="loading-message">Carregando...</p>}
         <section className="formularios-layout">

@@ -226,7 +226,7 @@ export default function GerirCelulas() {
     <div className="gerir-celulas-container page-with-fixed-header">
       <Header />
 
-      <main className="gerir-main">
+      <main id="main-content" className="gerir-main" tabIndex={-1}>
         <h1 className="gerir-title">Células</h1>
 
         <div className="busca-container">

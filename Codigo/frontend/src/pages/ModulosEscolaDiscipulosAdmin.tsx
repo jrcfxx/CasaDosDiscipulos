@@ -125,7 +125,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
   return (
     <div className="modulos-page page-with-fixed-header">
       <Header />
-      <main className="page">
+      <main id="main-content" className="page" tabIndex={-1}>
         <h1 className="page-title">ESCOLA DE DISCÍPULOS</h1>
 
         {loading && <p className="loading-message">Carregando...</p>}

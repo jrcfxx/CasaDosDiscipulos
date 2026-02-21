@@ -3,6 +3,7 @@
  * Permite pesquisar por nome, selecionar a pessoa, informar pontos e motivo.
  */
 import React, { useEffect, useState, useRef } from "react";
+import { FocusTrap } from "focus-trap-react";
 import "./DarPontosModal.css";
 import usuarioService from "../../services/usuarioService";
 
@@ -65,6 +66,10 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
     }
   }, [open, usuarioSelecionado]);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onCancel();
+  };
+
   const handleClickFora = (e: React.MouseEvent) => {
     if (
       listaRef.current &&
@@ -122,13 +127,22 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
   if (!open) return null;
 
   return (
-    <div
-      className="dar-pontos-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="dar-pontos-modal-title"
-      onClick={handleClickFora}
+    <FocusTrap
+      active={open}
+      focusTrapOptions={{
+        allowOutsideClick: true,
+        escapeDeactivates: false,
+        returnFocusOnDeactivate: true,
+      }}
     >
+      <div
+        className="dar-pontos-modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dar-pontos-modal-title"
+        onClick={handleClickFora}
+        onKeyDown={handleKeyDown}
+      >
       <div className="dar-pontos-modal" onClick={(e) => e.stopPropagation()}>
         <h2 id="dar-pontos-modal-title" className="dar-pontos-modal-title">
           Atribuir pontos
@@ -247,7 +261,8 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+      </div>
+    </FocusTrap>
   );
 };
 

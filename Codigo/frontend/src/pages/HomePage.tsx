@@ -45,7 +45,7 @@ const HomePage: React.FC = () => {
     <div className="home-page">
       <HeaderHome />
 
-      <main className="home-content">
+      <main id="main-content" className="home-content" tabIndex={-1}>
         {/* Hero - tipografia forte */}
         <section className="home-hero">
           <div

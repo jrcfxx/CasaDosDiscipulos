@@ -108,7 +108,7 @@ const EscalaMapa: React.FC = () => {
     <div className="page-with-fixed-header escala-mapa-page">
       <Header />
 
-      <main className="escala-mapa-main">
+      <main id="main-content" className="escala-mapa-main" tabIndex={-1}>
         <div className="escala-mapa-hero">
           <div className="escala-mapa-hero-content">
             <h1 className="escala-mapa-titulo">Mapa da Escala</h1>

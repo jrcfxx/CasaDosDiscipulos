@@ -103,7 +103,7 @@ const ModulosEscolaDiscipulosUser: React.FC = () => {
   return (
     <div className="modulos-page page-with-fixed-header">
       <Header />
-      <main className="page">
+      <main id="main-content" className="page" tabIndex={-1}>
         <div className="page-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
           ESCOLA DE DISCÍPULOS
           <span

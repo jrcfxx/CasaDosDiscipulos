@@ -116,7 +116,7 @@ export default function EditarQuizzesSecretariaCelulas() {
     <div className="page-with-fixed-header">
       <Header />
 
-      <main className="cf-main container-centered">
+      <main id="main-content" className="cf-main container-centered" tabIndex={-1}>
         <h1 className="cf-title">{titulo.toUpperCase()}</h1>
 
         <div className="cf-grid">

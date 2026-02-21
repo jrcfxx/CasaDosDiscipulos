@@ -49,7 +49,7 @@ const Login: React.FC = () => {
         <img src={logo} alt="Casa dos Discípulos" />
       </Link>
 
-      <div className="login-form">
+      <div id="main-content" className="login-form" tabIndex={-1}>
         <h2>Seja bem-vindo!</h2>
 
         {error && (

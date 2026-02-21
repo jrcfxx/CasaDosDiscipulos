@@ -378,7 +378,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       </div>
 
       {loading ? (
-        <main className="editar-modulo-container">
+        <main id="main-content" className="editar-modulo-container" tabIndex={-1}>
           <div className="editar-modulo-panel editar-modulo-panel-main">
             <p
               style={{ textAlign: "center", padding: "2rem", color: "#4a5568" }}
@@ -388,7 +388,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
           </div>
         </main>
       ) : (
-        <main className="editar-modulo-container">
+        <main id="main-content" className="editar-modulo-container" tabIndex={-1}>
           <div className="editar-modulo-grid">
             <section
               className="editar-modulo-panel editar-modulo-panel-main"

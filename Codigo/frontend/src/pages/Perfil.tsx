@@ -294,7 +294,7 @@ export default function Perfil() {
     return (
       <div className="perfil-page page-with-fixed-header">
         <Header />
-        <main className="perfil-main">
+        <main id="main-content" className="perfil-main" tabIndex={-1}>
           <div className="perfil-loading">Carregando perfil...</div>
         </main>
         <Footer />
@@ -306,7 +306,7 @@ export default function Perfil() {
     <div className="perfil-page page-with-fixed-header">
       <Header />
 
-      <main className="perfil-main">
+      <main id="main-content" className="perfil-main" tabIndex={-1}>
         <h1 className="perfil-title">Meu Perfil</h1>
 
         <div className="perfil-card">

@@ -19,7 +19,7 @@ const SobreNos: React.FC = () => {
     <div className="sobre-nos-page">
       <HeaderHome />
 
-      <main className="sobre-nos-content">
+      <main id="main-content" className="sobre-nos-content" tabIndex={-1}>
         {/* Hero - mantido */}
         <section className="sobre-nos-hero">
           <div

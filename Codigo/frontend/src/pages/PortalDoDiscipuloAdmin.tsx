@@ -22,7 +22,7 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
     <div className="portal page-with-fixed-header">
       <Header />
 
-      <main className="portal-wrap">
+      <main id="main-content" className="portal-wrap" tabIndex={-1}>
         <h1 className="portal-title">PORTAL DO DISCÍPULO</h1>
 
         <section className="portal-section">
@@ -45,6 +45,15 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
             >
               <div className="portal-card__overlay" />
               <span className="portal-card__title">MAPA DA ESCALA</span>
+            </Link>
+            <Link
+              to="/usuario/fala-ai"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgModulos})` }}
+              aria-label="Fala Aí Discípulo"
+            >
+              <div className="portal-card__overlay" />
+              <span className="portal-card__title">FALA AÍ, DISCÍPULO</span>
             </Link>
           </div>
         </section>

@@ -173,7 +173,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       const ytId =
         u.match(/(?:[?&]v=|\/embed\/|\/v\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1] ||
         u.match(/^([a-zA-Z0-9_-]{11})$/)?.[1];
-      if (ytId) return `https://www.youtube.com/embed/${ytId}`;
+      if (ytId) return `https://www.youtube.com/embed/${ytId}?cc_load_policy=1`;
       // Vimeo
       const vimeoId = u.match(/(?:vimeo\.com\/)(\d+)/)?.[1];
       if (vimeoId) return `https://player.vimeo.com/video/${vimeoId}`;
@@ -212,9 +212,9 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     return (
       <div className="modulo-video" role="region" aria-label={label ?? "Reprodutor de vídeo"}>
         {isDirectVideo ? (
-          <video controls playsInline>
+          <video controls playsInline aria-label={label ?? "Vídeo do módulo"}>
             <source src={embedUrl} type={getVideoMimeType(embedUrl)} />
-            Seu navegador não suporta o vídeo.
+            Seu navegador não suporta o vídeo. Recomenda-se usar legendas quando disponíveis.
           </video>
         ) : (
           <iframe
@@ -426,7 +426,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     return (
       <div className="modulo-user page-with-fixed-header">
         <Header />
-        <main className="pfu-main">
+        <main id="main-content" className="pfu-main" tabIndex={-1}>
           <p>Carregando...</p>
         </main>
         <Footer />
@@ -440,7 +440,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     return (
       <div className="modulo-user page-with-fixed-header">
         <Header />
-        <main className="pfu-main">
+        <main id="main-content" className="pfu-main" tabIndex={-1}>
           <div className="modulo-resultado modulo-resultado-sucesso">
             <h2>Módulo já concluído</h2>
             <p>Você já concluiu este módulo com sucesso. Não é permitido refazer o quiz.</p>
@@ -462,7 +462,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     return (
       <div className="modulo-user page-with-fixed-header">
         <Header />
-        <main className="pfu-main">
+        <main id="main-content" className="pfu-main" tabIndex={-1}>
           <div className="modulo-erro-acesso">
             <h2>Módulo bloqueado</h2>
             <p>{erroAcesso}</p>
@@ -484,7 +484,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     <div className="modulo-user page-with-fixed-header">
       <Header />
 
-      <main className="pfu-main">
+      <main id="main-content" className="pfu-main" tabIndex={-1}>
         <h1 className="pfu-title">{modulo.titulo}</h1>
 
         <section className="pfu-card modulo-card" aria-label="Conteúdo do módulo">
