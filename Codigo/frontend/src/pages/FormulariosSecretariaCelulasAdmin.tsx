@@ -20,6 +20,7 @@ import { ASSETS_BASE } from "../config/api";
 import { generateUid } from "../utils/generateUid";
 
 import TextField from "../components/fields/TextField";
+import TextareaField from "../components/fields/TextareaField";
 import NumberField from "../components/fields/NumberField";
 import DateField from "../components/fields/DateField";
 import LinkField from "../components/fields/LinkField";
@@ -146,7 +147,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
   >("formulario");
 
   const fieldOptions = [
-    { label: "Texto", tipo: "texto", component: TextField },
+    { label: "Texto (linha única)", tipo: "texto", component: TextField },
+    { label: "Área de texto (multilinhas)", tipo: "textarea", component: TextareaField },
     { label: "Número", tipo: "numero", component: NumberField },
     { label: "Data", tipo: "data", component: DateField },
     { label: "Link", tipo: "link", component: LinkField },

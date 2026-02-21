@@ -11,6 +11,9 @@ export async function seed() {
   const campoTexto = await knex("campo_personalizado")
     .where({ tipo_campo: "texto" })
     .first();
+  const campoTextarea = await knex("campo_personalizado")
+    .where({ tipo_campo: "textarea" })
+    .first();
   const campoNumero = await knex("campo_personalizado")
     .where({ tipo_campo: "numero" })
     .first();
@@ -22,7 +25,7 @@ export async function seed() {
     .select("id_formulario")
     .orderBy("id_formulario");
 
-  if (!campoTexto || !campoNumero || !campoData || formularios.length === 0) {
+  if (!campoTexto || !campoTextarea || !campoNumero || !campoData || formularios.length === 0) {
     console.log(
       "Execute seed_campo_personalizado.js e seed_formulario.js primeiro."
     );
@@ -52,7 +55,7 @@ export async function seed() {
       },
       {
         id_formulario: formularios[0].id_formulario,
-        id_campo: campoTexto.id_campo,
+        id_campo: campoTextarea.id_campo,
         label: "Resumo da reunião",
         conteudo: "Descreva brevemente como foi a reunião",
         ordem: 3,
@@ -60,7 +63,7 @@ export async function seed() {
       },
       {
         id_formulario: formularios[0].id_formulario,
-        id_campo: campoTexto.id_campo,
+        id_campo: campoTextarea.id_campo,
         label: "Testemunhos",
         conteudo: "Houve algum testemunho especial? Compartilhe aqui",
         ordem: 4,
@@ -82,7 +85,7 @@ export async function seed() {
       },
       {
         id_formulario: formularios[1].id_formulario,
-        id_campo: campoTexto.id_campo,
+        id_campo: campoTextarea.id_campo,
         label: "Motivo do pedido",
         conteudo: "Descreva o pedido de oração",
         ordem: 2,
@@ -104,7 +107,7 @@ export async function seed() {
     campos.push(
       { id_formulario: formularios[2].id_formulario, id_campo: campoTexto.id_campo, label: "Nome completo", conteudo: "", ordem: 1, obrigatorio: true },
       { id_formulario: formularios[2].id_formulario, id_campo: campoNumero.id_campo, label: "Nota do evento (1-10)", conteudo: "Como você avalia o evento?", ordem: 2, obrigatorio: true },
-      { id_formulario: formularios[2].id_formulario, id_campo: campoTexto.id_campo, label: "Comentários e sugestões", conteudo: "Deixe suas impressões sobre o evento", ordem: 3, obrigatorio: false }
+      { id_formulario: formularios[2].id_formulario, id_campo: campoTextarea.id_campo, label: "Comentários e sugestões", conteudo: "Deixe suas impressões sobre o evento", ordem: 3, obrigatorio: false }
     );
   }
 
@@ -113,7 +116,7 @@ export async function seed() {
     campos.push(
       { id_formulario: formularios[3].id_formulario, id_campo: campoData.id_campo, label: "Data da visita", conteudo: "", ordem: 1, obrigatorio: true },
       { id_formulario: formularios[3].id_formulario, id_campo: campoTexto.id_campo, label: "Nome visitado", conteudo: "Quem foi visitado", ordem: 2, obrigatorio: true },
-      { id_formulario: formularios[3].id_formulario, id_campo: campoTexto.id_campo, label: "Relato", conteudo: "Como foi a visita", ordem: 3, obrigatorio: false }
+      { id_formulario: formularios[3].id_formulario, id_campo: campoTextarea.id_campo, label: "Relato", conteudo: "Como foi a visita", ordem: 3, obrigatorio: false }
     );
   }
 
@@ -121,7 +124,7 @@ export async function seed() {
   if (formularios[4]) {
     campos.push(
       { id_formulario: formularios[4].id_formulario, id_campo: campoData.id_campo, label: "Período", conteudo: "Mês do relatório", ordem: 1, obrigatorio: true },
-      { id_formulario: formularios[4].id_formulario, id_campo: campoTexto.id_campo, label: "Atividades", conteudo: "O que foi realizado", ordem: 2, obrigatorio: true },
+      { id_formulario: formularios[4].id_formulario, id_campo: campoTextarea.id_campo, label: "Atividades", conteudo: "O que foi realizado", ordem: 2, obrigatorio: true },
       { id_formulario: formularios[4].id_formulario, id_campo: campoNumero.id_campo, label: "Participantes", conteudo: "Quantas pessoas participaram", ordem: 3, obrigatorio: false }
     );
   }
@@ -131,7 +134,7 @@ export async function seed() {
     campos.push(
       { id_formulario: formularios[5].id_formulario, id_campo: campoData.id_campo, label: "Data do culto", conteudo: "", ordem: 1, obrigatorio: true },
       { id_formulario: formularios[5].id_formulario, id_campo: campoNumero.id_campo, label: "Nota (1-10)", conteudo: "", ordem: 2, obrigatorio: true },
-      { id_formulario: formularios[5].id_formulario, id_campo: campoTexto.id_campo, label: "Sugestões", conteudo: "", ordem: 3, obrigatorio: false }
+      { id_formulario: formularios[5].id_formulario, id_campo: campoTextarea.id_campo, label: "Sugestões", conteudo: "", ordem: 3, obrigatorio: false }
     );
   }
 
