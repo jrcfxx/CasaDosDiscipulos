@@ -7,6 +7,7 @@ import celulaService from "../services/celulaService";
 import formularioRespostaService from "../services/formularioRespostaService";
 import authService from "../services/authService";
 import TextField from "../components/fields/TextField";
+import TextareaField from "../components/fields/TextareaField";
 import NumberField from "../components/fields/NumberField";
 import DateField from "../components/fields/DateField";
 import LinkField from "../components/fields/LinkField";
@@ -116,6 +117,12 @@ export default function FormulariosSecretariaCelulasLeader() {
     );
   };
 
+  /** Labels que indicam conteúdo longo — usar textarea em vez de input */
+  const ehCampoTextoLongo = (label: string) => {
+    const lower = (label || "").toLowerCase();
+    return /resumo|testemunho|relato|motivo|comentário|sugestão|atividade|observação|descreva|pedido|avaliação/i.test(lower);
+  };
+
   const formatarConteudoCampo = (campo: LocalField) => {
     if (campo.tipo === "upload" && campo.conteudo) {
       const fileName = String(campo.conteudo).split("/").pop() || "arquivo";
@@ -147,7 +154,7 @@ export default function FormulariosSecretariaCelulasLeader() {
         </div>
       );
     }
-    return campo.conteudo ? String(campo.conteudo) : "";
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -263,15 +270,27 @@ export default function FormulariosSecretariaCelulasLeader() {
                               {campo.obrigatorio && " *"}
                             </div>
                             <div className="campo-conteudo">
-                              {campo.tipo === "texto" && (
-                                <TextField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  placeholder={safeLabel}
-                                  value={campo.conteudo}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                />
+                              {(campo.tipo === "texto" || campo.tipo === "textarea") && (
+                                ehCampoTextoLongo(campo.label) || campo.tipo === "textarea" ? (
+                                  <TextareaField
+                                    id={`campo_${campo.uid}`}
+                                    name={`campo_${campo.uid}`}
+                                    label=""
+                                    placeholder={safeLabel}
+                                    value={campo.conteudo}
+                                    onChange={(v) => handleChangeField(campo.uid, v)}
+                                    rows={5}
+                                  />
+                                ) : (
+                                  <TextField
+                                    id={`campo_${campo.uid}`}
+                                    name={`campo_${campo.uid}`}
+                                    label=""
+                                    placeholder={safeLabel}
+                                    value={campo.conteudo}
+                                    onChange={(v) => handleChangeField(campo.uid, v)}
+                                  />
+                                )
                               )}
                               {campo.tipo === "numero" && (
                                 <NumberField
@@ -321,7 +340,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}
-                              {formatarConteudoCampo(campo)}
+                              {formatarConteudoCampo(campo) || null}
                             </div>
                           </div>
                         );
