@@ -19,6 +19,7 @@ import { seed as seedFormularioResposta } from "./seed_formulario_resposta.js";
 import { seed as seedUsuarioModulo } from "./seed_usuario_modulo.js";
 import { seed as seedQuizResposta } from "./seed_quiz_resposta.js";
 import { seed as seedNotificacao } from "./seed_notificacao.js";
+import { seed as seedFalaAi } from "./seed_fala_ai.js";
 
 /**
  * Executa todos os seeders na ordem correta
@@ -81,6 +82,9 @@ async function run() {
 
   // 14. Notificações
   await seedNotificacao();
+
+  // 15. Fala Aí (devocional e palavra do dia)
+  await seedFalaAi();
 
   console.log("\n✅ Todos os seeders executados com sucesso!");
   process.exit(0);

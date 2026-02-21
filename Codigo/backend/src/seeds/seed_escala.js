@@ -68,10 +68,10 @@ export async function seed() {
   }
 
   const areasPorEvento = {
-    0: ["Som", "Louvor", "Recepção", "Mídia", "Liturgia", "Diaconia", "Intercessão"],
+    0: ["Som", "Louvor", "Voluntários", "Mídia", "Liturgia", "Diaconia", "Intercessão"],
     1: ["Louvor", "Som"],
-    2: ["Intercessão", "Som", "Recepção", "Liturgia"],
-    3: ["Juventude", "Som", "Louvor", "Recepção", "Mídia"],
+    2: ["Intercessão", "Som", "Voluntários", "Liturgia"],
+    3: ["Juventude", "Som", "Louvor", "Voluntários", "Mídia"],
     4: ["Louvor", "Som", "Liturgia"],
   };
 
@@ -103,7 +103,7 @@ export async function seed() {
   const detalhesPorArea = {
     Louvor: { instrumento: "Violão", musicas: "Rei dos Reis, Cristo é o Senhor", funcao: "Backing vocal" },
     Som: { funcao: "Operador de mesa", observacoes: "Chegar 30 min antes" },
-    Recepção: { funcao: "Recepcionista principal", observacoes: "Porta de entrada" },
+    Voluntários: { funcao: "Recepcionista principal", observacoes: "Porta de entrada" },
     Mídia: { funcao: "Projeção", observacoes: "Slides e transmissão" },
     Liturgia: { funcao: "Condução geral", observacoes: "" },
     Diaconia: { funcao: "Santa Ceia", observacoes: "" },
@@ -116,7 +116,7 @@ export async function seed() {
   if (ev0) {
     const areaSom = ev0.find((a) => a.nome === "Som");
     const areaLouvor = ev0.find((a) => a.nome === "Louvor");
-    const areaRecepcao = ev0.find((a) => a.nome === "Recepção");
+    const areaVoluntarios = ev0.find((a) => a.nome === "Voluntários");
     if (areaSom && membro1)
       atribuicoes.push({
         id_escala_area: areaSom.id_escala_area,
@@ -129,11 +129,11 @@ export async function seed() {
         id_usuario: maria.id_usuario,
         detalhes: JSON.stringify(detalhesPorArea.Louvor),
       });
-    if (areaRecepcao && beatriz)
+    if (areaVoluntarios && beatriz)
       atribuicoes.push({
-        id_escala_area: areaRecepcao.id_escala_area,
+        id_escala_area: areaVoluntarios.id_escala_area,
         id_usuario: beatriz.id_usuario,
-        detalhes: JSON.stringify(detalhesPorArea.Recepção),
+        detalhes: JSON.stringify(detalhesPorArea.Voluntários),
       });
   }
 

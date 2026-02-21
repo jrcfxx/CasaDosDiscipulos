@@ -19,6 +19,7 @@ exports.up = async (knex) => {
     table.decimal("nota_quiz", 5, 2).nullable();
     table.timestamp("data_inicio").defaultTo(knex.fn.now());
     table.timestamp("data_conclusao").nullable();
+    table.boolean("auto_completo_por_nivel").defaultTo(false);
     table.unique(["id_usuario", "id_modulo"]);
   });
 

@@ -47,7 +47,7 @@ export async function seed() {
   const escalados = [
     { user: maria, evento: eventos[0], area: "Louvor" },
     { user: membro1, evento: eventos[0], area: "Som" },
-    { user: beatriz, evento: eventos[0], area: "Recepção" },
+    { user: beatriz, evento: eventos[0], area: "Voluntários" },
     { user: fernanda, evento: eventos[1], area: "Louvor" },
     { user: pedro, evento: eventos[1], area: "Som" },
     { user: juliana, evento: eventos[2], area: "Intercessão" },

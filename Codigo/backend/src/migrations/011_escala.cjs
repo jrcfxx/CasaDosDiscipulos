@@ -7,6 +7,7 @@ exports.up = async (knex) => {
     table.increments("id_escala_evento").primary();
     table.string("titulo", 255).notNullable();
     table.dateTime("data_hora").notNullable();
+    table.dateTime("data_hora_fim").nullable();
     table.text("descricao").nullable();
     table.boolean("ativo").defaultTo(true);
     table.integer("id_criador").unsigned().references("usuario.id_usuario").onDelete("SET NULL");

@@ -8,9 +8,9 @@ import knex from "../database/index.js";
 const MINISTERIOS = [
   { nome: "Louvor", descricao: "Ministério de louvor e música", ordem: 1 },
   { nome: "Som", descricao: "Operação de som, áudio e mesa", ordem: 2 },
-  { nome: "Recepção", descricao: "Acolhimento e recepção de visitantes", ordem: 3 },
+  { nome: "Voluntários", descricao: "Acolhimento e recepção de visitantes", ordem: 3 },
   { nome: "Intercessão", descricao: "Ministério de oração e intercessão", ordem: 4 },
-  { nome: "Infantil", descricao: "Ministério com crianças", ordem: 5 },
+  { nome: "Casa Kids", descricao: "Ministério com crianças", ordem: 5 },
   { nome: "Adolescentes", descricao: "Ministério com adolescentes", ordem: 6 },
   { nome: "Juventude", descricao: "Ministério de jovens", ordem: 7 },
   { nome: "Mídia", descricao: "Projeção, slides e transmissão", ordem: 8 },
@@ -46,9 +46,9 @@ export async function seed() {
 
   const louvor = getMinisterio("Louvor");
   const som = getMinisterio("Som");
-  const recepcao = getMinisterio("Recepção");
+  const voluntarios = getMinisterio("Voluntários");
   const intercessao = getMinisterio("Intercessão");
-  const infantil = getMinisterio("Infantil");
+  const casaKids = getMinisterio("Casa Kids");
   const adolescentes = getMinisterio("Adolescentes");
   const juventude = getMinisterio("Juventude");
   const midia = getMinisterio("Mídia");
@@ -89,9 +89,9 @@ export async function seed() {
   const vinculosLider = [];
   if (lider2 && louvor) vinculosLider.push({ id_ministerio: louvor.id_ministerio, id_usuario: lider2.id_usuario });
   if (lider1 && som) vinculosLider.push({ id_ministerio: som.id_ministerio, id_usuario: lider1.id_usuario });
-  if (lider2 && recepcao) vinculosLider.push({ id_ministerio: recepcao.id_ministerio, id_usuario: lider2.id_usuario });
+  if (lider2 && voluntarios) vinculosLider.push({ id_ministerio: voluntarios.id_ministerio, id_usuario: lider2.id_usuario });
   if (ana && intercessao) vinculosLider.push({ id_ministerio: intercessao.id_ministerio, id_usuario: ana.id_usuario });
-  if (lider1 && infantil) vinculosLider.push({ id_ministerio: infantil.id_ministerio, id_usuario: lider1.id_usuario });
+  if (lider1 && casaKids) vinculosLider.push({ id_ministerio: casaKids.id_ministerio, id_usuario: lider1.id_usuario });
   if (ana && adolescentes) vinculosLider.push({ id_ministerio: adolescentes.id_ministerio, id_usuario: ana.id_usuario });
   if (lider2 && juventude) vinculosLider.push({ id_ministerio: juventude.id_ministerio, id_usuario: lider2.id_usuario });
   if (lider2 && midia) vinculosLider.push({ id_ministerio: midia.id_ministerio, id_usuario: lider2.id_usuario });
@@ -121,9 +121,9 @@ export async function seed() {
 
   addParticipa(louvor, lider2, membro1, maria, fernanda, juliana, amanda);
   addParticipa(som, lider1, admin, joao, pedro, lucas);
-  addParticipa(recepcao, lider2, maria, membro1, beatriz, carla, sandra);
+  addParticipa(voluntarios, lider2, maria, membro1, beatriz, carla, sandra);
   addParticipa(intercessao, ana, maria, fernanda, juliana, patricia, carla);
-  addParticipa(infantil, lider1, maria, amanda, beatriz, sandra);
+  addParticipa(casaKids, lider1, maria, amanda, beatriz, sandra);
   addParticipa(adolescentes, ana, fernanda, juliana, lucas, gabriel);
   addParticipa(juventude, lider2, joao, pedro, fernanda, lucas, beatriz);
   addParticipa(midia, lider2, admin, pedro, ricardo);

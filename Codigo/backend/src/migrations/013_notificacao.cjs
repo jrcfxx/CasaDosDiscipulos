@@ -6,7 +6,7 @@ exports.up = (knex) =>
   knex.schema.createTable("notificacao", (table) => {
     table.increments("id_notificacao").primary();
     table.integer("id_usuario").unsigned().notNullable().references("usuario.id_usuario").onDelete("CASCADE");
-    table.string("tipo", 30).notNullable().comment("evento_criado | escalado");
+    table.string("tipo", 30).notNullable();
     table.integer("id_escala_evento").unsigned().nullable().references("escala_evento.id_escala_evento").onDelete("CASCADE");
     table.string("titulo", 255).notNullable();
     table.text("mensagem").nullable();

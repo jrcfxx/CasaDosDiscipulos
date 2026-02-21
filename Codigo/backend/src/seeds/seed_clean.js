@@ -19,6 +19,8 @@ async function safeDel(tableName) {
 export async function seed() {
   // Ordem: tabelas dependentes primeiro (filhas antes das mães)
   const tables = [
+    "fala_ai_comentario",
+    "fala_ai_post",
     "formulario_resposta_campo",
     "formulario_resposta",
     "quiz_resposta",
