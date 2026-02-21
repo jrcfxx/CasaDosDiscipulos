@@ -1,0 +1,216 @@
+.dar-pontos-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+  animation: darPontosFadeIn 0.2s ease-out;
+}
+
+@keyframes darPontosFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dar-pontos-modal {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.25);
+  padding: 1.5rem 1.75rem;
+  max-width: 420px;
+  width: 100%;
+  animation: darPontosSlideIn 0.25s ease-out;
+}
+
+@keyframes darPontosSlideIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.dar-pontos-modal-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.dar-pontos-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.dar-pontos-modal-field {
+  margin-bottom: 1.25rem;
+}
+
+.dar-pontos-modal-field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.dar-pontos-modal-field-pessoa .dar-pontos-pessoa-wrapper {
+  position: relative;
+}
+
+.dar-pontos-modal-field-pessoa input {
+  padding-right: 2rem;
+}
+
+.dar-pontos-limpar {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 1.2rem;
+  line-height: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.dar-pontos-limpar:hover {
+  background: #cbd5e1;
+  color: #475569;
+}
+
+.dar-pontos-lista-usuarios {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  margin-top: -2px;
+}
+
+.dar-pontos-lista-loading,
+.dar-pontos-lista-vazia {
+  padding: 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.dar-pontos-lista-item {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #1e293b;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dar-pontos-lista-item:hover,
+.dar-pontos-lista-item.selected {
+  background: #f1f5f9;
+}
+
+.dar-pontos-modal-field input,
+.dar-pontos-modal-field textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #1e293b;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.dar-pontos-modal-field textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.dar-pontos-modal-field input:focus,
+.dar-pontos-modal-field textarea:focus {
+  outline: none;
+  border-color: #02869b;
+}
+
+.dar-pontos-modal-field input::placeholder,
+.dar-pontos-modal-field textarea::placeholder {
+  color: #94a3b8;
+}
+
+.dar-pontos-modal-field input:disabled,
+.dar-pontos-modal-field textarea:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.dar-pontos-modal-erro {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.9rem;
+  color: #dc2626;
+}
+
+.dar-pontos-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.dar-pontos-modal-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.dar-pontos-modal-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.dar-pontos-modal-btn-cancel {
+  background: #e2e8f0;
+  color: #475569;
+}
+.dar-pontos-modal-btn-cancel:hover:not(:disabled) {
+  background: #cbd5e1;
+}
+
+.dar-pontos-modal-btn-confirm {
+  background: #02869b;
+  color: white;
+}
+.dar-pontos-modal-btn-confirm:hover:not(:disabled) {
+  background: #026d7d;
+}

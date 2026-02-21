@@ -64,6 +64,8 @@ interface RankingCardProps {
   theme?: "light" | "dark";
   /** Posição do usuário logado - quando preenchido, exibe bloco motivacional (user/leader) */
   minhaPosicao?: MinhaPosicao | null;
+  /** Admin: botão ou ação a exibir acima da lista (ex: Dar pontos) */
+  headerAction?: React.ReactNode;
 }
 
 export default function RankingCard({
@@ -73,6 +75,7 @@ export default function RankingCard({
   subtitle = "Top 20 Discípulos",
   theme = "light",
   minhaPosicao,
+  headerAction,
 }: RankingCardProps) {
   const items = ranking.slice(0, limit);
   const mensagem = minhaPosicao ? getMensagemMotivacional(minhaPosicao) : null;
@@ -118,6 +121,9 @@ export default function RankingCard({
           <span className="ranking-subtitle">{subtitle}</span>
         </div>
       </div>
+      {headerAction && (
+        <div className="ranking-action-above">{headerAction}</div>
+      )}
       {mensagem && (
         <div className="ranking-minha-posicao">
           {minhaPosicao && (

@@ -63,6 +63,18 @@ const usuarioService = {
     const response = await apiClient.delete(`/usuarios/${id}`);
     return response.data;
   },
+
+  /**
+   * Admin: atribui pontuação manual a um usuário (ex: dinâmicas presenciais).
+   * O usuário recebe uma notificação com o motivo.
+   */
+  async addPontuacaoManual(
+    id: number,
+    dados: { pontos: number; motivo: string }
+  ): Promise<Usuario> {
+    const response = await apiClient.post(`/usuarios/${id}/pontuacao-manual`, dados);
+    return response.data.usuario;
+  },
 };
 
 export default usuarioService;

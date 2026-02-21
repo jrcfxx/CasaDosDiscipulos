@@ -6,9 +6,11 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
 import ConfirmModal from "../components/ui/ConfirmModal";
+import DarPontosModal from "../components/ui/DarPontosModal";
 import Toast from "../components/ui/Toast";
 import { formatarConteudoCampo } from "../utils/moduloConteudoUtils";
 import moduloService from "../services/moduloService";
+import usuarioService from "../services/usuarioService";
 import { Modulo } from "../types";
 
 const ModulosEscolaDiscipulosAdmin: React.FC = () => {
@@ -89,6 +91,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [excluindo, setExcluindo] = useState(false);
   const [showConfirmExcluir, setShowConfirmExcluir] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [modalDarPontosAberto, setModalDarPontosAberto] = useState(false);
 
   const executarExclusao = async () => {
     if (!selectedModulo) return;
@@ -111,6 +114,12 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
     } finally {
       setExcluindo(false);
     }
+  };
+
+  const handleDarPontos = async (id_usuario: number, pontos: number, motivo: string) => {
+    const usuario = await usuarioService.addPontuacaoManual(id_usuario, { pontos, motivo });
+    setToast(`Pontuação atribuída! ${pontos} pts para ${usuario.nome}.`);
+    await fetchRanking();
   };
 
   return (
@@ -305,6 +314,15 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
               title="RANKING"
               subtitle="Top 20 Discípulos"
               theme="light"
+              headerAction={
+                <button
+                  type="button"
+                  className="ranking-btn-dar-pontos"
+                  onClick={() => setModalDarPontosAberto(true)}
+                >
+                  + Dar pontos
+                </button>
+              }
             />
           </aside>
         </section>
@@ -312,6 +330,11 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
 
       <Footer />
 
+      <DarPontosModal
+        open={modalDarPontosAberto}
+        onConfirm={handleDarPontos}
+        onCancel={() => setModalDarPontosAberto(false)}
+      />
       <ConfirmModal
         open={showConfirmExcluir}
         title="Tem certeza?"

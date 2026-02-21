@@ -7,6 +7,8 @@ import {
   createUsuarioSchema,
   updateUsuarioSchema,
 } from "../validations/usuarioValidation.js";
+import { pontuacaoManualSchema } from "../validations/pontuacaoManualValidation.js";
+import { adminOnly } from "../middlewares/checkRole.js";
 
 const router = Router();
 
@@ -31,6 +33,14 @@ router.get("/", UsuarioController.index);
 
 // GET /api/usuarios/:id - Buscar por ID
 router.get("/:id", UsuarioController.show);
+
+// POST /api/usuarios/:id/pontuacao-manual - Admin: atribuir pontos com motivo (ex: dinâmicas presenciais)
+router.post(
+  "/:id/pontuacao-manual",
+  adminOnly,
+  validate(pontuacaoManualSchema),
+  UsuarioController.addPontuacaoManual
+);
 
 // POST /api/usuarios - Criar novo (já tem via /auth/register)
 router.post("/", validate(createUsuarioSchema), UsuarioController.store);

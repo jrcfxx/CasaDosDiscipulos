@@ -409,6 +409,10 @@
   line-height: 1.5;
 }
 
+.notif-modal-simple-msg {
+  white-space: pre-line;
+}
+
 .notif-modal-erro {
   color: #f87171;
 }

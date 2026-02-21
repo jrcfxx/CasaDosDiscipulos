@@ -143,6 +143,27 @@ const UsuarioController = {
   },
 
   /**
+   * Admin: atribui pontuação manual a um usuário (ex: dinâmicas presenciais)
+   * POST /api/usuarios/:id/pontuacao-manual
+   * Body: { pontos: number, motivo: string }
+   */
+  async addPontuacaoManual(req, res, next) {
+    try {
+      const id_usuario = parseInt(req.params.id, 10);
+      const { pontos, motivo } = req.body;
+      const id_admin = req.usuario?.id_usuario;
+
+      const usuario = await UsuarioService.addPontuacaoManual(id_usuario, pontos, motivo, id_admin);
+      res.status(HTTP_STATUS.OK).json({
+        message: "Pontuação atribuída com sucesso",
+        usuario,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * Upload de foto de perfil
    * POST /api/usuarios/perfil/foto
    */

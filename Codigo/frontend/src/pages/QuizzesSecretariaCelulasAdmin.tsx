@@ -21,8 +21,11 @@ import CheckboxField from "../components/fields/CheckboxField";
 import SelectField from "../components/fields/SelectField";
 
 import usuarioService from "../services/usuarioService";
+import moduloService from "../services/moduloService";
 import { API_BASE, ASSETS_BASE } from "../config/api";
 import type { Usuario } from "../services/usuarioService";
+import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
+import DarPontosModal from "../components/ui/DarPontosModal";
 
 /* TYPES */
 type Quiz = {
@@ -64,8 +67,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [availableFields, setAvailableFields] = useState<AvailableField[]>([]);
-  const [ranking, setRanking] = useState<Usuario[]>([]);
+  const [ranking, setRanking] = useState<RankItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [modalDarPontosAberto, setModalDarPontosAberto] = useState(false);
 
   const [showFormModal, setShowFormModal] = useState(false);
   const [quizToEdit, setQuizToEdit] = useState<number | null>(null);
@@ -146,11 +150,17 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const fetchRanking = async () => {
     try {
-      const topUsuarios = await usuarioService.getRanking(20);
-      setRanking(topUsuarios);
+      const topUsuarios = await moduloService.getRanking(20);
+      setRanking(topUsuarios as RankItem[]);
     } catch (error) {
       console.error("Erro ao carregar ranking:", error);
     }
+  };
+
+  const handleDarPontos = async (id_usuario: number, pontos: number, motivo: string) => {
+    const usuario = await usuarioService.addPontuacaoManual(id_usuario, { pontos, motivo });
+    showToast(`Pontuação atribuída! ${pontos} pts para ${usuario.nome}.`);
+    await fetchRanking();
   };
 
   const handleToggle = async (id: number) => {
@@ -864,91 +874,22 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
           {/* Coluna direita - Ranking */}
           <aside className="panel quizzes-right" aria-label="Ranking">
-            <div className="ranking-card">
-              <div className="ranking-header">
-                <div className="ranking-header-icon">
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <defs>
-                      <linearGradient
-                        id="headerGoldGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="100%"
-                      >
-                        <stop offset="0%" stopColor="#FFD700" />
-                        <stop offset="50%" stopColor="#FFA500" />
-                        <stop offset="100%" stopColor="#FFD700" />
-                      </linearGradient>
-                    </defs>
-                    <circle
-                      cx="20"
-                      cy="20"
-                      r="18"
-                      fill="rgba(255, 215, 0, 0.2)"
-                    />
-                    <path
-                      d="M15 15 L20 10 L25 15 L23 25 L17 25 Z"
-                      fill="url(#headerGoldGradient)"
-                      stroke="#FFA500"
-                      strokeWidth="2"
-                    />
-                    <circle cx="20" cy="17" r="3" fill="#FFF" opacity="0.5" />
-                  </svg>
-                </div>
-                <div>
-                  <h3>RANKING</h3>
-                  <span className="ranking-subtitle">Top 20 Discípulos</span>
-                </div>
-              </div>
-              <div className="ranking-list">
-                {ranking.length > 0 ? (
-                  ranking.map((usuario, index) => {
-                    const position = index + 1;
-                    const isTopThree = position <= 3;
-                    const medal = getMedalIcon(position);
-
-                    return (
-                      <div
-                        key={usuario.id_usuario}
-                        className={`rank-item ${
-                          isTopThree ? `top-${position}` : ""
-                        }`}
-                      >
-                        {medal ? (
-                          <div className="rank-medal">{medal}</div>
-                        ) : (
-                          <div className="rank-position">{position}º</div>
-                        )}
-                        <div
-                          className={`rank-avatar ${
-                            isTopThree ? "highlighted" : ""
-                          }`}
-                        >
-                          {usuario.foto ? (
-                            <img
-                              src={`${ASSETS_BASE}${usuario.foto}`}
-                              alt={usuario.nome}
-                              className="rank-avatar-photo"
-                            />
-                          ) : (
-                            getIniciais(usuario.nome)
-                          )}
-                        </div>
-                        <div className="rank-info">
-                          <p className="rank-name">{usuario.nome}</p>
-                          <p className="rank-points">{usuario.pontuacao} pts</p>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="ranking-empty">
-                    <p>Nenhum usuário no ranking</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <RankingCard
+              ranking={ranking}
+              limit={20}
+              title="RANKING"
+              subtitle="Top 20 Discípulos"
+              theme="light"
+              headerAction={
+                <button
+                  type="button"
+                  className="ranking-btn-dar-pontos"
+                  onClick={() => setModalDarPontosAberto(true)}
+                >
+                  + Dar pontos
+                </button>
+              }
+            />
           </aside>
         </section>
       </main>
@@ -956,6 +897,12 @@ export default function QuizzesSecretariaCelulasAdmin() {
       <Footer />
 
       {toast && <div className="toast">{toast}</div>}
+
+      <DarPontosModal
+        open={modalDarPontosAberto}
+        onConfirm={handleDarPontos}
+        onCancel={() => setModalDarPontosAberto(false)}
+      />
 
       <InputModal
         open={labelModalOpen}

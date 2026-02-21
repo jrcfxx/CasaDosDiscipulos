@@ -124,6 +124,19 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const [filtroDataInicio, setFiltroDataInicio] = useState<string>("");
   const [filtroDataFim, setFiltroDataFim] = useState<string>("");
 
+  /* Filtro de período no dashboard */
+  const hoje = new Date();
+  const fimPadrao = hoje.getFullYear() + "-" +
+    String(hoje.getMonth() + 1).padStart(2, "0") + "-" +
+    String(hoje.getDate()).padStart(2, "0");
+  const dInicio = new Date(hoje);
+  dInicio.setDate(dInicio.getDate() - 30);
+  const inicioPadrao = dInicio.getFullYear() + "-" +
+    String(dInicio.getMonth() + 1).padStart(2, "0") + "-" +
+    String(dInicio.getDate()).padStart(2, "0");
+  const [filtroDataDashboardInicio, setFiltroDataDashboardInicio] = useState<string>(inicioPadrao);
+  const [filtroDataDashboardFim, setFiltroDataDashboardFim] = useState<string>(fimPadrao);
+
   const [celulas, setCelulas] = useState<
     Array<{ id_celula: number; nome: string }>
   >([]);
@@ -342,42 +355,40 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   const respondentesUnicos = [...new Set(respostas.map((r) => r.nome_lider || "-").filter(Boolean))].sort();
 
-  /* Cálculo em dia / atrasada baseado na frequência do formulário */
+  /* Cálculo em dia / atrasada baseado no período selecionado e frequência */
   const frequenciaFormulario = selectedFormulario?.frequencia ?? "";
   const temFrequencia = !!frequenciaFormulario;
 
-  const hoje = new Date();
-  hoje.setHours(23, 59, 59, 999);
+  const dataInicioPeriodo = filtroDataDashboardInicio
+    ? new Date(filtroDataDashboardInicio + "T00:00:00.000")
+    : null;
+  const dataFimPeriodo = filtroDataDashboardFim
+    ? new Date(filtroDataDashboardFim + "T23:59:59.999")
+    : null;
 
-  const ultimaRespostaPorCelula = respostas.reduce<Record<number, string>>(
-    (acc, r) => {
-      const atual = acc[r.id_celula];
-      if (!atual || new Date(r.data_resposta) > new Date(atual)) {
-        acc[r.id_celula] = r.data_resposta;
-      }
-      return acc;
-    },
-    {}
-  );
+  const periodoValido = dataInicioPeriodo && dataFimPeriodo &&
+    !isNaN(dataInicioPeriodo.getTime()) && !isNaN(dataFimPeriodo.getTime()) &&
+    dataInicioPeriodo <= dataFimPeriodo;
+
+  const respostasNoPeriodo = periodoValido
+    ? respostas.filter((r) => {
+        const dt = new Date(r.data_resposta);
+        return dt >= dataInicioPeriodo! && dt <= dataFimPeriodo!;
+      })
+    : respostas;
 
   const celulasEmDia: Array<{ id_celula: number; nome: string; count: number }> = [];
   const celulasAtrasadas: Array<{ id_celula: number; nome: string }> = [];
 
   if (temFrequencia) {
-    const dias = diasPorFrequencia(frequenciaFormulario);
-    const cutoff = new Date(hoje);
-    cutoff.setDate(cutoff.getDate() - dias);
-
     celulas.forEach((c) => {
-      const ultima = ultimaRespostaPorCelula[c.id_celula];
-      const respostasDestaCelula = respostas.filter((r) => r.id_celula === c.id_celula);
+      const respostasDestaCelula = respostasNoPeriodo.filter((r) => r.id_celula === c.id_celula);
+      const count = respostasDestaCelula.length;
 
-      if (ultima && new Date(ultima) >= cutoff) {
-        celulasEmDia.push({
-          id_celula: c.id_celula,
-          nome: c.nome,
-          count: respostasDestaCelula.length,
-        });
+      const emDia = periodoValido ? count >= 1 : false;
+
+      if (emDia) {
+        celulasEmDia.push({ id_celula: c.id_celula, nome: c.nome, count });
       } else {
         celulasAtrasadas.push({ id_celula: c.id_celula, nome: c.nome });
       }
@@ -1057,6 +1068,29 @@ export default function FormulariosSecretariaCelulasAdmin() {
                           ? `Status por célula — formulário ${FREQUENCIA_OPCOES.find((o) => o.value === frequenciaFormulario)?.label?.toLowerCase() ?? frequenciaFormulario}`
                           : "Defina a frequência do formulário (na edição) para ver quais células estão em dia"}
                       </p>
+                      {temFrequencia && (
+                        <div className="dashboard-filtro-data">
+                          <label htmlFor="filtro-data-inicio">Período:</label>
+                          <input
+                            id="filtro-data-inicio"
+                            type="date"
+                            value={filtroDataDashboardInicio}
+                            onChange={(e) => setFiltroDataDashboardInicio(e.target.value)}
+                            aria-label="Data inicial do período"
+                          />
+                          <span className="dashboard-filtro-ate">até</span>
+                          <input
+                            id="filtro-data-fim"
+                            type="date"
+                            value={filtroDataDashboardFim}
+                            onChange={(e) => setFiltroDataDashboardFim(e.target.value)}
+                            aria-label="Data final do período"
+                          />
+                          <span className="dashboard-filtro-info">
+                            Frequência: {FREQUENCIA_OPCOES.find((o) => o.value === frequenciaFormulario)?.label?.toLowerCase() ?? frequenciaFormulario}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {!temFrequencia && (
@@ -1066,6 +1100,13 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     )}
 
                     {temFrequencia && (
+                    <>
+                    {!periodoValido && (
+                      <p className="dashboard-periodo-invalido muted">
+                        Selecione um período válido (data inicial antes da final).
+                      </p>
+                    )}
+                    {periodoValido && (
                     <>
                     <div className="dashboard-metrics">
                       <div className="metric-card metric-total">
@@ -1124,6 +1165,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
                       <p className="dashboard-empty muted">
                         Nenhuma célula cadastrada.
                       </p>
+                    )}
+                    </>
                     )}
                     </>
                     )}

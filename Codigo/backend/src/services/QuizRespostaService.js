@@ -49,11 +49,14 @@ class QuizRespostaService {
       throw new ValidationError("Usuário já respondeu esta questão");
     }
 
-    // Avaliar resposta (se não for discursiva)
+    // Avaliar resposta
     let correta = null;
     let pontos_obtidos = 0;
 
-    if (questao.tipo_questao !== "discursiva" && questao.resposta_correta) {
+    if (questao.tipo_questao === "discursiva") {
+      const texto = String(data.resposta || "").trim();
+      pontos_obtidos = texto.length > 0 ? (questao.pontos || 0) : 0;
+    } else if (questao.resposta_correta) {
       correta = data.resposta.trim() === questao.resposta_correta.trim();
       pontos_obtidos = correta ? questao.pontos : 0;
     }
@@ -222,7 +225,11 @@ class QuizRespostaService {
       let correta = null;
       let pontos_obtidos = 0;
 
-      if (questao.tipo_questao !== "discursiva" && questao.resposta_correta) {
+      if (questao.tipo_questao === "discursiva") {
+        const texto = String(r.resposta || "").trim();
+        pontos_obtidos = texto.length > 0 ? (questao.pontos || 0) : 0;
+        pontuacao_total += pontos_obtidos;
+      } else if (questao.resposta_correta) {
         correta = String(r.resposta || "").trim() === String(questao.resposta_correta || "").trim();
         pontos_obtidos = correta ? (questao.pontos || 0) : 0;
         pontuacao_total += pontos_obtidos;
@@ -276,6 +283,7 @@ class QuizRespostaService {
         status: "concluido",
         nota_quiz: pontuacao_total,
         data_conclusao: now,
+        auto_completo_por_nivel: false,
       };
 
       if (moduloUsuario) {

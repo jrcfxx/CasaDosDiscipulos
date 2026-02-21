@@ -1,15 +1,131 @@
 import knex from "../database/index.js";
 import UsuarioModel from "../models/UsuarioModel.js";
+import NotificacaoModel from "../models/NotificacaoModel.js";
+import UsuarioModuloModel from "../models/UsuarioModuloModel.js";
 import NivelModel from "../models/NivelModel.js";
 import MinisterioModel from "../models/MinisterioModel.js";
 import ModuloService from "./ModuloService.js";
+import QuizQuestaoModel from "../models/QuizQuestaoModel.js";
 import bcrypt from "bcrypt";
 import {
   NotFoundError,
   ValidationError,
   ConflictError,
+  ForbiddenError,
 } from "../utils/AppError.js";
 import { USER_TYPES } from "../utils/constants.js";
+
+/**
+ * Marca módulos dos níveis anteriores/inclusivo ao do usuário como concluídos.
+ * Chamado quando usuário é criado ou atualizado com nível maior que o mínimo.
+ */
+async function marcarModulosConcluidosPorNivel(id_usuario, id_nivel) {
+  if (!id_nivel) return;
+
+  const nivelUsuario = await NivelModel.findById(id_nivel);
+  if (!nivelUsuario) return;
+
+  const niveis = await NivelModel.findAll();
+  const ordemMinima = Math.min(...niveis.map((n) => n.ordem ?? 999));
+
+  if ((nivelUsuario.ordem ?? 999) <= ordemMinima) return;
+
+  const idsNiveisInclusos = niveis
+    .filter((n) => (n.ordem ?? 999) <= (nivelUsuario.ordem ?? 999))
+    .map((n) => n.id_nivel);
+
+  if (idsNiveisInclusos.length === 0) return;
+
+  const modulos = await knex("modulo")
+    .where("ativo", true)
+    .where((qb) => {
+      qb.whereIn("id_nivel", idsNiveisInclusos).orWhereNull("id_nivel");
+    })
+    .select("id_modulo");
+
+  const now = new Date();
+  let pontosNovos = 0;
+
+  for (const { id_modulo } of modulos) {
+    const existente = await UsuarioModuloModel.getByUsuarioAndModulo(id_usuario, id_modulo);
+
+    if (existente?.status === "concluido") {
+      continue;
+    }
+
+    const quiz = await ModuloService.getQuizVinculado(id_modulo);
+    let pontosModulo = 0;
+
+    if (quiz?.id_quiz) {
+      const questoes = await QuizQuestaoModel.getByQuiz(quiz.id_quiz);
+      const pontuacaoMaxima = questoes.reduce((s, q) => s + (q.pontos || 0), 0);
+      pontosModulo = Math.max(1, Math.floor(pontuacaoMaxima * 0.5));
+    } else {
+      pontosModulo = 5;
+    }
+
+    await UsuarioModuloModel.upsert(id_usuario, id_modulo, {
+      status: "concluido",
+      nota_quiz: pontosModulo,
+      data_conclusao: now,
+      auto_completo_por_nivel: true,
+    });
+    pontosNovos += pontosModulo;
+  }
+
+  if (pontosNovos > 0) {
+    await UsuarioModel.updateScore(id_usuario, pontosNovos);
+  }
+}
+
+/**
+ * Reverte módulos auto-completados por nível que estão acima do novo nível do usuário.
+ * Chamado quando o usuário é rebaixado de nível.
+ * @param {number} id_usuario
+ * @param {number|null} id_nivel_novo - Novo nível. Se null, reverte todos os auto-completados.
+ */
+async function reverterModulosAcimaDoNivel(id_usuario, id_nivel_novo) {
+  let ordemNovo = 0;
+  if (id_nivel_novo) {
+    const nivelUsuario = await NivelModel.findById(id_nivel_novo);
+    if (!nivelUsuario) return;
+    ordemNovo = nivelUsuario.ordem ?? 999;
+  }
+  const idsNiveisAcima = (await NivelModel.findAll())
+    .filter((n) => (n.ordem ?? 999) > ordemNovo)
+    .map((n) => n.id_nivel);
+
+  if (idsNiveisAcima.length === 0) return;
+
+  const modulosAcima = await knex("modulo")
+    .whereIn("id_nivel", idsNiveisAcima)
+    .where("ativo", true)
+    .select("id_modulo");
+
+  let pontosRemover = 0;
+
+  for (const { id_modulo } of modulosAcima) {
+    const existente = await UsuarioModuloModel.getByUsuarioAndModulo(id_usuario, id_modulo);
+    if (!existente || existente.status !== "concluido" || !existente.auto_completo_por_nivel) continue;
+
+    const quiz = await ModuloService.getQuizVinculado(id_modulo);
+    let pontosModulo = 0;
+    if (quiz?.id_quiz) {
+      const questoes = await QuizQuestaoModel.getByQuiz(quiz.id_quiz);
+      const pontuacaoMaxima = questoes.reduce((s, q) => s + (q.pontos || 0), 0);
+      pontosModulo = Math.max(1, Math.floor(pontuacaoMaxima * 0.5));
+    } else {
+      pontosModulo = 5;
+    }
+
+    await knex("usuario_modulo").where({ id_usuario, id_modulo }).del();
+    pontosRemover += pontosModulo;
+  }
+
+  if (pontosRemover > 0) {
+    await UsuarioModel.updateScore(id_usuario, -pontosRemover);
+  }
+}
 
 /**
  * Service para operações relacionadas a usuários
@@ -182,6 +298,10 @@ const UsuarioService = {
       await MinisterioModel.setMinisteriosParticipaByUsuario(novoUsuario.id_usuario, idMinisteriosParticipa);
     }
 
+    if (novoUsuarioData.id_nivel) {
+      await marcarModulosConcluidosPorNivel(novoUsuario.id_usuario, novoUsuarioData.id_nivel);
+    }
+
     return this.getById(novoUsuario.id_usuario);
   },
 
@@ -194,8 +314,7 @@ const UsuarioService = {
    * @throws {ConflictError} Se email já estiver cadastrado para outro usuário
    */
   async update(id_usuario, data) {
-    // Verifica se usuário existe
-    await this.getById(id_usuario);
+    const usuarioAntigo = await this.getById(id_usuario);
 
     const dadosAtualizacao = {};
 
@@ -273,6 +392,20 @@ const UsuarioService = {
     if (data.lider_celula !== undefined) dadosAtualizacao.lider_celula = !!data.lider_celula;
     if (data.lider_ministerio !== undefined) dadosAtualizacao.lider_ministerio = !!data.lider_ministerio;
 
+    if (data.id_nivel !== undefined) {
+      const nivelAntigo = usuarioAntigo.id_nivel
+        ? await NivelModel.findById(usuarioAntigo.id_nivel)
+        : null;
+      const ordemAntiga = nivelAntigo ? (nivelAntigo.ordem ?? 999) : 0;
+      const idNivelNovo = dadosAtualizacao.id_nivel ?? null;
+      const nivelNovo = idNivelNovo ? await NivelModel.findById(idNivelNovo) : null;
+      const ordemNova = nivelNovo ? (nivelNovo.ordem ?? 999) : 0;
+
+      if (idNivelNovo === null || ordemNova < ordemAntiga) {
+        await reverterModulosAcimaDoNivel(id_usuario, idNivelNovo);
+      }
+    }
+
     // Atualiza usuário
     await UsuarioModel.update(id_usuario, dadosAtualizacao);
 
@@ -293,6 +426,10 @@ const UsuarioService = {
     if (data.id_ministerios_participa !== undefined) {
       const ids = Array.isArray(data.id_ministerios_participa) ? data.id_ministerios_participa : [];
       await MinisterioModel.setMinisteriosParticipaByUsuario(id_usuario, ids);
+    }
+
+    if (dadosAtualizacao.id_nivel) {
+      await marcarModulosConcluidosPorNivel(id_usuario, dadosAtualizacao.id_nivel);
     }
 
     return this.getById(id_usuario);
@@ -343,6 +480,47 @@ const UsuarioService = {
     }
 
     await UsuarioModel.updateScore(id_usuario, pontos);
+  },
+
+  /**
+   * Admin: atribui pontuação manual a um usuário (ex: dinâmicas presenciais).
+   * Cria notificação para o usuário com o motivo.
+   * @param {number} id_usuario - ID do usuário que receberá os pontos
+   * @param {number} pontos - Quantidade de pontos
+   * @param {string} motivo - Motivo/descrição (ex: dinâmica presencial)
+   * @param {number} id_admin - ID do admin que está atribuindo
+   * @returns {Promise<Object>} Usuário atualizado
+   */
+  async addPontuacaoManual(id_usuario, pontos, motivo, id_admin) {
+    const admin = id_admin ? await UsuarioModel.getById(id_admin) : null;
+    if (!admin || admin.tipo !== USER_TYPES.ADMIN) {
+      throw new ForbiddenError("Apenas administradores podem atribuir pontuação manual");
+    }
+
+    if (!pontos || isNaN(Number(pontos)) || Number(pontos) <= 0) {
+      throw new ValidationError("Pontos devem ser um número positivo");
+    }
+
+    const motivoStr = motivo ? String(motivo).trim() : "";
+    if (motivoStr.length < 3) {
+      throw new ValidationError("O motivo deve ter no mínimo 3 caracteres");
+    }
+
+    const usuario = await this.getById(id_usuario);
+    const pts = Number(pontos);
+
+    await UsuarioModel.updateScore(id_usuario, pts);
+
+    await NotificacaoModel.create({
+      id_usuario,
+      tipo: "pontuacao_manual",
+      titulo: `Parabéns! Você ganhou ${pts} ponto${pts !== 1 ? "s" : ""}! 🎉`,
+      mensagem: `Por: ${motivoStr}\n\nConfira sua posição no ranking!`,
+      area_nome: null,
+      id_escala_evento: null,
+    });
+
+    return this.getById(id_usuario);
   },
 
   /**

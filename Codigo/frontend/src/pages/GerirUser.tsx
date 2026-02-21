@@ -330,6 +330,27 @@ export default function GerenciarUsuarios() {
       return;
     }
 
+    // Valida formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(usuarioModal.email.trim())) {
+      showToast("Informe um email válido");
+      return;
+    }
+
+    // Valida telefone quando preenchido (não aceita email)
+    const tel = usuarioModal.telefone?.trim();
+    if (tel) {
+      if (tel.includes("@")) {
+        showToast("O campo Telefone não pode conter email. Use o campo Email.");
+        return;
+      }
+      const apenasDigitos = tel.replace(/\D/g, "");
+      if (apenasDigitos.length < 10) {
+        showToast("Telefone inválido. Informe o número com DDD (ex: 11999999999)");
+        return;
+      }
+    }
+
     // Valida senha apenas para novo usuário ou se estiver preenchida
     if (!usuarioModal.id_usuario) {
       if (!usuarioModal.senha) {
@@ -656,9 +677,8 @@ export default function GerenciarUsuarios() {
                       : `${ASSETS_BASE}${usuario.foto}`
                     : perfil;
                   const nivelNome =
-                    usuario.nivel_exibir ??
-                    usuario.nivel_escola_nome ??
                     usuario.nivel_nome ??
+                    usuario.nivel_escola_nome ??
                     (getIdNivel(usuario) != null
                       ? niveis.find((n) => Number(n.id_nivel) === Number(getIdNivel(usuario)))?.nome
                       : null);
