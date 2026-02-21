@@ -1,10 +1,11 @@
 /**
- * EventosAdmin Styles
+ * EventosAdmin Styles - Branding Casa dos Discípulos: Montserrat
  */
 
 .eventos-admin {
   padding: 2rem 1.5rem;
   min-height: calc(100vh - 200px);
+  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
 }
 
 .page-title {

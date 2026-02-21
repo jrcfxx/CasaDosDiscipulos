@@ -35,7 +35,7 @@
 .editar-modulo-page {
   min-height: 100vh;
   background: var(--em-bg-black);
-  font-family: "Montserrat", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
   display: flex;
   flex-direction: column;
 }
@@ -134,7 +134,7 @@ main.editar-modulo-container {
   border: 2px solid var(--em-gray-200);
   padding: 0.85rem 1.1rem;
   outline: none;
-  font-family: "Montserrat", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
   font-size: 0.95rem;
   transition: all 0.2s ease;
 }
@@ -414,7 +414,7 @@ textarea.editar-modulo-input {
   font-size: 0.95rem;
   transition: all 0.3s ease;
   border: none;
-  font-family: "Montserrat", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }

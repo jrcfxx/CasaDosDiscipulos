@@ -67,9 +67,8 @@
   --spacing-16: 4rem; /* 64px */
 
   /* ==================== TIPOGRAFIA ==================== */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  /* Montserrat: fonte oficial Casa dos Discípulos */
+  --font-sans: "Montserrat", "Segoe UI", Arial, sans-serif;
   --font-mono: "Courier New", Courier, monospace;
 
   --font-size-xs: 0.75rem; /* 12px */
