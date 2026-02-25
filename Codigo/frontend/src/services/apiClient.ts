@@ -30,6 +30,11 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    // FormData: remover Content-Type para o navegador definir multipart/form-data com boundary
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers["Content-Type"];
+    }
+
     return config;
   },
   (error: AxiosError) => {

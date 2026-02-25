@@ -10,8 +10,8 @@ import fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuração do multer para upload de imagens (mesmo diretório que app.js serve)
-const uploadsDir = path.join(process.cwd(), "uploads");
+// Mesmo diretório que app.js usa em express.static("/uploads") — garante que salvar e servir usem a mesma pasta
+const uploadsDir = path.join(__dirname, "..", "..", "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }

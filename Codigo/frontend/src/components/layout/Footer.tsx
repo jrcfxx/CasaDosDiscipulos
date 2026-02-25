@@ -22,6 +22,7 @@ const Footer: React.FC = () => {
           <h2 className="footer-col-title">Nossos Cultos</h2>
           <p className="footer-text">Domingo – Culto 18h30</p>
           <p className="footer-text">Terça-feira – Células 20h</p>
+          <p className="footer-text">Quarta-feira – Escola de Discípulos 20h</p>
           <p className="footer-text">Sexta-feira – Vigília 20h</p>
         </div>
 

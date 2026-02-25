@@ -89,6 +89,11 @@ const HomePage: React.FC = () => {
               <span className="home-culto-card__tipo">Células</span>
             </div>
             <div className="home-culto-card">
+              <span className="home-culto-card__dia">Quarta-feira</span>
+              <span className="home-culto-card__hora">20h</span>
+              <span className="home-culto-card__tipo">Escola de Discípulos</span>
+            </div>
+            <div className="home-culto-card">
               <span className="home-culto-card__dia">Sexta-feira</span>
               <span className="home-culto-card__hora">20h</span>
               <span className="home-culto-card__tipo">Vigília</span>

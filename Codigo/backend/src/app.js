@@ -58,8 +58,15 @@ const authLimiter = rateLimit({
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 
-// Servir arquivos estáticos da pasta uploads
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+// Servir arquivos estáticos da pasta uploads (permite carregamento cross-origin para imagens no frontend)
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  },
+  express.static(path.join(__dirname, "../uploads"))
+);
 
 // Health check
 app.get("/", (req, res) => {
