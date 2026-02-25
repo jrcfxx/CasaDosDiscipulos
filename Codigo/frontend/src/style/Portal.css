@@ -1,17 +1,16 @@
 /**
  * Portal do Discípulo — Casa dos Discípulos
- * Identidade visual: teal #02869b, dourado #f4b002, fundo escuro
- * Elegante, clean, comunhão e formação
+ * Estilo compartilhado: Admin, User e Líder
+ * Identidade: teal #02869b, dourado #f4b002, fundo escuro
  */
 
-/* ==================== VARIÁVEIS DA MARCA ==================== */
+/* Aplica a ambos: .portal (admin) e .portal-user (user/líder) */
+.portal,
 .portal-user {
   --portal-teal: #02869b;
   --portal-teal-light: rgba(2, 134, 155, 0.15);
   --portal-gold: #f4b002;
-  --portal-gold-muted: rgba(244, 176, 2, 0.2);
   --portal-bg: #0a0a0a;
-  --portal-surface: #121212;
   --portal-text: #f5f5f5;
   --portal-text-muted: #a3a3a3;
   --portal-border: rgba(255, 255, 255, 0.08);
@@ -19,7 +18,7 @@
   --portal-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ==================== LAYOUT ==================== */
+.portal,
 .portal-user {
   min-height: 100vh;
   background: var(--portal-bg);
@@ -27,14 +26,16 @@
   font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
 }
 
-.portal-wrap {
+.portal .portal-wrap,
+.portal-user .portal-wrap {
   width: min(1100px, 92vw);
   margin: 0 auto;
   padding: 2.5rem 0 4rem;
 }
 
-/* ==================== HERO / INTRO ==================== */
-.portal-hero {
+/* Hero / Intro */
+.portal .portal-hero,
+.portal-user .portal-hero {
   text-align: center;
   margin-bottom: 3.5rem;
   padding-bottom: 2.5rem;
@@ -68,7 +69,7 @@
   line-height: 1.6;
 }
 
-/* ==================== SEÇÕES ==================== */
+/* Seções */
 .portal-section {
   margin-bottom: 3rem;
 }
@@ -92,7 +93,7 @@
   border-radius: 1px;
 }
 
-/* ==================== GRID ==================== */
+/* Grid */
 .portal-grid {
   display: grid;
   gap: 1.25rem;
@@ -116,7 +117,11 @@
   max-width: 560px;
 }
 
-/* ==================== CARDS ==================== */
+.portal-grid--auto {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Cards */
 .portal-card {
   position: relative;
   height: 200px;
@@ -170,6 +175,16 @@
   outline-offset: 2px;
 }
 
+.portal-card,
+.portal-card:link,
+.portal-card:visited,
+.portal-card:hover,
+.portal-card:active,
+.portal-card:focus {
+  color: #fff;
+  outline: none;
+}
+
 .portal-card__title {
   position: relative;
   z-index: 1;
@@ -191,21 +206,24 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* ==================== RESPONSIVO ==================== */
+/* Responsivo */
 @media (max-width: 900px) {
-  .portal-grid--3 {
-    grid-template-columns: 1fr;
-  }
-
+  .portal-grid--3,
   .portal-grid--2 {
     grid-template-columns: 1fr;
   }
 
-  .portal-wrap {
+  .portal-grid--auto {
+    grid-template-columns: 1fr;
+  }
+
+  .portal .portal-wrap,
+  .portal-user .portal-wrap {
     padding: 1.5rem 0 3rem;
   }
 
-  .portal-hero {
+  .portal .portal-hero,
+  .portal-user .portal-hero {
     margin-bottom: 2.5rem;
     padding-bottom: 1.5rem;
   }
