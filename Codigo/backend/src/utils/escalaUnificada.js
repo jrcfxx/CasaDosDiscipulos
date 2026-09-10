@@ -206,30 +206,184 @@ export function formatarEventoUnificado(evento, { incluirSlotsVazios = true } = 
 }
 
 export function estatisticasEventos(eventosUnificados) {
+  const hoje = new Date();
+  hoje.setHours(12, 0, 0, 0);
+  const hojeIso = hoje.toISOString().slice(0, 10);
+
   const nomes = new Map();
   const instrumentosCount = new Map();
+  const areasCount = new Map();
+  const porTipo = new Map();
+  const porStatus = new Map();
+  const porDiaSemana = new Map();
+  const eventosIncompletos = [];
+  const eventosSemPessoas = [];
   let totalPessoas = 0;
+  let vagasTotal = 0;
+  let vagasPreenchidas = 0;
+  let eventosPassados = 0;
+  let eventosHoje = 0;
+  let eventosFuturos = 0;
+
   for (const ev of eventosUnificados) {
-    for (const slot of Object.values(ev.instrumentos || {})) {
-      instrumentosCount.set(slot.tipo, (instrumentosCount.get(slot.tipo) || 0) + slot.membros.length);
-      for (const m of slot.membros) {
+    const tipo = ev.tipo || "evento";
+    const status = ev.status || "rascunho";
+    porTipo.set(tipo, (porTipo.get(tipo) || 0) + 1);
+    porStatus.set(status, (porStatus.get(status) || 0) + 1);
+
+    if (ev.data) {
+      const d = new Date(`${ev.data}T12:00:00`);
+      const diaNome = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][d.getDay()];
+      porDiaSemana.set(diaNome, (porDiaSemana.get(diaNome) || 0) + 1);
+      if (ev.data < hojeIso) eventosPassados += 1;
+      else if (ev.data === hojeIso) eventosHoje += 1;
+      else eventosFuturos += 1;
+    }
+
+    const tot = ev.totais || {};
+    vagasTotal += tot.vagasTotal || 0;
+    vagasPreenchidas += tot.vagasPreenchidas || 0;
+
+    const slots = Object.values(ev.instrumentos || {});
+    let pessoasNoEvento = 0;
+    const slotsVazios = [];
+
+    for (const slot of slots) {
+      const qtd = (slot.membros || []).length;
+      pessoasNoEvento += qtd;
+      instrumentosCount.set(slot.tipo, (instrumentosCount.get(slot.tipo) || 0) + qtd);
+      const areaKey = slot.areaNome || "Geral";
+      areasCount.set(areaKey, (areasCount.get(areaKey) || 0) + qtd);
+
+      const limite = slot.limite;
+      const vazio =
+        qtd === 0 || (limite != null && limite > 0 && qtd < limite);
+      if (vazio && slot.tipo !== "_geral") {
+        slotsVazios.push({
+          tipo: slot.tipo,
+          nome: slot.nome || slot.tipo,
+          area: areaKey,
+          atual: qtd,
+          limite: limite,
+        });
+      }
+
+      for (const m of slot.membros || []) {
         totalPessoas += 1;
         const id = m.usuario.id;
-        const atual = nomes.get(id) || { id, nome: m.usuario.nome, totalEscalas: 0 };
+        const atual = nomes.get(id) || {
+          id,
+          nome: m.usuario.nome,
+          totalEscalas: 0,
+          funcoes: {},
+          eventos: [],
+        };
         atual.totalEscalas += 1;
+        const funcao = slot.nome || slot.tipo || "Geral";
+        atual.funcoes[funcao] = (atual.funcoes[funcao] || 0) + 1;
+        if (ev.data && !atual.eventos.includes(ev.data)) atual.eventos.push(ev.data);
         nomes.set(id, atual);
       }
     }
+
+    if (pessoasNoEvento === 0) {
+      eventosSemPessoas.push({
+        id: ev.id,
+        nome: ev.nome,
+        data: ev.data,
+        horaInicio: ev.horaInicio,
+        status: ev.status,
+      });
+    } else if (slotsVazios.length > 0 || (tot.vagasDisponiveis || 0) > 0) {
+      eventosIncompletos.push({
+        id: ev.id,
+        nome: ev.nome,
+        data: ev.data,
+        horaInicio: ev.horaInicio,
+        status: ev.status,
+        vagasDisponiveis: tot.vagasDisponiveis || slotsVazios.length,
+        slotsVazios: slotsVazios.slice(0, 6),
+      });
+    }
   }
-  const pessoaMaisEscalada = [...nomes.values()].sort((a, b) => b.totalEscalas - a.totalEscalas)[0] || null;
+
+  const ranking = [...nomes.values()]
+    .map((p) => ({
+      id: p.id,
+      nome: p.nome,
+      totalEscalas: p.totalEscalas,
+      diasEscalado: p.eventos.length,
+      funcoesPrincipais: Object.entries(p.funcoes)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([nome, quantidade]) => ({ nome, quantidade })),
+    }))
+    .sort((a, b) => b.totalEscalas - a.totalEscalas);
+
+  const pessoasMaisEscaladas = ranking.slice(0, 10);
+  const pessoaMaisEscalada = pessoasMaisEscaladas[0] || null;
+  const pessoasMenosEscaladas = [...ranking]
+    .filter((p) => p.totalEscalas > 0)
+    .sort((a, b) => a.totalEscalas - b.totalEscalas || a.nome.localeCompare(b.nome))
+    .slice(0, 5);
+
   const instrumentosMaisUsados = [...instrumentosCount.entries()]
     .map(([instrumento, quantidade]) => ({ instrumento, tipo: instrumento, quantidade }))
     .sort((a, b) => b.quantidade - a.quantidade);
+
+  const areasMaisUsadas = [...areasCount.entries()]
+    .map(([area, quantidade]) => ({ area, quantidade }))
+    .sort((a, b) => b.quantidade - a.quantidade);
+
+  const toLista = (map) =>
+    [...map.entries()]
+      .map(([chave, quantidade]) => ({ chave, quantidade }))
+      .sort((a, b) => b.quantidade - a.quantidade);
+
+  const taxaPreenchimento =
+    vagasTotal > 0 ? Math.round((vagasPreenchidas / vagasTotal) * 100) : totalPessoas > 0 ? 100 : 0;
+
+  const mediaPessoasPorEvento =
+    eventosUnificados.length > 0
+      ? Math.round((totalPessoas / eventosUnificados.length) * 10) / 10
+      : 0;
+
   return {
     totalEventos: eventosUnificados.length,
     totalPessoas,
     pessoasUnicas: nomes.size,
     pessoaMaisEscalada,
+    pessoasMaisEscaladas,
+    pessoasMenosEscaladas,
     instrumentosMaisUsados,
+    areasMaisUsadas,
+    porTipo: toLista(porTipo),
+    porStatus: toLista(porStatus),
+    porDiaSemana: toLista(porDiaSemana),
+    vagasTotal,
+    vagasPreenchidas,
+    vagasDisponiveis: Math.max(0, vagasTotal - vagasPreenchidas),
+    taxaPreenchimento,
+    mediaPessoasPorEvento,
+    eventosPassados,
+    eventosHoje,
+    eventosFuturos,
+    eventosSemPessoas: eventosSemPessoas.slice(0, 12),
+    eventosIncompletos: eventosIncompletos
+      .sort((a, b) => String(a.data).localeCompare(String(b.data)))
+      .slice(0, 12),
+    totalEventosSemPessoas: eventosSemPessoas.length,
+    totalEventosIncompletos: eventosIncompletos.length,
+    alertas: [
+      eventosSemPessoas.length > 0
+        ? `${eventosSemPessoas.length} evento(s) sem ninguém escalado`
+        : null,
+      eventosIncompletos.length > 0
+        ? `${eventosIncompletos.length} evento(s) com vagas em aberto`
+        : null,
+      (porStatus.get("rascunho") || 0) > 0
+        ? `${porStatus.get("rascunho")} evento(s) ainda em rascunho`
+        : null,
+    ].filter(Boolean),
   };
 }

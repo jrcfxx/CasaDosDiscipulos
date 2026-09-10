@@ -116,12 +116,53 @@ export interface EventoUnificado {
   };
 }
 
+export interface EstatisticasPessoaRanking {
+  id: number;
+  nome: string;
+  totalEscalas: number;
+  diasEscalado?: number;
+  funcoesPrincipais?: { nome: string; quantidade: number }[];
+}
+
 export interface EstatisticasEscala {
   totalEventos: number;
   totalPessoas: number;
   pessoasUnicas: number;
-  pessoaMaisEscalada?: { id: number; nome: string; totalEscalas: number } | null;
+  pessoaMaisEscalada?: EstatisticasPessoaRanking | null;
+  pessoasMaisEscaladas?: EstatisticasPessoaRanking[];
+  pessoasMenosEscaladas?: EstatisticasPessoaRanking[];
   instrumentosMaisUsados?: { instrumento?: string; tipo?: string; quantidade: number }[];
+  areasMaisUsadas?: { area: string; quantidade: number }[];
+  porTipo?: { chave: string; quantidade: number }[];
+  porStatus?: { chave: string; quantidade: number }[];
+  porDiaSemana?: { chave: string; quantidade: number }[];
+  vagasTotal?: number;
+  vagasPreenchidas?: number;
+  vagasDisponiveis?: number;
+  taxaPreenchimento?: number;
+  mediaPessoasPorEvento?: number;
+  eventosPassados?: number;
+  eventosHoje?: number;
+  eventosFuturos?: number;
+  eventosSemPessoas?: {
+    id: number;
+    nome: string;
+    data: string;
+    horaInicio?: string;
+    status?: string;
+  }[];
+  eventosIncompletos?: {
+    id: number;
+    nome: string;
+    data: string;
+    horaInicio?: string;
+    status?: string;
+    vagasDisponiveis?: number;
+    slotsVazios?: { tipo: string; nome: string; area: string; atual: number; limite: number | null }[];
+  }[];
+  totalEventosSemPessoas?: number;
+  totalEventosIncompletos?: number;
+  alertas?: string[];
   diasComEventos?: number;
   diasVazios?: number;
 }

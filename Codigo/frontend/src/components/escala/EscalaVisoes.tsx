@@ -292,6 +292,113 @@ export const EscalaVisaoSemana: React.FC<
   );
 };
 
+const DIAS_SEMANA_CURTO = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const MAX_EVENTOS_CELULA = 3;
+
+/** Calendário mensal interativo (grade 7×N) */
+export const EscalaVisaoMesCalendario: React.FC<{
+  visao: VisualizacaoMes;
+  onAbrirDia: (data: string) => void;
+  onAbrirEvento: (id: number) => void;
+}> = ({ visao, onAbrirDia, onAbrirEvento }) => {
+  const hoje = toIsoDateLocal(new Date());
+  const offset = useMemo(() => {
+    const primeiro = visao.dias?.[0]?.data;
+    if (!primeiro) return 0;
+    return new Date(`${primeiro}T12:00:00`).getDay();
+  }, [visao.dias]);
+
+  const celulas = useMemo(() => {
+    const vazios = Array.from({ length: offset }, (_, i) => ({ key: `vazio-${i}`, vazio: true as const }));
+    const dias = (visao.dias || []).map((d) => ({
+      key: d.data,
+      vazio: false as const,
+      dia: d,
+    }));
+    return [...vazios, ...dias];
+  }, [visao.dias, offset]);
+
+  return (
+    <section className="escala-calendario" aria-label={`Calendário de ${visao.mesNome} ${visao.ano}`}>
+      <div className="calendario-dias-semana">
+        {DIAS_SEMANA_CURTO.map((d) => (
+          <div key={d} className="dia-semana">
+            {d}
+          </div>
+        ))}
+      </div>
+      <div className="calendario-grid">
+        {celulas.map((cel) => {
+          if (cel.vazio) {
+            return <div key={cel.key} className="calendario-celula vazio" aria-hidden />;
+          }
+          const { dia } = cel;
+          const eventos = dia.eventos || [];
+          const visiveis = eventos.slice(0, MAX_EVENTOS_CELULA);
+          const resto = eventos.length - visiveis.length;
+          const ehHoje = dia.data === hoje;
+          return (
+            <div
+              key={cel.key}
+              className={`calendario-celula ${dia.temEventos ? "tem-evento clicavel" : "clicavel"}${
+                ehHoje ? " hoje" : ""
+              }`}
+              onClick={() => onAbrirDia(dia.data)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onAbrirDia(dia.data);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`${dia.diaDaSemana} ${dia.diaNumero}${
+                dia.temEventos ? `, ${dia.totalEventos} evento(s)` : ""
+              }`}
+            >
+              <span className="dia-numero">{dia.diaNumero}</span>
+              {visiveis.length > 0 && (
+                <div className="dia-eventos">
+                  {visiveis.map((ev) => (
+                    <button
+                      key={ev.id}
+                      type="button"
+                      className={`dia-evento-nome tipo-${ev.tipo || "outro"}`}
+                      title={ev.nome}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAbrirEvento(ev.id);
+                      }}
+                    >
+                      {ev.horaInicio ? `${ev.horaInicio.slice(0, 5)} ` : ""}
+                      {ev.nome}
+                    </button>
+                  ))}
+                  {resto > 0 && (
+                    <span className="dia-evento-mais">+{resto} mais</span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {visao.estatisticas && (
+        <p className="calendario-resumo">
+          {visao.estatisticas.totalEventos} eventos · {visao.estatisticas.pessoasUnicas} pessoas
+          únicas · veja o relatório abaixo
+        </p>
+      )}
+    </section>
+  );
+};
+
+function toIsoDateLocal(d: Date) {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** Lista accordion por dia (mês detalhado) */
 export const EscalaVisaoMesUnificada: React.FC<{
   visao: VisualizacaoMes;
   onAbrirDia: (data: string) => void;
@@ -366,13 +473,12 @@ export const EscalaVisaoMesUnificada: React.FC<{
     await onMover(payloadDeDrop(membro, { eventoId: dest.eventoId, slot }));
   };
 
-  const stats = visao.estatisticas;
-
   return (
     <section className="escala-visao-mes-accordion">
       <div className="quadro-toolbar">
         <p className="quadro-stats">
-          {stats?.totalEventos ?? 0} eventos · {stats?.pessoasUnicas ?? 0} pessoas únicas
+          {visao.estatisticas?.totalEventos ?? 0} eventos ·{" "}
+          {visao.estatisticas?.pessoasUnicas ?? 0} pessoas únicas
         </p>
         <div className="quadro-toolbar-actions">
           <label className="mes-filtro-check">
@@ -507,28 +613,6 @@ export const EscalaVisaoMesUnificada: React.FC<{
           {active ? <div className="dnd-overlay-chip">{active.usuario.nome}</div> : null}
         </DragOverlay>
       </DndContext>
-
-      {stats && (
-        <div className="mes-estatisticas">
-          <h3>Estatísticas do mês</h3>
-          <ul>
-            <li>Total de eventos: {stats.totalEventos}</li>
-            <li>Pessoas únicas: {stats.pessoasUnicas}</li>
-            {stats.pessoaMaisEscalada && (
-              <li>
-                Mais escalada: {stats.pessoaMaisEscalada.nome} ({stats.pessoaMaisEscalada.totalEscalas}x)
-              </li>
-            )}
-            {stats.instrumentosMaisUsados?.[0] && (
-              <li>
-                Slot mais usado:{" "}
-                {stats.instrumentosMaisUsados[0].instrumento || stats.instrumentosMaisUsados[0].tipo}{" "}
-                ({stats.instrumentosMaisUsados[0].quantidade})
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
     </section>
   );
 };

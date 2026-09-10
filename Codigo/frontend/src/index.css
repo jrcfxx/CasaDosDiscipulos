@@ -1,5 +1,4 @@
-/* Fonte oficial Casa dos Discípulos - carregada globalmente */
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap");
+/* Fonte oficial também via <link> no index.html (mais confiável que @import) */
 
 /* Import design tokens e form styles */
 @import "./style/tokens.css";

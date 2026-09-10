@@ -1,6 +1,6 @@
 import React from "react";
 
-export type EscalaVisaoTipo = "dia" | "semana" | "mes" | "ano";
+export type EscalaVisaoTipo = "dia" | "semana" | "mes" | "mes_detalhado" | "ano";
 
 interface EscalaVisaoSeletorProps {
   visao: EscalaVisaoTipo;
@@ -11,6 +11,7 @@ const LABELS: { id: EscalaVisaoTipo; label: string }[] = [
   { id: "dia", label: "Dia" },
   { id: "semana", label: "Semana" },
   { id: "mes", label: "Mês" },
+  { id: "mes_detalhado", label: "Mês detalhado" },
   { id: "ano", label: "Ano" },
 ];
 

@@ -25,7 +25,8 @@ import ministerioService from "../services/ministerioService";
 import usuarioService from "../services/usuarioService";
 import AtribuicaoDetalhesForm from "../components/AtribuicaoDetalhesForm";
 import EscalaVisaoSeletor, { EscalaVisaoTipo } from "../components/escala/EscalaVisaoSeletor";
-import { EscalaVisaoSemana, EscalaVisaoAnoPainel, EscalaVisaoMesUnificada } from "../components/escala/EscalaVisoes";
+import EscalaRelatorio from "../components/escala/EscalaRelatorio";
+import { EscalaVisaoSemana, EscalaVisaoAnoPainel, EscalaVisaoMesUnificada, EscalaVisaoMesCalendario } from "../components/escala/EscalaVisoes";
 import EscalaGradeDnd from "../components/escala/EscalaGradeDnd";
 import EscalaQuadroUnificado from "../components/escala/EscalaQuadroUnificado";
 import ModalConflitos from "../components/escala/ModalConflitos";
@@ -142,6 +143,10 @@ const EscalaUser: React.FC = () => {
     try {
       if (!conteudoCarregadoRef.current) setLoading(true);
       if (visao === "mes") {
+        const data = await escalaService.getVisualizacaoMes(ano, mes, "compacto");
+        setVisaoMesUnificada(data);
+        setVisaoAno(null);
+      } else if (visao === "mes_detalhado") {
         const data = await escalaService.getVisualizacaoMes(ano, mes, "completo");
         setVisaoMesUnificada(data);
         setVisaoAno(null);
@@ -653,7 +658,7 @@ const EscalaUser: React.FC = () => {
           : `${MESES[mes - 1]} ${ano}`;
 
   const navegarAnterior = () => {
-    if (visao === "mes") {
+    if (visao === "mes" || visao === "mes_detalhado") {
       if (mes === 1) {
         setMes(12);
         setAno((a) => a - 1);
@@ -672,7 +677,7 @@ const EscalaUser: React.FC = () => {
   };
 
   const navegarProximo = () => {
-    if (visao === "mes") {
+    if (visao === "mes" || visao === "mes_detalhado") {
       if (mes === 12) {
         setMes(1);
         setAno((a) => a + 1);
@@ -758,20 +763,48 @@ const EscalaUser: React.FC = () => {
         ) : (
           <div className="escala-layout">
             {visao === "mes" && visaoMesUnificada && (
-              <EscalaVisaoMesUnificada
-                visao={visaoMesUnificada}
-                onAbrirDia={(data) => {
-                  setDataDia(data);
-                  setVisao("dia");
-                }}
-                onAbrirEvento={abrirEvento}
-                podeEditar={podeEditar}
-                onMover={handleMoverUnificado}
-                onEscalar={abrirSlotParaEscalar}
-              />
+              <>
+                <EscalaVisaoMesCalendario
+                  visao={visaoMesUnificada}
+                  onAbrirDia={(data) => {
+                    setDataDia(data);
+                    setVisao("dia");
+                  }}
+                  onAbrirEvento={abrirEvento}
+                />
+                <EscalaRelatorio
+                  titulo={`Relatório — ${MESES[mes - 1]} ${ano}`}
+                  subtitulo="Visão geral para liderança e secretaria"
+                  estatisticas={visaoMesUnificada.estatisticas}
+                  onAbrirEvento={abrirEvento}
+                />
+              </>
+            )}
+
+            {visao === "mes_detalhado" && visaoMesUnificada && (
+              <>
+                <EscalaVisaoMesUnificada
+                  visao={visaoMesUnificada}
+                  onAbrirDia={(data) => {
+                    setDataDia(data);
+                    setVisao("dia");
+                  }}
+                  onAbrirEvento={abrirEvento}
+                  podeEditar={podeEditar}
+                  onMover={handleMoverUnificado}
+                  onEscalar={abrirSlotParaEscalar}
+                />
+                <EscalaRelatorio
+                  titulo={`Relatório detalhado — ${MESES[mes - 1]} ${ano}`}
+                  subtitulo="Indicadores, equilíbrio da equipe e pendências"
+                  estatisticas={visaoMesUnificada.estatisticas}
+                  onAbrirEvento={abrirEvento}
+                />
+              </>
             )}
 
             {visao === "dia" && visaoDiaUnificada && (
+              <>
               <EscalaQuadroUnificado
                 visao={visaoDiaUnificada}
                 podeEditar={podeEditar}
@@ -800,8 +833,20 @@ const EscalaUser: React.FC = () => {
                   })
                 }
               />
+              <EscalaRelatorio
+                titulo={`Relatório do dia`}
+                subtitulo={new Date(`${dataDia}T12:00:00`).toLocaleDateString("pt-BR", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "long",
+                })}
+                estatisticas={visaoDiaUnificada.estatisticas}
+                onAbrirEvento={abrirEvento}
+              />
+              </>
             )}
             {visao === "semana" && visaoSemanaUnificada && (
+              <>
               <EscalaVisaoSemana
                 visao={visaoSemanaUnificada}
                 onAbrirEvento={abrirEvento}
@@ -814,6 +859,13 @@ const EscalaUser: React.FC = () => {
                 onEscalar={abrirSlotParaEscalar}
                 onCopiarSemana={isAdmin ? handleCopiarSemana : undefined}
               />
+              <EscalaRelatorio
+                titulo="Relatório da semana"
+                subtitulo={`De ${new Date(`${visaoSemanaUnificada.dataInicio}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${visaoSemanaUnificada.dataFim}T12:00:00`).toLocaleDateString("pt-BR")}`}
+                estatisticas={visaoSemanaUnificada.estatisticas}
+                onAbrirEvento={abrirEvento}
+              />
+              </>
             )}
             {visao === "ano" && visaoAno && (
               <EscalaVisaoAnoPainel
@@ -884,49 +936,53 @@ const EscalaUser: React.FC = () => {
 
             {podeEditar && (
               <div className="escala-dashboard-actions">
-                <button type="button" className="btn-editar-evento" onClick={abrirHistorico}>
-                  Histórico
-                </button>
+                <div className="escala-dashboard-actions-main">
+                  <button type="button" className="btn-editar-evento" onClick={abrirHistorico}>
+                    Histórico
+                  </button>
+                  {isAdmin && (
+                    <>
+                      <button type="button" className="btn-editar-evento" onClick={handlePublicar}>
+                        Publicar
+                      </button>
+                      <button type="button" className="btn-editar-evento" onClick={handleCopiarEvento}>
+                        Copiar (+7 dias)
+                      </button>
+                      <button type="button" className="btn-editar-evento" onClick={handleSalvarTemplate}>
+                        Salvar template
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-editar-evento"
+                        disabled={!podeDesfazer}
+                        onClick={() => desfazer(eventoSelecionado.id_escala_evento)}
+                      >
+                        Desfazer
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-editar-evento"
+                        onClick={() => {
+                          fecharEvento();
+                          abrirModalEvento(eventoSelecionado);
+                        }}
+                      >
+                        Editar evento
+                      </button>
+                    </>
+                  )}
+                </div>
                 {isAdmin && (
-                  <>
-                    <button type="button" className="btn-editar-evento" onClick={handlePublicar}>
-                      Publicar
-                    </button>
-                    <button type="button" className="btn-editar-evento" onClick={handleCopiarEvento}>
-                      Copiar (+7 dias)
-                    </button>
-                    <button type="button" className="btn-editar-evento" onClick={handleSalvarTemplate}>
-                      Salvar template
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-editar-evento"
-                      disabled={!podeDesfazer}
-                      onClick={() => desfazer(eventoSelecionado.id_escala_evento)}
-                    >
-                      Desfazer
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-editar-evento"
-                      onClick={() => {
-                        fecharEvento();
-                        abrirModalEvento(eventoSelecionado);
-                      }}
-                    >
-                      Editar evento
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-excluir-evento"
-                      onClick={() => {
-                        setEventoToExcluir(eventoSelecionado.id_escala_evento);
-                        setShowConfirmExcluir(true);
-                      }}
-                    >
-                      Excluir evento
-                    </button>
-                  </>
+                  <button
+                    type="button"
+                    className="btn-excluir-evento"
+                    onClick={() => {
+                      setEventoToExcluir(eventoSelecionado.id_escala_evento);
+                      setShowConfirmExcluir(true);
+                    }}
+                  >
+                    Excluir evento
+                  </button>
                 )}
               </div>
             )}
