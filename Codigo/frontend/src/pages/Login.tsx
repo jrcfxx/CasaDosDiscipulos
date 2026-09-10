@@ -45,12 +45,13 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <Link to="/" className="logo">
+      <Link to="/" className="login-logo" aria-label="Ir para a página inicial">
         <img src={logo} alt="Casa dos Discípulos" />
       </Link>
 
       <main id="main-content" className="login-form" tabIndex={-1}>
-        <h2>Seja bem-vindo!</h2>
+        <h1>Seja bem-vindo!</h1>
+        <p className="login-form__subtitle">Entre para acessar a Casa dos Discípulos</p>
 
         {error && (
           <div id="login-error" className="error-message" role="alert" aria-live="assertive">
@@ -59,35 +60,43 @@ const Login: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} aria-label="Formulário de login">
-          <label htmlFor="login-email" className="sr-only">Email</label>
-          <input
-            id="login-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            disabled={loading}
-            autoComplete="email"
-            required
-            aria-describedby={error ? "login-error" : undefined}
-          />
-          <label htmlFor="login-senha" className="sr-only">Senha</label>
-          <input
-            id="login-senha"
-            type="password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            placeholder="Senha"
-            disabled={loading}
-            autoComplete="current-password"
-            required
-            aria-describedby={error ? "login-error" : undefined}
-          />
+          <div className="login-field">
+            <label htmlFor="login-email">Email</label>
+            <input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              disabled={loading}
+              autoComplete="email"
+              required
+              aria-describedby={error ? "login-error" : undefined}
+            />
+          </div>
+          <div className="login-field">
+            <label htmlFor="login-senha">Senha</label>
+            <input
+              id="login-senha"
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder="Sua senha"
+              disabled={loading}
+              autoComplete="current-password"
+              required
+              aria-describedby={error ? "login-error" : undefined}
+            />
+          </div>
           <button type="submit" disabled={loading} aria-busy={loading}>
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
       </main>
+
+      <Link to="/" className="login-back">
+        Voltar ao início
+      </Link>
     </div>
   );
 };

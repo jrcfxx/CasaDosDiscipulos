@@ -287,8 +287,15 @@ class EscalaService {
       excluirMesmoEventoDoOverlap: false,
     });
     if (!valido) {
-      const msg = conflitos.find((c) => !c.valido)?.mensagem || "Conflito na escala";
-      throw new ConflictError(msg);
+      const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
+      const msg = bloqueios[0]?.mensagem || "Conflito na escala";
+      const err = new ConflictError(msg);
+      err.conflitos = bloqueios.map((c) => ({
+        tipo: c.tipo,
+        mensagem: c.mensagem,
+        sugestao: c.sugestao || null,
+      }));
+      throw err;
     }
 
     try {
@@ -325,6 +332,33 @@ class EscalaService {
     const habilidade = ValidadorEscala.validarHabilidadeUsuario(atribuicao.area_nome, detalhesObj);
     if (!habilidade.valido) throw new ValidationError(habilidade.mensagem);
 
+    const evento = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
+    const { valido, conflitos } = await ValidadorEscala.validarTodosConflitos({
+      idUsuario: atribuicao.id_usuario,
+      idArea: atribuicao.id_escala_area,
+      areaNome: atribuicao.area_nome,
+      idEvento: atribuicao.id_escala_evento,
+      dataHora: evento?.data_hora,
+      dataHoraFim: evento?.data_hora_fim,
+      detalhes: detalhesObj,
+      idAtribuicaoExcluir: parsed,
+      excluirMesmoEventoDoOverlap: true,
+    });
+    if (!valido) {
+      const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
+      // Troca de instrumento na mesma área: ignora "duplo_instrumento" se for o próprio registro
+      const filtrados = bloqueios.filter((c) => c.tipo !== "duplo_instrumento");
+      if (filtrados.length) {
+        const err = new ConflictError(filtrados[0]?.mensagem || "Conflito na escala");
+        err.conflitos = filtrados.map((c) => ({
+          tipo: c.tipo,
+          mensagem: c.mensagem,
+          sugestao: c.sugestao || null,
+        }));
+        throw err;
+      }
+    }
+
     const row = await EscalaRepository.atualizarAtribuicao(parsed, { detalhes: detalhesObj });
     await EscalaRepository.registrarHistorico({
       id_escala_evento: atribuicao.id_escala_evento,
@@ -334,7 +368,6 @@ class EscalaService {
       dados_depois: row,
     });
 
-    const evento = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
     await this._notificarAtribuicaoAtualizada(
       atribuicao.id_usuario,
       evento,
@@ -793,7 +826,8 @@ class EscalaService {
       areaDestino.id_escala_area,
       detalhes,
       idUsuarioLogado,
-      tipoUsuario
+      tipoUsuario,
+      { forcarMovimento: !!body.forcarMovimento }
     );
     return {
       sucesso: true,
@@ -898,11 +932,19 @@ class EscalaService {
     });
     return {
       sucesso: resultado.valido,
-      conflitos: resultado.conflitos.filter((c) => !c.valido || c.skip),
+      conflitos: resultado.conflitos.filter((c) => !c.valido && !c.skip),
     };
   }
 
-  async moverAtribuicao(idAtribuicao, idAreaDestino, detalhes, idUsuarioLogado, tipoUsuario) {
+  async moverAtribuicao(
+    idAtribuicao,
+    idAreaDestino,
+    detalhes,
+    idUsuarioLogado,
+    tipoUsuario,
+    opcoes = {}
+  ) {
+    const { forcarMovimento = false } = opcoes;
     const parsed = this._parseId(idAtribuicao);
     const atribuicao = await EscalaRepository.buscarAtribuicaoCompleta(parsed);
     if (!atribuicao) throw new NotFoundError("Atribuição não encontrada");
@@ -929,8 +971,17 @@ class EscalaService {
       idAtribuicaoExcluir: parsed,
       excluirMesmoEventoDoOverlap: areaDestino.id_escala_evento === atribuicao.id_escala_evento,
     });
-    if (!valido) {
-      throw new ConflictError(conflitos.find((c) => !c.valido)?.mensagem || "Conflito ao mover");
+    if (!valido && !forcarMovimento) {
+      const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
+      const err = new ConflictError(
+        bloqueios[0]?.mensagem || "Conflito ao mover"
+      );
+      err.conflitos = bloqueios.map((c) => ({
+        tipo: c.tipo,
+        mensagem: c.mensagem,
+        sugestao: c.sugestao || null,
+      }));
+      throw err;
     }
 
     const trx = await knex.transaction();

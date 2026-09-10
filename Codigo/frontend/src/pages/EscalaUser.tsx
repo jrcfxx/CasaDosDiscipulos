@@ -19,6 +19,7 @@ import escalaService, {
   VisualizacaoSemana,
   VisualizacaoMes,
   SlotInstrumento,
+  MoverMembroPayload,
 } from "../services/escalaService";
 import ministerioService from "../services/ministerioService";
 import usuarioService from "../services/usuarioService";
@@ -112,6 +113,7 @@ const EscalaUser: React.FC = () => {
   const [formDetalhes, setFormDetalhes] = useState<Record<string, string>>({});
   const [atribuicaoEditando, setAtribuicaoEditando] = useState<EscalaAtribuicao | null>(null);
   const [conflitos, setConflitos] = useState<EscalaConflito[] | null>(null);
+  const [moverPendente, setMoverPendente] = useState<MoverMembroPayload | null>(null);
   const [templates, setTemplates] = useState<EscalaTemplate[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showHistorico, setShowHistorico] = useState(false);
@@ -140,7 +142,7 @@ const EscalaUser: React.FC = () => {
     try {
       if (!conteudoCarregadoRef.current) setLoading(true);
       if (visao === "mes") {
-        const data = await escalaService.getVisualizacaoMes(ano, mes, "compacto");
+        const data = await escalaService.getVisualizacaoMes(ano, mes, "completo");
         setVisaoMesUnificada(data);
         setVisaoAno(null);
       } else if (visao === "dia") {
@@ -373,6 +375,12 @@ const EscalaUser: React.FC = () => {
         setEventoSelecionado(ev);
       }
     } catch (err) {
+      const data = (err as { response?: { data?: { conflitos?: EscalaConflito[] } } })?.response
+        ?.data;
+      if (data?.conflitos?.length) {
+        setConflitos(data.conflitos);
+        return;
+      }
       showToast(
         getErrorMessage(err, "Não foi possível escalar. Verifique conflitos de horário."),
         "error"
@@ -416,49 +424,66 @@ const EscalaUser: React.FC = () => {
     }
   };
 
-  const handleMover = async (idAtribuicao: number, idAreaDestino: number) => {
-    try {
-      await escalaService.moverAtribuicao(idAtribuicao, idAreaDestino);
-      showToast("Pessoa movida", "success");
-      marcarAlteracao();
-      if (eventoSelecionado) {
-        const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
-        setEventoSelecionado(ev);
-      }
-      fetchEventos();
-    } catch (err) {
-      showToast(getErrorMessage(err, "Não foi possível mover — conflito na escala"), "error");
+  const executarMoverUnificado = async (payload: MoverMembroPayload) => {
+    const result = await escalaService.moverMembro(payload);
+    showToast(result.mensagem || "Pessoa movida", "success");
+    marcarAlteracao();
+    setConflitos(null);
+    setMoverPendente(null);
+    fetchEventos();
+    if (eventoSelecionado) {
+      const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
+      setEventoSelecionado(ev);
     }
   };
 
-  const handleMoverUnificado = async (payload: {
-    membroEscalaOrigemId: number;
-    escalaDestinoId: number;
-    instrumentoDestino: string;
-    id_escala_area: number;
-  }) => {
+  const handleMover = async (idAtribuicao: number, idAreaDestino: number) => {
+    if (!eventoSelecionado) return;
+    const att = eventoSelecionado.areas
+      ?.flatMap((a) => a.atribuicoes || [])
+      .find((a) => a.id_escala_atribuicao === idAtribuicao);
+    const detalhes = (att?.detalhes || {}) as Record<string, string | number | null>;
+    const instrumentoDestino = String(
+      detalhes.instrumento || detalhes.funcao || "_geral"
+    );
+    await handleMoverUnificado({
+      membroEscalaOrigemId: idAtribuicao,
+      escalaDestinoId: eventoSelecionado.id_escala_evento,
+      instrumentoDestino,
+      id_escala_area: idAreaDestino,
+    });
+  };
+
+  const handleMoverUnificado = async (payload: MoverMembroPayload) => {
     try {
       const validacao = await escalaService.validarMoverMembro(payload);
       if (!validacao.podeProsseguir) {
+        setMoverPendente(payload);
         setConflitos(validacao.conflitos);
         return;
       }
-      const result = await escalaService.moverMembro(payload);
-      showToast(result.mensagem || "Pessoa movida", "success");
-      marcarAlteracao();
-      fetchEventos();
-      if (eventoSelecionado) {
-        const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
-        setEventoSelecionado(ev);
-      }
+      await executarMoverUnificado(payload);
     } catch (err) {
       const data = (err as { response?: { data?: { conflitos?: EscalaConflito[] } } })?.response
         ?.data;
       if (data?.conflitos?.length) {
+        setMoverPendente(payload);
         setConflitos(data.conflitos);
         return;
       }
       showToast(getErrorMessage(err, "Não foi possível mover — conflito na escala"), "error");
+    }
+  };
+
+  const handleForcarMovimento = async () => {
+    if (!moverPendente) {
+      setConflitos(null);
+      return;
+    }
+    try {
+      await executarMoverUnificado({ ...moverPendente, forcarMovimento: true });
+    } catch (err) {
+      showToast(getErrorMessage(err, "Não foi possível forçar o movimento"), "error");
     }
   };
 
@@ -740,6 +765,9 @@ const EscalaUser: React.FC = () => {
                   setVisao("dia");
                 }}
                 onAbrirEvento={abrirEvento}
+                podeEditar={podeEditar}
+                onMover={handleMoverUnificado}
+                onEscalar={abrirSlotParaEscalar}
               />
             )}
 
@@ -1127,7 +1155,15 @@ const EscalaUser: React.FC = () => {
       )}
 
       {conflitos && (
-        <ModalConflitos conflitos={conflitos} onClose={() => setConflitos(null)} />
+        <ModalConflitos
+          conflitos={conflitos}
+          onClose={() => {
+            setConflitos(null);
+            setMoverPendente(null);
+          }}
+          permitirForcar={podeEditar && !!moverPendente}
+          onConfirmarMesmoAssim={handleForcarMovimento}
+        />
       )}
 
       <ConfirmModal

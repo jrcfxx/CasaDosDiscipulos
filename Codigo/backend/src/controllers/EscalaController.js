@@ -293,7 +293,8 @@ class EscalaController {
         req.body.id_escala_area,
         req.body.detalhes,
         req.usuario?.id_usuario,
-        req.usuario?.tipo
+        req.usuario?.tipo,
+        { forcarMovimento: !!req.body.forcarMovimento }
       );
       res.json(atrib);
     } catch (err) {

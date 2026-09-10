@@ -1,5 +1,5 @@
 /* Fonte oficial Casa dos Discípulos - carregada globalmente */
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap");
 
 /* Import design tokens e form styles */
 @import "./style/tokens.css";
@@ -16,11 +16,12 @@
 
 body {
   margin: 0;
-  font-family: var(--font-sans);
+  font-family: var(--font-primary);
   font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
   line-height: var(--line-height-normal);
   color: var(--color-text);
-  background-color: var(--color-surface);
+  background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

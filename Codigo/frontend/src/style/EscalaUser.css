@@ -1094,6 +1094,7 @@
 
 .escala-visao-semana,
 .escala-visao-mes-unificada,
+.escala-visao-mes-accordion,
 .escala-quadro {
   width: 100%;
   min-width: 0;
@@ -1761,4 +1762,156 @@
     min-width: 0;
     width: 100%;
   }
+}
+
+.escala-visao-mes-accordion {
+  width: 100%;
+  min-width: 0;
+}
+
+.mes-filtro-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.mes-lista-dias {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mes-dia-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mes-dia-card.tem-eventos {
+  border-color: rgba(2, 134, 155, 0.35);
+}
+
+.mes-dia-card.expandido {
+  border-color: rgba(2, 134, 155, 0.55);
+  background: rgba(2, 134, 155, 0.06);
+}
+
+.mes-dia-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  flex-wrap: wrap;
+}
+
+.mes-dia-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.mes-dia-toggle:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.mes-dia-chevron {
+  color: var(--primary-teal);
+  font-size: 0.75rem;
+  width: 1rem;
+}
+
+.mes-dia-titulo {
+  text-transform: capitalize;
+}
+
+.mes-dia-resumo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.mes-abrir-dia {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.mes-dia-preview {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.85rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mes-preview-evento {
+  width: 100%;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  border-radius: 6px;
+  color: inherit;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.mes-preview-evento:hover {
+  background: rgba(2, 134, 155, 0.25);
+}
+
+.mes-dia-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0 0.85rem 0.95rem;
+}
+
+.mes-evento-bloco {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.mes-evento-bloco.tipo-culto {
+  border-color: rgba(201, 80, 80, 0.45);
+}
+
+.mes-evento-bloco.tipo-ensaio {
+  border-color: rgba(80, 160, 110, 0.45);
+}
+
+.mes-evento-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.mes-evento-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.45rem;
+}
+
+.mes-evento-slots .quadro-slot {
+  margin-top: 0;
 }

@@ -152,7 +152,7 @@ export interface VisualizacaoMes {
     temEventos: boolean;
     totalEventos: number;
     totalPessoas: number;
-    eventos: { id: number; nome: string; tipo: string; horaInicio: string; totalPessoas: number; status: string }[];
+    eventos: EventoUnificado[];
   }[];
   estatisticas: EstatisticasEscala;
 }
@@ -321,11 +321,13 @@ const escalaService = {
   async moverAtribuicao(
     idAtribuicao: number,
     id_escala_area: number,
-    detalhes?: Record<string, string | number | null>
+    detalhes?: Record<string, string | number | null>,
+    forcarMovimento = false
   ): Promise<EscalaAtribuicao> {
     const response = await apiClient.post(`/escala/atribuicoes/${idAtribuicao}/mover`, {
       id_escala_area,
       detalhes,
+      forcarMovimento: forcarMovimento || undefined,
     });
     return response.data;
   },

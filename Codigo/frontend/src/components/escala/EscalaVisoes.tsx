@@ -296,61 +296,218 @@ export const EscalaVisaoMesUnificada: React.FC<{
   visao: VisualizacaoMes;
   onAbrirDia: (data: string) => void;
   onAbrirEvento: (id: number) => void;
-}> = ({ visao, onAbrirDia, onAbrirEvento }) => {
-  const primeiro = visao.dias?.[0];
-  const offset = primeiro
-    ? new Date(`${primeiro.data}T12:00:00`).getDay()
-    : 0;
+  podeEditar?: boolean;
+  onMover?: (payload: MoverUnificadoPayload) => Promise<void>;
+  onEscalar?: (eventoId: number, slot: SlotInstrumento) => void;
+}> = ({ visao, onAbrirDia, onAbrirEvento, podeEditar, onMover, onEscalar }) => {
+  const [active, setActive] = useState<SlotMembro | null>(null);
+  const [expandidos, setExpandidos] = useState<Set<string>>(() => new Set());
+  const [soComEventos, setSoComEventos] = useState(true);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+  const diasFiltrados = useMemo(
+    () => (visao.dias || []).filter((d) => (soComEventos ? d.temEventos : true)),
+    [visao.dias, soComEventos]
+  );
+
+  const datasComEventos = useMemo(
+    () => diasFiltrados.filter((d) => d.temEventos).map((d) => d.data),
+    [diasFiltrados]
+  );
+
+  const idsPorEvento = useMemo(() => {
+    const map = new Map<number, number[]>();
+    for (const dia of visao.dias || []) {
+      for (const ev of dia.eventos || []) {
+        map.set(
+          ev.id,
+          Object.values(ev.instrumentos || {}).flatMap((s) => s.membros.map((m) => m.usuario.id))
+        );
+      }
+    }
+    return map;
+  }, [visao.dias]);
+
+  const todosExpandidos =
+    datasComEventos.length > 0 && datasComEventos.every((d) => expandidos.has(d));
+
+  const toggleDia = (data: string) => {
+    setExpandidos((prev) => {
+      const next = new Set(prev);
+      if (next.has(data)) next.delete(data);
+      else next.add(data);
+      return next;
+    });
+  };
+
+  const expandirOuRecolherTudo = () => {
+    if (todosExpandidos) setExpandidos(new Set());
+    else setExpandidos(new Set(datasComEventos));
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    setActive(null);
+    if (!onMover) return;
+    const membro = event.active.data.current?.membro as SlotMembro | undefined;
+    const dest = event.over?.data.current as
+      | { eventoId: number; slot?: SlotInstrumento; evento?: EventoUnificado }
+      | undefined;
+    if (!membro || !dest) return;
+    let slot = dest.slot;
+    if (!slot && dest.evento) {
+      const slots = Object.values(dest.evento.instrumentos || {});
+      slot =
+        slots.find((s) => s.tipo === membro.tipoSlot) ||
+        slots.find((s) => s.id_escala_area === membro.id_escala_area) ||
+        slots[0];
+    }
+    if (!slot) return;
+    if (membro.id_escala_area === slot.id_escala_area && membro.tipoSlot === slot.tipo) return;
+    await onMover(payloadDeDrop(membro, { eventoId: dest.eventoId, slot }));
+  };
+
   const stats = visao.estatisticas;
+
   return (
-    <section className="escala-visao-mes-unificada">
-      <div className="calendario-dias-semana">
-        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d) => (
-          <span key={d} className="dia-semana">
-            {d}
-          </span>
-        ))}
+    <section className="escala-visao-mes-accordion">
+      <div className="quadro-toolbar">
+        <p className="quadro-stats">
+          {stats?.totalEventos ?? 0} eventos · {stats?.pessoasUnicas ?? 0} pessoas únicas
+        </p>
+        <div className="quadro-toolbar-actions">
+          <label className="mes-filtro-check">
+            <input
+              type="checkbox"
+              checked={soComEventos}
+              onChange={(e) => setSoComEventos(e.target.checked)}
+            />
+            Só dias com eventos
+          </label>
+          {datasComEventos.length > 0 && (
+            <button type="button" className="btn-mapa" onClick={expandirOuRecolherTudo}>
+              {todosExpandidos ? "Recolher tudo" : "Expandir tudo"}
+            </button>
+          )}
+        </div>
       </div>
-      <div className="calendario-grid">
-        {Array.from({ length: offset }, (_, i) => (
-          <div key={`e-${i}`} className="calendario-celula vazio" />
-        ))}
-        {(visao.dias || []).map((dia) => (
-          <div
-            key={dia.data}
-            className={`calendario-celula clicavel ${dia.temEventos ? "tem-evento" : ""}`}
-            role="button"
-            tabIndex={0}
-            onClick={() => onAbrirDia(dia.data)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onAbrirDia(dia.data);
-              }
-            }}
-          >
-            <span className="dia-numero">{dia.diaNumero}</span>
-            {dia.temEventos && (
-              <div className="dia-eventos">
-                {dia.eventos.slice(0, 3).map((ev) => (
+
+      <DndContext
+        sensors={sensors}
+        onDragStart={(e) => setActive((e.active.data.current?.membro as SlotMembro) || null)}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setActive(null)}
+      >
+        <div className="mes-lista-dias">
+          {diasFiltrados.map((dia) => {
+            const aberto = expandidos.has(dia.data);
+            return (
+              <article
+                key={dia.data}
+                className={`mes-dia-card ${aberto ? "expandido" : "recolhido"} ${
+                  dia.temEventos ? "tem-eventos" : ""
+                }`}
+              >
+                <header className="mes-dia-header">
                   <button
-                    key={ev.id}
                     type="button"
-                    className={`dia-evento-nome tipo-${ev.tipo}`}
-                    title={ev.nome}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAbrirEvento(ev.id);
-                    }}
+                    className="mes-dia-toggle"
+                    aria-expanded={aberto}
+                    onClick={() => (dia.temEventos ? toggleDia(dia.data) : undefined)}
+                    disabled={!dia.temEventos}
                   >
-                    {ev.horaInicio} {ev.nome} ({ev.totalPessoas}p)
+                    <span className="mes-dia-chevron">{aberto ? "▼" : "▶"}</span>
+                    <span className="mes-dia-titulo">
+                      {dia.diaDaSemana} {String(dia.diaNumero).padStart(2, "0")}
+                    </span>
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+                  <div className="mes-dia-resumo">
+                    {dia.temEventos ? (
+                      <span>
+                        {dia.totalEventos} evento{dia.totalEventos !== 1 ? "s" : ""} ·{" "}
+                        {dia.totalPessoas}p
+                      </span>
+                    ) : (
+                      <span className="semana-vazio">Sem eventos</span>
+                    )}
+                    <button
+                      type="button"
+                      className="btn-mapa mes-abrir-dia"
+                      onClick={() => onAbrirDia(dia.data)}
+                    >
+                      Ver dia
+                    </button>
+                  </div>
+                </header>
+
+                {!aberto && dia.temEventos && (
+                  <ul className="mes-dia-preview">
+                    {dia.eventos.map((ev) => (
+                      <li key={ev.id}>
+                        <button
+                          type="button"
+                          className={`mes-preview-evento tipo-${ev.tipo}`}
+                          onClick={() => onAbrirEvento(ev.id)}
+                        >
+                          {ev.horaInicio} {ev.nome} · {ev.totais?.totalPessoas ?? 0}p · {ev.status}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {aberto && (
+                  <div className="mes-dia-corpo">
+                    {dia.eventos.map((ev) => {
+                      const slots = Object.entries(ev.instrumentos || {}).sort(
+                        (a, b) => (a[1].ordem || 0) - (b[1].ordem || 0)
+                      );
+                      return (
+                        <article
+                          key={ev.id}
+                          className={`mes-evento-bloco tipo-${ev.tipo} status-${ev.status}`}
+                        >
+                          <header className="mes-evento-cabecalho">
+                            <button
+                              type="button"
+                              className="link-evento"
+                              onClick={() => onAbrirEvento(ev.id)}
+                            >
+                              {ev.nome}
+                            </button>
+                            <span className="quadro-horario">
+                              {ev.horaInicio}
+                              {ev.horaFim ? ` – ${ev.horaFim}` : ""}
+                            </span>
+                            <span className={`status-badge status-${ev.status}`}>{ev.status}</span>
+                          </header>
+                          <div className="mes-evento-slots">
+                            {slots.map(([key, slot]) => (
+                              <SlotDrop
+                                key={key}
+                                eventoId={ev.id}
+                                slotKey={key}
+                                slot={slot}
+                                idsNoEvento={idsPorEvento.get(ev.id) || []}
+                                podeEditar={!!podeEditar}
+                                compacto
+                                onEscalar={() => onEscalar?.(ev.id, slot)}
+                              />
+                            ))}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+        <DragOverlay>
+          {active ? <div className="dnd-overlay-chip">{active.usuario.nome}</div> : null}
+        </DragOverlay>
+      </DndContext>
+
       {stats && (
         <div className="mes-estatisticas">
           <h3>Estatísticas do mês</h3>
@@ -364,7 +521,8 @@ export const EscalaVisaoMesUnificada: React.FC<{
             )}
             {stats.instrumentosMaisUsados?.[0] && (
               <li>
-                Slot mais usado: {stats.instrumentosMaisUsados[0].instrumento || stats.instrumentosMaisUsados[0].tipo}{" "}
+                Slot mais usado:{" "}
+                {stats.instrumentosMaisUsados[0].instrumento || stats.instrumentosMaisUsados[0].tipo}{" "}
                 ({stats.instrumentosMaisUsados[0].quantidade})
               </li>
             )}

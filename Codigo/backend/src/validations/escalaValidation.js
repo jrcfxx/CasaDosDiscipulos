@@ -68,6 +68,7 @@ export const updateAtribuicaoSchema = Joi.object({
 export const moverAtribuicaoSchema = Joi.object({
   id_escala_area: Joi.number().integer().positive().required(),
   detalhes: Joi.object().pattern(Joi.string(), Joi.any()).optional(),
+  forcarMovimento: Joi.boolean().optional(),
 });
 
 export const validarAtribuicaoSchema = Joi.object({
