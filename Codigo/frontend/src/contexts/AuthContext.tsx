@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
     isAdmin: user?.tipo === "administrador",
     isLider: user?.tipo === "lider",
-    isLiderCelula: user?.tipo === "lider" && (user?.lider_celula ?? true),
+    isLiderCelula: user?.tipo === "lider" && !!user?.lider_celula,
     isLiderMinisterio: user?.tipo === "lider" && !!user?.lider_ministerio,
     isMembro: user?.tipo === "membro",
     userType: user?.tipo ?? null,
