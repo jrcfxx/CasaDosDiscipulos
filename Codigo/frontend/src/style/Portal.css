@@ -10,7 +10,7 @@
   --portal-teal: #02869b;
   --portal-teal-light: rgba(2, 134, 155, 0.15);
   --portal-gold: #f4b002;
-  --portal-bg: #0a0a0a;
+  --portal-bg: var(--color-bg, #020202);
   --portal-text: #f5f5f5;
   --portal-text-muted: #a3a3a3;
   --portal-border: rgba(255, 255, 255, 0.08);
@@ -23,7 +23,7 @@
   min-height: 100vh;
   background: var(--portal-bg);
   color: var(--portal-text);
-  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .portal .portal-wrap,

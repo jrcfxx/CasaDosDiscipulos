@@ -663,8 +663,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
             cx="12"
             cy="12"
             r="10"
-            fill="#FFD700"
-            stroke="#FFA500"
+            fill="#f4b002"
+            stroke="#f4b002"
             strokeWidth="2"
           />
           <text

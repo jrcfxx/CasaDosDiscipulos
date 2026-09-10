@@ -3,12 +3,10 @@
  * Branding: Casa dos Discípulos (primary-teal, secondary-gold)
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
-
 :root {
   --primary-dark: #00444c;
   --primary-teal: #02869b;
-  --primary-teal-hover: #03a3bd;
+  --primary-teal-hover: var(--color-primary-dark);
   --primary-gray: #2b2f30;
   --primary-light: #ebebeb;
   --secondary-gold: #f4b002;
@@ -16,10 +14,10 @@
 
 .gerir-container {
   min-height: 100vh;
-  background: #000;
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
   color: #ebebeb;
 }
 
@@ -72,7 +70,7 @@
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.95rem;
   font-weight: 600;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
@@ -111,7 +109,7 @@
   color: #ffffff;
   outline: none;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s;
 }
 
@@ -134,7 +132,7 @@
   color: #ffffff !important;
   outline: none;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -293,7 +291,7 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 0.85rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -658,7 +656,7 @@
   color: #e2e8f0 !important;
   margin-bottom: 0;
   font-size: 0.9rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s;
 }
 
@@ -734,7 +732,7 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -850,7 +848,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
 }
 
 .niveis-table .btn-edit {
@@ -882,7 +880,7 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 0.9rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s;
   background: rgba(34, 197, 94, 0.2);
   color: #22c55e;
@@ -925,7 +923,7 @@
   color: #e2e8f0 !important;
   outline: none;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   resize: vertical;
   transition: all 0.2s;
 }
@@ -1073,7 +1071,7 @@
   border-radius: 12px;
   color: var(--primary-light);
   font-size: 1rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s ease;
 }
 
@@ -1177,7 +1175,7 @@
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   cursor: pointer;
   transition: all 0.2s;
 }

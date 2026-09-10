@@ -85,7 +85,7 @@
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
-  border-color: #02869b;
+  border-color: var(--color-primary-teal);
   box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.1);
 }
 
@@ -141,7 +141,7 @@
 .form-radio {
   width: 1.125rem;
   height: 1.125rem;
-  color: #02869b;
+  color: var(--color-primary-teal);
   border: var(--border-width-2) solid #d1d5db;
   border-radius: var(--border-radius-sm);
   cursor: pointer;
@@ -155,13 +155,13 @@
 
 .form-checkbox:hover:not(:disabled),
 .form-radio:hover:not(:disabled) {
-  border-color: #02869b;
+  border-color: var(--color-primary-teal);
 }
 
 .form-checkbox:checked,
 .form-radio:checked {
-  background-color: #02869b;
-  border-color: #02869b;
+  background-color: var(--color-primary-teal);
+  border-color: var(--color-primary-teal);
 }
 
 .form-checkbox:focus,
@@ -268,7 +268,7 @@
 }
 
 .field-card:hover {
-  border-color: #02869b;
+  border-color: var(--color-primary-teal);
   box-shadow: var(--shadow-md);
 }
 
@@ -343,7 +343,7 @@
   height: 18px;
   margin-right: var(--spacing-2);
   cursor: pointer;
-  accent-color: #02869b;
+  accent-color: var(--color-primary-teal);
 }
 
 .form-radio:disabled {

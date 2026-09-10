@@ -24,7 +24,7 @@
   min-height: 100vh;
   background: var(--portal-bg);
   color: var(--portal-text);
-  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .portal-wrap {

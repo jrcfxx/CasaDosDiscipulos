@@ -21,7 +21,7 @@
 .header-notif-btn:hover {
   background: rgba(2, 134, 155, 0.2);
   border-color: rgba(2, 134, 155, 0.4);
-  color: #02869b;
+  color: var(--color-primary-teal);
 }
 
 .header-notif-icon {
@@ -35,7 +35,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  background: linear-gradient(135deg, #02869b 0%, #03a3bd 100%);
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-teal) 100%);
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
@@ -91,7 +91,7 @@
 
 .notif-dropdown-marcar-todas {
   font-size: 0.8rem;
-  color: #02869b;
+  color: var(--color-primary-teal);
   background: none;
   border: none;
   cursor: pointer;
@@ -102,7 +102,7 @@
 
 .notif-dropdown-marcar-todas:hover {
   background: rgba(2, 134, 155, 0.15);
-  color: #03a3bd;
+  color: var(--color-primary-teal);
 }
 
 .notif-dropdown-list {
@@ -130,7 +130,7 @@
   width: 28px;
   height: 28px;
   border: 3px solid rgba(2, 134, 155, 0.2);
-  border-top-color: #02869b;
+  border-top-color: var(--color-primary-teal);
   border-radius: 50%;
   animation: notifSpin 0.8s linear infinite;
   margin-bottom: 0.75rem;
@@ -181,7 +181,7 @@
 }
 
 .notif-item-dot--unread {
-  background: #02869b;
+  background: var(--color-primary-teal);
 }
 
 .notif-item-content {
@@ -338,7 +338,7 @@
 .notif-evento-area-nome {
   font-size: 1rem;
   font-weight: 600;
-  color: #02869b;
+  color: var(--color-primary-teal);
 }
 
 .notif-evento-ministerios {
@@ -359,7 +359,7 @@
   border: 1px solid rgba(2, 134, 155, 0.3);
   border-radius: 8px;
   font-size: 0.85rem;
-  color: #02869b;
+  color: var(--color-primary-teal);
 }
 
 .notif-modal-footer {
@@ -391,7 +391,7 @@
 }
 
 .notif-modal-btn-primary {
-  background: linear-gradient(135deg, #02869b 0%, #03a3bd 100%);
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary-teal) 100%);
   color: #fff;
   border: none;
 }

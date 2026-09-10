@@ -3,8 +3,6 @@
  * Branding Casa dos Discípulos: Montserrat (fonte oficial)
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap");
-
 :root {
   --fala-ai-teal: #02869b;
   --fala-ai-teal-dim: rgba(2, 134, 155, 0.15);
@@ -19,7 +17,7 @@
   min-height: 100vh;
   background: var(--fala-ai-dark);
   color: var(--fala-ai-text);
-  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .fala-ai-main {
@@ -254,7 +252,7 @@
   width: 100%;
   max-height: 400px;
   overflow: hidden;
-  background: #000;
+  background: var(--color-bg);
 }
 
 .fala-ai-card__imagem img {

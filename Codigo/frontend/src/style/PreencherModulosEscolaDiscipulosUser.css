@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
-
 :root{
   --bg:#000;
   --card:#fff;
@@ -11,14 +9,6 @@
   --secondary-gold: #f4b002;
 }
 *{ box-sizing:border-box; }
-html, body, #root { height:100%; }
-body{
-  margin:0;
-  background:var(--bg);
-  color:#fff;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
-}
-
 .pfu-main{
   min-height: calc(100vh - 220px);
   display:flex;
@@ -33,7 +23,7 @@ body{
   text-transform: uppercase;
   letter-spacing: .06em;
   text-align: center;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
   position: relative;
   padding-bottom: 1rem;
 }
@@ -56,7 +46,7 @@ body{
   border-radius:12px;
   padding: 2rem 2.2rem 2.6rem;
   box-shadow:0 8px 28px rgba(0,0,0,.35);
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
 }
 
 .pfu-row{
@@ -202,12 +192,12 @@ body{
 }
 
 .pfu-btn-primary{
-  background: #111;
+  background: var(--color-primary-dark);
   color: #fff;
 }
 
 .pfu-btn-primary:hover{
-  filter: brightness(1.05);
+  background: var(--color-primary-teal);
 }
 
 /* Módulo conteúdo (read-only) */
@@ -216,7 +206,7 @@ body{
 .modulo-campo { margin-bottom: 1.8rem; }
 .modulo-campo-label { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; }
 .modulo-texto { margin: 0; white-space: pre-wrap; line-height: 1.6; }
-.modulo-link { color: #2563eb; text-decoration: underline; }
+.modulo-link { color: var(--color-primary-teal); text-decoration: underline; }
 .modulo-link:hover { opacity: 0.9; }
 .modulo-video {
   width: 100%;
@@ -328,7 +318,7 @@ body{
 .quiz-bonus-badge {
   display: inline-block;
   margin-left: 0.5rem;
-  background: linear-gradient(135deg, var(--secondary-gold), #d9a002);
+  background: linear-gradient(135deg, var(--secondary-gold), var(--color-accent-yellow));
   color: #1a1a1a;
   padding: 0.2rem 0.6rem;
   border-radius: 999px;

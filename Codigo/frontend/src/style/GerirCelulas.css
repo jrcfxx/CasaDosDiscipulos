@@ -3,19 +3,18 @@
  * Padrão: Casa dos Discípulos (primary-teal, secondary-gold)
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
-
 :root {
   --primary-teal: #02869b;
+  --primary-teal-hover: var(--color-primary-dark);
   --secondary-gold: #f4b002;
 }
 
 .gerir-celulas-container {
   min-height: 100vh;
-  background: #000;
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
   color: #ebebeb;
 }
 
@@ -70,7 +69,7 @@
   color: #ffffff;
   outline: none;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
 }
 
 .gerir-celulas-container .busca-container input::placeholder {
@@ -92,11 +91,11 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
 }
 
 .gerir-celulas-container .btn-add:hover {
-  background: #03a3bd;
+  background: var(--primary-teal-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(2, 134, 155, 0.4);
 }
@@ -208,7 +207,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
 }
 
 .celulas-table .btn-edit {
@@ -253,40 +252,52 @@
   opacity: 0.85;
 }
 
-/* Modal */
+/* Modal — tema escuro (alinha com o restante do app) */
 .gerir-celulas-container .modal-fundo {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 1rem;
+  backdrop-filter: blur(8px);
 }
 
 .gerir-celulas-container .modal {
-  background: #fff;
+  background: rgba(26, 30, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 2rem;
   max-width: 480px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  color: var(--color-neutral-light, #ebebeb);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-primary);
 }
 
 .gerir-celulas-container .modal h2 {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
-  color: #1e293b;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-primary-teal, #02869b);
 }
 
-.gerir-celulas-container .modal-content label {
+.gerir-celulas-container .modal-content label,
+.gerir-celulas-container .modal-content > span {
   display: block;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #475569;
+  color: #a8acad;
   margin-bottom: 0.5rem;
   margin-top: 1rem;
 }
@@ -300,97 +311,134 @@
 .gerir-celulas-container .modal-content select {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   font-size: 1rem;
-  font-family: "Montserrat", sans-serif;
-  color: #1e293b;
+  font-family: var(--font-primary);
+  color: var(--color-neutral-light, #ebebeb);
+  background: rgba(255, 255, 255, 0.05);
+  box-sizing: border-box;
+}
+
+.gerir-celulas-container .modal-content input[type="text"]::placeholder,
+.gerir-celulas-container .modal-content input[type="time"]::placeholder {
+  color: #6b7280;
+}
+
+.gerir-celulas-container .modal-content input[type="text"]:focus,
+.gerir-celulas-container .modal-content input[type="time"]:focus,
+.gerir-celulas-container .modal-content select:focus {
+  outline: none;
+  border-color: var(--color-primary-teal, #02869b);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gerir-celulas-container .modal-content select option {
+  background: #1a1e23;
+  color: #ebebeb;
 }
 
 .gerir-celulas-container .modal-content input[type="checkbox"] {
   margin-right: 0.5rem;
   width: 1.125rem;
   height: 1.125rem;
+  accent-color: var(--color-primary-teal, #02869b);
 }
 
 .gerir-celulas-container .lideres-select-wrapper {
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .gerir-celulas-container .lideres-select-wrapper:focus-within {
-  border-color: var(--primary-teal);
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+  border-color: var(--color-primary-teal, #02869b);
+  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.2);
 }
 
 .gerir-celulas-container .lideres-search {
   display: flex;
   align-items: center;
   padding: 0.6rem 1rem;
-  background: #fff;
-  border-bottom: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .gerir-celulas-container .lideres-search-icon {
   font-size: 1rem;
-  opacity: 0.5;
+  opacity: 0.55;
   margin-right: 0.5rem;
 }
 
 .gerir-celulas-container .lideres-search-input {
   flex: 1;
-  border: none;
+  border: none !important;
   outline: none;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
-  color: #1e293b;
-  background: transparent;
+  font-family: var(--font-primary);
+  color: var(--color-neutral-light, #ebebeb) !important;
+  background: transparent !important;
+  padding: 0.35rem 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
 }
 
 .gerir-celulas-container .lideres-search-input::placeholder {
-  color: #94a3b8;
+  color: #6b7280;
 }
 
 .gerir-celulas-container .lideres-selected-count {
   padding: 0.4rem 1rem;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--primary-teal);
-  background: rgba(2, 134, 155, 0.08);
-}
-
-/* Uma única barra de rolagem: só no modal. A lista de líderes expande sem scroll próprio. */
-.gerir-celulas-container .modal {
-  max-height: 90vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  color: var(--color-primary-teal, #02869b);
+  background: rgba(2, 134, 155, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .gerir-celulas-container .lideres-list {
   padding: 0.5rem;
+  max-height: 220px;
+  overflow-y: auto;
 }
 
-/* Scrollbar customizada apenas no modal (único scroll) */
+.gerir-celulas-container .lideres-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gerir-celulas-container .lideres-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+}
+
+.gerir-celulas-container .lideres-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+}
+
+.gerir-celulas-container .lideres-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 134, 155, 0.55);
+}
+
 .gerir-celulas-container .modal::-webkit-scrollbar {
   width: 8px;
 }
 
 .gerir-celulas-container .modal::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 4px;
 }
 
 .gerir-celulas-container .modal::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 4px;
 }
 
 .gerir-celulas-container .modal::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(2, 134, 155, 0.55);
 }
 
 .gerir-celulas-container .lider-item {
@@ -398,39 +446,42 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.65rem 1rem;
-  margin-bottom: 2px;
+  margin: 0 0 2px 0 !important;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
   font-weight: 500;
-  color: #334155;
+  color: var(--color-neutral-light, #ebebeb) !important;
+  background: transparent;
 }
 
 .gerir-celulas-container .lider-item:hover {
-  background: rgba(2, 134, 155, 0.08);
+  background: rgba(2, 134, 155, 0.12);
 }
 
 .gerir-celulas-container .lider-item.selected {
-  background: rgba(2, 134, 155, 0.12);
-  color: var(--primary-teal);
+  background: rgba(2, 134, 155, 0.22);
+  color: #fff !important;
 }
 
 .gerir-celulas-container .lider-item input {
   width: 1.125rem;
   height: 1.125rem;
-  accent-color: var(--primary-teal);
+  accent-color: var(--color-primary-teal, #02869b);
   cursor: pointer;
   flex-shrink: 0;
+  margin: 0;
 }
 
 .gerir-celulas-container .lider-item-nome {
   flex: 1;
+  color: inherit;
 }
 
 .gerir-celulas-container .lideres-empty {
   padding: 2rem 1rem;
   text-align: center;
-  color: #64748b;
+  color: #8b9194;
   font-size: 0.9rem;
 }
 
@@ -445,21 +496,29 @@
   padding: 0.75rem 1.5rem;
   border-radius: 10px;
   font-weight: 600;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, transform 0.2s;
 }
 
 .gerir-celulas-container .modal-buttons button:first-child {
-  background: #e2e8f0;
-  color: #475569;
-  border: none;
+  background: transparent;
+  color: var(--color-neutral-light, #ebebeb);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.gerir-celulas-container .modal-buttons button:first-child:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .gerir-celulas-container .modal-buttons button:last-child {
-  background: var(--primary-teal);
+  background: var(--color-primary-teal, #02869b);
   color: #fff;
   border: none;
+}
+
+.gerir-celulas-container .modal-buttons button:last-child:hover {
+  background: var(--color-primary-dark, #00444c);
 }
 
 .gerir-celulas-container .modal-buttons button:hover {

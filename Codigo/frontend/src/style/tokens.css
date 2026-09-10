@@ -21,10 +21,18 @@
   /* Aliases usados no app legado */
   --primary-dark: var(--color-primary-dark);
   --primary-teal: var(--color-primary-teal);
+  --primary-teal-hover: var(--color-primary-dark);
   --primary-gray: var(--color-neutral-dark);
   --primary-light: var(--color-neutral-light);
   --secondary-gold: var(--color-accent-yellow);
   --secondary-cyan: var(--color-accent-cyan);
+  --color-primary-600: var(--color-primary-teal);
+  --color-primary-500: var(--color-primary-teal);
+  --color-background-dark: var(--color-bg);
+  --color-text-light: var(--color-neutral-light);
+  --color-text-dark: var(--color-neutral-dark);
+  --color-header-bg: var(--color-neutral-dark);
+  --color-box-background: #ffffff;
 
   /* ==================== SEMÂNTICAS ==================== */
 

@@ -5,7 +5,7 @@
 .eventos-admin {
   padding: 2rem 1.5rem;
   min-height: calc(100vh - 200px);
-  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .page-title {
@@ -35,7 +35,7 @@
 }
 
 .btn-criar:hover {
-  background: #d9a002;
+  background: var(--color-accent-yellow);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(244, 176, 2, 0.3);
 }
@@ -329,7 +329,7 @@
 }
 
 .btn-salvar:hover {
-  background: #d9a002;
+  background: var(--color-accent-yellow);
   transform: translateY(-2px);
 }
 

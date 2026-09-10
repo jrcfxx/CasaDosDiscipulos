@@ -3,11 +3,9 @@
  * Branding: Montserrat
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap");
-
 .escala-mapa-page,
 .escala-mapa-page * {
-  font-family: "Montserrat", "Segoe UI", Arial, sans-serif;
+  font-family: var(--font-primary);
 }
 
 .escala-mapa-main {
@@ -310,7 +308,7 @@
 }
 
 .mapa-ministerio-card {
-  background: #111318;
+  background: var(--color-surface);
   border-radius: 14px;
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -334,19 +332,19 @@
 }
 
 .mapa-ministerio-card.ministerio-louvor::before {
-  background: linear-gradient(180deg, var(--secondary-gold, #f4b002), #f59e0b);
+  background: linear-gradient(180deg, var(--secondary-gold, #f4b002), var(--color-accent-yellow));
 }
 
 .mapa-ministerio-card.ministerio-som::before {
-  background: linear-gradient(180deg, var(--primary-teal, #02869b), #0d9488);
+  background: linear-gradient(180deg, var(--primary-teal, #02869b), var(--color-primary-teal));
 }
 
 .mapa-ministerio-card.ministerio-recepcao::before {
-  background: linear-gradient(180deg, #0ea5e9, #06b6d4);
+  background: linear-gradient(180deg, var(--color-accent-cyan), var(--color-accent-cyan));
 }
 
 .mapa-ministerio-card.ministerio-generico::before {
-  background: linear-gradient(180deg, #8b5cf6, #a78bfa);
+  background: linear-gradient(180deg, var(--color-primary-dark), var(--color-primary-teal));
 }
 
 .mapa-card-header {

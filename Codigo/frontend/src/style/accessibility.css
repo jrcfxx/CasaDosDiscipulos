@@ -55,7 +55,7 @@ html[data-high-contrast="true"] button:focus-visible {
 
 /* ==================== FOCO VISÍVEL (navegação por teclado / leitores de tela) ==================== */
 :focus {
-  outline: 2px solid var(--color-primary-600, #2563eb);
+  outline: 2px solid var(--color-primary-600);
   outline-offset: 2px;
 }
 
@@ -64,7 +64,7 @@ html[data-high-contrast="true"] button:focus-visible {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-primary-600, #2563eb);
+  outline: 2px solid var(--color-primary-600);
   outline-offset: 2px;
 }
 
@@ -75,7 +75,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-primary-600, #2563eb);
+  outline: 2px solid var(--color-primary-600);
   outline-offset: 2px;
 }
 

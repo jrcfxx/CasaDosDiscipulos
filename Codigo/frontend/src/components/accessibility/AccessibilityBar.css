@@ -9,7 +9,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-primary-600, #2563eb);
+  background: var(--color-primary-600);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -81,13 +81,13 @@
 }
 
 .a11y-bar__opt.active {
-  background: var(--color-primary-600, #2563eb);
+  background: var(--color-primary-600);
   color: #fff;
-  border-color: var(--color-primary-600, #2563eb);
+  border-color: var(--color-primary-600);
 }
 
 .a11y-bar__opt:focus-visible {
-  outline: 2px solid var(--color-primary-600, #2563eb);
+  outline: 2px solid var(--color-primary-600);
   outline-offset: 1px;
 }
 

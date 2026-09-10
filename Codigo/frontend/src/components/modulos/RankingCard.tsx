@@ -101,16 +101,16 @@ export default function RankingCard({
           <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
             <defs>
               <linearGradient id="headerGoldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FFD700" />
-                <stop offset="50%" stopColor="#FFA500" />
-                <stop offset="100%" stopColor="#FFD700" />
+                <stop offset="0%" stopColor="#f4b002" />
+                <stop offset="50%" stopColor="#f4b002" />
+                <stop offset="100%" stopColor="#f4b002" />
               </linearGradient>
             </defs>
-            <circle cx="20" cy="20" r="18" fill="rgba(255, 215, 0, 0.2)" />
+            <circle cx="20" cy="20" r="18" fill="rgba(244, 176, 2, 0.2)" />
             <path
               d="M15 15 L20 10 L25 15 L23 25 L17 25 Z"
               fill="url(#headerGoldGradient)"
-              stroke="#FFA500"
+              stroke="#f4b002"
               strokeWidth="2"
             />
             <circle cx="20" cy="17" r="3" fill="#FFF" opacity="0.5" />

@@ -1,24 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
-
-:root {
-  --color-background-dark: #000000;
-  --color-text-light: #ffffff;
-  --color-box-background: #ffffff;
-  --color-text-dark: #000000;
-  --color-header-bg: #2b2f30;
-}
-
 * {
   box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--color-background-dark);
-  color: var(--color-text-light);
-  font-family: "Montserrat", Arial, sans-serif;
 }
 
 /* HEADER HOME - estilo Central: logo + nav */
@@ -40,14 +21,20 @@ body {
 .header-home__logo {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-neutral-dark, #2b2f30);
   text-decoration: none;
+  overflow: hidden;
 }
 
 .header-home__logo img {
-  height: 48px;
+  height: 34px;
   width: auto;
   object-fit: contain;
-  max-width: 180px;
+  max-width: 40px;
 }
 
 .header-home:hover {
@@ -77,17 +64,17 @@ body {
   padding: 0.5rem 1.25rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #000;
-  background: #fff;
+  color: #fff;
+  background: var(--color-primary-dark, #00444c);
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: "Montserrat", sans-serif;
+  transition: background 0.2s ease;
+  font-family: var(--font-primary);
 }
 
 .header-home__btn-login:hover {
-  background: #ebebeb;
+  background: var(--color-primary-teal, #02869b);
 }
 
 /* CABEÇALHO */
@@ -109,14 +96,28 @@ body {
   z-index: 1000;
 }
 
+.header-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-bg, #020202);
+  border: 1px solid rgba(235, 235, 235, 0.12);
+  overflow: hidden;
+}
+
 .header-icone img {
-  width: 80px;
+  width: 42px;
   height: auto;
+  object-fit: contain;
 }
 
 .header-logo-link {
   display: flex;
   align-items: center;
+  justify-content: center;
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
@@ -327,7 +328,7 @@ body {
   background: none;
   border: none;
   color: #fff;
-  font-family: "Montserrat", Arial, sans-serif;
+  font-family: var(--font-primary);
   font-size: 14px;
   font-weight: 500;
   padding: 12px 20px;
@@ -350,7 +351,7 @@ body {
 
 /* Botão de Login (Header Público) */
 .header-login-btn {
-  background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+  background: var(--color-primary-dark, #00444c);
   border: none;
   color: #fff;
   cursor: pointer;
@@ -362,19 +363,20 @@ body {
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+  font-family: var(--font-primary);
+  transition: background 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 68, 76, 0.35);
 }
 
 .header-login-btn:hover {
-  background: linear-gradient(135deg, #00d4e8 0%, #00afc0 100%);
+  background: var(--color-primary-teal, #02869b);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.5);
+  box-shadow: 0 4px 12px rgba(2, 134, 155, 0.35);
 }
 
 .header-login-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 188, 212, 0.4);
+  box-shadow: 0 2px 6px rgba(0, 68, 76, 0.3);
 }
 
 .page-with-fixed-header {
@@ -385,7 +387,7 @@ body {
 
 .cd-footer {
   width: 100%;
-  background: #0a0a0a;
+  background: var(--color-bg);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 0;
 }
@@ -408,12 +410,20 @@ body {
 
 .footer-logo-wrap {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-neutral-dark, #2b2f30);
   text-decoration: none;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .footer-logo-icon {
-  width: 56px;
-  height: 56px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
 
@@ -424,7 +434,7 @@ body {
 }
 
 .footer-text {
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   font-size: 0.8rem;
   font-weight: 400;
   color: #999;
@@ -445,7 +455,7 @@ body {
 }
 
 .footer-col-title {
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -487,7 +497,7 @@ body {
 }
 
 .footer-copyright {
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   font-size: 0.7rem;
   font-weight: 300;
   color: #999;
@@ -579,7 +589,7 @@ body {
 }
 
 .btn-dark {
-  background-color: #050505;
+  background-color: var(--color-primary-dark, #00444c);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -587,9 +597,10 @@ body {
   font-size: 0.9rem;
   padding: 6px 12px;
   cursor: pointer;
+  font-family: var(--font-primary);
   transition: background-color 0.2s;
 }
 
 .btn-dark:hover {
-  background-color: #8b8b8b;
+  background-color: var(--color-primary-teal, #02869b);
 }

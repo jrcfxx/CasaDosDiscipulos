@@ -4,8 +4,6 @@
  * Cores: #00444c (primária), #f4b002 (secundária), #02869b (primária), #2b2f30 (primária), #ebebeb (primária), #00b5d2 (secundária)
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
-
 :root {
   --primary-dark: #00444c;
   --primary-teal: #02869b;
@@ -17,8 +15,8 @@
 
 .modulos-page {
   min-height: 100vh;
-  background: #000;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  background: var(--color-bg);
+  font-family: var(--font-primary);
   color: #ebebeb;
 }
 
@@ -604,7 +602,7 @@ main.container {
   background: linear-gradient(
     45deg,
     transparent 30%,
-    rgba(255, 215, 0, 0.1) 50%,
+    rgba(244, 176, 2, 0.1) 50%,
     transparent 70%
   );
   animation: shimmer 3s infinite;
@@ -702,8 +700,8 @@ main.container {
 /* Top 3 com destaque especial */
 .rank-item.top-1 {
   background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
-  border-left: 4px solid #ffd700;
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  border-left: 4px solid #f4b002;
+  box-shadow: 0 4px 12px rgba(244, 176, 2, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -718,7 +716,7 @@ main.container {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 215, 0, 0.2),
+    rgba(244, 176, 2, 0.2),
     transparent
   );
   animation: slideGlow 2s infinite;
@@ -734,7 +732,7 @@ main.container {
 }
 
 .rank-item.top-1:hover {
-  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 6px 20px rgba(244, 176, 2, 0.4);
   transform: translateX(-8px) scale(1.03);
 }
 
@@ -791,11 +789,11 @@ main.container {
 @keyframes trophyShine {
   0%,
   100% {
-    filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.6))
+    filter: drop-shadow(0 2px 8px rgba(244, 176, 2, 0.6))
       drop-shadow(0 0 12px rgba(255, 165, 0, 0.4));
   }
   50% {
-    filter: drop-shadow(0 4px 12px rgba(255, 215, 0, 0.8))
+    filter: drop-shadow(0 4px 12px rgba(244, 176, 2, 0.8))
       drop-shadow(0 0 20px rgba(255, 165, 0, 0.6));
   }
 }
@@ -840,10 +838,10 @@ main.container {
 @keyframes shine {
   0%,
   100% {
-    filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.4));
+    filter: drop-shadow(0 2px 4px rgba(244, 176, 2, 0.4));
   }
   50% {
-    filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.6));
+    filter: drop-shadow(0 4px 8px rgba(244, 176, 2, 0.6));
   }
 }
 
@@ -887,19 +885,19 @@ main.container {
 }
 
 .rank-item.top-1 .rank-avatar.highlighted {
-  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
-  border: 3px solid #ffd700;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 165, 0, 0.3);
+  background: linear-gradient(135deg, #f4b002 0%, #f4b002 100%);
+  border: 3px solid #f4b002;
+  box-shadow: 0 0 20px rgba(244, 176, 2, 0.6), 0 0 40px rgba(244, 176, 2, 0.3);
   animation: avatarGlow 2s ease-in-out infinite;
 }
 
 @keyframes avatarGlow {
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 165, 0, 0.3);
+    box-shadow: 0 0 20px rgba(244, 176, 2, 0.6), 0 0 40px rgba(244, 176, 2, 0.3);
   }
   50% {
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 165, 0, 0.5);
+    box-shadow: 0 0 30px rgba(244, 176, 2, 0.8), 0 0 60px rgba(244, 176, 2, 0.5);
   }
 }
 

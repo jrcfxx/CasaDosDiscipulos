@@ -4,11 +4,9 @@
  * Tema: Dark elegante
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap");
-
 :root {
   --primary-teal: #02869b;
-  --primary-teal-hover: #03a3bd;
+  --primary-teal-hover: var(--color-primary-dark);
   --primary-teal-muted: rgba(2, 134, 155, 0.15);
   --primary-teal-border: rgba(2, 134, 155, 0.3);
   --secondary-gold: #f4b002;
@@ -18,10 +16,10 @@
 
 .perfil-page {
   min-height: 100vh;
-  background: #000000;
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
   color-scheme: dark;
 }
 
@@ -104,7 +102,7 @@
   color: var(--primary-teal);
   font-size: 0.9rem;
   font-weight: 600;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   cursor: pointer;
   transition: all 0.2s;
   text-transform: uppercase;
@@ -226,7 +224,7 @@
   color: #ffffff;
   outline: none;
   font-size: 0.95rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s;
 }
 
@@ -296,7 +294,7 @@
   cursor: pointer;
   font-weight: 700;
   font-size: 1rem;
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   transition: all 0.2s;
   text-transform: uppercase;
   letter-spacing: 0.5px;

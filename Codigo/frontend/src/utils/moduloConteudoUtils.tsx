@@ -147,7 +147,7 @@ export function getMedalIcon(position: number): React.ReactNode {
   if (position === 1) {
     return (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="medal-icon gold">
-        <circle cx="12" cy="12" r="10" fill="#FFD700" stroke="#FFA500" strokeWidth="2" />
+        <circle cx="12" cy="12" r="10" fill="#f4b002" stroke="#f4b002" strokeWidth="2" />
         <text x="12" y="17" textAnchor="middle" fill="#FFF" fontSize="12" fontWeight="bold">1</text>
       </svg>
     );

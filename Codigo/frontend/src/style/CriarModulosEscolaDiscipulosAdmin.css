@@ -20,7 +20,7 @@
 .criar-modulo-page {
   min-height: 100vh;
   background: var(--cm-bg-black);
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
   display: flex;
   flex-direction: column;
 }
@@ -111,7 +111,7 @@
   border: 2px solid #e2e8f0;
   padding: 0.85rem 1.1rem;
   outline: none;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
   font-size: 0.95rem;
   transition: all 0.2s ease;
 }
@@ -389,7 +389,7 @@ textarea.criar-modulo-input {
   font-size: 0.95rem;
   transition: all 0.3s ease;
   border: none;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  font-family: var(--font-primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }

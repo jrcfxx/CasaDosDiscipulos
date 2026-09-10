@@ -40,14 +40,14 @@
   margin: 0 0 0.75rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-neutral-dark);
 }
 
 .confirm-modal-message {
   margin: 0 0 1.5rem;
   font-size: 0.95rem;
   line-height: 1.5;
-  color: #475569;
+  color: var(--color-gray-600);
   white-space: pre-line;
 }
 
@@ -69,21 +69,21 @@
 }
 
 .confirm-modal-btn-cancel {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--color-neutral-light);
+  color: var(--color-gray-600);
 }
 .confirm-modal-btn-cancel:hover {
-  background: #cbd5e1;
+  background: var(--color-gray-300);
 }
 
 .confirm-modal-btn-confirm {
   color: white;
 }
 .confirm-modal-btn-default {
-  background: #02869b;
+  background: var(--color-primary-teal);
 }
 .confirm-modal-btn-default:hover {
-  background: #026d7d;
+  background: var(--color-primary-dark);
 }
 .confirm-modal-btn-danger {
   background: #b91c1c;

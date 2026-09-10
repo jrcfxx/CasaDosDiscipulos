@@ -2,12 +2,10 @@
  * SobreNos - Layout super moderno, branding Casa dos Discípulos
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
-
 .sobre-nos-page {
   min-height: 100vh;
-  background: #000;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  background: var(--color-bg);
+  font-family: var(--font-primary);
 }
 
 .sobre-nos-content {
@@ -116,8 +114,8 @@
   padding: 0.75rem 1.5rem;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #000;
-  background: #fff;
+  color: var(--color-neutral-dark);
+  background: var(--color-accent-yellow);
   border: none;
   border-radius: 50px;
   text-decoration: none;
@@ -125,7 +123,7 @@
 }
 
 .sobre-nos-instagram__btn:hover {
-  background: #02869b;
+  background: var(--color-primary-teal);
   color: #fff;
 }
 
@@ -137,7 +135,7 @@
 
 .sobre-nos-instagram__btn--outline:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: #02869b;
+  border-color: var(--color-primary-teal);
   color: #fff;
 }
 
@@ -145,7 +143,7 @@
 
 .sobre-nos-section {
   padding: 4rem 1.5rem;
-  background: #000;
+  background: var(--color-bg);
 }
 
 .sobre-nos-section--alt {
@@ -286,7 +284,7 @@
 }
 
 .sobre-nos-cta__link {
-  color: #02869b;
+  color: var(--color-primary-teal);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 600;
@@ -294,7 +292,7 @@
 }
 
 .sobre-nos-cta__link:hover {
-  color: #ebebeb;
+  color: var(--color-neutral-light);
 }
 
 /* ==================== RESPONSIVE ==================== */

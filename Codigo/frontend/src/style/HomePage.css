@@ -3,13 +3,12 @@
  * Marca: Montserrat (fonte oficial Casa dos Discípulos)
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
 @import "./tokens.css";
 
 .home-page {
   min-height: 100vh;
-  background-color: #000;
-  font-family: "Montserrat", "Segoe UI", sans-serif;
+  background-color: var(--color-bg);
+  font-family: var(--font-primary);
 }
 
 .home-content {
@@ -58,7 +57,7 @@
 }
 
 .home-hero__sub {
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   font-size: 0.9rem;
   font-weight: 400;
   color: rgba(235, 235, 235, 0.85);
@@ -67,7 +66,7 @@
 }
 
 .home-hero__title {
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   font-size: clamp(2.5rem, 6vw, 4.25rem);
   font-weight: 700;
   color: #fff;
@@ -77,7 +76,7 @@
 }
 
 .home-hero__tagline {
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   font-size: 1.2rem;
   font-weight: 400;
   color: rgba(235, 235, 235, 0.9);
@@ -85,12 +84,12 @@
 }
 
 .home-hero__cta {
-  font-family: "Montserrat", sans-serif;
+  font-family: var(--font-primary);
   padding: 0.9rem 2rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #000;
-  background: #fff;
+  color: #fff;
+  background: var(--color-primary-dark);
   border: none;
   border-radius: 50px;
   cursor: pointer;
@@ -99,7 +98,7 @@
 }
 
 .home-hero__cta:hover {
-  background: #ebebeb;
+  background: var(--color-primary-teal);
   transform: translateY(-2px);
 }
 
@@ -197,7 +196,7 @@
 .home-campanha__label {
   font-size: 0.95rem;
   font-weight: 400;
-  color: #2dd4bf;
+  color: var(--color-accent-cyan);
   margin: 0 0 1rem 0;
   letter-spacing: 0.06em;
 }
@@ -307,7 +306,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #2dd4bf;
+  color: var(--color-accent-cyan);
   margin: 0 0 0.5rem 0;
 }
 
@@ -391,7 +390,7 @@
 .home-participe__label {
   font-size: 0.9rem;
   font-weight: 400;
-  color: #2dd4bf;
+  color: var(--color-accent-cyan);
   text-align: center;
   margin: 0 0 0.5rem 0;
   letter-spacing: 0.06em;
@@ -501,7 +500,7 @@
 
 .home-plataforma {
   padding: 5rem 1.5rem;
-  background: #000;
+  background: var(--color-bg);
 }
 
 .home-plataforma__card {
@@ -542,8 +541,8 @@
   padding: 0.9rem 1.75rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #000;
-  background: #fff;
+  color: #fff;
+  background: var(--color-primary-dark);
   border: none;
   border-radius: 50px;
   cursor: pointer;
@@ -552,7 +551,7 @@
 }
 
 .home-plataforma__cta:hover {
-  background: #02869b;
+  background: var(--color-primary-teal);
   color: #fff;
   transform: translateY(-2px);
 }
@@ -561,7 +560,7 @@
 
 .home-eventos {
   padding: 4rem 1.5rem;
-  background: #000;
+  background: var(--color-bg);
 }
 
 .home-eventos__titulo {
@@ -585,13 +584,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #000;
+  background: var(--color-bg);
 }
 
 .home-logo-rodape__img {
-  width: 200px;
-  height: auto;
-  opacity: 0.9;
+  width: 120px;
+  height: 120px;
+  padding: 1.25rem;
+  object-fit: contain;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--color-neutral-dark, #2b2f30);
+  opacity: 1;
 }
 
 /* ==================== RESPONSIVE ==================== */
