@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
+import BibliaVerseCard from "../components/BibliaVerseCard";
 import falaAiService, {
   type CriarPostPayload,
   type TipoPost,
@@ -36,6 +37,13 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
   const [enviando, setEnviando] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+
+  const inserirVersiculoNoConteudo = (bloco: string) => {
+    setConteudo((prev) => {
+      const base = prev.trim();
+      return base ? `${base}\n\n${bloco}` : bloco;
+    });
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -84,10 +92,7 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
       <Header />
       <main id="main-content" className="fala-ai-admin-main" tabIndex={-1}>
         <div className="fala-ai-admin-header">
-          <Link
-            to="/usuario/fala-ai"
-            className="fala-ai-admin-back"
-          >
+          <Link to="/usuario/fala-ai" className="fala-ai-admin-back">
             ← Voltar
           </Link>
           <h1 className="fala-ai-admin-title">Novo post</h1>
@@ -129,7 +134,16 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
               type="text"
               value={referencia}
               onChange={(e) => setReferencia(e.target.value)}
-              placeholder="Ex: Salmos 23:1"
+              placeholder="Ex: Salmos 23:1 ou João 3:16"
+              autoComplete="off"
+            />
+            <p className="fala-ai-admin-field-hint">
+              Digite a referência e o versículo aparece automaticamente (NVI), com uma cena animada.
+            </p>
+
+            <BibliaVerseCard
+              referencia={referencia}
+              onInserir={inserirVersiculoNoConteudo}
             />
           </div>
 
@@ -166,10 +180,7 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
             </button>
             {imagemUrl && (
               <div className="fala-ai-admin-preview">
-                <img
-                  src={`${ASSETS_BASE}${imagemUrl}`}
-                  alt="Preview"
-                />
+                <img src={`${ASSETS_BASE}${imagemUrl}`} alt="Preview" />
                 <button
                   type="button"
                   className="fala-ai-admin-remove-img"
@@ -192,10 +203,7 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
           </div>
 
           <div className="fala-ai-admin-actions">
-            <Link
-              to="/usuario/fala-ai"
-              className="fala-ai-admin-btn-cancel"
-            >
+            <Link to="/usuario/fala-ai" className="fala-ai-admin-btn-cancel">
               Cancelar
             </Link>
             <button

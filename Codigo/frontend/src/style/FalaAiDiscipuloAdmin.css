@@ -86,6 +86,7 @@
   color: #fff;
   font-size: 0.95rem;
   font-family: inherit;
+  color-scheme: dark;
 }
 
 .fala-ai-admin-field input::placeholder,
@@ -102,6 +103,17 @@
 
 .fala-ai-admin-field select {
   cursor: pointer;
+}
+
+.fala-ai-admin-field select option {
+  background-color: #1a1e23;
+  color: #f5f5f5;
+}
+
+.fala-ai-admin-field select option:checked,
+.fala-ai-admin-field select option:hover {
+  background-color: #02869b;
+  color: #fff;
 }
 
 .fala-ai-admin-field textarea {
@@ -202,3 +214,12 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.fala-ai-admin-field-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-family: var(--font-primary, inherit);
+}
+
+

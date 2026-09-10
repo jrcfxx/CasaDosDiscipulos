@@ -1,5 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import "../style/GerirUser.css";
 
 import Header from "../components/layout/Header";
@@ -15,7 +32,9 @@ import {
   createNivel,
   updateNivel,
   deleteNivel,
+  excluirNivel,
   reativarNivel,
+  reordenarNiveis,
 } from "../services/nivel";
 import ministerioService from "../services/ministerioService";
 
@@ -25,6 +44,81 @@ interface Nivel {
   descricao?: string;
   ordem: number;
   ativo: boolean;
+}
+
+function SortableNivelRow({
+  nivel,
+  onEditar,
+  onInativar,
+  onReativar,
+  onExcluir,
+}: {
+  nivel: Nivel;
+  onEditar: (n: Nivel) => void;
+  onInativar: (id: number) => void;
+  onReativar: (id: number) => void;
+  onExcluir: (id: number) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: nivel.id_nivel });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.7 : 1,
+  };
+
+  const inativo = !nivel.ativo;
+
+  return (
+    <tr
+      ref={setNodeRef}
+      style={style}
+      className={`${inativo ? "nivel-inativo" : ""} ${isDragging ? "nivel-dragging" : ""}`}
+    >
+      <td className="nivel-ordem-cell">
+        <button
+          type="button"
+          className="nivel-drag-handle"
+          title="Arrastar para reordenar"
+          aria-label={`Arrastar nível ${nivel.nome}`}
+          {...attributes}
+          {...listeners}
+        >
+          ⋮⋮
+        </button>
+        <span className="nivel-ordem-num">{nivel.ordem}</span>
+      </td>
+      <td>
+        {nivel.nome}
+        {inativo && <span className="badge-inativo">Inativo</span>}
+      </td>
+      <td>{nivel.descricao || "-"}</td>
+      <td className="acoes">
+        <button className="btn-edit" onClick={() => onEditar(nivel)}>
+          Editar
+        </button>
+        {inativo ? (
+          <button className="btn-reativar" onClick={() => onReativar(nivel.id_nivel)}>
+            Reativar
+          </button>
+        ) : (
+          <button className="btn-delete" onClick={() => onInativar(nivel.id_nivel)}>
+            Inativar
+          </button>
+        )}
+        <button className="btn-excluir-nivel" onClick={() => onExcluir(nivel.id_nivel)}>
+          Excluir
+        </button>
+      </td>
+    </tr>
+  );
 }
 
 interface Usuario {
@@ -115,6 +209,8 @@ export default function GerenciarUsuarios() {
   const [nivelToInativar, setNivelToInativar] = useState<number | null>(null);
   const [showConfirmReativarNivel, setShowConfirmReativarNivel] = useState(false);
   const [nivelToReativar, setNivelToReativar] = useState<number | null>(null);
+  const [showConfirmExcluirNivel, setShowConfirmExcluirNivel] = useState(false);
+  const [nivelToExcluir, setNivelToExcluir] = useState<number | null>(null);
   const [ministerios, setMinisterios] = useState<import("../services/ministerioService").Ministerio[]>([]);
   const [modalMinisterioAberto, setModalMinisterioAberto] = useState(false);
   const [ministerioModal, setMinisterioModal] = useState<MinisterioModal>({
@@ -186,7 +282,20 @@ export default function GerenciarUsuarios() {
 
   async function fetchNiveis(incluirInativos = false) {
     try {
-      const data = await showAllNiveis(incluirInativos);
+      let data = await showAllNiveis(incluirInativos);
+      if (!Array.isArray(data)) return;
+
+      // Corrige ordens duplicadas automaticamente (1..N)
+      const ordens = data.map((n: Nivel) => Number(n.ordem));
+      const temDuplicado = new Set(ordens).size !== ordens.length;
+      if (temDuplicado && incluirInativos) {
+        try {
+          data = await reordenarNiveis(data.map((n: Nivel) => n.id_nivel));
+        } catch (err) {
+          console.error("Erro ao normalizar ordem dos níveis:", err);
+        }
+      }
+
       if (Array.isArray(data)) {
         setNiveis(data);
       }
@@ -197,6 +306,37 @@ export default function GerenciarUsuarios() {
       }
     }
   }
+
+  const sensoresNiveis = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEndNivel = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = niveis.findIndex((n) => n.id_nivel === active.id);
+    const newIndex = niveis.findIndex((n) => n.id_nivel === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    const reordenados = arrayMove(niveis, oldIndex, newIndex).map((n, i) => ({
+      ...n,
+      ordem: i + 1,
+    }));
+    setNiveis(reordenados);
+
+    try {
+      const atualizados = await reordenarNiveis(reordenados.map((n) => n.id_nivel));
+      if (Array.isArray(atualizados)) {
+        setNiveis(atualizados);
+      }
+    } catch (err: any) {
+      console.error("Erro ao reordenar níveis:", err);
+      showToast(err?.response?.data?.error || "Erro ao reordenar níveis", "error");
+      await fetchNiveis(true);
+    }
+  };
 
   async function fetchMinisterios(incluirInativos = false) {
     try {
@@ -439,15 +579,11 @@ export default function GerenciarUsuarios() {
 
   // Funções de Gerenciamento de Níveis
   const abrirModalNivelCadastro = () => {
-    const proximaOrdem =
-      niveis.length > 0
-        ? Math.max(...niveis.map((n) => Number(n.ordem) || 0), 0) + 1
-        : 1;
     setNivelModal({
       id_nivel: undefined,
       nome: "",
       descricao: "",
-      ordem: proximaOrdem,
+      ordem: 0,
     });
     setModalNivelAberto(true);
   };
@@ -477,10 +613,10 @@ export default function GerenciarUsuarios() {
       return;
     }
 
+    // Ordem não é editável no modal — definida por arrastar na lista
     const nivelData: Record<string, unknown> = {
       nome: nivelModal.nome.trim(),
       descricao: nivelModal.descricao?.trim() ?? "",
-      ordem: nivelModal.ordem,
     };
 
     if (!nivelModal.id_nivel) {
@@ -499,7 +635,10 @@ export default function GerenciarUsuarios() {
       fecharModalNivel();
     } catch (err: any) {
       console.error("Erro ao salvar nível:", err);
-      const msg = err?.response?.data?.error || "Erro ao salvar nível";
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.errors?.[0] ||
+        "Erro ao salvar nível";
       showToast(msg, "error");
     }
   };
@@ -521,6 +660,31 @@ export default function GerenciarUsuarios() {
     } catch (err: any) {
       console.error("Erro ao inativar nível:", err);
       const msg = err?.response?.data?.error || "Erro ao inativar nível";
+      showToast(msg, "error");
+    }
+  };
+
+  const handleExcluirNivelClick = (id: number) => {
+    setNivelToExcluir(id);
+    setShowConfirmExcluirNivel(true);
+  };
+
+  const excluirNivelPermanenteConfirm = async () => {
+    if (nivelToExcluir === null) return;
+    const id = nivelToExcluir;
+    setShowConfirmExcluirNivel(false);
+    setNivelToExcluir(null);
+    try {
+      const res = await excluirNivel(id);
+      if (Array.isArray(res?.niveis)) {
+        setNiveis(res.niveis);
+      } else {
+        await fetchNiveis(true);
+      }
+      showToast("Nível excluído e ordem atualizada!", "success");
+    } catch (err: any) {
+      console.error("Erro ao excluir nível:", err);
+      const msg = err?.response?.data?.error || "Erro ao excluir nível";
       showToast(msg, "error");
     }
   };
@@ -734,54 +898,40 @@ export default function GerenciarUsuarios() {
               </div>
             ) : (
             <div className="niveis-table-container">
-              <table className="niveis-table">
-                <thead>
-                  <tr>
-                    <th>Ordem</th>
-                    <th>Nome</th>
-                    <th>Descrição</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {niveis.map((nivel) => {
-                    const inativo = !nivel.ativo;
-                    return (
-                      <tr key={nivel.id_nivel} className={inativo ? "nivel-inativo" : ""}>
-                        <td>{nivel.ordem}</td>
-                        <td>
-                          {nivel.nome}
-                          {inativo && <span className="badge-inativo">Inativo</span>}
-                        </td>
-                        <td>{nivel.descricao || "-"}</td>
-                        <td className="acoes">
-                          <button
-                            className="btn-edit"
-                            onClick={() => abrirModalNivelEdicao(nivel)}
-                          >
-                            Editar
-                          </button>
-                          {inativo ? (
-                            <button
-                              className="btn-reativar"
-                              onClick={() => handleReativarNivelClick(nivel.id_nivel)}
-                            >
-                              Reativar
-                            </button>
-                          ) : (
-                            <button
-                              className="btn-delete"
-                              onClick={() => handleInativarNivelClick(nivel.id_nivel)}
-                            >
-                              Inativar
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <p className="niveis-dnd-hint">Arraste as linhas pelo ícone ⋮⋮ para reordenar. A ordem atualiza automaticamente.</p>
+              <DndContext
+                sensors={sensoresNiveis}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEndNivel}
+              >
+                <table className="niveis-table">
+                  <thead>
+                    <tr>
+                      <th>Ordem</th>
+                      <th>Nome</th>
+                      <th>Descrição</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <SortableContext
+                    items={niveis.map((n) => n.id_nivel)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <tbody>
+                      {niveis.map((nivel) => (
+                        <SortableNivelRow
+                          key={nivel.id_nivel}
+                          nivel={nivel}
+                          onEditar={abrirModalNivelEdicao}
+                          onInativar={handleInativarNivelClick}
+                          onReativar={handleReativarNivelClick}
+                          onExcluir={handleExcluirNivelClick}
+                        />
+                      ))}
+                    </tbody>
+                  </SortableContext>
+                </table>
+              </DndContext>
             </div>
             )}
           </>
@@ -878,9 +1028,30 @@ export default function GerenciarUsuarios() {
       {modalAberto && createPortal(
         <div className="modal-fundo" role="dialog" aria-modal="true">
           <div className="modal modal-usuario">
-            <h2>
-              {usuarioModal.id_usuario ? "Editar Usuário" : "Novo Usuário"}
-            </h2>
+            <div className="cd-modal-header">
+              <div className="cd-modal-header-content">
+                <span className="cd-modal-icon" aria-hidden>👤</span>
+                <div>
+                  <h2 className="cd-modal-title">
+                    {usuarioModal.id_usuario ? "Editar Usuário" : "Novo Usuário"}
+                  </h2>
+                  <p className="cd-modal-subtitle">
+                    {usuarioModal.id_usuario
+                      ? "Atualize os dados e permissões deste usuário"
+                      : "Preencha os dados para cadastrar um novo usuário"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="cd-modal-close"
+                onClick={fecharModal}
+                title="Fechar"
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
 
             <div className="modal-content modal-usuario-grid">
               <div className="form-field">
@@ -1130,9 +1301,32 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Cadastro/Edição de Nível */}
       {modalNivelAberto && (
-        <div className="modal-fundo">
+        <div className="modal-fundo" role="dialog" aria-modal="true">
           <div className="modal">
-            <h2>{nivelModal.id_nivel ? "Editar Nível" : "Novo Nível"}</h2>
+            <div className="cd-modal-header">
+              <div className="cd-modal-header-content">
+                <span className="cd-modal-icon" aria-hidden>🎓</span>
+                <div>
+                  <h2 className="cd-modal-title">
+                    {nivelModal.id_nivel ? "Editar Nível" : "Novo Nível"}
+                  </h2>
+                  <p className="cd-modal-subtitle">
+                    {nivelModal.id_nivel
+                      ? "Atualize as informações deste nível"
+                      : "Preencha os dados para criar um novo nível"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="cd-modal-close"
+                onClick={fecharModalNivel}
+                title="Fechar"
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
 
             <div className="modal-content">
               <label htmlFor="nivelModalNome">Nome do Nível</label>
@@ -1160,20 +1354,10 @@ export default function GerenciarUsuarios() {
                 rows={3}
               />
 
-              <label htmlFor="nivelModalOrdem">Ordem de Progressão</label>
-              <input
-                id="nivelModalOrdem"
-                type="number"
-                value={nivelModal.ordem || 0}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value, 10);
-                  setNivelModal((prev) => ({
-                    ...prev,
-                    ordem: isNaN(v) ? 1 : Math.max(1, v),
-                  }));
-                }}
-                min="1"
-              />
+              <p className="hint">
+                A ordem de progressão é definida arrastando os níveis na lista.
+                {nivelModal.id_nivel ? ` Ordem atual: ${nivelModal.ordem}.` : " Novos níveis entram no final."}
+              </p>
             </div>
 
             <div className="modal-buttons">
@@ -1189,7 +1373,7 @@ export default function GerenciarUsuarios() {
       <ConfirmModal
         open={showConfirmInativarNivel}
         title="Tem certeza?"
-        message="Deseja realmente inativar este nível? Usuários e módulos vinculados terão a referência removida."
+        message="Deseja realmente inativar este nível? Ele poderá ser reativado depois."
         confirmLabel="Inativar"
         cancelLabel="Cancelar"
         variant="danger"
@@ -1197,6 +1381,20 @@ export default function GerenciarUsuarios() {
         onCancel={() => {
           setShowConfirmInativarNivel(false);
           setNivelToInativar(null);
+        }}
+      />
+
+      <ConfirmModal
+        open={showConfirmExcluirNivel}
+        title="Excluir nível"
+        message="Esta ação remove o nível permanentemente. Usuários e módulos vinculados ficarão sem este nível. A ordem dos demais será atualizada automaticamente."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={excluirNivelPermanenteConfirm}
+        onCancel={() => {
+          setShowConfirmExcluirNivel(false);
+          setNivelToExcluir(null);
         }}
       />
 
@@ -1218,14 +1416,14 @@ export default function GerenciarUsuarios() {
       {modalMinisterioAberto && (
         <div className="modal-ministerio-overlay">
           <div className="modal-ministerio">
-            <div className="modal-ministerio-header">
-              <div className="modal-ministerio-header-content">
-                <span className="modal-ministerio-icon" aria-hidden>⛪</span>
+            <div className="modal-ministerio-header cd-modal-header">
+              <div className="modal-ministerio-header-content cd-modal-header-content">
+                <span className="modal-ministerio-icon cd-modal-icon" aria-hidden>⛪</span>
                 <div>
-                  <h2 className="modal-ministerio-title">
+                  <h2 className="modal-ministerio-title cd-modal-title">
                     {ministerioModal.id_ministerio ? "Editar Ministério" : "Novo Ministério"}
                   </h2>
-                  <p className="modal-ministerio-subtitle">
+                  <p className="modal-ministerio-subtitle cd-modal-subtitle">
                     {ministerioModal.id_ministerio
                       ? "Atualize as informações do ministério"
                       : "Preencha os dados para criar um novo ministério"}
@@ -1234,7 +1432,7 @@ export default function GerenciarUsuarios() {
               </div>
               <button
                 type="button"
-                className="modal-ministerio-close"
+                className="modal-ministerio-close cd-modal-close"
                 onClick={() => setModalMinisterioAberto(false)}
                 title="Fechar"
                 aria-label="Fechar"

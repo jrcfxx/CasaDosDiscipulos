@@ -446,6 +446,11 @@
 
 .modal-fundo .modal .password-input-wrapper input {
   padding-right: 2.75rem;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-family: var(--font-primary);
 }
 
 .modal-fundo .modal .password-toggle {
@@ -528,6 +533,95 @@
   border-bottom: 2px solid rgba(2, 134, 155, 0.5);
   width: 100%;
   box-sizing: border-box;
+}
+
+/* Header moderno (padrão Novo Ministério) */
+.cd-modal-header,
+.modal-ministerio-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 1.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(135deg, rgba(2, 134, 155, 0.08) 0%, transparent 50%);
+  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cd-modal-header-content,
+.modal-ministerio-header-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.cd-modal-icon,
+.modal-ministerio-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 134, 155, 0.2);
+  border-radius: 14px;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.modal-fundo .modal h2.cd-modal-title,
+.cd-modal-title,
+.modal-ministerio-title {
+  margin: 0 0 0.25rem 0 !important;
+  padding: 0 !important;
+  font-size: 1.25rem !important;
+  font-weight: 700;
+  color: var(--color-neutral-light, #ebebeb) !important;
+  letter-spacing: -0.02em;
+  text-align: left !important;
+  text-transform: none !important;
+  border: none !important;
+  width: auto !important;
+  font-family: var(--font-primary);
+}
+
+.cd-modal-subtitle,
+.modal-ministerio-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-family: var(--font-primary);
+  line-height: 1.4;
+}
+
+.cd-modal-close,
+.modal-ministerio-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  font-family: var(--font-primary);
+  padding: 0;
+}
+
+.cd-modal-close:hover,
+.modal-ministerio-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
 }
 
 .modal-fundo .modal .modal-content {
@@ -647,6 +741,7 @@
 .modal-fundo .modal input[type="tel"],
 .modal-fundo .modal input[type="password"],
 .modal-fundo .modal input[type="number"],
+.modal-fundo .modal input:not([type]),
 .modal-fundo .modal select {
   width: 100%;
   padding: 0.6rem 0.75rem;
@@ -657,7 +752,8 @@
   margin-bottom: 0;
   font-size: 0.9rem;
   font-family: var(--font-primary);
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color-scheme: dark;
 }
 
 .modal-fundo .modal.modal-usuario input,
@@ -666,10 +762,44 @@
   font-size: 0.875rem;
   width: 100%;
   box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-family: var(--font-primary);
+  color-scheme: dark;
 }
 
-.modal-fundo .modal input::placeholder {
-  color: #64748b;
+.modal-fundo .modal .password-input-wrapper input {
+  padding-right: 2.75rem;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Chrome/Edge autofill — evita fundo branco nos campos do modal escuro */
+.modal-fundo .modal input:-webkit-autofill,
+.modal-fundo .modal input:-webkit-autofill:hover,
+.modal-fundo .modal input:-webkit-autofill:focus,
+.modal-fundo .modal input:-webkit-autofill:active,
+.modal-fundo .modal .password-input-wrapper input:-webkit-autofill {
+  -webkit-text-fill-color: #e2e8f0 !important;
+  caret-color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 0 0 1000px #1f2429 inset !important;
+  transition: background-color 99999s ease-out 0s;
+}
+
+.modal-fundo .modal input::placeholder,
+.modal-fundo .modal textarea::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 1;
+}
+
+.modal-fundo .modal input[type="tel"]::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 1;
 }
 
 .modal-fundo .modal input:focus,
@@ -795,6 +925,13 @@
   padding: 0 1rem;
 }
 
+.niveis-dnd-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: var(--font-primary);
+}
+
 .niveis-table {
   width: 100%;
   border-collapse: collapse;
@@ -826,6 +963,48 @@
   font-size: 0.95rem;
 }
 
+.nivel-ordem-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  white-space: nowrap;
+}
+
+.nivel-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+  cursor: grab;
+  font-size: 0.85rem;
+  letter-spacing: -1px;
+  font-family: var(--font-primary);
+  line-height: 1;
+  touch-action: none;
+}
+
+.nivel-drag-handle:active {
+  cursor: grabbing;
+  color: #fff;
+  border-color: var(--color-primary-teal, #02869b);
+}
+
+.nivel-ordem-num {
+  font-weight: 700;
+  color: var(--color-primary-teal, #02869b);
+  min-width: 1.25rem;
+}
+
+.niveis-table tr.nivel-dragging td {
+  background: rgba(2, 134, 155, 0.18);
+}
+
 .niveis-table tbody tr:last-child td {
   border-bottom: none;
 }
@@ -840,7 +1019,8 @@
 }
 
 .niveis-table .btn-edit,
-.niveis-table .btn-delete {
+.niveis-table .btn-delete,
+.niveis-table .btn-excluir-nivel {
   padding: 0.5rem 1.25rem;
   border-radius: 8px;
   border: none;
@@ -870,6 +1050,18 @@
 
 .niveis-table .btn-delete:hover {
   background: rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
+.niveis-table .btn-excluir-nivel {
+  background: transparent;
+  color: #fca5a5;
+  border: 1px solid rgba(185, 28, 28, 0.55);
+}
+
+.niveis-table .btn-excluir-nivel:hover {
+  background: rgba(185, 28, 28, 0.35);
+  color: #fff;
   transform: translateY(-1px);
 }
 
@@ -980,71 +1172,6 @@
   }
 }
 
-.modal-ministerio-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.5rem 1.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: linear-gradient(135deg, rgba(2, 134, 155, 0.08) 0%, transparent 50%);
-  border-radius: 20px 20px 0 0;
-}
-
-.modal-ministerio-header-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.modal-ministerio-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(2, 134, 155, 0.2);
-  border-radius: 14px;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.modal-ministerio-title {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-light);
-  letter-spacing: -0.02em;
-}
-
-.modal-ministerio-subtitle {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-.modal-ministerio-close {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  color: #94a3b8;
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.modal-ministerio-close:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #f87171;
-}
-
 .modal-ministerio-body {
   padding: 1.25rem 1.75rem 1rem;
 }
@@ -1053,12 +1180,14 @@
   margin-bottom: 1.25rem;
 }
 
-.modal-ministerio-form-group label {
+.modal-ministerio-form-group > label,
+.modal-ministerio-form-group > span {
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
   color: #e2e8f0;
   margin-bottom: 0.5rem;
+  font-family: var(--font-primary);
 }
 
 .modal-ministerio-form-group input[type="text"],
@@ -1073,14 +1202,17 @@
   font-size: 1rem;
   font-family: var(--font-primary);
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.modal-ministerio-form-group input::placeholder,
+.modal-ministerio-form-group input[type="text"]::placeholder,
+.modal-ministerio-form-group input[type="number"]::placeholder,
 .modal-ministerio-form-group textarea::placeholder {
   color: #64748b;
 }
 
-.modal-ministerio-form-group input:focus,
+.modal-ministerio-form-group input[type="text"]:focus,
+.modal-ministerio-form-group input[type="number"]:focus,
 .modal-ministerio-form-group textarea:focus {
   outline: none;
   border-color: var(--primary-teal);
@@ -1105,53 +1237,87 @@
 }
 
 .modal-ministerio-checkbox {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
   color: #e2e8f0;
   padding-bottom: 0.5rem;
+  margin: 0;
+  font-family: var(--font-primary);
 }
 
-.modal-ministerio-checkbox input {
-  width: 18px;
-  height: 18px;
+.modal-ministerio-checkbox input[type="checkbox"] {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  flex-shrink: 0;
   accent-color: var(--primary-teal);
   cursor: pointer;
 }
 
 .modal-ministerio-lideres {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.65rem;
+  width: 100%;
 }
 
 .modal-ministerio-lider-chip {
-  display: flex;
+  display: flex !important;
+  flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.9rem;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  gap: 0.65rem;
+  margin: 0 !important;
+  padding: 0.7rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-  color: #e2e8f0;
+  transition: background 0.2s, border-color 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e2e8f0 !important;
+  font-family: var(--font-primary);
+  box-sizing: border-box;
+  min-height: 44px;
 }
 
 .modal-ministerio-lider-chip:hover {
-  border-color: rgba(2, 134, 155, 0.4);
-  background: rgba(2, 134, 155, 0.1);
+  border-color: rgba(2, 134, 155, 0.45);
+  background: rgba(2, 134, 155, 0.12);
 }
 
-.modal-ministerio-lider-chip input {
-  width: 16px;
-  height: 16px;
+.modal-ministerio-lider-chip:has(input:checked) {
+  border-color: var(--primary-teal);
+  background: rgba(2, 134, 155, 0.18);
+}
+
+.modal-ministerio-lider-chip input[type="checkbox"] {
+  width: 1.05rem !important;
+  height: 1.05rem !important;
+  min-width: 1.05rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0;
   accent-color: var(--primary-teal);
   cursor: pointer;
+  appearance: auto;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.modal-ministerio-lider-chip span {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .modal-ministerio-hint {
@@ -1159,6 +1325,8 @@
   color: #64748b;
   margin: 0;
   padding: 0.75rem 0;
+  grid-column: 1 / -1;
+  font-family: var(--font-primary);
 }
 
 .modal-ministerio-footer {

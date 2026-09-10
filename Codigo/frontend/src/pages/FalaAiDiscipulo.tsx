@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Toast from "../components/ui/Toast";
+import BibliaVerseCard from "../components/BibliaVerseCard";
 import falaAiService, {
   type FalaAiPost,
   type FalaAiComentario,
@@ -141,7 +142,11 @@ const FalaAiDiscipulo: React.FC = () => {
                       <h3 className="fala-ai-card__titulo">{post.titulo}</h3>
                     )}
                     {post.referencia && (
-                      <p className="fala-ai-card__ref">{post.referencia}</p>
+                      <BibliaVerseCard
+                        referencia={post.referencia}
+                        autoReveal
+                        className="biblia-verse-card--feed"
+                      />
                     )}
                     <div className="fala-ai-card__conteudo">
                       {post.conteudo.split("\n").map((p, i) => (

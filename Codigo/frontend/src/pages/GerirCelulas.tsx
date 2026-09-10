@@ -314,9 +314,32 @@ export default function GerirCelulas() {
 
       {/* Modal Cadastro/Edição */}
       {modalAberto && (
-        <div className="modal-fundo">
+        <div className="modal-fundo" role="dialog" aria-modal="true">
           <div className="modal">
-            <h2>{celulaModal.id_celula ? "Editar Célula" : "Nova Célula"}</h2>
+            <div className="cd-modal-header">
+              <div className="cd-modal-header-content">
+                <span className="cd-modal-icon" aria-hidden>🏠</span>
+                <div>
+                  <h2 className="cd-modal-title">
+                    {celulaModal.id_celula ? "Editar Célula" : "Nova Célula"}
+                  </h2>
+                  <p className="cd-modal-subtitle">
+                    {celulaModal.id_celula
+                      ? "Atualize as informações desta célula"
+                      : "Preencha os dados para criar uma nova célula"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="cd-modal-close"
+                onClick={fecharModal}
+                title="Fechar"
+                aria-label="Fechar"
+              >
+                ×
+              </button>
+            </div>
 
             <div className="modal-content">
               <label htmlFor="celulaModalNome">Nome da célula *</label>

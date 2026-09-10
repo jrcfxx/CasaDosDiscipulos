@@ -55,7 +55,7 @@ class NivelController {
     }
   }
 
-  // DELETE /api/nivel/:id - Deletar (soft delete)
+  // DELETE /api/nivel/:id - Soft delete (inativar)
   async destroy(req, res, next) {
     try {
       const { id } = req.params;
@@ -67,6 +67,26 @@ class NivelController {
 
       await NivelModel.delete(id);
       res.json({ message: "Nível inativado com sucesso" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // DELETE /api/nivel/:id/permanente - Excluir e reordenar
+  async excluirPermanente(req, res, next) {
+    try {
+      const { id } = req.params;
+      const nivelExistente = await NivelModel.findById(id);
+
+      if (!nivelExistente) {
+        return res.status(404).json({ error: "Nível não encontrado" });
+      }
+
+      const niveis = await NivelModel.excluir(id);
+      res.json({
+        message: "Nível excluído com sucesso",
+        niveis,
+      });
     } catch (error) {
       next(error);
     }
@@ -89,6 +109,16 @@ class NivelController {
       await NivelModel.reativar(id);
       const atualizado = await NivelModel.findById(id);
       res.json(atualizado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // PUT /api/nivel/reordenar - Reordenar níveis (ordem automática 1..N)
+  async reordenar(req, res, next) {
+    try {
+      const niveis = await NivelModel.reordenar(req.body.ids);
+      res.json(niveis);
     } catch (error) {
       next(error);
     }

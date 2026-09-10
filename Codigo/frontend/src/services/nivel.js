@@ -44,12 +44,32 @@ export async function updateNivel(id, nivelData) {
   }
 }
 
+export async function reordenarNiveis(ids) {
+  try {
+    const res = await api.put(`${URL}/reordenar`, { ids });
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao reordenar níveis:", err);
+    throw err;
+  }
+}
+
 export async function deleteNivel(id) {
   try {
     const res = await api.delete(`${URL}/${id}`);
     return res.data;
   } catch (err) {
     console.error("Erro ao inativar nível:", err);
+    throw err;
+  }
+}
+
+export async function excluirNivel(id) {
+  try {
+    const res = await api.delete(`${URL}/${id}/permanente`);
+    return res.data;
+  } catch (err) {
+    console.error("Erro ao excluir nível:", err);
     throw err;
   }
 }

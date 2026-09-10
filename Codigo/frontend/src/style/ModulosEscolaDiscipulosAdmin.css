@@ -214,6 +214,7 @@ main.container {
   padding: 0.4rem 0.9rem;
   border: none;
   border-radius: 8px;
+  font-family: var(--font-primary);
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -329,6 +330,7 @@ main.container {
   color: white;
   border: none;
   border-radius: 10px;
+  font-family: var(--font-primary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
@@ -352,6 +354,7 @@ main.container {
   color: #b91c1c;
   border: 2px solid #b91c1c;
   border-radius: 10px;
+  font-family: var(--font-primary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
