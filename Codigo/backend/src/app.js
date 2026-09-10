@@ -52,7 +52,7 @@ app.use("/api/", limiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: 30,
   message: { error: "Muitas tentativas de login. Tente novamente em alguns minutos." },
 });
 app.use("/api/auth/login", authLimiter);

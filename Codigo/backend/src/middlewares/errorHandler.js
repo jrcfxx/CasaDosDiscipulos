@@ -36,6 +36,10 @@ const errorHandler = (err, req, res, next) => {
     if (err instanceof ValidationError && err.errors?.length) {
       response.details = err.errors;
     }
+    if (err.conflitos?.length) {
+      response.sucesso = false;
+      response.conflitos = err.conflitos;
+    }
 
     return res.status(err.statusCode).json(response);
   }

@@ -17,6 +17,25 @@ export const MODULE_STATUS = {
   COMPLETED: "concluido",
 };
 
+// Status do evento de escala
+export const ESCALA_STATUS = {
+  RASCUNHO: "rascunho",
+  PUBLICADA: "publicada",
+  CONCLUIDA: "concluida",
+};
+
+export const ESCALA_HISTORICO_ACAO = {
+  CRIACAO: "criacao",
+  EDICAO: "edicao",
+  EXCLUSAO: "exclusao",
+  PUBLICACAO: "publicacao",
+  ATRIBUICAO: "atribuicao",
+  REMOCAO_ATRIBUICAO: "remocao_atribuicao",
+  MOVIMENTACAO: "movimentacao",
+  COPIA: "copia",
+  DESFAZER: "desfazer",
+};
+
 // Tipos de campos personalizados
 export const FIELD_TYPES = {
   // Campos gerais
