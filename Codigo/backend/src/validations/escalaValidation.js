@@ -98,6 +98,12 @@ export const criarTemplateSchema = Joi.object({
   payload: Joi.object().optional(),
 });
 
+export const atualizarTemplateSchema = Joi.object({
+  nome: Joi.string().min(1).max(150).optional(),
+  id_escala_evento: Joi.number().integer().positive().optional(),
+  payload: Joi.object().optional(),
+}).or("nome", "id_escala_evento", "payload");
+
 export const aplicarTemplateSchema = Joi.object({
   data_hora: Joi.date().required(),
   data_hora_fim: Joi.date().allow(null).optional(),

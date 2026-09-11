@@ -169,6 +169,7 @@ interface MinisterioModal {
   ordem: number;
   ativo: boolean;
   id_lideres: number[];
+  id_paralelismos: number[];
 }
 
 export default function GerenciarUsuarios() {
@@ -219,7 +220,9 @@ export default function GerenciarUsuarios() {
     ordem: 0,
     ativo: true,
     id_lideres: [],
+    id_paralelismos: [],
   });
+  const [showParalelismoInfo, setShowParalelismoInfo] = useState(false);
   const [showConfirmExcluirMinisterio, setShowConfirmExcluirMinisterio] = useState(false);
   const [ministerioToExcluir, setMinisterioToExcluir] = useState<number | null>(null);
 
@@ -724,6 +727,7 @@ export default function GerenciarUsuarios() {
         ordem: ministerioModal.ordem,
         ativo: !!ministerioModal.ativo,
         id_lideres: ministerioModal.id_lideres || [],
+        id_paralelismos: ministerioModal.id_paralelismos || [],
       };
       if (ministerioModal.id_ministerio) {
         await ministerioService.update(ministerioModal.id_ministerio, payload);
@@ -951,7 +955,9 @@ export default function GerenciarUsuarios() {
                     ordem: ministerios.length + 1,
                     ativo: true,
                     id_lideres: [],
+                    id_paralelismos: [],
                   });
+                  setShowParalelismoInfo(false);
                   setModalMinisterioAberto(true);
                 }}
                 title="Criar novo ministério"
@@ -998,7 +1004,9 @@ export default function GerenciarUsuarios() {
                                 ordem: m.ordem,
                                 ativo: m.ativo,
                                 id_lideres: (m.lideres || []).map((l) => l.id_usuario),
+                                id_paralelismos: m.id_paralelismos || [],
                               });
+                              setShowParalelismoInfo(false);
                               setModalMinisterioAberto(true);
                             }}
                           >
@@ -1507,6 +1515,67 @@ export default function GerenciarUsuarios() {
                   ))}
                   {lideresParaSelect.length === 0 && (
                     <p className="modal-ministerio-hint">Nenhum líder cadastrado. Crie usuários do tipo Líder na aba Usuários.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-ministerio-form-group modal-ministerio-paralelismo">
+                <div className="modal-ministerio-paralelismo-head">
+                  <span>Paralelismo na escala</span>
+                  <button
+                    type="button"
+                    className="modal-ministerio-info-btn"
+                    onClick={() => setShowParalelismoInfo((v) => !v)}
+                    aria-expanded={showParalelismoInfo}
+                    title="O que é paralelismo?"
+                  >
+                    ?
+                  </button>
+                </div>
+                {showParalelismoInfo && (
+                  <div className="modal-ministerio-info-box" role="note">
+                    <strong>O que é isso?</strong>
+                    <p>
+                      Por padrão, a mesma pessoa não pode ser escalada em dois ministérios no
+                      mesmo evento. Se marcar outro ministério aqui, a pessoa poderá estar nos
+                      dois — por exemplo, cantar no Louvor e também ministrar na Palavra.
+                    </p>
+                  </div>
+                )}
+                <p className="modal-ministerio-hint">
+                  Selecione os ministérios que podem compartilhar a mesma pessoa neste evento.
+                </p>
+                <div className="modal-ministerio-lideres">
+                  {ministerios
+                    .filter(
+                      (m) =>
+                        m.ativo &&
+                        m.id_ministerio !== ministerioModal.id_ministerio
+                    )
+                    .map((m) => (
+                      <label key={m.id_ministerio} className="modal-ministerio-lider-chip">
+                        <input
+                          type="checkbox"
+                          checked={(ministerioModal.id_paralelismos || []).includes(
+                            m.id_ministerio
+                          )}
+                          onChange={(e) => {
+                            const prev = ministerioModal.id_paralelismos || [];
+                            const next = e.target.checked
+                              ? [...prev, m.id_ministerio]
+                              : prev.filter((id) => id !== m.id_ministerio);
+                            setMinisterioModal((p) => ({ ...p, id_paralelismos: next }));
+                          }}
+                        />
+                        <span>{m.nome}</span>
+                      </label>
+                    ))}
+                  {ministerios.filter(
+                    (m) => m.ativo && m.id_ministerio !== ministerioModal.id_ministerio
+                  ).length === 0 && (
+                    <p className="modal-ministerio-hint">
+                      Cadastre outros ministérios para configurar o paralelismo.
+                    </p>
                   )}
                 </div>
               </div>

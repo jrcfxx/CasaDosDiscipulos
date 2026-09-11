@@ -11,6 +11,9 @@ export interface InputModalProps {
   label?: string;
   placeholder?: string;
   defaultValue?: string;
+  /** text (padrão) ou date (AAAA-MM-DD) */
+  inputType?: "text" | "date";
+  hint?: string;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: (value: string) => void;
@@ -23,6 +26,8 @@ const InputModal: React.FC<InputModalProps> = ({
   label = "Valor",
   placeholder = "",
   defaultValue = "",
+  inputType = "text",
+  hint,
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   onConfirm,
@@ -88,13 +93,19 @@ const InputModal: React.FC<InputModalProps> = ({
           <input
             ref={inputRef}
             id="input-modal-input"
-            type="text"
+            type={inputType}
             className="input-modal-input"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={placeholder}
             aria-label={label}
+            aria-describedby={hint ? "input-modal-hint" : undefined}
           />
+          {hint && (
+            <p id="input-modal-hint" className="input-modal-hint">
+              {hint}
+            </p>
+          )}
         </div>
         <div className="input-modal-actions">
           <button

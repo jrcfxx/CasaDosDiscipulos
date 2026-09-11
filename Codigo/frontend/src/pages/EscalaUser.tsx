@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../style/EscalaUser.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
+import InputModal from "../components/ui/InputModal";
 import Toast from "../components/ui/Toast";
 import { useAuth } from "../contexts/AuthContext";
 import escalaService, {
@@ -32,8 +33,11 @@ import EscalaQuadroUnificado from "../components/escala/EscalaQuadroUnificado";
 import ModalConflitos from "../components/escala/ModalConflitos";
 import ModalBuscaPessoa from "../components/escala/ModalBuscaPessoa";
 import ModalHistorico from "../components/escala/ModalHistorico";
+import EscalaTemplatesModal from "../components/escala/EscalaTemplatesModal";
 import { useEscalaUndo } from "../hooks/useEscalaUndo";
 import { getErrorMessage } from "../utils/errorUtils";
+import { mapaParalelismoDeMinisterios } from "../utils/ministerioParalelismo";
+import type { Ministerio } from "../services/ministerioService";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -100,7 +104,13 @@ const EscalaUser: React.FC = () => {
   const [toastVariant, setToastVariant] = useState<"success" | "error" | "info">("info");
   const [showConfirmExcluir, setShowConfirmExcluir] = useState(false);
   const [eventoToExcluir, setEventoToExcluir] = useState<number | null>(null);
-  const [ministerios, setMinisterios] = useState<{ id_ministerio: number; nome: string; ordem?: number }[]>([]);
+  const [inputDialog, setInputDialog] = useState<
+    | { kind: "copiar-dia"; defaultValue: string }
+    | { kind: "copiar-semana"; defaultValue: string }
+    | null
+  >(null);
+  const [templatesStartComEvento, setTemplatesStartComEvento] = useState(false);
+  const [ministerios, setMinisterios] = useState<Ministerio[]>([]);
   const [formEvento, setFormEvento] = useState({
     titulo: "",
     data_hora: "",
@@ -124,6 +134,11 @@ const EscalaUser: React.FC = () => {
     setToast(msg);
     setToastVariant(variant);
   }, []);
+
+  const paralelismoMapa = useMemo(
+    () => mapaParalelismoDeMinisterios(ministerios),
+    [ministerios]
+  );
 
   const { podeDesfazer, marcarAlteracao, desfazer } = useEscalaUndo(
     (ev) => {
@@ -492,27 +507,37 @@ const EscalaUser: React.FC = () => {
     }
   };
 
-  const handleCopiarDia = async () => {
+  const handleCopiarDia = () => {
     if (!isAdmin) return;
-    const dest = window.prompt("Copiar este dia para (AAAA-MM-DD):", dataDia);
-    if (!dest || !/^\d{4}-\d{2}-\d{2}$/.test(dest)) return;
+    setInputDialog({ kind: "copiar-dia", defaultValue: dataDia });
+  };
+
+  const executarCopiarDia = async (dest: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dest)) {
+      showToast("Informe a data no formato AAAA-MM-DD", "error");
+      return;
+    }
     try {
       const result = await escalaService.copiarDia(dataDia, dest);
       const avisos = result.warnings?.length ? ` (${result.warnings.length} aviso(s))` : "";
       showToast(`Dia copiado para ${dest}${avisos}`, "success");
+      setInputDialog(null);
       fetchEventos();
     } catch (err) {
       showToast(getErrorMessage(err, "Erro ao copiar o dia"), "error");
     }
   };
 
-  const handleCopiarSemana = async () => {
+  const handleCopiarSemana = () => {
     if (!isAdmin) return;
-    const dest = window.prompt(
-      "Copiar esta semana para a semana que começa em (AAAA-MM-DD):",
-      dataSemana
-    );
-    if (!dest || !/^\d{4}-\d{2}-\d{2}$/.test(dest)) return;
+    setInputDialog({ kind: "copiar-semana", defaultValue: dataSemana });
+  };
+
+  const executarCopiarSemana = async (dest: string) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dest)) {
+      showToast("Informe a data no formato AAAA-MM-DD", "error");
+      return;
+    }
     try {
       const result = await escalaService.copiarSemana({
         data_inicio_origem: dataSemana,
@@ -520,6 +545,7 @@ const EscalaUser: React.FC = () => {
       });
       const avisos = result.warnings?.length ? ` (${result.warnings.length} aviso(s))` : "";
       showToast(`Semana copiada${avisos}`, "success");
+      setInputDialog(null);
       fetchEventos();
     } catch (err) {
       showToast(getErrorMessage(err, "Erro ao copiar a semana"), "error");
@@ -606,41 +632,22 @@ const EscalaUser: React.FC = () => {
     }
   };
 
-  const handleSalvarTemplate = async () => {
-    if (!eventoSelecionado || !isAdmin) return;
-    const nome = window.prompt("Nome do template:", `Template — ${eventoSelecionado.titulo}`);
-    if (!nome?.trim()) return;
-    try {
-      await escalaService.criarTemplate({
-        nome: nome.trim(),
-        id_escala_evento: eventoSelecionado.id_escala_evento,
-      });
-      showToast("Template salvo", "success");
-      setTemplates(await escalaService.listarTemplates());
-    } catch (err) {
-      showToast(getErrorMessage(err, "Erro ao salvar template"), "error");
-    }
+  const abrirTemplates = (comEvento = false) => {
+    if (!isAdmin) return;
+    setTemplatesStartComEvento(Boolean(comEvento && eventoSelecionado));
+    setShowTemplates(true);
   };
 
-  const handleAplicarTemplate = async (id: number) => {
-    if (!isAdmin) return;
-    const agora = new Date();
-    agora.setDate(agora.getDate() + ((7 - agora.getDay()) % 7 || 7));
-    agora.setHours(19, 0, 0, 0);
-    const data_hora = `${toIsoDate(agora)} 19:00:00`;
+  const fecharTemplates = () => {
+    setShowTemplates(false);
+    setTemplatesStartComEvento(false);
+  };
+
+  const refreshTemplates = async () => {
     try {
-      const result = await escalaService.aplicarTemplate(id, { data_hora });
-      showToast(
-        result.warnings?.length
-          ? `Template aplicado com ${result.warnings.length} aviso(s)`
-          : "Template aplicado",
-        "success"
-      );
-      setShowTemplates(false);
-      fetchEventos();
-      if (result.dados?.id_escala_evento) abrirEvento(result.dados.id_escala_evento);
-    } catch (err) {
-      showToast(getErrorMessage(err, "Erro ao aplicar template"), "error");
+      setTemplates(await escalaService.listarTemplates());
+    } catch {
+      setTemplates([]);
     }
   };
 
@@ -722,7 +729,7 @@ const EscalaUser: React.FC = () => {
             </button>
             {isAdmin && (
               <>
-                <button type="button" className="btn-mapa" onClick={() => setShowTemplates(true)}>
+                <button type="button" className="btn-mapa" onClick={() => abrirTemplates(false)}>
                   Templates
                 </button>
                 <button className="btn-criar" onClick={() => abrirModalEvento()}>
@@ -791,6 +798,7 @@ const EscalaUser: React.FC = () => {
                   }}
                   onAbrirEvento={abrirEvento}
                   podeEditar={podeEditar}
+                  paralelismoMapa={paralelismoMapa}
                   onMover={handleMoverUnificado}
                   onEscalar={abrirSlotParaEscalar}
                 />
@@ -808,11 +816,12 @@ const EscalaUser: React.FC = () => {
               <EscalaQuadroUnificado
                 visao={visaoDiaUnificada}
                 podeEditar={podeEditar}
+                paralelismoMapa={paralelismoMapa}
                 onMover={handleMoverUnificado}
                 onEscalar={abrirSlotParaEscalar}
                 onAbrirEvento={abrirEvento}
                 onCopiarDia={isAdmin ? handleCopiarDia : undefined}
-                onTemplates={isAdmin ? () => setShowTemplates(true) : undefined}
+                onTemplates={isAdmin ? () => abrirTemplates(false) : undefined}
                 onEditarMembro={(m, areaNome) =>
                   abrirModalEditarDetalhes(
                     {
@@ -855,6 +864,7 @@ const EscalaUser: React.FC = () => {
                   setVisao("dia");
                 }}
                 podeEditar={podeEditar}
+                paralelismoMapa={paralelismoMapa}
                 onMover={handleMoverUnificado}
                 onEscalar={abrirSlotParaEscalar}
                 onCopiarSemana={isAdmin ? handleCopiarSemana : undefined}
@@ -948,8 +958,8 @@ const EscalaUser: React.FC = () => {
                       <button type="button" className="btn-editar-evento" onClick={handleCopiarEvento}>
                         Copiar (+7 dias)
                       </button>
-                      <button type="button" className="btn-editar-evento" onClick={handleSalvarTemplate}>
-                        Salvar template
+                      <button type="button" className="btn-editar-evento" onClick={() => abrirTemplates(true)}>
+                        Salvar como template
                       </button>
                       <button
                         type="button"
@@ -991,17 +1001,36 @@ const EscalaUser: React.FC = () => {
       )}
 
       {showModalEvento && (
-        <div className="modal-evento-overlay">
-          <div className="modal-escala-evento">
+        <div className="modal-evento-overlay" role="presentation" onClick={fecharModalEvento}>
+          <div
+            className="modal-escala-evento"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-evento-titulo"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="modal-evento-header">
               <div className="modal-evento-header-content">
+                <span className="modal-evento-icon" aria-hidden>
+                  📅
+                </span>
                 <div>
-                  <h2 className="modal-evento-title">
+                  <h2 id="modal-evento-titulo" className="modal-evento-title">
                     {editandoEventoId ? "Editar Evento" : "Novo Evento"}
                   </h2>
+                  <p className="modal-evento-subtitle">
+                    {editandoEventoId
+                      ? "Atualize os dados e os ministérios presentes"
+                      : "Defina horário, descrição e ministérios da escala"}
+                  </p>
                 </div>
               </div>
-              <button type="button" className="modal-evento-close" onClick={fecharModalEvento}>
+              <button
+                type="button"
+                className="modal-evento-close"
+                onClick={fecharModalEvento}
+                aria-label="Fechar"
+              >
                 ×
               </button>
             </div>
@@ -1013,66 +1042,92 @@ const EscalaUser: React.FC = () => {
                   type="text"
                   value={formEvento.titulo}
                   onChange={(e) => setFormEvento({ ...formEvento, titulo: e.target.value })}
+                  placeholder="Ex.: Culto de Celebração"
+                  required
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="formEventoDataInicio">Data e hora início *</label>
-                <input
-                  id="formEventoDataInicio"
-                  type="datetime-local"
-                  value={formEvento.data_hora}
-                  onChange={(e) => setFormEvento({ ...formEvento, data_hora: e.target.value })}
-                />
+
+              <div className="form-group-row">
+                <div className="form-group">
+                  <label htmlFor="formEventoDataInicio">Início *</label>
+                  <input
+                    id="formEventoDataInicio"
+                    type="datetime-local"
+                    value={formEvento.data_hora}
+                    onChange={(e) => setFormEvento({ ...formEvento, data_hora: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="formEventoDataFim">Término</label>
+                  <input
+                    id="formEventoDataFim"
+                    type="datetime-local"
+                    value={formEvento.data_hora_fim}
+                    onChange={(e) => setFormEvento({ ...formEvento, data_hora_fim: e.target.value })}
+                  />
+                </div>
               </div>
-              <div className="form-group">
-                <label htmlFor="formEventoDataFim">Data e hora término</label>
-                <input
-                  id="formEventoDataFim"
-                  type="datetime-local"
-                  value={formEvento.data_hora_fim}
-                  onChange={(e) => setFormEvento({ ...formEvento, data_hora_fim: e.target.value })}
-                />
-              </div>
+
               <div className="form-group">
                 <label htmlFor="formEventoDescricao">Descrição</label>
                 <textarea
                   id="formEventoDescricao"
                   value={formEvento.descricao}
                   onChange={(e) => setFormEvento({ ...formEvento, descricao: e.target.value })}
-                  rows={2}
+                  rows={3}
+                  placeholder="Observações sobre o evento (opcional)"
                 />
               </div>
-              <div className="form-group">
-                <span>Ministérios presentes *</span>
-                <div className="ministerios-checkboxes">
-                  {ministerios.map((m) => (
-                    <label key={m.id_ministerio} className="checkbox-row">
-                      <input
-                        type="checkbox"
-                        checked={formEvento.id_ministerios.includes(m.id_ministerio)}
-                        onChange={(e) => {
-                          const prev = formEvento.id_ministerios;
-                          const next = e.target.checked
-                            ? [...prev, m.id_ministerio]
-                            : prev.filter((id) => id !== m.id_ministerio);
-                          setFormEvento({ ...formEvento, id_ministerios: next });
-                        }}
-                      />
-                      <span>{m.nome}</span>
-                    </label>
-                  ))}
+
+              <div className="form-group form-group--ministerios">
+                <div className="form-group-label-row">
+                  <span className="form-group-label">Ministérios presentes *</span>
+                  <span className="form-group-count">
+                    {formEvento.id_ministerios.length} selecionado
+                    {formEvento.id_ministerios.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="ministerios-checkboxes" role="group" aria-label="Ministérios presentes">
+                  {ministerios.map((m) => {
+                    const checked = formEvento.id_ministerios.includes(m.id_ministerio);
+                    return (
+                      <label
+                        key={m.id_ministerio}
+                        className={`ministerio-chip ${checked ? "selecionado" : ""}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const prev = formEvento.id_ministerios;
+                            const next = e.target.checked
+                              ? [...prev, m.id_ministerio]
+                              : prev.filter((id) => id !== m.id_ministerio);
+                            setFormEvento({ ...formEvento, id_ministerios: next });
+                          }}
+                        />
+                        <span className="ministerio-chip__mark" aria-hidden />
+                        <span className="ministerio-chip__nome">{m.nome}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={formEvento.ativo}
-                    onChange={(e) => setFormEvento({ ...formEvento, ativo: e.target.checked })}
-                  />
-                  Evento ativo
-                </label>
-              </div>
+
+              <label className={`evento-ativo-toggle ${formEvento.ativo ? "ligado" : ""}`}>
+                <input
+                  type="checkbox"
+                  checked={formEvento.ativo}
+                  onChange={(e) => setFormEvento({ ...formEvento, ativo: e.target.checked })}
+                />
+                <span className="evento-ativo-toggle__switch" aria-hidden />
+                <span className="evento-ativo-toggle__texto">
+                  <strong>Evento ativo</strong>
+                  <small>Visível na escala quando ativo</small>
+                </span>
+              </label>
+
               <div className="modal-evento-actions">
                 <button type="button" className="btn-evento-cancelar" onClick={fecharModalEvento}>
                   Cancelar
@@ -1165,32 +1220,21 @@ const EscalaUser: React.FC = () => {
         />
       )}
 
-      {showTemplates && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>Templates de escala</h2>
-            {templates.length === 0 ? (
-              <p className="escala-vazio">Nenhum template salvo. Abra um evento e use &quot;Salvar template&quot;.</p>
-            ) : (
-              <ul className="lista-templates">
-                {templates.map((t) => (
-                  <li key={t.id_escala_template}>
-                    <span>{t.nome}</span>
-                    <button type="button" className="btn-salvar" onClick={() => handleAplicarTemplate(t.id_escala_template)}>
-                      Aplicar
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="modal-actions">
-              <button type="button" className="btn-cancelar" onClick={() => setShowTemplates(false)}>
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EscalaTemplatesModal
+        open={showTemplates}
+        templates={templates}
+        ministerios={ministerios}
+        usuarios={usuarios}
+        eventoAberto={eventoSelecionado}
+        startComEvento={templatesStartComEvento}
+        onClose={fecharTemplates}
+        onToast={showToast}
+        onChanged={refreshTemplates}
+        onAplicado={(id) => {
+          fetchEventos();
+          abrirEvento(id);
+        }}
+      />
 
       {showHistorico && eventoSelecionado && (
         <ModalHistorico
@@ -1234,6 +1278,30 @@ const EscalaUser: React.FC = () => {
           setShowConfirmExcluir(false);
           setEventoToExcluir(null);
         }}
+      />
+
+      <InputModal
+        open={inputDialog?.kind === "copiar-dia"}
+        title="Copiar dia"
+        label="Data de destino"
+        inputType="date"
+        defaultValue={inputDialog?.kind === "copiar-dia" ? inputDialog.defaultValue : ""}
+        hint="Os eventos deste dia serão copiados para a data escolhida."
+        confirmLabel="Copiar"
+        onConfirm={(v) => void executarCopiarDia(v)}
+        onCancel={() => setInputDialog(null)}
+      />
+
+      <InputModal
+        open={inputDialog?.kind === "copiar-semana"}
+        title="Copiar semana"
+        label="Início da semana de destino"
+        inputType="date"
+        defaultValue={inputDialog?.kind === "copiar-semana" ? inputDialog.defaultValue : ""}
+        hint="Informe o primeiro dia (domingo ou início) da semana destino."
+        confirmLabel="Copiar"
+        onConfirm={(v) => void executarCopiarSemana(v)}
+        onCancel={() => setInputDialog(null)}
       />
 
       {toast && (

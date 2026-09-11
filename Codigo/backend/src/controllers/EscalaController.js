@@ -399,6 +399,20 @@ class EscalaController {
     }
   }
 
+  async atualizarTemplate(req, res, next) {
+    try {
+      res.json(
+        await EscalaService.atualizarTemplate(
+          req.params.id,
+          req.body,
+          req.usuario?.tipo
+        )
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async desfazer(req, res, next) {
     try {
       res.json(

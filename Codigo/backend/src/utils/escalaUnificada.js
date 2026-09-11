@@ -153,6 +153,7 @@ export function montarSlotsDaArea(area, limitesPorChave = null) {
       chaveDetalhe: chave === "_geral" ? null : chaveDetalhe,
       id_escala_area: area.id_escala_area,
       areaNome: area.nome,
+      id_ministerio: area.id_ministerio ?? null,
       podeGerenciar: !!area.podeGerenciar,
       membros: membrosAttr.map((a, i) => membroUnificado(a, i + 1, chave)),
     };

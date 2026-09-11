@@ -16,6 +16,10 @@ import {
   SlotMembro,
   VisualizacaoDia,
 } from "../../services/escalaService";
+import {
+  ParalelismoMapa,
+  permiteParalelismoMinisterios,
+} from "../../utils/ministerioParalelismo";
 
 export interface MoverUnificadoPayload {
   membroEscalaOrigemId: number;
@@ -27,6 +31,7 @@ export interface MoverUnificadoPayload {
 interface Props {
   visao: VisualizacaoDia;
   podeEditar: boolean;
+  paralelismoMapa?: ParalelismoMapa;
   onMover: (payload: MoverUnificadoPayload) => Promise<void>;
   onEscalar: (eventoId: number, slot: SlotInstrumento) => void;
   onAbrirEvento: (eventoId: number) => void;
@@ -34,6 +39,29 @@ interface Props {
   onTemplates?: () => void;
   onEditarMembro?: (membro: SlotMembro, areaNome: string) => void;
   onRemoverMembro?: (membro: SlotMembro) => void;
+}
+
+/** Conflito se a pessoa já está em outro ministério do evento sem paralelismo permitido. */
+export function conflitoParalelismoNoEvento(
+  membroAtivo: SlotMembro,
+  slotDestino: SlotInstrumento,
+  instrumentosDoEvento: SlotInstrumento[],
+  mapa: ParalelismoMapa
+): boolean {
+  const outras = instrumentosDoEvento.flatMap((s) =>
+    s.membros
+      .filter(
+        (m) =>
+          m.usuario.id === membroAtivo.usuario.id &&
+          m.membroEscalaId !== membroAtivo.membroEscalaId
+      )
+      .map(() => s.id_ministerio ?? null)
+  );
+  if (!outras.length) return false;
+  return outras.some(
+    (idMinOrigem) =>
+      !permiteParalelismoMinisterios(idMinOrigem, slotDestino.id_ministerio, mapa)
+  );
 }
 
 function iniciais(nome?: string) {
@@ -130,7 +158,8 @@ export function SlotDrop({
   eventoId,
   slotKey,
   slot,
-  idsNoEvento,
+  instrumentosDoEvento,
+  paralelismoMapa = {},
   podeEditar,
   compacto,
   onEscalar,
@@ -140,7 +169,8 @@ export function SlotDrop({
   eventoId: number;
   slotKey: string;
   slot: SlotInstrumento;
-  idsNoEvento: number[];
+  instrumentosDoEvento: SlotInstrumento[];
+  paralelismoMapa?: ParalelismoMapa;
   podeEditar: boolean;
   compacto?: boolean;
   onEscalar: () => void;
@@ -161,8 +191,8 @@ export function SlotDrop({
     (membroAtivo.tipoSlot || "") === slot.tipo;
   const conflitoUsuario =
     !!membroAtivo &&
-    idsNoEvento.includes(membroAtivo.usuario.id) &&
-    !slot.membros.some((m) => m.membroEscalaId === membroAtivo.membroEscalaId);
+    !mesmoSlot &&
+    conflitoParalelismoNoEvento(membroAtivo, slot, instrumentosDoEvento, paralelismoMapa);
   const invalido = isOver && (conflitoUsuario || (lotado && !mesmoSlot));
   const valido = isOver && !invalido && !!membroAtivo && !mesmoSlot;
 
@@ -217,6 +247,7 @@ export function payloadDeDrop(
 const EscalaQuadroUnificado: React.FC<Props> = ({
   visao,
   podeEditar,
+  paralelismoMapa = {},
   onMover,
   onEscalar,
   onAbrirEvento,
@@ -240,13 +271,10 @@ const EscalaQuadroUnificado: React.FC<Props> = ({
     return map;
   }, [eventos]);
 
-  const idsPorEvento = useMemo(() => {
-    const map = new Map<number, number[]>();
+  const instrumentosPorEvento = useMemo(() => {
+    const map = new Map<number, SlotInstrumento[]>();
     for (const ev of eventos) {
-      map.set(
-        ev.id,
-        Object.values(ev.instrumentos || {}).flatMap((s) => s.membros.map((m) => m.usuario.id))
-      );
+      map.set(ev.id, Object.values(ev.instrumentos || {}));
     }
     return map;
   }, [eventos]);
@@ -325,7 +353,8 @@ const EscalaQuadroUnificado: React.FC<Props> = ({
                     eventoId={ev.id}
                     slotKey={key}
                     slot={slot}
-                    idsNoEvento={idsPorEvento.get(ev.id) || []}
+                    instrumentosDoEvento={instrumentosPorEvento.get(ev.id) || []}
+                    paralelismoMapa={paralelismoMapa}
                     podeEditar={podeEditar}
                     onEscalar={() => onEscalar(ev.id, slot)}
                     onEditarMembro={onEditarMembro}

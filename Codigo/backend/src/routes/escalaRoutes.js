@@ -18,6 +18,7 @@ import {
   copiarSemanaSchema,
   copiarDiaSchema,
   criarTemplateSchema,
+  atualizarTemplateSchema,
   aplicarTemplateSchema,
   moverMembroUnificadoSchema,
 } from "../validations/escalaValidation.js";
@@ -70,6 +71,12 @@ router.post(
   adminOnly,
   validate(aplicarTemplateSchema),
   EscalaController.aplicarTemplate
+);
+router.put(
+  "/templates/:id",
+  adminOnly,
+  validate(atualizarTemplateSchema),
+  EscalaController.atualizarTemplate
 );
 router.delete("/templates/:id", adminOnly, EscalaController.excluirTemplate);
 

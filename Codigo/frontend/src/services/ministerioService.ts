@@ -7,6 +7,8 @@ export interface Ministerio {
   ativo: boolean;
   ordem: number;
   lideres?: { id_usuario: number; nome: string }[];
+  /** Ministérios com os quais a mesma pessoa pode ser escalada no mesmo evento */
+  id_paralelismos?: number[];
 }
 
 const ministerioService = {
@@ -21,12 +23,29 @@ const ministerioService = {
     return res.data;
   },
 
-  async create(data: { nome: string; descricao?: string; ativo?: boolean; ordem?: number; id_lideres?: number[] }): Promise<Ministerio> {
+  async create(data: {
+    nome: string;
+    descricao?: string;
+    ativo?: boolean;
+    ordem?: number;
+    id_lideres?: number[];
+    id_paralelismos?: number[];
+  }): Promise<Ministerio> {
     const res = await apiClient.post("/ministerios", data);
     return res.data;
   },
 
-  async update(id: number, data: Partial<{ nome: string; descricao: string; ativo: boolean; ordem: number; id_lideres: number[] }>): Promise<Ministerio> {
+  async update(
+    id: number,
+    data: Partial<{
+      nome: string;
+      descricao: string;
+      ativo: boolean;
+      ordem: number;
+      id_lideres: number[];
+      id_paralelismos: number[];
+    }>
+  ): Promise<Ministerio> {
     const res = await apiClient.put(`/ministerios/${id}`, data);
     return res.data;
   },

@@ -18,6 +18,7 @@ import {
   SlotMembro,
 } from "../../services/escalaService";
 import { SlotDrop, payloadDeDrop, MoverUnificadoPayload } from "./EscalaQuadroUnificado";
+import { ParalelismoMapa } from "../../utils/ministerioParalelismo";
 
 function formatarHora(s: string) {
   return s || "";
@@ -34,7 +35,7 @@ function formatarDataHora(s: string) {
 
 function SemanaEventoCard({
   ev,
-  idsNoEvento,
+  paralelismoMapa,
   podeEditar,
   expandido,
   onToggleExpandir,
@@ -42,7 +43,7 @@ function SemanaEventoCard({
   onEscalar,
 }: {
   ev: EventoUnificado;
-  idsNoEvento: number[];
+  paralelismoMapa: ParalelismoMapa;
   podeEditar: boolean;
   expandido: boolean;
   onToggleExpandir: (id: number) => void;
@@ -104,7 +105,8 @@ function SemanaEventoCard({
             eventoId={ev.id}
             slotKey={key}
             slot={slot}
-            idsNoEvento={idsNoEvento}
+            instrumentosDoEvento={Object.values(ev.instrumentos || {})}
+            paralelismoMapa={paralelismoMapa}
             podeEditar={podeEditar}
             compacto
             onEscalar={() => onEscalar?.(ev.id, slot)}
@@ -158,11 +160,21 @@ export const EscalaVisaoSemana: React.FC<
     visao: VisualizacaoSemana;
     onAbrirDia?: (data: string) => void;
     podeEditar?: boolean;
+    paralelismoMapa?: ParalelismoMapa;
     onMover?: (payload: MoverUnificadoPayload) => Promise<void>;
     onEscalar?: (eventoId: number, slot: SlotInstrumento) => void;
     onCopiarSemana?: () => void;
   }
-> = ({ visao, onAbrirEvento, onAbrirDia, podeEditar, onMover, onEscalar, onCopiarSemana }) => {
+> = ({
+  visao,
+  onAbrirEvento,
+  onAbrirDia,
+  podeEditar,
+  paralelismoMapa = {},
+  onMover,
+  onEscalar,
+  onCopiarSemana,
+}) => {
   const [active, setActive] = useState<SlotMembro | null>(null);
   const [expandidos, setExpandidos] = useState<Set<number>>(() => new Set());
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
@@ -171,19 +183,6 @@ export const EscalaVisaoSemana: React.FC<
     () => (visao.dias || []).flatMap((d) => d.eventos.map((e) => e.id)),
     [visao.dias]
   );
-
-  const idsPorEvento = useMemo(() => {
-    const map = new Map<number, number[]>();
-    for (const dia of visao.dias || []) {
-      for (const ev of dia.eventos) {
-        map.set(
-          ev.id,
-          Object.values(ev.instrumentos || {}).flatMap((s) => s.membros.map((m) => m.usuario.id))
-        );
-      }
-    }
-    return map;
-  }, [visao.dias]);
 
   const todosExpandidos =
     todosIdsEventos.length > 0 && todosIdsEventos.every((id) => expandidos.has(id));
@@ -271,7 +270,7 @@ export const EscalaVisaoSemana: React.FC<
                   <SemanaEventoCard
                     key={ev.id}
                     ev={ev}
-                    idsNoEvento={idsPorEvento.get(ev.id) || []}
+                    paralelismoMapa={paralelismoMapa}
                     podeEditar={!!podeEditar}
                     expandido={expandidos.has(ev.id)}
                     onToggleExpandir={toggleExpandir}
@@ -404,9 +403,18 @@ export const EscalaVisaoMesUnificada: React.FC<{
   onAbrirDia: (data: string) => void;
   onAbrirEvento: (id: number) => void;
   podeEditar?: boolean;
+  paralelismoMapa?: ParalelismoMapa;
   onMover?: (payload: MoverUnificadoPayload) => Promise<void>;
   onEscalar?: (eventoId: number, slot: SlotInstrumento) => void;
-}> = ({ visao, onAbrirDia, onAbrirEvento, podeEditar, onMover, onEscalar }) => {
+}> = ({
+  visao,
+  onAbrirDia,
+  onAbrirEvento,
+  podeEditar,
+  paralelismoMapa = {},
+  onMover,
+  onEscalar,
+}) => {
   const [active, setActive] = useState<SlotMembro | null>(null);
   const [expandidos, setExpandidos] = useState<Set<string>>(() => new Set());
   const [soComEventos, setSoComEventos] = useState(true);
@@ -421,19 +429,6 @@ export const EscalaVisaoMesUnificada: React.FC<{
     () => diasFiltrados.filter((d) => d.temEventos).map((d) => d.data),
     [diasFiltrados]
   );
-
-  const idsPorEvento = useMemo(() => {
-    const map = new Map<number, number[]>();
-    for (const dia of visao.dias || []) {
-      for (const ev of dia.eventos || []) {
-        map.set(
-          ev.id,
-          Object.values(ev.instrumentos || {}).flatMap((s) => s.membros.map((m) => m.usuario.id))
-        );
-      }
-    }
-    return map;
-  }, [visao.dias]);
 
   const todosExpandidos =
     datasComEventos.length > 0 && datasComEventos.every((d) => expandidos.has(d));
@@ -593,7 +588,8 @@ export const EscalaVisaoMesUnificada: React.FC<{
                                 eventoId={ev.id}
                                 slotKey={key}
                                 slot={slot}
-                                idsNoEvento={idsPorEvento.get(ev.id) || []}
+                                instrumentosDoEvento={Object.values(ev.instrumentos || {})}
+                                paralelismoMapa={paralelismoMapa}
                                 podeEditar={!!podeEditar}
                                 compacto
                                 onEscalar={() => onEscalar?.(ev.id, slot)}

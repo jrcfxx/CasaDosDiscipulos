@@ -47,10 +47,29 @@ export interface EscalaConflito {
   skip?: boolean;
 }
 
+export interface EscalaTemplateSlot {
+  id_usuario: number;
+  detalhes?: Record<string, string | number | null> | null;
+}
+
+export interface EscalaTemplateArea {
+  nome: string;
+  ordem?: number;
+  id_ministerio?: number | null;
+  slots?: EscalaTemplateSlot[];
+}
+
+export interface EscalaTemplatePayload {
+  titulo?: string;
+  descricao?: string | null;
+  id_ministerios?: number[];
+  areas?: EscalaTemplateArea[];
+}
+
 export interface EscalaTemplate {
   id_escala_template: number;
   nome: string;
-  payload?: unknown;
+  payload?: EscalaTemplatePayload | null;
   criador_nome?: string;
 }
 
@@ -90,6 +109,7 @@ export interface SlotInstrumento {
   chaveDetalhe: string | null;
   id_escala_area: number;
   areaNome: string;
+  id_ministerio?: number | null;
   podeGerenciar: boolean;
   membros: SlotMembro[];
 }
@@ -407,9 +427,17 @@ const escalaService = {
   async criarTemplate(data: {
     nome: string;
     id_escala_evento?: number;
-    payload?: unknown;
+    payload?: EscalaTemplatePayload;
   }): Promise<EscalaTemplate> {
     const response = await apiClient.post("/escala/templates", data);
+    return response.data;
+  },
+
+  async atualizarTemplate(
+    id: number,
+    data: { nome?: string; id_escala_evento?: number; payload?: EscalaTemplatePayload }
+  ): Promise<EscalaTemplate> {
+    const response = await apiClient.put(`/escala/templates/${id}`, data);
     return response.data;
   },
 

@@ -1,4 +1,5 @@
 import EscalaRepository from "../repository/EscalaRepository.js";
+import MinisterioModel from "../models/MinisterioModel.js";
 import { getConfigPorArea, getLimitesPorArea } from "../config/ministerioCampos.js";
 
 /**
@@ -19,6 +20,7 @@ class ValidadorEscala {
     detalhes = null,
     idAtribuicaoExcluir = null,
     excluirMesmoEventoDoOverlap = false,
+    idMinisterioDestino = null,
   }) {
     const conflitos = [];
 
@@ -34,7 +36,8 @@ class ValidadorEscala {
     const duploArea = await this.validarConflitoMesmoEvento(
       idUsuario,
       idEvento,
-      idAtribuicaoExcluir
+      idAtribuicaoExcluir,
+      idMinisterioDestino
     );
     if (!duploArea.valido) conflitos.push(duploArea);
 
@@ -86,22 +89,64 @@ class ValidadorEscala {
     return { tipo: "duplo_evento", valido: true, mensagem: "Sem conflito de horário" };
   }
 
-  async validarConflitoMesmoEvento(idUsuario, idEvento, idAtribuicaoExcluir = null) {
-    const existente = await EscalaRepository.usuarioJaEscaladoNoEvento(
+  /**
+   * Bloqueia a mesma pessoa em duas áreas do mesmo evento,
+   * exceto quando os ministérios das áreas têm paralelismo configurado.
+   */
+  async validarConflitoMesmoEvento(
+    idUsuario,
+    idEvento,
+    idAtribuicaoExcluir = null,
+    idMinisterioDestino = null
+  ) {
+    const existentes = await EscalaRepository.listarEscalasUsuarioNoEvento(
       idUsuario,
       idEvento,
       idAtribuicaoExcluir
     );
-    if (existente) {
+    if (!existentes.length) {
+      return { tipo: "duplo_instrumento", valido: true, mensagem: "Sem conflito no evento" };
+    }
+
+    const destino = idMinisterioDestino != null ? Number(idMinisterioDestino) : null;
+    const bloqueantes = [];
+
+    for (const existente of existentes) {
+      const origem = existente.id_ministerio != null ? Number(existente.id_ministerio) : null;
+
+      // Sem ministério vinculado → mantém bloqueio estrito
+      if (!destino || !origem) {
+        bloqueantes.push(existente);
+        continue;
+      }
+
+      // Mesmo ministério em áreas distintas ainda é conflito
+      if (origem === destino) {
+        bloqueantes.push(existente);
+        continue;
+      }
+
+      const permitido = await MinisterioModel.permiteParalelismo(origem, destino);
+      if (!permitido) bloqueantes.push(existente);
+    }
+
+    if (bloqueantes.length) {
+      const nomes = [...new Set(bloqueantes.map((b) => b.area_nome).filter(Boolean))];
       return {
         tipo: "duplo_instrumento",
         valido: false,
-        mensagem: `Já escalado neste evento em ${existente.area_nome}.`,
-        sugestao: "Remova a atribuição atual ou escolha outra pessoa.",
-        detalhe: existente,
+        mensagem: `Já escalado neste evento em ${nomes.join(", ")}.`,
+        sugestao:
+          "Remova a atribuição atual, escolha outra pessoa ou configure paralelismo entre os ministérios.",
+        detalhe: bloqueantes[0],
       };
     }
-    return { tipo: "duplo_instrumento", valido: true, mensagem: "Sem conflito no evento" };
+
+    return {
+      tipo: "duplo_instrumento",
+      valido: true,
+      mensagem: "Paralelismo de ministérios permitido",
+    };
   }
 
   validarHabilidadeUsuario(areaNome, detalhes) {

@@ -1322,11 +1322,67 @@
 
 .modal-ministerio-hint {
   font-size: 0.85rem;
-  color: #64748b;
-  margin: 0;
-  padding: 0.75rem 0;
+  color: #94a3b8;
+  margin: 0.15rem 0 0.5rem;
+  line-height: 1.4;
+}
+
+.modal-ministerio-paralelismo-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.modal-ministerio-paralelismo-head > span {
+  margin: 0 !important;
+}
+
+.modal-ministerio-info-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(2, 134, 155, 0.45);
+  background: rgba(2, 134, 155, 0.18);
+  color: #9fe0ea;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: inherit;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.modal-ministerio-info-btn:hover {
+  background: rgba(2, 134, 155, 0.32);
+  transform: scale(1.05);
+}
+
+.modal-ministerio-info-box {
+  margin: 0 0 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  background: rgba(2, 134, 155, 0.12);
+  border: 1px solid rgba(2, 134, 155, 0.28);
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.modal-ministerio-info-box strong {
+  display: block;
+  color: #9fe0ea;
+  margin-bottom: 0.25rem;
+  font-size: 0.84rem;
+}
+
+.modal-ministerio-lideres .modal-ministerio-hint {
   grid-column: 1 / -1;
-  font-family: var(--font-primary);
+  padding: 0.5rem 0;
+  color: #64748b;
 }
 
 .modal-ministerio-footer {

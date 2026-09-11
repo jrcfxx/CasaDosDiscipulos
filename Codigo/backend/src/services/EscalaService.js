@@ -285,6 +285,7 @@ class EscalaService {
       dataHoraFim: evento?.data_hora_fim,
       detalhes,
       excluirMesmoEventoDoOverlap: false,
+      idMinisterioDestino: area.id_ministerio ?? null,
     });
     if (!valido) {
       const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
@@ -343,6 +344,7 @@ class EscalaService {
       detalhes: detalhesObj,
       idAtribuicaoExcluir: parsed,
       excluirMesmoEventoDoOverlap: true,
+      idMinisterioDestino: area?.id_ministerio ?? null,
     });
     if (!valido) {
       const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
@@ -739,6 +741,7 @@ class EscalaService {
       detalhes,
       idAtribuicaoExcluir: idAtribuicao,
       excluirMesmoEventoDoOverlap: mesmoEvento,
+      idMinisterioDestino: areaDestino.id_ministerio ?? null,
     });
 
     const conflitos = resultado.conflitos.filter((c) => !c.valido && !c.skip);
@@ -929,6 +932,7 @@ class EscalaService {
       dataHora: evento.data_hora,
       dataHoraFim: evento.data_hora_fim,
       detalhes: body.detalhes || null,
+      idMinisterioDestino: area.id_ministerio ?? null,
     });
     return {
       sucesso: resultado.valido,
@@ -970,6 +974,7 @@ class EscalaService {
       detalhes: detalhesFinais,
       idAtribuicaoExcluir: parsed,
       excluirMesmoEventoDoOverlap: areaDestino.id_escala_evento === atribuicao.id_escala_evento,
+      idMinisterioDestino: areaDestino.id_ministerio ?? null,
     });
     if (!valido && !forcarMovimento) {
       const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
@@ -1269,6 +1274,39 @@ class EscalaService {
     const tpl = await EscalaRepository.buscarTemplate(this._parseId(id));
     if (!tpl) throw new NotFoundError("Template não encontrado");
     await EscalaRepository.excluirTemplate(tpl.id_escala_template);
+  }
+
+  async atualizarTemplate(id, body, tipoUsuario) {
+    this._assertAdmin(tipoUsuario);
+    const tpl = await EscalaRepository.buscarTemplate(this._parseId(id));
+    if (!tpl) throw new NotFoundError("Template não encontrado");
+
+    const dados = {};
+    if (body.nome != null && String(body.nome).trim()) {
+      dados.nome = String(body.nome).trim();
+    }
+
+    if (body.id_escala_evento) {
+      const completo = await this.getEventoCompleto(body.id_escala_evento);
+      dados.payload = {
+        titulo: completo.titulo,
+        descricao: completo.descricao,
+        id_ministerios: (completo.ministerios || []).map((m) => m.id_ministerio),
+        areas: (completo.areas || []).map((a) => ({
+          nome: a.nome,
+          ordem: a.ordem,
+          id_ministerio: a.id_ministerio || null,
+          slots: (a.atribuicoes || []).map((at) => ({
+            id_usuario: at.id_usuario,
+            detalhes: at.detalhes,
+          })),
+        })),
+      };
+    } else if (body.payload) {
+      dados.payload = body.payload;
+    }
+
+    return EscalaRepository.atualizarTemplate(tpl.id_escala_template, dados);
   }
 
   async desfazerUltimaAlteracao(idEvento, idUsuarioLogado, tipoUsuario) {

@@ -5,10 +5,15 @@ import { NotFoundError, ValidationError } from "../utils/AppError.js";
 const MinisterioService = {
   async getAll(incluirInativos = false) {
     const ministerios = await MinisterioModel.getAll(incluirInativos);
+    const mapa = await MinisterioModel.listarMapaParalelismos();
     return await Promise.all(
       ministerios.map(async (m) => {
         const lideres = await MinisterioModel.getLideresByMinisterio(m.id_ministerio);
-        return { ...m, lideres };
+        return {
+          ...m,
+          lideres,
+          id_paralelismos: mapa[m.id_ministerio] || [],
+        };
       })
     );
   },
@@ -20,6 +25,7 @@ const MinisterioService = {
     if (incluirLideres) {
       m.lideres = await MinisterioModel.getLideresByMinisterio(parsed);
     }
+    m.id_paralelismos = await MinisterioModel.getParalelismos(parsed);
     return m;
   },
 
@@ -37,6 +43,10 @@ const MinisterioService = {
       await MinisterioModel.setLideres(ministerio.id_ministerio, data.id_lideres);
       ministerio.lideres = await MinisterioModel.getLideresByMinisterio(ministerio.id_ministerio);
     }
+    if (data.id_paralelismos !== undefined) {
+      await MinisterioModel.setParalelismos(ministerio.id_ministerio, data.id_paralelismos);
+    }
+    ministerio.id_paralelismos = await MinisterioModel.getParalelismos(ministerio.id_ministerio);
     return ministerio;
   },
 
@@ -53,6 +63,9 @@ const MinisterioService = {
     if (Object.keys(update).length) await MinisterioModel.update(parsed, update);
     if (data.id_lideres !== undefined) {
       await MinisterioModel.setLideres(parsed, data.id_lideres || []);
+    }
+    if (data.id_paralelismos !== undefined) {
+      await MinisterioModel.setParalelismos(parsed, data.id_paralelismos || []);
     }
 
     // Sincroniza escala_area: quando o nome do ministério muda, atualiza as áreas da escala que usam o nome antigo

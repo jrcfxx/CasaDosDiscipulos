@@ -90,6 +90,87 @@ const MinisterioModel = {
       await knex("usuario_ministerio").insert(rows);
     }
   },
+
+  async getParalelismos(idMinisterio) {
+    try {
+      const rows = await knex("ministerio_paralelismo")
+        .where("id_ministerio", idMinisterio)
+        .select("id_ministerio_paralelo");
+      return rows.map((r) => r.id_ministerio_paralelo);
+    } catch (err) {
+      if (err?.code === "ER_NO_SUCH_TABLE") return [];
+      throw err;
+    }
+  },
+
+  async setParalelismos(idMinisterio, idsParalelos = []) {
+    try {
+      await knex("ministerio_paralelismo").where("id_ministerio", idMinisterio).del();
+      const unicos = [
+        ...new Set(
+          (idsParalelos || [])
+            .map((id) => Number(id))
+            .filter((id) => Number.isInteger(id) && id > 0 && id !== Number(idMinisterio))
+        ),
+      ];
+      if (unicos.length) {
+        await knex("ministerio_paralelismo").insert(
+          unicos.map((id) => ({
+            id_ministerio: idMinisterio,
+            id_ministerio_paralelo: id,
+          }))
+        );
+      }
+    } catch (err) {
+      if (err?.code === "ER_NO_SUCH_TABLE") {
+        throw new Error(
+          "Tabela de paralelismo não encontrada. Execute as migrations do banco."
+        );
+      }
+      throw err;
+    }
+  },
+
+  /**
+   * Retorna true se A permite paralelismo com B ou B com A.
+   */
+  async permiteParalelismo(idMinisterioA, idMinisterioB) {
+    const a = Number(idMinisterioA);
+    const b = Number(idMinisterioB);
+    if (!a || !b || a === b) return false;
+    try {
+      const row = await knex("ministerio_paralelismo")
+        .where(function () {
+          this.where({ id_ministerio: a, id_ministerio_paralelo: b }).orWhere({
+            id_ministerio: b,
+            id_ministerio_paralelo: a,
+          });
+        })
+        .first();
+      return Boolean(row);
+    } catch (err) {
+      if (err?.code === "ER_NO_SUCH_TABLE") return false;
+      throw err;
+    }
+  },
+
+  async listarMapaParalelismos() {
+    try {
+      const rows = await knex("ministerio_paralelismo").select(
+        "id_ministerio",
+        "id_ministerio_paralelo"
+      );
+      const mapa = {};
+      for (const r of rows) {
+        if (!mapa[r.id_ministerio]) mapa[r.id_ministerio] = [];
+        mapa[r.id_ministerio].push(r.id_ministerio_paralelo);
+      }
+      return mapa;
+    } catch (err) {
+      if (err?.code === "ER_NO_SUCH_TABLE") return {};
+      throw err;
+    }
+  },
 };
 
 export default MinisterioModel;

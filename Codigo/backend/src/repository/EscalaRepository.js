@@ -285,12 +285,25 @@ const EscalaRepository = {
   },
 
   async usuarioJaEscaladoNoEvento(idUsuario, idEvento, idAtribuicaoExcluir = null) {
+    const rows = await this.listarEscalasUsuarioNoEvento(
+      idUsuario,
+      idEvento,
+      idAtribuicaoExcluir
+    );
+    return rows[0] || null;
+  },
+
+  async listarEscalasUsuarioNoEvento(idUsuario, idEvento, idAtribuicaoExcluir = null) {
     let q = knex("escala_atribuicao as a")
       .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
       .where("a.id_usuario", idUsuario)
       .where("ar.id_escala_evento", idEvento)
-      .select("a.id_escala_atribuicao", "ar.nome as area_nome")
-      .first();
+      .select(
+        "a.id_escala_atribuicao",
+        "ar.id_escala_area",
+        "ar.nome as area_nome",
+        "ar.id_ministerio"
+      );
     if (idAtribuicaoExcluir) {
       q = q.where("a.id_escala_atribuicao", "!=", idAtribuicaoExcluir);
     }
@@ -497,6 +510,18 @@ const EscalaRepository = {
         typeof dados.payload === "object" ? JSON.stringify(dados.payload) : dados.payload,
     };
     const [id] = await knex("escala_template").insert(payload);
+    return this.buscarTemplate(id);
+  },
+
+  async atualizarTemplate(id, dados) {
+    const patch = {};
+    if (dados.nome != null) patch.nome = dados.nome;
+    if (dados.payload != null) {
+      patch.payload =
+        typeof dados.payload === "object" ? JSON.stringify(dados.payload) : dados.payload;
+    }
+    if (Object.keys(patch).length === 0) return this.buscarTemplate(id);
+    await knex("escala_template").where("id_escala_template", id).update(patch);
     return this.buscarTemplate(id);
   },
 
