@@ -145,7 +145,7 @@ const Celulas: React.FC = () => {
               />
             </label>
             <h1 className="celulas-hero__title">
-              <span>Células</span>
+              <span>Células </span>
               <em>da Casa</em>
             </h1>
           </div>

@@ -211,6 +211,17 @@ async function main() {
     expectStatus: 403,
     label: "membro GET /ministerios → 403",
   });
+  await req("GET", "/ministerios", {
+    token: liderToken,
+    expectStatus: 200,
+    label: "líder GET /ministerios → 200",
+  });
+  await req("POST", "/ministerios", {
+    token: liderToken,
+    body: { nome: "Hack Ministerio" },
+    expectStatus: 403,
+    label: "líder POST /ministerios → 403",
+  });
   await req("POST", "/evento", {
     token: membroToken,
     body: { titulo: "Hack", ordem: 0 },

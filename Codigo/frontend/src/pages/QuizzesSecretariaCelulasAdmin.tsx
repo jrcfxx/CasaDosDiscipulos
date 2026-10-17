@@ -5,7 +5,8 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import InputModal from "../components/ui/InputModal";
 
-import axios from "axios";
+import api from "../services/apiClient";
+import { uploadCampo } from "../services/uploadService";
 
 import TextField from "../components/fields/TextField";
 import NumberField from "../components/fields/NumberField";
@@ -22,7 +23,7 @@ import SelectField from "../components/fields/SelectField";
 
 import usuarioService from "../services/usuarioService";
 import moduloService from "../services/moduloService";
-import { API_BASE, ASSETS_BASE } from "../config/api";
+import { ASSETS_BASE } from "../config/api";
 import type { Usuario } from "../services/usuarioService";
 import { generateUid } from "../utils/generateUid";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
@@ -121,7 +122,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const fetchQuizzes = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/quiz`);
+      const res = await api.get(`/quiz`);
       const mapped: Quiz[] = (res.data || []).map((q: any) => ({
         id: q.id_quiz ?? q.id ?? 0,
         titulo: q.titulo,
@@ -140,7 +141,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const fetchAvailableFields = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/campo`, {
+      const res = await api.get(`/campo`, {
         params: { modalidade: "quiz" },
       });
       setAvailableFields(res.data || []);
@@ -178,7 +179,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
         })
       );
 
-      await axios.put(`${API_BASE}/quiz/${id}`, {
+      await api.put(`/quiz/${id}`, {
         titulo: quiz.titulo,
         descricao: quiz.descricao,
         ativo: quiz.ativo === 1 ? false : true,
@@ -189,7 +190,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       // Se o quiz alterado é o que está selecionado, atualizar a visualização
       if (selectedQuiz && selectedQuiz.id === id) {
-        const res = await axios.get(`${API_BASE}/quiz/${id}`);
+        const res = await api.get(`/quiz/${id}`);
         const q = res.data;
         setSelectedQuiz({
           id: q.id_quiz ?? q.id ?? id,
@@ -282,7 +283,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const openEditModal = async (id: number) => {
     try {
-      const res = await axios.get(`${API_BASE}/quiz/${id}`);
+      const res = await api.get(`/quiz/${id}`);
       const q = res.data;
 
       setCurrentForm({
@@ -344,29 +345,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
     setFields([]);
   };
 
-  // Função auxiliar para fazer upload de arquivo
-  const uploadFile = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axios.post(
-        `${API_BASE}/upload/campo`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      return response.data.path || response.data.url || response.data.filePath;
-    } catch (error: any) {
-      console.error("Erro ao fazer upload:", error);
-      const errorMessage =
-        error?.response?.data?.error || "Falha ao fazer upload do arquivo";
-      throw new Error(errorMessage);
-    }
-  };
+  const uploadFile = async (file: File): Promise<string> => uploadCampo(file);
 
   const saveForm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -414,17 +393,12 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
     try {
       if (quizToEdit) {
-        await axios.put(
-          `${API_BASE}/quiz/${quizToEdit}`,
-          payload
-        );
+        await api.put(`/quiz/${quizToEdit}`, payload);
         await fetchQuizzes();
 
         // Atualizar o quiz selecionado se for o que foi editado
         if (selectedQuiz && selectedQuiz.id === quizToEdit) {
-          const res = await axios.get(
-            `${API_BASE}/quiz/${quizToEdit}`
-          );
+          const res = await api.get(`/quiz/${quizToEdit}`);
           const q = res.data;
           setSelectedQuiz({
             id: q.id_quiz ?? q.id ?? quizToEdit,
@@ -437,7 +411,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
         showToast("Quiz atualizado com sucesso!");
       } else {
-        await axios.post(`${API_BASE}/quiz`, payload);
+        await api.post(`/quiz`, payload);
         await fetchQuizzes();
         showToast("Quiz criado com sucesso!");
       }

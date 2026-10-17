@@ -23,7 +23,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:e2e": "node scripts/e2eFrontendCrawl.mjs"
   },
   "eslintConfig": {
     "extends": [
@@ -56,6 +57,7 @@
     "@types/node": "^24.4.0",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
+    "playwright": "^1.49.1",
     "typescript": "^4.9.5"
   }
 }

@@ -45,7 +45,10 @@ app.use(express.json());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: Number(process.env.RATE_LIMIT_MAX) || 300,
+  // Em desenvolvimento o limite é alto para crawls E2E / hot reload
+  limit:
+    Number(process.env.RATE_LIMIT_MAX) ||
+    (process.env.NODE_ENV === "production" ? 300 : 5000),
   message: { error: "Muitas requisições. Tente novamente em alguns minutos." },
 });
 app.use("/api/", limiter);

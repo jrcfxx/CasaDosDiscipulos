@@ -1,7 +1,7 @@
 import { Router } from "express";
 import MinisterioController from "../controllers/MinisterioController.js";
 import verificarToken from "../middlewares/authMiddleware.js";
-import { adminOnly } from "../middlewares/checkRole.js";
+import { adminOnly, adminAndLeader } from "../middlewares/checkRole.js";
 import validate from "../middlewares/validate.js";
 import {
   createMinisterioSchema,
@@ -10,18 +10,20 @@ import {
 
 const router = Router();
 router.use(verificarToken);
-router.use(adminOnly);
 
-router.get("/", MinisterioController.index);
-router.post("/", validate(createMinisterioSchema), MinisterioController.store);
-router.get("/:id/participantes", MinisterioController.participantes);
-router.put("/:id/participantes", (req, res, next) => {
+// Leitura: admin e líderes (escala precisa da lista de ministérios)
+router.get("/", adminAndLeader, MinisterioController.index);
+router.get("/:id/participantes", adminOnly, MinisterioController.participantes);
+router.put("/:id/participantes", adminOnly, (req, res, next) => {
   req.body = req.body || {};
   if (Array.isArray(req.body)) req.body = { id_usuarios: req.body };
   next();
 }, MinisterioController.setParticipantes);
-router.get("/:id", MinisterioController.show);
-router.put("/:id", validate(updateMinisterioSchema), MinisterioController.update);
-router.delete("/:id", MinisterioController.destroy);
+router.get("/:id", adminAndLeader, MinisterioController.show);
+
+// Escrita: apenas admin
+router.post("/", adminOnly, validate(createMinisterioSchema), MinisterioController.store);
+router.put("/:id", adminOnly, validate(updateMinisterioSchema), MinisterioController.update);
+router.delete("/:id", adminOnly, MinisterioController.destroy);
 
 export default router;
