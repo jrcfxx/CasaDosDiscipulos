@@ -4,7 +4,7 @@ import { getUserProfile } from "../../services/usuario";
 import { ASSETS_BASE } from "../../config/api";
 import { useAuth } from "../../hooks/useAuth";
 import "../../style/layout.css";
-import iconeIgreja from "../../assets/logo.png";
+import iconeIgreja from "../../assets/logo_mark.png";
 import perfilDefault from "../../assets/perfil-preto.png";
 
 const ProfileIcon = () => (

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import "../style/Login.css";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo_mark.png";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();

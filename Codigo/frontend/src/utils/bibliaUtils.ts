@@ -200,8 +200,9 @@ function limparHtml(texto: string): string {
     .trim();
 }
 
-const VERSAO_PADRAO = "NVIPT";
-const VERSAO_LABEL = "NVI";
+/** Tradução gratuita (ARA). NVI/NVIPT foi removida do Bolls.life por restrição da Biblica. */
+const VERSAO_PADRAO = "ARA";
+const VERSAO_LABEL = "ARA";
 
 export async function buscarVersiculo(
   referenciaTexto: string,

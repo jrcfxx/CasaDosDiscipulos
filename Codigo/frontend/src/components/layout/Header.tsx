@@ -5,7 +5,7 @@ import { ASSETS_BASE } from "../../config/api";
 import { useAuth } from "../../hooks/useAuth";
 import NotificationsDropdown, { NotificationsBell } from "../NotificationsDropdown";
 import "../../style/layout.css";
-import iconeIgreja from "../../assets/logo.png";
+import iconeIgreja from "../../assets/logo_mark.png";
 
 const ProfileIcon = () => (
   <svg

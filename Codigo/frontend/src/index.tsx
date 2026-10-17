@@ -11,6 +11,7 @@ import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import { LiveAnnouncerProvider } from "./components/accessibility/LiveAnnouncer";
 import SkipLink from "./components/accessibility/SkipLink";
 import AccessibilityBar from "./components/accessibility/AccessibilityBar";
+import MiniJesus from "./components/MiniJesus";
 
 const container = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(container);
@@ -27,6 +28,7 @@ root.render(
           <LiveAnnouncerProvider>
             <SkipLink />
             <App />
+            <MiniJesus />
             <AccessibilityBar />
           </LiveAnnouncerProvider>
         </AccessibilityProvider>

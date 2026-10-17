@@ -420,7 +420,9 @@ const UsuarioService = {
     }
 
     // Atualiza usuário
-    await UsuarioModel.update(id_usuario, dadosAtualizacao);
+    if (Object.keys(dadosAtualizacao).length > 0) {
+      await UsuarioModel.update(id_usuario, dadosAtualizacao);
+    }
 
     // Ministérios que lidera (atualiza ministerio_lider)
     if (data.id_ministerios_lider !== undefined) {

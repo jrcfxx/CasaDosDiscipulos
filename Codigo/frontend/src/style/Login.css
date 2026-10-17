@@ -42,8 +42,8 @@
 }
 
 .login-logo img {
-  width: 96px;
-  height: auto;
+  width: 78px;
+  height: 78px;
   object-fit: contain;
 }
 
@@ -197,7 +197,8 @@
   }
 
   .login-logo img {
-    width: 76px;
+    width: 64px;
+    height: 64px;
   }
 
   .login-form {

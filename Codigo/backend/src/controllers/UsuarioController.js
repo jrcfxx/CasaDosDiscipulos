@@ -166,6 +166,12 @@ const UsuarioController = {
         dadosPermitidos.senha = body.senha;
       }
 
+      // Sem campos permitidos (ex.: tentativa de escalação) — retorna perfil atual
+      if (Object.keys(dadosPermitidos).length === 0) {
+        const atual = await UsuarioService.getById(usuarioId);
+        return res.status(HTTP_STATUS.OK).json(atual);
+      }
+
       const usuario = await UsuarioService.update(usuarioId, dadosPermitidos);
       res.status(HTTP_STATUS.OK).json(usuario);
     } catch (err) {

@@ -79,6 +79,9 @@ const UsuarioModel = {
    * @returns {Promise<number>} Número de linhas afetadas
    */
   async update(id_usuario, dados) {
+    if (!dados || Object.keys(dados).length === 0) {
+      return 0;
+    }
     return knex("usuario").where({ id_usuario }).update(dados);
   },
 

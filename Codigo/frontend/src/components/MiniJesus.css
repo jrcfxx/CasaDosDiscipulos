@@ -1,0 +1,240 @@
+.mini-jesus-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.mini-jesus {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 56px;
+  height: 56px;
+  pointer-events: auto;
+  cursor: pointer;
+  will-change: transform;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  transition: filter 0.2s ease;
+}
+
+.mini-jesus:hover {
+  filter: drop-shadow(0 3px 8px rgba(2, 134, 155, 0.45));
+}
+
+.mini-jesus__svg {
+  display: block;
+  overflow: visible;
+  transform-origin: center;
+}
+
+.mini-jesus--flip .mini-jesus__svg {
+  transform: scaleX(-1);
+}
+
+.mini-jesus__halo {
+  fill: none;
+  stroke: var(--color-accent-yellow, #f4b002);
+  stroke-width: 2.5;
+  opacity: 0.9;
+  animation: mj-halo-pulse 2.4s ease-in-out infinite;
+}
+
+.mini-jesus__robe {
+  fill: var(--color-primary-teal, #02869b);
+}
+
+.mini-jesus__sash {
+  fill: var(--color-accent-yellow, #f4b002);
+}
+
+.mini-jesus__skin {
+  fill: #e8b896;
+}
+
+.mini-jesus__hair,
+.mini-jesus__beard {
+  fill: #5c4033;
+}
+
+.mini-jesus__arm,
+.mini-jesus__leg {
+  transform-origin: top center;
+}
+
+/* caminhada */
+.mini-jesus--walk .mini-jesus__leg--l {
+  animation: mj-leg-l 0.45s ease-in-out infinite;
+}
+
+.mini-jesus--walk .mini-jesus__leg--r {
+  animation: mj-leg-r 0.45s ease-in-out infinite;
+}
+
+.mini-jesus--walk .mini-jesus__arm--l {
+  animation: mj-arm-l 0.45s ease-in-out infinite;
+}
+
+.mini-jesus--walk .mini-jesus__arm--r {
+  animation: mj-arm-r 0.45s ease-in-out infinite;
+}
+
+/* olhar / pausar */
+.mini-jesus--look .mini-jesus__svg {
+  animation: mj-bob 0.8s ease-in-out infinite;
+}
+
+.mini-jesus--look.mini-jesus--flip .mini-jesus__svg {
+  animation: mj-bob-flip 0.8s ease-in-out infinite;
+}
+
+/* fugir */
+.mini-jesus--flee .mini-jesus__leg--l {
+  animation: mj-leg-l 0.22s ease-in-out infinite;
+}
+
+.mini-jesus--flee .mini-jesus__leg--r {
+  animation: mj-leg-r 0.22s ease-in-out infinite;
+}
+
+.mini-jesus--flee .mini-jesus__arm--l {
+  animation: mj-arm-l 0.22s ease-in-out infinite;
+}
+
+.mini-jesus--flee .mini-jesus__arm--r {
+  animation: mj-arm-r 0.22s ease-in-out infinite;
+}
+
+/* acenar no clique */
+.mini-jesus--wave .mini-jesus__arm--r {
+  animation: mj-wave 0.35s ease-in-out infinite;
+}
+
+.mini-jesus__bubble {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.35rem 0.65rem;
+  font-family: var(--font-primary, system-ui, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-neutral-dark, #2b2f30);
+  background: #fff;
+  border: 1px solid rgba(0, 68, 76, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  animation: mj-bubble-in 0.25s ease-out;
+}
+
+.mini-jesus__bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top-color: #fff;
+}
+
+@keyframes mj-leg-l {
+  0%,
+  100% {
+    transform: rotate(18deg);
+  }
+  50% {
+    transform: rotate(-18deg);
+  }
+}
+
+@keyframes mj-leg-r {
+  0%,
+  100% {
+    transform: rotate(-18deg);
+  }
+  50% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes mj-arm-l {
+  0%,
+  100% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes mj-arm-r {
+  0%,
+  100% {
+    transform: rotate(12deg);
+  }
+  50% {
+    transform: rotate(-12deg);
+  }
+}
+
+@keyframes mj-wave {
+  0%,
+  100% {
+    transform: rotate(-40deg);
+  }
+  50% {
+    transform: rotate(-90deg);
+  }
+}
+
+@keyframes mj-halo-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    stroke-width: 2.2;
+  }
+  50% {
+    opacity: 1;
+    stroke-width: 3;
+  }
+}
+
+@keyframes mj-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes mj-bob-flip {
+  0%,
+  100% {
+    transform: scaleX(-1) translateY(0);
+  }
+  50% {
+    transform: scaleX(-1) translateY(-2px);
+  }
+}
+
+@keyframes mj-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mini-jesus-layer {
+    display: none;
+  }
+}

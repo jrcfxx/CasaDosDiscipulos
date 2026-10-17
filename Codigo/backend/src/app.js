@@ -52,7 +52,8 @@ app.use("/api/", limiter);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 30,
+  // Em desenvolvimento o limite é alto para suites E2E / hot reload
+  limit: Number(process.env.AUTH_RATE_LIMIT_MAX) || (process.env.NODE_ENV === "production" ? 30 : 500),
   message: { error: "Muitas tentativas de login. Tente novamente em alguns minutos." },
 });
 app.use("/api/auth/login", authLimiter);

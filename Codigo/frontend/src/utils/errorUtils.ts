@@ -6,8 +6,10 @@ import { AxiosError } from "axios";
 export function getErrorMessage(error: unknown, fallback = "Ocorreu um erro"): string {
   if (error instanceof Error) {
     if ("response" in error) {
-      const data = (error as AxiosError).response?.data as { error?: string } | undefined;
-      return data?.error ?? error.message ?? fallback;
+      const data = (error as AxiosError).response?.data as
+        | { error?: string; message?: string }
+        | undefined;
+      return data?.error ?? data?.message ?? error.message ?? fallback;
     }
     return error.message;
   }

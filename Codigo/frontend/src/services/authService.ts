@@ -39,8 +39,10 @@ export interface RegisterResponse {
 }
 
 export interface AuthError {
-  message: string;
-  errors?: Record<string, string>;
+  error?: string;
+  message?: string;
+  errors?: Record<string, string> | string[];
+  details?: Array<{ field?: string; message?: string }>;
 }
 
 /**
@@ -186,15 +188,25 @@ class AuthService {
       const axiosError = error as AxiosError<AuthError>;
 
       if (axiosError.response?.data) {
-        const { message, errors } = axiosError.response.data;
+        const { error: apiError, message, errors, details } = axiosError.response.data;
 
-        // Se houver erros de validação, formata a mensagem
-        if (errors) {
-          const errorMessages = Object.values(errors).join("\n");
-          return new Error(errorMessages);
+        if (Array.isArray(errors) && errors.length) {
+          return new Error(errors.join("\n"));
+        }
+        if (errors && typeof errors === "object") {
+          return new Error(Object.values(errors).join("\n"));
+        }
+        if (Array.isArray(details) && details.length) {
+          return new Error(
+            details.map((d) => d.message).filter(Boolean).join("\n") ||
+              apiError ||
+              message ||
+              "Erro ao processar requisição"
+          );
         }
 
-        return new Error(message || "Erro ao processar requisição");
+        // Backend padroniza em `error`; alguns endpoints usam `message`
+        return new Error(apiError || message || "Erro ao processar requisição");
       }
 
       if (axiosError.request) {

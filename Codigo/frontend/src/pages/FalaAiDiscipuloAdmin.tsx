@@ -138,7 +138,7 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
               autoComplete="off"
             />
             <p className="fala-ai-admin-field-hint">
-              Digite a referência e o versículo aparece automaticamente (NVI), com uma cena animada.
+              Digite a referência e o versículo aparece automaticamente (ARA), com uma cena animada.
             </p>
 
             <BibliaVerseCard

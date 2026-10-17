@@ -31,10 +31,9 @@
 }
 
 .header-home__logo img {
-  height: 34px;
-  width: auto;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
-  max-width: 40px;
 }
 
 .header-home:hover {
@@ -109,8 +108,8 @@
 }
 
 .header-icone img {
-  width: 42px;
-  height: auto;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
 }
 
@@ -422,8 +421,8 @@
 }
 
 .footer-logo-icon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
 }
 

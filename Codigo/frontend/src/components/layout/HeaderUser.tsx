@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import "../../style/layout.css";
-import iconeIgreja from "../../assets/logo.png";
+import iconeIgreja from "../../assets/logo_mark.png";
 
 const ProfileIcon = () => (
   <svg
