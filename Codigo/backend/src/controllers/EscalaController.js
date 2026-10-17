@@ -145,7 +145,9 @@ class EscalaController {
   // --- Visões ---
   async getVisaoDia(req, res, next) {
     try {
-      res.json(await EscalaService.getVisaoDia(req.params.data));
+      res.json(
+        await EscalaService.getVisaoDia(req.params.data, req.usuario?.tipo)
+      );
     } catch (err) {
       next(err);
     }
@@ -153,7 +155,12 @@ class EscalaController {
 
   async getVisaoSemana(req, res, next) {
     try {
-      res.json(await EscalaService.getVisaoSemana(req.params.dataInicio));
+      res.json(
+        await EscalaService.getVisaoSemana(
+          req.params.dataInicio,
+          req.usuario?.tipo
+        )
+      );
     } catch (err) {
       next(err);
     }
@@ -161,7 +168,13 @@ class EscalaController {
 
   async getVisaoMes(req, res, next) {
     try {
-      res.json(await EscalaService.getVisaoMes(req.params.ano, req.params.mes));
+      res.json(
+        await EscalaService.getVisaoMes(
+          req.params.ano,
+          req.params.mes,
+          req.usuario?.tipo
+        )
+      );
     } catch (err) {
       next(err);
     }
@@ -169,7 +182,9 @@ class EscalaController {
 
   async getVisaoAno(req, res, next) {
     try {
-      res.json(await EscalaService.getVisaoAno(req.params.ano));
+      res.json(
+        await EscalaService.getVisaoAno(req.params.ano, req.usuario?.tipo)
+      );
     } catch (err) {
       next(err);
     }

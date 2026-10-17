@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: var(--z-modal-overlay, 10000);
   padding: 1rem;
   animation: inputModalFadeIn 0.2s ease-out;
 }
@@ -40,7 +40,7 @@
   margin: 0 0 1rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-neutral-dark, #2b2f30);
 }
 
 .input-modal-field {
@@ -52,33 +52,33 @@
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #475569;
+  color: var(--color-gray-600, #475569);
 }
 
 .input-modal-input {
   width: 100%;
   padding: 0.65rem 0.85rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-gray-200, #e2e8f0);
   border-radius: 10px;
   font-size: 1rem;
-  color: #1e293b;
+  color: var(--color-neutral-dark, #2b2f30);
   transition: border-color 0.2s;
   box-sizing: border-box;
 }
 
 .input-modal-input:focus {
   outline: none;
-  border-color: #02869b;
+  border-color: var(--color-primary-teal, #02869b);
 }
 
 .input-modal-input::placeholder {
-  color: #94a3b8;
+  color: var(--color-gray-400, #94a3b8);
 }
 
 .input-modal-hint {
   margin: 0.45rem 0 0;
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--color-gray-500, #64748b);
   line-height: 1.4;
 }
 
@@ -100,17 +100,17 @@
 }
 
 .input-modal-btn-cancel {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--color-neutral-light, #e2e8f0);
+  color: var(--color-gray-600, #475569);
 }
 .input-modal-btn-cancel:hover {
-  background: #cbd5e1;
+  background: var(--color-gray-300, #cbd5e1);
 }
 
 .input-modal-btn-confirm {
-  background: #02869b;
+  background: var(--color-primary-teal, #02869b);
   color: white;
 }
 .input-modal-btn-confirm:hover {
-  background: #026d7d;
+  background: var(--color-primary-dark, #00444c);
 }

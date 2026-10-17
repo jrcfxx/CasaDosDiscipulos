@@ -518,8 +518,12 @@ export default function GerenciarUsuarios() {
       telefone: telefoneNorm,
       tipo: usuarioModal.tipo,
       id_nivel: usuarioModal.id_nivel,
-      ativo: true,
     };
+
+    // Só define ativo na criação; na edição não sobrescreve o status
+    if (!usuarioModal.id_usuario) {
+      userData.ativo = true;
+    }
 
     if (usuarioModal.tipo === "lider") {
       userData.lider_celula = Boolean(usuarioModal.lider_celula ?? true);
@@ -1284,28 +1288,23 @@ export default function GerenciarUsuarios() {
         document.body
       )}
 
-      {/* Modal de Inativar/Reativar */}
-      {modalInativarAberto && usuarioInativar && (
-        <div className="modal-fundo">
-          <div className="modal">
-            <h2>
-              {usuarioInativar.ativo ? "Inativar" : "Reativar"}{" "}
-              Usuário
-            </h2>
-            <p className="modal-confirm-text">
-              Tem certeza que deseja{" "}
-              {usuarioInativar.ativo ? "inativar" : "reativar"}{" "}
-              <strong>{usuarioInativar.nome}</strong>?
-            </p>
-            <div className="modal-buttons">
-              <button onClick={() => setModalInativarAberto(false)}>
-                Cancelar
-              </button>
-              <button onClick={confirmarInativar}>Confirmar</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={modalInativarAberto && !!usuarioInativar}
+        title={usuarioInativar?.ativo ? "Inativar usuário" : "Reativar usuário"}
+        message={
+          usuarioInativar
+            ? `Tem certeza que deseja ${usuarioInativar.ativo ? "inativar" : "reativar"} ${usuarioInativar.nome}?`
+            : ""
+        }
+        confirmLabel={usuarioInativar?.ativo ? "Inativar" : "Reativar"}
+        cancelLabel="Cancelar"
+        variant={usuarioInativar?.ativo ? "danger" : "default"}
+        onConfirm={confirmarInativar}
+        onCancel={() => {
+          setModalInativarAberto(false);
+          setUsuarioInativar(null);
+        }}
+      />
 
       {/* Modal de Cadastro/Edição de Nível */}
       {modalNivelAberto && (

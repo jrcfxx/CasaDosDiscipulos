@@ -5,6 +5,7 @@ import "../style/CriarQuizzesSecretariaCelulasAdmin.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Toast from "../components/ui/Toast";
+import ConfirmModal from "../components/ui/ConfirmModal";
 
 type Campo = { id: number; rotulo: string };
 
@@ -28,10 +29,8 @@ export default function EditarQuizzesSecretariaCelulas() {
   const [liberado, setLiberado] = useState(false);
   const [arquivo, setArquivo] = useState<File | null>(null);
 
-  // 🔹 Modal de exclusão
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const confirmBtnRef = useRef<HTMLButtonElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // --- Carrega dados iniciais ---
@@ -81,22 +80,13 @@ export default function EditarQuizzesSecretariaCelulas() {
     setToast("Alterações salvas com sucesso ✅");
   };
 
-  // --- EXCLUIR FORMULÁRIO ---
   const excluirFormulario = () => {
     setShowDeleteModal(false);
     setDescricao("");
     setCampos([]);
     setArquivo(null);
     setLiberado(false);
-    setToast("Formulário excluído.");
-  };
-
-  useEffect(() => {
-    if (showDeleteModal && confirmBtnRef.current) confirmBtnRef.current.focus();
-  }, [showDeleteModal]);
-
-  const onModalKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") setShowDeleteModal(false);
+    setToast("Quiz excluído.");
   };
 
   const PaperClipIcon = () => (
@@ -250,41 +240,16 @@ export default function EditarQuizzesSecretariaCelulas() {
 
       <Footer />
 
-      {showDeleteModal && (
-        <div className="cf-modal-overlay">
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
-          <div
-            className="cf-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="cf-modal-title"
-            onKeyDown={onModalKeyDown}
-          >
-            <h3 id="cf-modal-title" className="cf-modal-title center">
-              Excluir formulário?
-            </h3>
-            <p className="cf-modal-text center">
-              Esta ação não pode ser desfeita.
-            </p>
-
-            <div className="cf-modal-actions">
-              <button
-                ref={confirmBtnRef}
-                className="cf-btn cf-btn-danger"
-                onClick={excluirFormulario}
-              >
-                Excluir
-              </button>
-              <button
-                className="cf-btn cf-btn-neutral"
-                onClick={() => setShowDeleteModal(false)}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={showDeleteModal}
+        title="Excluir quiz?"
+        message="Esta ação limpará o quiz atual e não pode ser desfeita."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={excluirFormulario}
+        onCancel={() => setShowDeleteModal(false)}
+      />
       {toast && (
         <Toast message={toast} onClose={() => setToast(null)} variant="success" />
       )}

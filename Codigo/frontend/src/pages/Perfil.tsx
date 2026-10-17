@@ -236,9 +236,10 @@ export default function Perfil() {
         telefone: telefoneNorm,
       };
 
-      // Adiciona senha apenas se foi alterada
+      // Adiciona senha apenas se foi alterada (backend exige senhaAtual)
       if (novaSenha) {
         updateData.senha = novaSenha;
+        updateData.senhaAtual = senhaAtual;
       }
 
       // Fazer upload da foto primeiro, se houver

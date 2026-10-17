@@ -180,7 +180,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, 
         <div
           className="notif-modal-overlay"
           role="dialog"
-          aria-modal
+          aria-modal="true"
           aria-labelledby="notif-modal-title"
         >
           <div className="notif-modal">

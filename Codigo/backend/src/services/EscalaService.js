@@ -41,6 +41,12 @@ class EscalaService {
   // ---------- Eventos ----------
   async getEventos(filters = {}, idUsuario = null, tipoUsuario = null) {
     let eventos = await EscalaRepository.listarEventos(filters);
+
+    // Membros não veem rascunhos (admin e líderes de ministério gerenciam)
+    if (tipoUsuario === USER_TYPES.MEMBER) {
+      eventos = eventos.filter((e) => e.status !== ESCALA_STATUS.RASCUNHO);
+    }
+
     if (tipoUsuario === USER_TYPES.LEADER && idUsuario) {
       const meusMinisterios = await MinisterioModel.getMinisteriosByUsuario(idUsuario);
       const idsMeus = new Set(meusMinisterios.map((m) => m.id_ministerio));
@@ -486,35 +492,46 @@ class EscalaService {
   }
 
   // ---------- Visões ----------
-  async getVisaoDia(data) {
+  _filtrarRascunhosSeMembro(eventos, tipoUsuario) {
+    if (tipoUsuario === USER_TYPES.MEMBER) {
+      return eventos.filter((e) => e.status !== ESCALA_STATUS.RASCUNHO);
+    }
+    return eventos;
+  }
+
+  async getVisaoDia(data, tipoUsuario = null) {
     const ini = inicioDoDia(data);
     const fim = fimDoDia(data);
-    return EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
+    const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
+    return this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
   }
 
-  async getVisaoSemana(dataInicio) {
+  async getVisaoSemana(dataInicio, tipoUsuario = null) {
     const ini = inicioDoDia(dataInicio);
     const fim = fimDoDia(adicionarDias(dataInicio, 6));
-    return EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
+    const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
+    return this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
   }
 
-  async getVisaoMes(ano, mes) {
+  async getVisaoMes(ano, mes, tipoUsuario = null) {
     const y = Number(ano);
     const m = Number(mes);
     if (!y || !m || m < 1 || m > 12) throw new ValidationError("Ano/mês inválidos");
     const ini = `${y}-${String(m).padStart(2, "0")}-01 00:00:00`;
     const ultimo = new Date(y, m, 0).getDate();
     const fim = `${y}-${String(m).padStart(2, "0")}-${String(ultimo).padStart(2, "0")} 23:59:59`;
-    return EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
+    const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
+    return this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
   }
 
-  async getVisaoAno(ano) {
+  async getVisaoAno(ano, tipoUsuario = null) {
     const y = Number(ano);
     if (!y) throw new ValidationError("Ano inválido");
-    const eventos = await EscalaRepository.listarEventos({
+    let eventos = await EscalaRepository.listarEventos({
       ano: y,
       ativo: true,
     });
+    eventos = this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
     const porMes = Array.from({ length: 12 }, (_, i) => ({
       mes: i + 1,
       total_eventos: 0,

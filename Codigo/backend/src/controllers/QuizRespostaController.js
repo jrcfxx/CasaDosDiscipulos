@@ -113,15 +113,25 @@ class QuizRespostaController {
   async listByUsuario(req, res, next) {
     try {
       const { usuarioId } = req.query;
+      const solicitante = req.usuario?.id_usuario;
+      const isAdmin = req.usuario?.tipo === "administrador";
 
-      if (!usuarioId) {
+      const idAlvo = usuarioId ? parseInt(usuarioId, 10) : solicitante;
+
+      if (!idAlvo) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           error: "usuarioId é obrigatório como query parameter",
         });
       }
 
+      if (!isAdmin && idAlvo !== solicitante) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          error: "Você só pode consultar suas próprias respostas",
+        });
+      }
+
       const result = await QuizRespostaService.listByUsuarioAndQuiz(
-        parseInt(usuarioId),
+        idAlvo,
         req.params.id
       );
       res.status(HTTP_STATUS.OK).json(result);

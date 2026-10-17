@@ -1,5 +1,16 @@
 import QuizService from "../services/QuizService.js";
-import { HTTP_STATUS } from "../utils/constants.js";
+import { HTTP_STATUS, USER_TYPES } from "../utils/constants.js";
+
+/**
+ * Remove gabarito das questões para não-admin
+ */
+function stripGabarito(quiz) {
+  if (!quiz?.questoes) return quiz;
+  return {
+    ...quiz,
+    questoes: quiz.questoes.map(({ resposta_correta, ...q }) => q),
+  };
+}
 
 /**
  * Controller para operações relacionadas a quizzes
@@ -13,7 +24,10 @@ class QuizController {
   async getAll(req, res, next) {
     try {
       const quizzes = await QuizService.getAll();
-      res.status(HTTP_STATUS.OK).json(quizzes);
+      const isAdmin = req.usuario?.tipo === USER_TYPES.ADMIN;
+      res
+        .status(HTTP_STATUS.OK)
+        .json(isAdmin ? quizzes : quizzes.map(stripGabarito));
     } catch (err) {
       next(err);
     }
@@ -26,7 +40,8 @@ class QuizController {
   async getById(req, res, next) {
     try {
       const quiz = await QuizService.getById(req.params.id);
-      res.status(HTTP_STATUS.OK).json(quiz);
+      const isAdmin = req.usuario?.tipo === USER_TYPES.ADMIN;
+      res.status(HTTP_STATUS.OK).json(isAdmin ? quiz : stripGabarito(quiz));
     } catch (err) {
       next(err);
     }

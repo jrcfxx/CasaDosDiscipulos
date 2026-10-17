@@ -2,6 +2,7 @@ import { Router } from "express";
 import NivelController from "../controllers/NivelController.js";
 import validate from "../middlewares/validate.js";
 import verificarToken from "../middlewares/authMiddleware.js";
+import { adminOnly } from "../middlewares/checkRole.js";
 import {
   createNivelSchema,
   updateNivelSchema,
@@ -19,6 +20,7 @@ router.get("/", NivelController.index);
 // PUT /api/nivel/reordenar - Reordenar (antes de /:id)
 router.put(
   "/reordenar",
+  adminOnly,
   validate(reordenarNivelSchema),
   NivelController.reordenar
 );
@@ -27,18 +29,18 @@ router.put(
 router.get("/:id", NivelController.show);
 
 // PATCH /api/nivel/:id/reativar - Reativar nível inativo
-router.patch("/:id/reativar", NivelController.reativar);
+router.patch("/:id/reativar", adminOnly, NivelController.reativar);
 
 // DELETE /api/nivel/:id/permanente - Excluir permanente + reordenar
-router.delete("/:id/permanente", NivelController.excluirPermanente);
+router.delete("/:id/permanente", adminOnly, NivelController.excluirPermanente);
 
 // POST /api/nivel - Criar novo
-router.post("/", validate(createNivelSchema), NivelController.store);
+router.post("/", adminOnly, validate(createNivelSchema), NivelController.store);
 
 // PUT /api/nivel/:id - Atualizar
-router.put("/:id", validate(updateNivelSchema), NivelController.update);
+router.put("/:id", adminOnly, validate(updateNivelSchema), NivelController.update);
 
 // DELETE /api/nivel/:id - Inativar (soft delete)
-router.delete("/:id", NivelController.destroy);
+router.delete("/:id", adminOnly, NivelController.destroy);
 
 export default router;

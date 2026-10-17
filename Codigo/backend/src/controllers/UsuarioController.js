@@ -131,9 +131,40 @@ const UsuarioController = {
   async updatePerfil(req, res, next) {
     try {
       const usuarioId = req.usuario?.id_usuario;
+      const body = req.body || {};
 
-      // Não permite alterar tipo ou pontuação pelo próprio perfil
-      const { tipo, pontuacao, ...dadosPermitidos } = req.body;
+      // Whitelist estrita — evita escalação (tipo, lider_*, ativo, nível, pontuação)
+      const dadosPermitidos = {};
+      if (body.nome !== undefined) dadosPermitidos.nome = body.nome;
+      if (body.email !== undefined) dadosPermitidos.email = body.email;
+      if (body.telefone !== undefined) dadosPermitidos.telefone = body.telefone;
+      if (body.foto !== undefined) dadosPermitidos.foto = body.foto;
+
+      if (body.senha !== undefined) {
+        if (!body.senhaAtual) {
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            error: "Informe a senha atual para alterar a senha",
+          });
+        }
+        const bcrypt = (await import("bcrypt")).default;
+        const knex = (await import("../database/index.js")).default;
+        const row = await knex("usuario")
+          .where({ id_usuario: usuarioId })
+          .select("senha")
+          .first();
+        if (!row?.senha) {
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            error: "Não foi possível validar a senha atual",
+          });
+        }
+        const ok = await bcrypt.compare(String(body.senhaAtual), row.senha);
+        if (!ok) {
+          return res.status(HTTP_STATUS.BAD_REQUEST).json({
+            error: "Senha atual incorreta",
+          });
+        }
+        dadosPermitidos.senha = body.senha;
+      }
 
       const usuario = await UsuarioService.update(usuarioId, dadosPermitidos);
       res.status(HTTP_STATUS.OK).json(usuario);

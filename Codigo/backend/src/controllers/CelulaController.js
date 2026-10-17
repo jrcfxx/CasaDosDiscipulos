@@ -51,7 +51,14 @@ const CelulaController = {
    */
   async byLider(req, res, next) {
     try {
-      const celulas = await CelulaService.getByLider(req.params.idLider);
+      const idLider = Number(req.params.idLider);
+      const isAdmin = req.usuario?.tipo === "administrador";
+      if (!isAdmin && idLider !== req.usuario?.id_usuario) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          error: "Você só pode consultar as células das quais é líder",
+        });
+      }
+      const celulas = await CelulaService.getByLider(idLider);
       res.status(HTTP_STATUS.OK).json(celulas);
     } catch (error) {
       next(error);

@@ -5,8 +5,9 @@
  * inconsistências entre localStorage e estado React.
  */
 
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import authService, { Usuario, UserType } from "../services/authService";
+import { getUserProfile } from "../services/usuario";
 
 interface AuthContextValue {
   user: Usuario | null;
@@ -26,11 +27,41 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<Usuario | null>(() => authService.getUser());
+  const [user, setUser] = useState<Usuario | null>(() =>
+    authService.getToken() ? authService.getUser() : null
+  );
   const [loading, setLoading] = useState(false);
 
   const refreshUser = useCallback(() => {
+    if (!authService.getToken()) {
+      setUser(null);
+      return;
+    }
     setUser(authService.getUser());
+  }, []);
+
+  // Revalida perfil no boot (usuário desativado / flags atualizadas)
+  useEffect(() => {
+    if (!authService.getToken()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const perfil = await getUserProfile();
+        if (cancelled) return;
+        if (perfil?.ativo === false) {
+          authService.logout();
+          setUser(null);
+          return;
+        }
+        authService.updateStoredUser(perfil as Usuario);
+        setUser(perfil as Usuario);
+      } catch {
+        // 401 já é tratado pelo apiClient
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const login = useCallback(
@@ -54,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextValue = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !!authService.getToken(),
     isAdmin: user?.tipo === "administrador",
     isLider: user?.tipo === "lider",
     isLiderCelula: user?.tipo === "lider" && !!user?.lider_celula,

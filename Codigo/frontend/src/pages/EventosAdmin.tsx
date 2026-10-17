@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { FocusTrap } from "focus-trap-react";
 import "../style/EventosAdmin.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import Toast from "../components/ui/Toast";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FocusTrapComponent = FocusTrap as any;
 import { ASSETS_BASE } from "../config/api";
 import {
   type Evento,
@@ -235,9 +239,28 @@ const EventosAdmin: React.FC = () => {
       </main>
 
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h2>{editingEvento ? "Editar Evento" : "Novo Evento"}</h2>
+        <FocusTrapComponent
+          active={showModal}
+          focusTrapOptions={{
+            allowOutsideClick: true,
+            escapeDeactivates: false,
+            returnFocusOnDeactivate: true,
+          }}
+        >
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="evento-modal-title"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") closeModal();
+          }}
+          onClick={closeModal}
+        >
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 id="evento-modal-title">{editingEvento ? "Editar Evento" : "Novo Evento"}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="evento-titulo">Título</label>
@@ -325,6 +348,7 @@ const EventosAdmin: React.FC = () => {
             </form>
           </div>
         </div>
+        </FocusTrapComponent>
       )}
 
       <ConfirmModal

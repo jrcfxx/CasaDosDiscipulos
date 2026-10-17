@@ -785,7 +785,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-modal-overlay, 10000);
   padding: 1.25rem;
   animation: modalBackdropIn 0.25s ease-out;
 }

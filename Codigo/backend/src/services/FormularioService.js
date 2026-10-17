@@ -71,24 +71,51 @@ class FormularioService {
 
       if (!rowsAffected) throw new AppError("Formulário não encontrado", 404);
 
-      // limpar campos antigos
-      await trx("formulario_campo").where({ id_formulario: id }).del();
+      // Atualiza campos in-place para não quebrar respostas existentes
+      if (Array.isArray(data.campos)) {
+        const existentes = await trx("formulario_campo")
+          .where({ id_formulario: id })
+          .select("id");
+        const idsExistentes = new Set(existentes.map((c) => c.id));
+        const idsMantidos = new Set();
 
-      // recriar campos
-      if (data.campos && data.campos.length > 0) {
         for (const campo of data.campos) {
-          await trx("formulario_campo").insert({
+          const payload = {
             id_formulario: id,
             id_campo: campo.id_campo,
             conteudo: campo.conteudo || "",
             label: campo.label || "",
             ordem: campo.ordem ?? 0,
             obrigatorio: campo.obrigatorio || false,
-          });
+          };
+
+          if (campo.id && idsExistentes.has(campo.id)) {
+            await trx("formulario_campo").where({ id: campo.id }).update(payload);
+            idsMantidos.add(campo.id);
+          } else if (campo.id_formulario_campo && idsExistentes.has(campo.id_formulario_campo)) {
+            await trx("formulario_campo")
+              .where({ id: campo.id_formulario_campo })
+              .update(payload);
+            idsMantidos.add(campo.id_formulario_campo);
+          } else {
+            await trx("formulario_campo").insert(payload);
+          }
+        }
+
+        const idsParaRemover = [...idsExistentes].filter((cid) => !idsMantidos.has(cid));
+        for (const cid of idsParaRemover) {
+          const temResposta = await trx("formulario_resposta_campo")
+            .where({ id_formulario_campo: cid })
+            .first();
+          if (temResposta) {
+            // Mantém campo com respostas (integridade); empurra para o fim
+            await trx("formulario_campo").where({ id: cid }).update({ ordem: 9999 });
+          } else {
+            await trx("formulario_campo").where({ id: cid }).del();
+          }
         }
       }
 
-      // Buscar o formulário atualizado
       const formularioAtualizado = await FormularioModel.getById(id);
       const camposVinculados = await CampoModel.getByOption("formulario", id);
 

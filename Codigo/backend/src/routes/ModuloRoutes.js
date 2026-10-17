@@ -10,21 +10,25 @@ import {
 
 const router = Router();
 
+// Leituras autenticadas; ranking público permanece aberto
+router.get("/ranking", ModuloController.ranking);
+
+router.use(verificarToken);
+
 router.get("/", ModuloController.index);
 router.get("/active", ModuloController.active);
-router.get("/ativos-com-progresso", verificarToken, ModuloController.activeWithProgress);
-router.get("/ranking/minha-posicao", verificarToken, ModuloController.minhaPosicao);
-router.get("/ranking", ModuloController.ranking);
-router.post("/:id/iniciar", verificarToken, ModuloController.iniciar);
-router.post("/:id/concluir", verificarToken, ModuloController.concluir);
-router.get("/:id/progresso", verificarToken, ModuloController.getProgresso);
+router.get("/ativos-com-progresso", ModuloController.activeWithProgress);
+router.get("/ranking/minha-posicao", ModuloController.minhaPosicao);
+router.post("/:id/iniciar", ModuloController.iniciar);
+router.post("/:id/concluir", ModuloController.concluir);
+router.get("/:id/progresso", ModuloController.getProgresso);
 router.get("/:id", ModuloController.show);
 router.get("/:id/quiz", ModuloController.getQuizVinculado);
-router.post("/", verificarToken, adminOnly, validate(createModuloSchema), ModuloController.store);
-router.post("/:id/quiz/:idQuiz", verificarToken, adminOnly, ModuloController.vincularQuiz);
-router.put("/:id", verificarToken, adminOnly, validate(updateModuloSchema), ModuloController.update);
-router.delete("/:id/permanente", verificarToken, adminOnly, ModuloController.deletePermanente);
-router.delete("/:id", verificarToken, adminOnly, ModuloController.destroy);
-router.delete("/:id/quiz/:idQuiz", verificarToken, adminOnly, ModuloController.desvincularQuiz);
+router.post("/", adminOnly, validate(createModuloSchema), ModuloController.store);
+router.post("/:id/quiz/:idQuiz", adminOnly, ModuloController.vincularQuiz);
+router.put("/:id", adminOnly, validate(updateModuloSchema), ModuloController.update);
+router.delete("/:id/permanente", adminOnly, ModuloController.deletePermanente);
+router.delete("/:id", adminOnly, ModuloController.destroy);
+router.delete("/:id/quiz/:idQuiz", adminOnly, ModuloController.desvincularQuiz);
 
 export default router;

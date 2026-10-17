@@ -1,5 +1,7 @@
 import FormularioRespostaModel from "../models/FormularioRespostaModel.js";
-import { ValidationError, NotFoundError } from "../utils/AppError.js";
+import { ValidationError, NotFoundError, ForbiddenError } from "../utils/AppError.js";
+import knex from "../database/index.js";
+import { USER_TYPES } from "../utils/constants.js";
 
 /**
  * Service para gerenciar respostas de formulário
@@ -54,7 +56,7 @@ const FormularioRespostaService = {
    * @returns {Promise<Object>} Resposta criada
    * @throws {ValidationError} Se dados inválidos
    */
-  async create(data) {
+  async create(data, tipoUsuario = null) {
     const { id_usuario, id_formulario, id_celula, campos } = data;
 
     // Validações básicas
@@ -76,32 +78,44 @@ const FormularioRespostaService = {
       throw new ValidationError("ID do usuário (líder) é obrigatório");
     }
 
-    const respostaData = {
-      id_formulario,
-      id_usuario,
-      id_celula,
-      data_resposta: new Date(),
-    };
-
-    const resposta = await FormularioRespostaModel.create(respostaData);
-
-    // Criar campos preenchidos
-    for (const campo of campos) {
-      if (!campo.id_formulario_campo) {
-        throw new ValidationError(
-          "Cada campo deve ter id_formulario_campo definido"
+    // Líder só responde pela própria célula; admin pode qualquer uma
+    if (tipoUsuario !== USER_TYPES.ADMIN) {
+      const vinculo = await knex("celula_lider")
+        .where({ id_usuario, id_celula })
+        .first();
+      if (!vinculo) {
+        throw new ForbiddenError(
+          "Você só pode responder formulários das células das quais é líder"
         );
       }
-
-      await FormularioRespostaModel.createCampo({
-        id_resposta: resposta.id_resposta,
-        id_formulario_campo: campo.id_formulario_campo,
-        valor: campo.resposta != null ? String(campo.resposta) : null,
-      });
     }
 
-    // Retornar resposta completa com campos
-    return this.getById(resposta.id_resposta);
+    const id_resposta = await knex.transaction(async (trx) => {
+      const [novoId] = await trx("formulario_resposta").insert({
+        id_formulario,
+        id_usuario,
+        id_celula,
+        data_resposta: new Date(),
+      });
+
+      for (const campo of campos) {
+        if (!campo.id_formulario_campo) {
+          throw new ValidationError(
+            "Cada campo deve ter id_formulario_campo definido"
+          );
+        }
+
+        await trx("formulario_resposta_campo").insert({
+          id_resposta: novoId,
+          id_formulario_campo: campo.id_formulario_campo,
+          valor: campo.resposta != null ? String(campo.resposta) : null,
+        });
+      }
+
+      return novoId;
+    });
+
+    return this.getById(id_resposta);
   },
 
   /**

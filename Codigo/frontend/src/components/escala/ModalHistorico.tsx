@@ -1,5 +1,10 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { FocusTrap } from "focus-trap-react";
 import { EscalaHistoricoItem } from "../../services/escalaService";
+import "./ModalEscalaDialog.css";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FocusTrapComponent = FocusTrap as any;
 
 const ROTULOS: Record<string, string> = {
   criacao: "Criou o evento",
@@ -36,42 +41,84 @@ const ModalHistorico: React.FC<Props> = ({
   onClose,
   onDesfazer,
   podeDesfazer,
-}) => (
-  <div className="modal-overlay" role="dialog" aria-labelledby="historico-titulo">
-    <div className="modal-content modal-historico">
-      <h2 id="historico-titulo">Histórico — {titulo}</h2>
-      {loading ? (
-        <p className="escala-vazio">Carregando...</p>
-      ) : itens.length === 0 ? (
-        <p className="escala-vazio">Nenhuma alteração registrada neste evento.</p>
-      ) : (
-        <ul className="lista-historico">
-          {itens.map((h) => (
-            <li key={h.id_escala_historico}>
-              <span className="hist-quando">
-                {new Date(h.criado_em).toLocaleString("pt-BR")}
-              </span>
-              <strong>{h.usuario_nome || "Sistema"}</strong>
-              <span>
-                {ROTULOS[h.acao] || h.acao}
-                {resumoItem(h)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="modal-actions">
-        <button type="button" className="btn-cancelar" onClick={onClose}>
-          Fechar
-        </button>
-        {onDesfazer && (
-          <button type="button" className="btn-salvar" disabled={!podeDesfazer} onClick={onDesfazer}>
-            Desfazer última
-          </button>
-        )}
+}) => {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeRef.current?.focus();
+  }, []);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+  };
+
+  return (
+    <FocusTrapComponent
+      active
+      focusTrapOptions={{
+        allowOutsideClick: true,
+        escapeDeactivates: false,
+        returnFocusOnDeactivate: true,
+      }}
+    >
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+      <div
+        className="escala-dialog-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="historico-titulo"
+        onKeyDown={handleKeyDown}
+        onClick={onClose}
+      >
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+        <div className="escala-dialog" onClick={(e) => e.stopPropagation()}>
+          <h2 id="historico-titulo" className="escala-dialog-title">
+            Histórico — {titulo}
+          </h2>
+          {loading ? (
+            <p className="escala-dialog-empty">Carregando...</p>
+          ) : itens.length === 0 ? (
+            <p className="escala-dialog-empty">Nenhuma alteração registrada neste evento.</p>
+          ) : (
+            <ul className="escala-dialog-history">
+              {itens.map((h) => (
+                <li key={h.id_escala_historico}>
+                  <span className="escala-dialog-when">
+                    {new Date(h.criado_em).toLocaleString("pt-BR")}
+                  </span>
+                  <strong>{h.usuario_nome || "Sistema"}</strong>
+                  <span>
+                    {ROTULOS[h.acao] || h.acao}
+                    {resumoItem(h)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="escala-dialog-actions">
+            <button
+              ref={closeRef}
+              type="button"
+              className="escala-dialog-btn escala-dialog-btn-secondary"
+              onClick={onClose}
+            >
+              Fechar
+            </button>
+            {onDesfazer && (
+              <button
+                type="button"
+                className="escala-dialog-btn escala-dialog-btn-primary"
+                disabled={!podeDesfazer}
+                onClick={onDesfazer}
+              >
+                Desfazer última
+              </button>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-);
+    </FocusTrapComponent>
+  );
+};
 
 export default ModalHistorico;

@@ -1,5 +1,13 @@
 import ModuloService from "../services/ModuloService.js";
-import { HTTP_STATUS } from "../utils/constants.js";
+import { HTTP_STATUS, USER_TYPES } from "../utils/constants.js";
+
+function stripGabaritoQuiz(quiz) {
+  if (!quiz?.questoes) return quiz;
+  return {
+    ...quiz,
+    questoes: quiz.questoes.map(({ resposta_correta, ...q }) => q),
+  };
+}
 
 /**
  * Controller para operações relacionadas a módulos
@@ -182,7 +190,8 @@ const ModuloController = {
   async getQuizVinculado(req, res, next) {
     try {
       const quiz = await ModuloService.getQuizVinculado(req.params.id);
-      res.status(HTTP_STATUS.OK).json(quiz);
+      const isAdmin = req.usuario?.tipo === USER_TYPES.ADMIN;
+      res.status(HTTP_STATUS.OK).json(isAdmin ? quiz : stripGabaritoQuiz(quiz));
     } catch (error) {
       next(error);
     }

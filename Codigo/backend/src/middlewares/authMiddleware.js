@@ -1,11 +1,13 @@
 import jwt from "jsonwebtoken";
+import knex from "../database/index.js";
 import { UnauthorizedError } from "../utils/AppError.js";
 
 /**
  * Middleware para verificar e validar o token JWT
  * Extrai informações do usuário e adiciona ao objeto req
+ * Revalida se o usuário ainda está ativo no banco
  */
-const verificarToken = (req, res, next) => {
+const verificarToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
 
   if (!authHeader) {
@@ -24,10 +26,20 @@ const verificarToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Adiciona dados do usuário ao request
+    const usuario = await knex("usuario")
+      .select("id_usuario", "tipo", "ativo")
+      .where("id_usuario", decoded.id_usuario)
+      .first();
+
+    if (!usuario || !usuario.ativo) {
+      return next(
+        new UnauthorizedError("Usuário inativo ou não encontrado. Faça login novamente.")
+      );
+    }
+
     req.usuario = {
-      id_usuario: decoded.id_usuario,
-      tipo: decoded.tipo,
+      id_usuario: usuario.id_usuario,
+      tipo: usuario.tipo,
     };
 
     next();

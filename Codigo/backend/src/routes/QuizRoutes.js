@@ -11,16 +11,19 @@ import {
 
 const router = Router();
 
+// Todas as rotas de quiz requerem autenticação
+router.use(verificarToken);
+
 // CRUD de Quiz
 router.get("/", QuizController.getAll);
 router.get("/:id", QuizController.getById);
-router.post("/", verificarToken, adminOnly, validate(createQuizSchema), QuizController.create);
-router.put("/:id", verificarToken, adminOnly, validate(updateQuizSchema), QuizController.update);
-router.delete("/:id", verificarToken, adminOnly, QuizController.delete);
+router.post("/", adminOnly, validate(createQuizSchema), QuizController.create);
+router.put("/:id", adminOnly, validate(updateQuizSchema), QuizController.update);
+router.delete("/:id", adminOnly, QuizController.delete);
 
 // Rotas de resposta de quiz
-router.post("/:id/responder", verificarToken, QuizRespostaController.submit);
-router.get("/:id/respostas", verificarToken, adminOnly, QuizRespostaController.listByQuiz);
-router.get("/:id/respostas/usuario", verificarToken, QuizRespostaController.listByUsuario);
+router.post("/:id/responder", QuizRespostaController.submit);
+router.get("/:id/respostas", adminOnly, QuizRespostaController.listByQuiz);
+router.get("/:id/respostas/usuario", QuizRespostaController.listByUsuario);
 
 export default router;

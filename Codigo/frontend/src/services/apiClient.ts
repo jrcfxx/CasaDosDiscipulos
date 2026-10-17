@@ -42,6 +42,9 @@ api.interceptors.request.use(
   }
 );
 
+/** Evita múltiplos reloads quando várias requests retornam 401 ao mesmo tempo */
+let isLoggingOut = false;
+
 /**
  * Interceptor de resposta
  * Trata erros globalmente e faz logout em caso de token inválido/expirado
@@ -49,7 +52,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isLoggingOut) {
+      isLoggingOut = true;
       localStorage.removeItem("token");
       localStorage.removeItem("usuario");
 
@@ -58,6 +62,8 @@ api.interceptors.response.use(
       if (!isLogin) {
         window.location.hash = "#/login";
         window.location.reload();
+      } else {
+        isLoggingOut = false;
       }
     }
 

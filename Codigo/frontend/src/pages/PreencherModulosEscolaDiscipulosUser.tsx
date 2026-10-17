@@ -315,6 +315,37 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
             placeholder="Digite sua resposta"
             required
           />
+        ) : q.tipo_questao === "checkbox" ? (
+          <fieldset className="modulo-opcoes">
+            {opcoes.map((opt) => {
+              const optId = String(typeof opt === "object" ? opt.id : opt);
+              const optText = typeof opt === "object" ? opt.texto : opt;
+              const selecionados = new Set(
+                String(valor || "")
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              );
+              return (
+                <label key={optId} className="modulo-opcao">
+                  <input
+                    type="checkbox"
+                    name={`q-${q.id_questao}`}
+                    value={optId}
+                    checked={selecionados.has(optId)}
+                    onChange={(e) => {
+                      const next = new Set(selecionados);
+                      if (e.target.checked) next.add(optId);
+                      else next.delete(optId);
+                      const joined = Array.from(next).sort().join(",");
+                      setRespostas((prev) => ({ ...prev, [q.id_questao]: joined }));
+                    }}
+                  />
+                  <span>{optText}</span>
+                </label>
+              );
+            })}
+          </fieldset>
         ) : (
           <fieldset className="modulo-opcoes">
             {opcoes.map((opt) => {

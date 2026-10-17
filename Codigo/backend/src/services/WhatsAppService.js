@@ -6,9 +6,10 @@
  * Documentação: https://doc.evolution-api.com
  */
 
-const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL || "http://localhost:8080";
+const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL || "";
 const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE_NAME || "casadosdiscipulos";
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || "";
+const WHATSAPP_ENABLED = String(process.env.WHATSAPP_ENABLED || "").toLowerCase() === "true";
 
 /**
  * Normaliza número para formato E.164 (ex: 5511999999999)
@@ -28,9 +29,10 @@ function normalizarTelefone(telefone) {
 
 /**
  * Verifica se o WhatsApp está configurado e disponível
+ * Exige URL, API key e flag explícita WHATSAPP_ENABLED=true
  */
 function estaConfigurado() {
-  return Boolean(EVOLUTION_API_URL);
+  return Boolean(WHATSAPP_ENABLED && EVOLUTION_API_URL && EVOLUTION_API_KEY);
 }
 
 /**

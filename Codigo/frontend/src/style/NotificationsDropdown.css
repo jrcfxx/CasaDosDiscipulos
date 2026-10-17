@@ -223,7 +223,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1100;
+  z-index: var(--z-modal-overlay, 10000);
   padding: 1.5rem;
   animation: notifBackdropIn 0.2s ease-out;
 }

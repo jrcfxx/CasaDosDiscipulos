@@ -16,7 +16,7 @@ const QUESTOES_TIPOS = [
 ];
 const TIPO_TO_QUIZ_QUESTAO = {
   multipla_escolha: "multipla_escolha",
-  checkbox: "multipla_escolha",
+  checkbox: "checkbox",
   select: "multipla_escolha",
   verdadeiro_falso: "verdadeiro_falso",
   discursiva: "discursiva",
@@ -55,8 +55,15 @@ class QuizService {
             texto: alt.texto || "",
           }));
           opcoes = JSON.stringify(ops);
-          const correta = alternativas.findIndex((a) => a.correta);
-          resposta_correta = correta >= 0 ? String.fromCharCode(65 + correta) : null;
+          if (tipoCampo === "checkbox") {
+            resposta_correta = alternativas
+              .map((alt, idx) => (alt.correta ? String.fromCharCode(65 + idx) : null))
+              .filter(Boolean)
+              .join(",") || null;
+          } else {
+            const correta = alternativas.findIndex((a) => a.correta);
+            resposta_correta = correta >= 0 ? String.fromCharCode(65 + correta) : null;
+          }
         } catch {
           opcoes = JSON.stringify([{ id: "A", texto: "Opção A" }]);
         }

@@ -69,7 +69,10 @@ const FormularioRespostaController = {
     try {
       const id_usuario = req.usuario?.id_usuario;
       const payload = { ...req.body, id_usuario };
-      const resposta = await FormularioRespostaService.create(payload);
+      const resposta = await FormularioRespostaService.create(
+        payload,
+        req.usuario?.tipo
+      );
       res.status(HTTP_STATUS.CREATED).json(resposta);
     } catch (error) {
       next(error);

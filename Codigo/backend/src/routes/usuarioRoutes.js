@@ -28,11 +28,11 @@ router.post(
   UsuarioController.uploadFoto
 );
 
-// GET /api/usuarios - Listar todos
-router.get("/", UsuarioController.index);
+// GET /api/usuarios - Listar todos (admin)
+router.get("/", adminOnly, UsuarioController.index);
 
-// GET /api/usuarios/:id - Buscar por ID
-router.get("/:id", UsuarioController.show);
+// GET /api/usuarios/:id - Buscar por ID (admin)
+router.get("/:id", adminOnly, UsuarioController.show);
 
 // POST /api/usuarios/:id/pontuacao-manual - Admin: atribuir pontos com motivo (ex: dinâmicas presenciais)
 router.post(
@@ -42,16 +42,16 @@ router.post(
   UsuarioController.addPontuacaoManual
 );
 
-// POST /api/usuarios - Criar novo (já tem via /auth/register)
-router.post("/", validate(createUsuarioSchema), UsuarioController.store);
+// POST /api/usuarios - Criar novo (admin)
+router.post("/", adminOnly, validate(createUsuarioSchema), UsuarioController.store);
 
-// PUT /api/usuarios/:id - Atualizar
-router.put("/:id", validate(updateUsuarioSchema), UsuarioController.update);
+// PUT /api/usuarios/:id - Atualizar (admin)
+router.put("/:id", adminOnly, validate(updateUsuarioSchema), UsuarioController.update);
 
-// PATCH /api/usuarios/:id/toggle - Ativar/Desativar
-router.patch("/:id/toggle", UsuarioController.toggleActive);
+// PATCH /api/usuarios/:id/toggle - Ativar/Desativar (admin)
+router.patch("/:id/toggle", adminOnly, UsuarioController.toggleActive);
 
-// DELETE /api/usuarios/:id - Deletar
-router.delete("/:id", UsuarioController.destroy);
+// DELETE /api/usuarios/:id - Deletar (admin)
+router.delete("/:id", adminOnly, UsuarioController.destroy);
 
 export default router;

@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: var(--z-modal-overlay, 10000);
   padding: 1rem;
   animation: darPontosFadeIn 0.2s ease-out;
 }
@@ -40,7 +40,7 @@
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--color-neutral-dark, #2b2f30);
 }
 
 .dar-pontos-modal-form {

@@ -140,6 +140,13 @@ class AuthService {
   }
 
   /**
+   * Atualiza o usuário em memória/localStorage (ex.: refresh de perfil)
+   */
+  updateStoredUser(usuario: Usuario): void {
+    this.setUser(usuario);
+  }
+
+  /**
    * Verifica se o usuário é admin
    */
   isAdmin(): boolean {

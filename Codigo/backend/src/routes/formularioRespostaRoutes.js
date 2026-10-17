@@ -17,7 +17,7 @@ router.get("/celula/:idCelula", verificarToken, adminAndLeader, FormularioRespos
 // CRUD básico
 router.get("/", verificarToken, adminAndLeader, FormularioRespostaController.index);
 router.get("/:id", verificarToken, adminAndLeader, FormularioRespostaController.show);
-router.post("/", verificarToken, validate(createFormularioRespostaSchema), FormularioRespostaController.store);
+router.post("/", verificarToken, adminAndLeader, validate(createFormularioRespostaSchema), FormularioRespostaController.store);
 router.put("/:id", verificarToken, adminAndLeader, validate(updateFormularioRespostaSchema), FormularioRespostaController.update);
 router.delete("/:id", verificarToken, adminAndLeader, FormularioRespostaController.destroy);
 
