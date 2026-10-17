@@ -103,6 +103,10 @@ export default function GerirCelulas() {
       id_lideres: lideres[0] ? [lideres[0].id_usuario] : [],
       dia_reuniao: "",
       horario_reuniao: "",
+      categoria: "",
+      modalidade: "presencial",
+      imagem_url: "",
+      gd_mae: "FLECHA",
       ativa: true,
     });
     setModalAberto(true);
@@ -116,6 +120,10 @@ export default function GerirCelulas() {
       id_lideres: c.id_lideres ?? (c.id_lider ? [c.id_lider] : []),
       dia_reuniao: c.dia_reuniao ?? "",
       horario_reuniao: formatarHorario(c.horario_reuniao),
+      categoria: c.categoria ?? "",
+      modalidade: c.modalidade ?? "presencial",
+      imagem_url: c.imagem_url ?? "",
+      gd_mae: c.gd_mae ?? "FLECHA",
       ativa: Boolean(c.ativa),
     });
     setModalAberto(true);
@@ -159,6 +167,10 @@ export default function GerirCelulas() {
       id_lideres: idsLideres,
       dia_reuniao: celulaModal.dia_reuniao || null,
       horario_reuniao: celulaModal.horario_reuniao || null,
+      categoria: celulaModal.categoria?.trim() || null,
+      modalidade: celulaModal.modalidade || "presencial",
+      imagem_url: celulaModal.imagem_url?.trim() || null,
+      gd_mae: celulaModal.gd_mae?.trim() || null,
       ativa: celulaModal.ativa ?? true,
     };
 
@@ -211,6 +223,10 @@ export default function GerirCelulas() {
         id_lideres: idsLideres,
         dia_reuniao: c.dia_reuniao ?? null,
         horario_reuniao: horario,
+        categoria: c.categoria ?? null,
+        modalidade: c.modalidade ?? null,
+        imagem_url: c.imagem_url ?? null,
+        gd_mae: c.gd_mae ?? null,
         ativa: !c.ativa,
       };
       await celulaService.update(c.id_celula, payload);
@@ -258,6 +274,7 @@ export default function GerirCelulas() {
               <thead>
                 <tr>
                   <th>Nome</th>
+                  <th>Categoria</th>
                   <th>Líder</th>
                   <th>Dia</th>
                   <th>Horário</th>
@@ -270,6 +287,7 @@ export default function GerirCelulas() {
                 {celulasFiltradas.map((celula) => (
                   <tr key={celula.id_celula} className={!celula.ativa ? "celula-inativa" : ""}>
                     <td>{celula.nome}</td>
+                    <td>{celula.categoria || "-"}</td>
                     <td>{celula.nome_lider || "-"}</td>
                     <td>
                       {celula.dia_reuniao
@@ -348,8 +366,28 @@ export default function GerirCelulas() {
                 type="text"
                 value={celulaModal.nome || ""}
                 onChange={(e) => handleChange("nome", e.target.value)}
-                placeholder="Ex: Célula Esperança"
+                placeholder="Ex: Pérolas"
               />
+
+              <label htmlFor="celulaModalCategoria">Categoria</label>
+              <input
+                id="celulaModalCategoria"
+                type="text"
+                value={celulaModal.categoria || ""}
+                onChange={(e) => handleChange("categoria", e.target.value)}
+                placeholder="Ex: Célula de Mulheres"
+              />
+
+              <label htmlFor="celulaModalModalidade">Modalidade</label>
+              <select
+                id="celulaModalModalidade"
+                value={celulaModal.modalidade || "presencial"}
+                onChange={(e) => handleChange("modalidade", e.target.value)}
+              >
+                <option value="presencial">Presencial</option>
+                <option value="online">Online</option>
+                <option value="hibrido">Híbrido</option>
+              </select>
 
               <span>Líderes *</span>
               <div className="lideres-select-wrapper">

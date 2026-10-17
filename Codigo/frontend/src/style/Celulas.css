@@ -1,0 +1,253 @@
+.celulas-page {
+  min-height: 100vh;
+  background: #f3f5f5;
+  font-family: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
+  color: #1a1a1a;
+}
+
+.celulas-main {
+  padding-bottom: 4rem;
+}
+
+/* ——— Hero ——— */
+.celulas-hero {
+  position: relative;
+  min-height: min(72vh, 640px);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.celulas-hero__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.celulas-hero__veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 30, 32, 0.15) 0%,
+    rgba(20, 30, 32, 0.35) 45%,
+    rgba(20, 30, 32, 0.72) 100%
+  );
+}
+
+.celulas-hero__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 2.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.celulas-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(100%, 420px);
+  margin: 0 auto;
+  padding: 0.7rem 1.15rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.celulas-search__icon {
+  color: #fff;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.celulas-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+
+.celulas-search input::placeholder {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.celulas-hero__title {
+  margin: 0;
+  color: #fff;
+  line-height: 1.05;
+}
+
+.celulas-hero__title span {
+  display: block;
+  font-size: clamp(2.6rem, 7vw, 4.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.celulas-hero__title em {
+  display: block;
+  font-style: normal;
+  font-weight: 300;
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+  letter-spacing: 0.01em;
+  opacity: 0.95;
+}
+
+/* ——— Lista ——— */
+.celulas-lista {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 0;
+}
+
+.celulas-status {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem 1rem;
+}
+
+.celulas-status--erro {
+  color: #b91c1c;
+}
+
+.celulas-grupo + .celulas-grupo {
+  margin-top: 2.75rem;
+}
+
+.celulas-grupo__titulo {
+  margin: 0 0 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2b2f30;
+  letter-spacing: 0.01em;
+}
+
+.celulas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ——— Card (estilo material da Casa) ——— */
+.celula-card {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(20, 30, 32, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.celula-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(20, 30, 32, 0.12);
+}
+
+.celula-card__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #1a2426;
+}
+
+.celula-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.celula-card__badge {
+  position: absolute;
+  top: 0.85rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  color: #fff;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  max-width: calc(100% - 1.5rem);
+}
+
+.celula-card__badge strong {
+  font-weight: 700;
+}
+
+.celula-card__badge-icon {
+  opacity: 0.9;
+}
+
+.celula-card__footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem 1rem;
+  align-items: start;
+  padding: 1.15rem 1.25rem 1.3rem;
+  background: #fff;
+}
+
+.celula-card__nome {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #161616;
+  line-height: 1.1;
+}
+
+.celula-card__meta {
+  text-align: right;
+  min-width: 0;
+}
+
+.celula-card__quando {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #161616;
+}
+
+.celula-card__local,
+.celula-card__lider {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #5c6366;
+  line-height: 1.35;
+}
+
+@media (max-width: 560px) {
+  .celula-card__footer {
+    grid-template-columns: 1fr;
+  }
+
+  .celula-card__meta {
+    text-align: left;
+  }
+
+  .celulas-hero__content {
+    gap: 2.5rem;
+  }
+}

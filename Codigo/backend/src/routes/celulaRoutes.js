@@ -10,14 +10,13 @@ import {
 
 const router = Router();
 
-// Todas as rotas de célula requerem autenticação
+// Público — listagem de células ativas (página Encontre sua Célula)
+router.get("/publicas", CelulaController.active);
+router.get("/ativas", CelulaController.active);
+
 router.use(verificarToken);
 
-// Rotas especiais antes das rotas com :id
-router.get("/ativas", CelulaController.active);
 router.get("/lider/:idLider", CelulaController.byLider);
-
-// CRUD básico — mutações apenas admin
 router.get("/", CelulaController.index);
 router.get("/:id", CelulaController.show);
 router.post("/", adminOnly, validate(createCelulaSchema), CelulaController.store);

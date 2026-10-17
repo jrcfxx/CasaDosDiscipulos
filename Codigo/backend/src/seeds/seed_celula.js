@@ -1,62 +1,130 @@
 import knex from "../database/index.js";
 
 /**
- * Seed para células da igreja
- * Cria células de exemplo vinculadas aos líderes cadastrados (suporta múltiplos líderes)
+ * Seed oficial — Células da Casa (GD mãe FLECHA)
+ * Imagens em /uploads/celulas/
  */
 export async function seed() {
   await knex("celula_lider").del();
   await knex("celula").del();
 
-  const lideres = await knex("usuario")
-    .where({ tipo: "lider" })
-    .orderBy("id_usuario");
+  const byEmail = async (email) =>
+    knex("usuario").where({ email }).first();
 
-  if (!lideres.length) {
+  const lideres = {
+    iza: await byEmail("iza@casadosdiscipulos.org"),
+    simone: await byEmail("simone@casadosdiscipulos.org"),
+    luana: await byEmail("luana@casadosdiscipulos.org"),
+    kelly: await byEmail("valquiria.kelly@casadosdiscipulos.org"),
+    arlem: await byEmail("arlem.cleizer@casadosdiscipulos.org"),
+    lorrayne: await byEmail("lorrayne.andrade@casadosdiscipulos.org"),
+    anaPaula: await byEmail("ana.paula@casadosdiscipulos.org"),
+    liderDemo: await byEmail("lider@test.com"),
+  };
+
+  const fallback = lideres.liderDemo || lideres.lorrayne || lideres.iza;
+  if (!fallback) {
     console.log("Nenhum líder encontrado. Execute seed_usuario.js primeiro.");
     return;
   }
 
-  const lider1 = lideres[0];
-  const lider2 = lideres[1] ?? lider1;
-  const ana = lideres[2] ?? lider1;
-  const carlos = lideres[3] ?? lider1;
-
   const celulasData = [
-    { nome: "Célula Esperança", endereco: "Rua das Flores, 123 - Centro", dia_reuniao: "quarta", horario_reuniao: "19:30:00", ativa: true },
-    { nome: "Célula Renovação", endereco: "Av. Principal, 456 - Bairro Novo", dia_reuniao: "quinta", horario_reuniao: "20:00:00", ativa: true },
-    { nome: "Célula Fé e Vida", endereco: "Rua do Comércio, 789 - Vila Rosa", dia_reuniao: "sexta", horario_reuniao: "19:00:00", ativa: true },
-    { nome: "Célula Avivamento", endereco: "Rua das Acácias, 50 - Jardim Paulista", dia_reuniao: "terca", horario_reuniao: "20:00:00", ativa: true },
-    { nome: "Célula Restauração", endereco: "Av. Brasil, 1200 - Centro", dia_reuniao: "quinta", horario_reuniao: "19:30:00", ativa: true },
-    { nome: "Célula Paz", endereco: "Rua Horizonte, 88 - Vila Verde", dia_reuniao: "sabado", horario_reuniao: "17:00:00", ativa: true },
-    { nome: "Célula Amor de Cristo", endereco: "Rua Esperança, 200 - Parque dos Lagos", dia_reuniao: "quarta", horario_reuniao: "20:30:00", ativa: true },
-    { nome: "Célula Família", endereco: "Rua dos Girassóis, 15 - Residencial Sul", dia_reuniao: "domingo", horario_reuniao: "16:00:00", ativa: true },
+    {
+      nome: "Visão",
+      categoria: "Célula de Meninas Jovens e Adolescentes",
+      endereco: "Rua Albertino Teixeira Dias, 381 - Diamante",
+      dia_reuniao: "terça",
+      horario_reuniao: "20:00:00",
+      modalidade: "presencial",
+      imagem_url: "/uploads/celulas/visao.jpg",
+      gd_mae: "FLECHA",
+      ativa: true,
+      liderEmail: "lorrayne",
+    },
+    {
+      nome: "Pérolas",
+      categoria: "Célula de Mulheres",
+      endereco: "Rua Dos Americanos, 1383 - Milionários",
+      dia_reuniao: "terça",
+      horario_reuniao: "20:00:00",
+      modalidade: "presencial",
+      imagem_url: "/uploads/celulas/perolas.jpg",
+      gd_mae: "FLECHA",
+      ativa: true,
+      liderEmail: "iza",
+    },
+    {
+      nome: "Morada",
+      categoria: "Célula de Família",
+      endereco: "Rua Tadeu Liberato de Carvalho, 42, apto 5 - Brasil Industrial",
+      dia_reuniao: "terça",
+      horario_reuniao: "20:00:00",
+      modalidade: "presencial",
+      imagem_url: "/uploads/celulas/morada.jpg",
+      gd_mae: "FLECHA",
+      ativa: true,
+      liderEmail: "kelly",
+    },
+    {
+      nome: "Resgate",
+      categoria: "Célula de Família",
+      endereco: "Rua Coronel Thibau, 193 - Araguaia",
+      dia_reuniao: "terça",
+      horario_reuniao: "20:00:00",
+      modalidade: "presencial",
+      imagem_url: "/uploads/celulas/resgate.jpg",
+      gd_mae: "FLECHA",
+      ativa: true,
+      liderEmail: "arlem",
+    },
+    {
+      nome: "Reino",
+      categoria: "Célula de Jovens",
+      endereco: "Online",
+      dia_reuniao: "quarta",
+      horario_reuniao: "20:30:00",
+      modalidade: "online",
+      imagem_url: "/uploads/celulas/reino.jpg",
+      gd_mae: "FLECHA",
+      ativa: true,
+      liderEmail: "anaPaula",
+    },
+    {
+      nome: "Videira",
+      categoria: "Célula de Família",
+      endereco: "Belo Horizonte/MG",
+      dia_reuniao: "terça",
+      horario_reuniao: "20:00:00",
+      modalidade: "presencial",
+      imagem_url: "/uploads/celulas/hero-celulas.jpg",
+      gd_mae: "FLECHA",
+      ativa: true,
+      liderEmail: "simone",
+    },
+    {
+      nome: "Farol",
+      categoria: "Célula de Família",
+      endereco: "Belo Horizonte/MG",
+      dia_reuniao: "quarta",
+      horario_reuniao: "20:00:00",
+      modalidade: "presencial",
+      imagem_url: "/uploads/celulas/hero-celulas.jpg",
+      gd_mae: "FLECHA",
+      ativa: true,
+      liderEmail: "luana",
+    },
   ];
 
-  const ids = [];
   for (const c of celulasData) {
-    const [id] = await knex("celula").insert(c);
-    ids.push(id);
+    const { liderEmail, ...row } = c;
+    const lider = lideres[liderEmail] || fallback;
+    const [id] = await knex("celula").insert(row);
+    await knex("celula_lider").insert({
+      id_celula: id,
+      id_usuario: lider.id_usuario,
+      principal: true,
+    });
   }
 
-  const vinculos = [
-    { id_celula: ids[0], id_usuario: lider1.id_usuario, principal: true },
-    { id_celula: ids[1], id_usuario: lider1.id_usuario, principal: true },
-    { id_celula: ids[2], id_usuario: lider2.id_usuario, principal: true },
-    { id_celula: ids[3], id_usuario: ana.id_usuario, principal: true },
-    { id_celula: ids[4], id_usuario: carlos.id_usuario, principal: true },
-    { id_celula: ids[5], id_usuario: carlos.id_usuario, principal: true },
-    { id_celula: ids[6], id_usuario: ana.id_usuario, principal: true },
-    { id_celula: ids[7], id_usuario: lider2.id_usuario, principal: true },
-  ];
-  if (lider1.id_usuario !== lider2.id_usuario) {
-    vinculos.push({ id_celula: ids[0], id_usuario: lider2.id_usuario, principal: false });
-  }
-  if (lideres.length >= 4) {
-    vinculos.push({ id_celula: ids[7], id_usuario: carlos.id_usuario, principal: false });
-  }
-
-  await knex("celula_lider").insert(vinculos);
-
-  console.log(`✅ ${celulasData.length} células inseridas com sucesso!`);
+  console.log(`✅ ${celulasData.length} células oficiais (GD FLECHA) inseridas!`);
 }

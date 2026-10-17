@@ -7,6 +7,7 @@ import "../style/SobreNos.css";
 import imagem01 from "../assets/lendo_biblia_.jpeg";
 import imagem02 from "../assets/casal_leitura.jpeg";
 import imagem03 from "../assets/tres_mulheres.jpeg";
+import imagemStaff from "../assets/igreja/staff-casa-2026.png";
 
 const INSTAGRAM_REEL = "https://www.instagram.com/reel/DPJpTVdESov/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==";
 const INSTAGRAM_PERFIL = "https://www.instagram.com/casadosdiscipulos?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
@@ -107,6 +108,26 @@ const SobreNos: React.FC = () => {
               </p>
             </div>
           </div>
+        </section>
+
+        {/* Staff Casa 2026 */}
+        <section className="sobre-nos-staff">
+          <p className="sobre-nos-instagram__label">— Nossa equipe</p>
+          <h2 className="sobre-nos-instagram__titulo">Staff Casa 2026</h2>
+          <p className="sobre-nos-instagram__texto">
+            Diretoria, ministérios, apoio e células sob a GD mãe FLECHA.
+          </p>
+          <div className="sobre-nos-staff__frame">
+            <img
+              src={imagemStaff}
+              alt="Organograma Staff Casa dos Discípulos 2026"
+              className="sobre-nos-staff__img"
+              loading="lazy"
+            />
+          </div>
+          <Link to="/celulas" className="sobre-nos-instagram__btn" style={{ marginTop: "1.5rem", display: "inline-flex" }}>
+            Conhecer as células
+          </Link>
         </section>
 
         {/* Dízimos e Ofertas */}

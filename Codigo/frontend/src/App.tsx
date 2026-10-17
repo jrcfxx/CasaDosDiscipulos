@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import SobreNos from "./pages/SobreNos";
+import Celulas from "./pages/Celulas";
 
 // Páginas Autenticadas - Admin
 import PortalDoDiscipuloAdmin from "./pages/PortalDoDiscipuloAdmin";
@@ -89,6 +90,9 @@ export default function App() {
 
       {/* A casa */}
       <Route path="/sobre-nos" element={<SobreNos />} />
+
+      {/* Células públicas */}
+      <Route path="/celulas" element={<Celulas />} />
 
       {/* Login - Redireciona para portal se já autenticado */}
       <Route

@@ -32,6 +32,9 @@ const HeaderHome: React.FC = () => {
         <Link to="/sobre-nos" className="header-home__link">
           A Casa
         </Link>
+        <Link to="/celulas" className="header-home__link">
+          Células
+        </Link>
         <Link to="/#campanha-nova-sede" className="header-home__link">
           Campanha Nova Sede
         </Link>

@@ -36,6 +36,10 @@ export const createCelulaSchema = Joi.object({
     }),
 
   local_reuniao: Joi.string().allow(null, "").max(500),
+  categoria: Joi.string().allow(null, "").max(120),
+  modalidade: Joi.string().valid("presencial", "online", "hibrido").allow(null, ""),
+  imagem_url: Joi.string().allow(null, "").max(500),
+  gd_mae: Joi.string().allow(null, "").max(100),
   ativa: Joi.boolean().default(true),
 })
   .or("id_lideres", "id_lider")
@@ -66,6 +70,10 @@ export const updateCelulaSchema = Joi.object({
     .allow(null),
 
   local_reuniao: Joi.string().allow(null, "").max(500),
+  categoria: Joi.string().allow(null, "").max(120),
+  modalidade: Joi.string().valid("presencial", "online", "hibrido").allow(null, ""),
+  imagem_url: Joi.string().allow(null, "").max(500),
+  gd_mae: Joi.string().allow(null, "").max(100),
 
   ativa: Joi.boolean(),
 })

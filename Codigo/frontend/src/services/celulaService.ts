@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import { ASSETS_BASE } from "../config/api";
 
 export interface LiderCelula {
   id_usuario: number;
@@ -13,7 +14,11 @@ export interface Celula {
   endereco?: string;
   dia_reuniao?: string;
   horario_reuniao?: string;
-  id_lider: number | null; // primeiro líder (retrocompat)
+  categoria?: string | null;
+  modalidade?: string | null;
+  imagem_url?: string | null;
+  gd_mae?: string | null;
+  id_lider: number | null;
   id_lideres: number[];
   lideres?: LiderCelula[];
   ativa: boolean;
@@ -27,7 +32,17 @@ export interface CelulaCreateUpdate {
   id_lideres: number[];
   dia_reuniao?: string | null;
   horario_reuniao?: string | null;
+  categoria?: string | null;
+  modalidade?: string | null;
+  imagem_url?: string | null;
+  gd_mae?: string | null;
   ativa?: boolean;
+}
+
+export function getCelulaImageUrl(imagemUrl?: string | null): string | null {
+  if (!imagemUrl) return null;
+  if (imagemUrl.startsWith("http")) return imagemUrl;
+  return `${ASSETS_BASE}${imagemUrl.startsWith("/") ? "" : "/"}${imagemUrl}`;
 }
 
 const celulaService = {
@@ -39,6 +54,12 @@ const celulaService = {
   async getById(id: number): Promise<Celula> {
     const response = await apiClient.get(`/celula/${id}`);
     return response.data;
+  },
+
+  /** Listagem pública (sem token) */
+  async getPublicas(): Promise<Celula[]> {
+    const response = await apiClient.get("/celula/publicas");
+    return response.data ?? [];
   },
 
   async getAtivas(): Promise<Celula[]> {

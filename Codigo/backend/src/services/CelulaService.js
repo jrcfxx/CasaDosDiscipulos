@@ -79,6 +79,10 @@ const CelulaService = {
       id_lideres: idLideres,
       dia_reuniao: data.dia_reuniao || null,
       horario_reuniao: data.horario_reuniao || null,
+      categoria: data.categoria?.trim() || null,
+      modalidade: data.modalidade || "presencial",
+      imagem_url: data.imagem_url || null,
+      gd_mae: data.gd_mae?.trim() || null,
       ativa: data.ativa ?? true,
     });
 
@@ -118,6 +122,14 @@ const CelulaService = {
       dadosAtualizacao.dia_reuniao = data.dia_reuniao;
     if (data.horario_reuniao !== undefined)
       dadosAtualizacao.horario_reuniao = data.horario_reuniao;
+    if (data.categoria !== undefined)
+      dadosAtualizacao.categoria = data.categoria?.trim() || null;
+    if (data.modalidade !== undefined)
+      dadosAtualizacao.modalidade = data.modalidade || null;
+    if (data.imagem_url !== undefined)
+      dadosAtualizacao.imagem_url = data.imagem_url || null;
+    if (data.gd_mae !== undefined)
+      dadosAtualizacao.gd_mae = data.gd_mae?.trim() || null;
     if (data.ativa !== undefined) dadosAtualizacao.ativa = data.ativa;
 
     // Atualiza célula

@@ -205,6 +205,44 @@
   margin: 0;
 }
 
+/* ==================== STAFF ==================== */
+
+.sobre-nos-staff {
+  padding: 4rem 1.5rem;
+  text-align: center;
+  background: #0f1a1c;
+  color: #f5f5f5;
+}
+
+.sobre-nos-staff .sobre-nos-instagram__label,
+.sobre-nos-staff .sobre-nos-instagram__titulo,
+.sobre-nos-staff .sobre-nos-instagram__texto {
+  color: #f5f5f5;
+}
+
+.sobre-nos-staff .sobre-nos-instagram__texto {
+  opacity: 0.85;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sobre-nos-staff__frame {
+  margin: 2rem auto 0;
+  max-width: 920px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(2, 134, 155, 0.35);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  background: #fff;
+}
+
+.sobre-nos-staff__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 /* ==================== DÍZIMOS E OFERTAS ==================== */
 
 .sobre-nos-dizimos {

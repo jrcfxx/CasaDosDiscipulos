@@ -9,7 +9,7 @@ import { getEventosAtivos } from "../services/eventoService";
 import logoCasa from "../assets/logo_casa.png";
 import imagemHero from "../assets/casal.jpg";
 import imagemDiscipulado from "../assets/lendo_biblia.jpg";
-import imagemCelulas from "../assets/celulas.jpg";
+import imagemCelulas from "../assets/celulas/hero-celulas.jpg";
 
 /**
  * HomePage Component
@@ -152,13 +152,7 @@ const HomePage: React.FC = () => {
                 </p>
                 <button
                   className="home-ministerio-card__cta"
-                  onClick={() =>
-                    window.open(
-                      "https://my.forms.app/form/6156f37483c907649990ca8f",
-                      "_blank",
-                      "noopener,noreferrer"
-                    )
-                  }
+                  onClick={() => navigate("/celulas")}
                   aria-label="Encontre sua Célula"
                 >
                   Encontre sua Célula

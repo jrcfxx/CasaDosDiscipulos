@@ -6,6 +6,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/home": "Casa dos Discípulos – Página inicial",
   "/login": "Casa dos Discípulos – Entrar",
   "/sobre-nos": "Casa dos Discípulos – Sobre nós",
+  "/celulas": "Casa dos Discípulos – Células",
   "/portal/admin": "Casa dos Discípulos – Portal Admin",
   "/portal/usuario": "Casa dos Discípulos – Portal do Discípulo",
   "/admin/usuarios": "Casa dos Discípulos – Gerenciar usuários",

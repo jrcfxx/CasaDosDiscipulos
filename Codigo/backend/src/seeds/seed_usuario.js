@@ -2,9 +2,8 @@ import bcrypt from "bcrypt";
 import knex from "../database/index.js";
 
 /**
- * Seed para usuários iniciais do sistema
- * Popula o banco com admin, líderes e membros para testes completos
- * Depende de: seed_nivel (id_nivel)
+ * Seed oficial — Staff Casa dos Discípulos 2026 + contas de acesso ao sistema
+ * Senha padrão de todos: 123456
  */
 export async function seed() {
   const nivelLider = await knex("nivel").where({ nome: "Líder" }).first();
@@ -14,72 +13,301 @@ export async function seed() {
   const nivelLiderFormacao = await knex("nivel").where({ nome: "Líder em Formação" }).first();
 
   const senhaHash = await bcrypt.hash("123456", 10);
+  const idL = nivelLider?.id_nivel ?? null;
+  const idD = nivelDiscipulo?.id_nivel ?? null;
+  const idDA = nivelDiscipuloAvancado?.id_nivel ?? null;
+  const idI = nivelIniciante?.id_nivel ?? null;
+  const idLF = nivelLiderFormacao?.id_nivel ?? null;
 
   const usuarios = [
-    // Admin
+    // ——— Contas de sistema ———
     {
-      nome: "Admin Teste",
+      nome: "Admin Casa",
       email: "admin@test.com",
       senha: senhaHash,
       tipo: "administrador",
       pontuacao: 100,
       ativo: true,
-      id_nivel: nivelLider?.id_nivel ?? null,
+      id_nivel: idL,
     },
-    // Líderes
     {
-      nome: "Líder Teste",
+      nome: "Membro Demo",
+      email: "membro@test.com",
+      senha: senhaHash,
+      tipo: "membro",
+      pontuacao: 40,
+      ativo: true,
+      id_nivel: idI,
+    },
+
+    // ——— Diretoria ADM ———
+    {
+      nome: "Wanderson Lino",
+      email: "wanderson.lino@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "administrador",
+      pontuacao: 120,
+      ativo: true,
+      id_nivel: idL,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Wilza Leal",
+      email: "wilza.leal@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 90,
+      ativo: true,
+      id_nivel: idL,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Arlem Cleizer",
+      email: "arlem.cleizer@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 88,
+      ativo: true,
+      id_nivel: idL,
+      lider_celula: true,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Lorrayne Andrade",
+      email: "lorrayne.andrade@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 85,
+      ativo: true,
+      id_nivel: idDA,
+      lider_celula: true,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Valquiria Kelly",
+      email: "valquiria.kelly@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 82,
+      ativo: true,
+      id_nivel: idDA,
+      lider_celula: true,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Nuzia Resende",
+      email: "nuzia.resende@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 70,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: false,
+      lider_ministerio: false,
+    },
+    {
+      nome: "Ana Paula Silva",
+      email: "ana.paula@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 80,
+      ativo: true,
+      id_nivel: idDA,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+
+    // ——— Pastoral / Células / Ministérios ———
+    {
+      nome: "Iza",
+      email: "iza@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 95,
+      ativo: true,
+      id_nivel: idL,
+      lider_celula: true,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Evaldo",
+      email: "evaldo@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 90,
+      ativo: true,
+      id_nivel: idL,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Simone",
+      email: "simone@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 85,
+      ativo: true,
+      id_nivel: idDA,
+      lider_celula: true,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Tabelines",
+      email: "tabelines@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 75,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Samuel Augusto",
+      email: "samuel.augusto@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 88,
+      ativo: true,
+      id_nivel: idDA,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Lea",
+      email: "lea@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 70,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Lorrayne Carmo",
+      email: "lorrayne.carmo@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 72,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Normandes Resende",
+      email: "normandes.resende@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 68,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Elinar",
+      email: "elinar@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 65,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Thais",
+      email: "thais@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 78,
+      ativo: true,
+      id_nivel: idDA,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Lo Andrade",
+      email: "lo.andrade@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 60,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Cleiton",
+      email: "cleiton@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 55,
+      ativo: true,
+      id_nivel: idI,
+      lider_celula: false,
+      lider_ministerio: true,
+    },
+    {
+      nome: "Luana",
+      email: "luana@casadosdiscipulos.org",
+      senha: senhaHash,
+      tipo: "lider",
+      pontuacao: 70,
+      ativo: true,
+      id_nivel: idD,
+      lider_celula: true,
+      lider_ministerio: false,
+    },
+
+    // ——— Aliases legados (mantêm seeds de escala/módulos funcionando) ———
+    {
+      nome: "Líder Demo",
       email: "lider@test.com",
       senha: senhaHash,
       tipo: "lider",
       pontuacao: 90,
       ativo: true,
-      id_nivel: nivelLider?.id_nivel ?? null,
+      id_nivel: idL,
       lider_celula: true,
-      lider_ministerio: false,
+      lider_ministerio: true,
     },
     {
-      nome: "Líder Silva",
+      nome: "Líder Ministério Demo",
       email: "lider2@test.com",
       senha: senhaHash,
       tipo: "lider",
       pontuacao: 85,
       ativo: true,
-      id_nivel: nivelDiscipulo?.id_nivel ?? null,
+      id_nivel: idD,
       lider_celula: true,
       lider_ministerio: true,
     },
     {
-      nome: "Ana Oliveira",
+      nome: "Ana Demo",
       email: "ana.lider@test.com",
       senha: senhaHash,
       tipo: "lider",
       pontuacao: 78,
       ativo: true,
-      id_nivel: nivelDiscipuloAvancado?.id_nivel ?? null,
+      id_nivel: idDA,
       lider_celula: true,
       lider_ministerio: true,
     },
     {
-      nome: "Carlos Mendes",
+      nome: "Carlos Demo",
       email: "carlos.lider@test.com",
       senha: senhaHash,
       tipo: "lider",
       pontuacao: 65,
       ativo: true,
-      id_nivel: nivelLiderFormacao?.id_nivel ?? null,
+      id_nivel: idLF,
       lider_celula: true,
       lider_ministerio: false,
-    },
-    // Membros - variedade para testes
-    {
-      nome: "Membro Teste",
-      email: "membro@test.com",
-      senha: senhaHash,
-      tipo: "membro",
-      pontuacao: 45,
-      ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
     },
     {
       nome: "Maria Santos",
@@ -88,7 +316,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 60,
       ativo: true,
-      id_nivel: nivelDiscipulo?.id_nivel ?? null,
+      id_nivel: idD,
     },
     {
       nome: "João Pereira",
@@ -97,7 +325,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 35,
       ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idI,
     },
     {
       nome: "Fernanda Costa",
@@ -106,7 +334,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 72,
       ativo: true,
-      id_nivel: nivelDiscipuloAvancado?.id_nivel ?? null,
+      id_nivel: idDA,
     },
     {
       nome: "Pedro Almeida",
@@ -115,7 +343,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 28,
       ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idI,
     },
     {
       nome: "Juliana Ribeiro",
@@ -124,7 +352,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 55,
       ativo: true,
-      id_nivel: nivelDiscipulo?.id_nivel ?? null,
+      id_nivel: idD,
     },
     {
       nome: "Roberto Lima",
@@ -133,7 +361,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 18,
       ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idI,
     },
     {
       nome: "Amanda Ferreira",
@@ -142,7 +370,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 82,
       ativo: true,
-      id_nivel: nivelLiderFormacao?.id_nivel ?? null,
+      id_nivel: idLF,
     },
     {
       nome: "Lucas Souza",
@@ -151,7 +379,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 40,
       ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idI,
     },
     {
       nome: "Beatriz Rodrigues",
@@ -160,7 +388,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 50,
       ativo: true,
-      id_nivel: nivelDiscipulo?.id_nivel ?? null,
+      id_nivel: idD,
     },
     {
       nome: "Gabriel Martins",
@@ -169,7 +397,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 12,
       ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idI,
     },
     {
       nome: "Carla Nascimento",
@@ -178,7 +406,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 68,
       ativo: true,
-      id_nivel: nivelDiscipulo?.id_nivel ?? null,
+      id_nivel: idD,
     },
     {
       nome: "Bruno Carvalho",
@@ -187,7 +415,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 22,
       ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idI,
     },
     {
       nome: "Patricia Gomes",
@@ -196,7 +424,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 95,
       ativo: true,
-      id_nivel: nivelLider?.id_nivel ?? null,
+      id_nivel: idL,
     },
     {
       nome: "Ricardo Teixeira",
@@ -205,7 +433,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 38,
       ativo: true,
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idI,
     },
     {
       nome: "Sandra Barbosa",
@@ -214,16 +442,7 @@ export async function seed() {
       tipo: "membro",
       pontuacao: 58,
       ativo: true,
-      id_nivel: nivelDiscipulo?.id_nivel ?? null,
-    },
-    {
-      nome: "Marcos Dias",
-      email: "marcos@test.com",
-      senha: senhaHash,
-      tipo: "membro",
-      pontuacao: 0,
-      ativo: false, // inativo para teste
-      id_nivel: nivelIniciante?.id_nivel ?? null,
+      id_nivel: idD,
     },
   ];
 
@@ -238,5 +457,5 @@ export async function seed() {
     });
   }
 
-  console.log(`✅ ${usuarios.length} usuários inseridos com sucesso!`);
+  console.log(`✅ ${usuarios.length} usuários (staff oficial + demos) inseridos!`);
 }
