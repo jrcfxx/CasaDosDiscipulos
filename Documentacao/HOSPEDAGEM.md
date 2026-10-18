@@ -1,53 +1,53 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="./assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
 
 # Hospedagem
 
-**Do zero ao ar — VPS, domínio, Docker, HTTPS e WhatsApp**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=F4B002&center=true&vCenter=true&width=600&height=40&lines=Do+zero+ao+ar;VPS+%C2%B7+Dom%C3%ADnio+%C2%B7+Docker+%C2%B7+HTTPS" alt="" />
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Custos](./RELATORIO_CUSTOS_E_DEPLOY.md)
-&nbsp;·&nbsp;
-[Segurança](./SEGURANCA.md)
+<img src="./assets/divider-animated.svg" width="400" alt="" />
+
+<img src="./assets/docs-hero-banner.jpg" width="88%" alt="Banner" />
+
+<br />
+
+[Índice](./README.md) ✦ [Custos](./RELATORIO_CUSTOS_E_DEPLOY.md) ✦ [Segurança](./SEGURANCA.md)
 
 </div>
 
 ---
 
-## Arquitetura em produção
+## Arquitetura
 
 ```
-        Usuário
-           │
-           ▼
-   ┌───────────────┐
-   │  Nginx 80/443 │  React + proxy /api · /uploads
-   └───────┬───────┘
-           │
-     ┌─────┴─────┐
-     ▼           ▼
-  Backend      MySQL
-     │
-     ▼
- Evolution (WhatsApp · só localhost:8080)
+Usuário → Nginx (80/443) → React + proxy /api · /uploads
+                ↓
+           Backend → MySQL
+                ↓
+           Evolution (WhatsApp · localhost:8080)
 ```
 
-Código: pasta [`deploy/`](../deploy/) · script [`deploy.sh`](../deploy/deploy.sh)
+Código: [`deploy/`](../deploy/) · [`deploy.sh`](../deploy/deploy.sh)
+
+<p align="center">
+  <img src="./assets/docs-emblem.jpg" width="120" alt="" />
+</p>
 
 ---
 
-## Checklist antes de começar
+## Checklist
 
 | Item | Onde |
 |------|------|
-| Cartão / conta VPS | DigitalOcean ou Hetzner |
-| Domínio | Painel de `casadosdiscipulos.org` ou Registro.br |
-| Chave SSH | Seu computador |
-| WhatsApp da igreja | Celular para o QR |
+| VPS 2 GB | DigitalOcean / Hetzner |
+| Domínio | `casadosdiscipulos.org` ou Registro.br |
+| SSH | Seu PC |
+| WhatsApp | Celular da igreja |
 
-Orçamento e porquês: [Relatório de custos](./RELATORIO_CUSTOS_E_DEPLOY.md).
+Orçamento: [Relatório de custos](./RELATORIO_CUSTOS_E_DEPLOY.md).
 
 ---
 
@@ -55,25 +55,14 @@ Orçamento e porquês: [Relatório de custos](./RELATORIO_CUSTOS_E_DEPLOY.md).
 
 ### 1 · Domínio
 
-O **domínio** é o nome público (ex.: `app.casadosdiscipulos.org`).  
-Você compra/renova num registrador; no **DNS** aponta para o IP do servidor.
-
-| Onde | Quando |
-|------|--------|
-| Painel atual de `casadosdiscipulos.org` | Preferível — só criar subdomínio `app` |
-| [Registro.br](https://registro.br) | Novo `.com.br` / `.org.br` |
-| [Cloudflare](https://www.cloudflare.com) | DNS / CDN |
-
-Confirme com a diretoria quem administra o domínio antes de comprar outro.
+Preferir subdomínio `app` no domínio que a igreja já usa. Alternativa: [Registro.br](https://registro.br).
 
 ### 2 · VPS
 
-**Padrão:** DigitalOcean Droplet · Ubuntu 22.04 · **2 GB RAM** · São Paulo se disponível.  
-**Alternativa:** Hetzner CX22.
+Ubuntu 22.04 · 2 GB · Docker:
 
 ```bash
 ssh root@SEU_IP
-apt update && apt upgrade -y
 curl -fsSL https://get.docker.com | sh
 apt install docker-compose-plugin curl -y
 ufw allow 22 && ufw allow 80 && ufw allow 443 && ufw --force enable
@@ -81,59 +70,22 @@ ufw allow 22 && ufw allow 80 && ufw allow 443 && ufw --force enable
 
 ### 3 · DNS
 
-| Tipo | Nome | Valor |
-|------|------|--------|
-| A | `app` | IP do Droplet |
+Registro **A** `app` → IP do Droplet.
 
-### 4 · Aplicação
+### 4 · App
 
 ```bash
-cd /opt
-git clone https://github.com/jrcfxx/CasaDosDiscipulos.git
+cd /opt && git clone https://github.com/jrcfxx/CasaDosDiscipulos.git
 cd CasaDosDiscipulos/deploy
-cp .env.example .env
-nano .env   # DB_PASSWORD, JWT_SECRET, EVOLUTION_API_KEY, DOMAIN, CORS_ORIGIN
-chmod +x deploy.sh
-./deploy.sh
-```
-
-Primeira vez (dados iniciais):
-
-```bash
+cp .env.example .env && nano .env
+chmod +x deploy.sh && ./deploy.sh
 docker compose exec backend node ./src/seeds/runSeeds.js
 ```
 
 ### 5 · HTTPS + WhatsApp
 
-```bash
-docker compose stop web
-apt install certbot -y
-certbot certonly --standalone -d app.seudominio.org
-mkdir -p nginx/ssl
-cp /etc/letsencrypt/live/app.seudominio.org/fullchain.pem nginx/ssl/
-cp /etc/letsencrypt/live/app.seudominio.org/privkey.pem nginx/ssl/
-# .env → CORS_ORIGIN=https://app.seudominio.org
-./deploy.sh --enable-ssl
-```
-
-WhatsApp (porta só em localhost):
-
-```bash
-ssh -L 8080:127.0.0.1:8080 root@SEU_IP
-# abra http://localhost:8080 · crie a instância · escaneie o QR
-```
-
----
-
-## Arquivos-chave
-
-| Arquivo | Função |
-|---------|--------|
-| `deploy/docker-compose.yml` | web · backend · mysql · evolution |
-| `deploy/.env.example` | Modelo de variáveis |
-| `deploy/deploy.sh` | Build, up, smoke `/api/health` |
-| `deploy/nginx/nginx.conf` | HTTP |
-| `deploy/nginx/nginx-ssl.conf` | Template HTTPS |
+Certbot → copiar certs para `nginx/ssl/` → `./deploy.sh --enable-ssl`  
+WhatsApp: `ssh -L 8080:127.0.0.1:8080 root@SEU_IP` → `http://localhost:8080`
 
 ---
 
@@ -141,48 +93,18 @@ ssh -L 8080:127.0.0.1:8080 root@SEU_IP
 
 | Comando | Uso |
 |---------|-----|
-| `./deploy.sh` | Atualizar / subir |
-| `docker compose logs -f backend` | Logs da API |
-| `docker compose ps` | Status |
+| `./deploy.sh` | Subir / atualizar |
+| `docker compose logs -f backend` | Logs |
 | `curl -s http://127.0.0.1/api/health` | Saúde |
-
-```bash
-cd /opt/CasaDosDiscipulos && git pull && cd deploy && ./deploy.sh
-```
-
----
-
-## Backup
-
-```bash
-docker compose exec -T mysql mysqldump -u casadiscipulos -p CasaDosDiscipulos > backup.sql
-```
-
-Guarde também o volume de uploads (`backend_uploads`).
-
----
-
-## Problemas
-
-| Sintoma | Ação |
-|---------|------|
-| Site offline | `docker compose ps` · logs `web` |
-| 502 | Logs `backend` · migrate / MySQL |
-| Health falha | Aguarde start_period · confira MySQL healthy |
-| SSL | Certs em `nginx/ssl/` + `DOMAIN` + `--enable-ssl` |
 
 ---
 
 <div align="center">
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Custos](./RELATORIO_CUSTOS_E_DEPLOY.md)
-&nbsp;·&nbsp;
-[Segurança](./SEGURANCA.md)
+<img src="./assets/divider-animated.svg" width="360" alt="" />
 
-<br />
+[Índice](./README.md) · [Custos](./RELATORIO_CUSTOS_E_DEPLOY.md)
 
-<sub>Casa dos Discípulos · Hospedagem · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:02869b,100:f4b002&height=110&section=footer" width="100%" alt="" />
 
 </div>

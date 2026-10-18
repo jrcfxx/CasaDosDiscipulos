@@ -1,15 +1,25 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="56" />
+<img src="../Documentacao/assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="../Documentacao/assets/logo-glow.svg" width="120" alt="Casa dos Discípulos" />
+
+<img src="../Documentacao/assets/logo_mark.png" width="72" alt="Logo" />
 
 # Deploy
 
-**Docker · Nginx · MySQL · Evolution**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=24&duration=3000&pause=900&color=F4B002&center=true&vCenter=true&width=560&height=42&lines=Docker+%C2%B7+Nginx+%C2%B7+MySQL;Evolution+%C2%B7+HTTPS" alt="" />
+
+<img src="../Documentacao/assets/divider-animated.svg" width="420" alt="" />
+
+<img src="../Documentacao/assets/docs-hero-banner.jpg" width="85%" alt="Banner" />
+
+<br />
 
 [Hospedagem](../Documentacao/HOSPEDAGEM.md)
-&nbsp;·&nbsp;
+&nbsp;✦&nbsp;
 [Custos](../Documentacao/RELATORIO_CUSTOS_E_DEPLOY.md)
-&nbsp;·&nbsp;
+&nbsp;✦&nbsp;
 [Segurança](../Documentacao/SEGURANCA.md)
 
 </div>
@@ -20,18 +30,17 @@
 
 ```bash
 cp .env.example .env
-# DB_PASSWORD · JWT_SECRET (≥32) · EVOLUTION_API_KEY · DOMAIN · CORS_ORIGIN
 chmod +x deploy.sh
 ./deploy.sh
-```
-
-HTTPS (após Certbot e arquivos em `nginx/ssl/`):
-
-```bash
+# HTTPS:
 ./deploy.sh --enable-ssl
 ```
 
 Smoke: `GET /api/health`
+
+<p align="center">
+  <img src="../Documentacao/assets/docs-emblem.jpg" width="140" alt="" />
+</p>
 
 ---
 
@@ -39,31 +48,17 @@ Smoke: `GET /api/health`
 
 | Container | Função |
 |-----------|--------|
-| `casadiscipulos_web` | Nginx + React (80/443) |
-| `casadiscipulos_backend` | API Node |
-| `casadiscipulos_mysql` | Banco (rede interna) |
-| `casadiscipulos_evolution` | WhatsApp (`127.0.0.1:8080`) |
-
----
-
-## Arquivos
-
-| Path | Papel |
-|------|-------|
-| `docker-compose.yml` | Orquestração |
-| `nginx/nginx.conf` | HTTP ativo |
-| `nginx/nginx-ssl.conf` | Template HTTPS |
-| `nginx/nginx-http.conf` | Backup HTTP |
-| `.env.example` | Variáveis |
+| web | Nginx + React |
+| backend | API |
+| mysql | Banco (interno) |
+| evolution | WhatsApp (`127.0.0.1:8080`) |
 
 ---
 
 <div align="center">
 
-[Documentação](../Documentacao/README.md)
+<img src="../Documentacao/assets/logo-glow.svg" width="64" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · Deploy · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:02869b,100:f4b002&height=120&section=footer" width="100%" alt="" />
 
 </div>

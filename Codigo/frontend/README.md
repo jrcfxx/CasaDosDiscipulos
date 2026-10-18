@@ -1,30 +1,47 @@
 <div align="center">
 
-<img src="src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="../../Documentacao/assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="../../Documentacao/assets/logo-glow.svg" width="120" alt="Casa dos Discípulos" />
+
+<img src="src/assets/logo_mark.png" width="72" alt="Logo" />
 
 # Frontend
 
-**React · TypeScript · marca da Casa**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=24&duration=3000&pause=900&color=F4B002&center=true&vCenter=true&width=560&height=42&lines=React+%C2%B7+TypeScript;Teal+%2302869b+%C2%B7+Dourado+%23f4b002" alt="" />
+
+<img src="../../Documentacao/assets/divider-animated.svg" width="420" alt="" />
+
+<img src="../../Documentacao/assets/docs-hero-banner.jpg" width="85%" alt="Banner" />
+
+<br />
 
 [Documentação](../../Documentacao/README.md)
-&nbsp;·&nbsp;
+&nbsp;✦&nbsp;
 [Começando](../../Documentacao/COMEÇANDO.md)
-&nbsp;·&nbsp;
+&nbsp;✦&nbsp;
 [Acessibilidade](../../Documentacao/ACESSIBILIDADE.md)
 
 </div>
 
 ---
 
+<p align="center">
+  <img src="src/assets/celulas/hero-celulas.jpg" height="120" alt="Células" />
+  &nbsp;
+  <img src="../../Documentacao/assets/docs-emblem.jpg" height="120" alt="Emblema" />
+  &nbsp;
+  <img src="src/assets/oracao-cabeca-baixa.jpg" height="120" alt="Comunhão" />
+</p>
+
 ## Stack
 
 | Tecnologia | Uso |
 |------------|-----|
-| React 18 | UI |
-| TypeScript | Tipagem |
+| React 18 · TypeScript | UI |
 | React Router 6 | HashRouter |
 | Axios (`apiClient`) | API + JWT |
-| CSS + tokens | Teal `#02869b` · Dourado `#f4b002` · Montserrat |
+| CSS + tokens | Marca Montserrat |
 
 ---
 
@@ -32,38 +49,12 @@
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm start` | Dev em `http://localhost:3000` |
-| `npm run build` | Build em `build/` |
-| `npm test` | Testes CRA |
-| `npm run test:e2e` | Crawl E2E (Playwright) |
-
----
-
-## Estrutura
-
-```
-src/
-├── components/   # layout · ui · fields · accessibility
-├── pages/
-├── services/     # apiClient e domínios
-├── contexts/     # Auth · Accessibility
-├── hooks/
-├── style/        # tokens.css e páginas
-└── utils/
-```
-
----
-
-## Ambiente
+| `npm start` | `http://localhost:3000` |
+| `npm run build` | Produção |
+| `npm run test:e2e` | Crawl Playwright |
 
 ```env
 REACT_APP_API_URL=http://localhost:3001/api
-```
-
-Produção (Nginx no mesmo domínio):
-
-```env
-REACT_APP_API_URL=/api
 ```
 
 ---
@@ -72,18 +63,16 @@ REACT_APP_API_URL=/api
 
 | Token | Valor |
 |-------|-------|
-| Primária | `#02869b` |
-| Destaque | `#f4b002` |
+| Teal | `#02869b` |
+| Dourado | `#f4b002` |
 | Fonte | Montserrat |
 
 ---
 
 <div align="center">
 
-[Documentação](../../Documentacao/README.md)
+<img src="../../Documentacao/assets/logo-glow.svg" width="64" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · Frontend · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:02869b,100:f4b002&height=110&section=footer" width="100%" alt="" />
 
 </div>

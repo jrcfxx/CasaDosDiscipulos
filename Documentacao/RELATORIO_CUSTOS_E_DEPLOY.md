@@ -1,108 +1,79 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="./assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
 
 # Relatório de custos e deploy
 
-**O que gastar, o que fazer e por quê — para a liderança**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=F4B002&center=true&vCenter=true&width=620&height=40&lines=O+que+gastar+%C2%B7+o+que+fazer+%C2%B7+por+qu%C3%AA;Para+a+lideran%C3%A7a+da+Casa" alt="" />
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Hospedagem](./HOSPEDAGEM.md)
+<img src="./assets/divider-animated.svg" width="400" alt="" />
+
+<img src="./assets/docs-emblem.jpg" width="130" alt="" />
+
+<br />
+
+[Índice](./README.md) ✦ [Hospedagem](./HOSPEDAGEM.md)
 
 </div>
 
 ---
+
+<p align="center">
+  <img src="./assets/docs-hero-banner.jpg" width="80%" alt="Banner" />
+</p>
 
 ## Resumo
 
 | Item | Aprox. | Obrigatório |
 |------|--------|-------------|
 | VPS 2 GB (DigitalOcean) | ~US$ 12/mês | Sim |
-| Domínio | R$ 0 se já tiverem `casadosdiscipulos.org` · ~R$ 40/ano se novo | Condicional |
+| Domínio | R$ 0 se já tiverem · ~R$ 40/ano se novo | Condicional |
 | HTTPS (Let's Encrypt) | Grátis | Sim |
 | WhatsApp (Evolution no VPS) | Sem custo extra | Se quiserem avisos |
-| Código / pipeline de deploy | Já no repositório | — |
+| Código / deploy | Já no repositório | — |
 
-**1º ano típico (domínio já da igreja):** ~US$ 144 de servidor.
+**1º ano típico:** ~US$ 144 de servidor (domínio já da igreja).
 
 ---
 
-## Por quê cada gasto
+## Por quê
 
-### Servidor (VPS)
-
-Máquina 24h para site + API + MySQL + WhatsApp.  
-**2 GB** evita lentidão com Evolution + banco juntos.  
-Não substituir por “PC da igreja ligado” nem só Vercel (não cobre MySQL + uploads + WhatsApp neste desenho).
-
-### Domínio
-
-URL memorável e HTTPS profissional. Preferir subdomínio `app` no domínio que a igreja **já usa** nos e-mails `@casadosdiscipulos.org`.
-
-### HTTPS
-
-Login e dados de membros exigem conexão cifrada. Let's Encrypt é gratuito.
-
-### WhatsApp
-
-Integração já existe no código; Evolution roda no mesmo VPS. Precisa de número e um QR Code inicial.
+| Gasto | Motivo |
+|-------|--------|
+| VPS 2 GB | Site + API + MySQL + WhatsApp 24h |
+| Domínio | URL profissional + HTTPS |
+| HTTPS | Login e dados seguros |
+| Evolution | Notificações já previstas no produto |
 
 ---
 
 ## Tarefas
 
-### Fase A — Só a igreja
+**Fase A (igreja):** aprovar custo · confirmar domínio · criar Droplet · DNS `app` → IP · responsável pela fatura  
 
-1. Aprovar ~US$ 12/mês  
-2. Confirmar quem administra o domínio  
-3. Criar conta + Droplet (Ubuntu 22.04, 2 GB)  
-4. DNS **A** `app` → IP  
-5. Indicar responsável pela fatura  
+**Fase B (técnico):** Docker · `./deploy.sh` · seed · SSL · QR WhatsApp · testes  
 
-### Fase B — Técnico (com SSH)
-
-1. Docker + clone + `.env`  
-2. `./deploy.sh` + seed  
-3. Certbot + SSL  
-4. QR WhatsApp via túnel SSH  
-5. Teste de login e fluxos  
-
-### Fase C — Contínuo
-
-Pagar VPS · renovar domínio · backups · `git pull` + `./deploy.sh` nas atualizações.
-
----
-
-## O que a equipe técnica pode / não pode
-
-| Pode | Não pode |
-|------|----------|
-| Preparar deploy e guias | Criar conta com cartão da igreja |
-| Subir stack com IP + SSH | Comprar domínio sem login DNS |
-| Diagnosticar logs | Ser titular do servidor |
+**Fase C:** pagar VPS · backups · atualizações (`git pull` + `./deploy.sh`)
 
 ---
 
 ## Decisão pedida
 
-1. Aprovar o VPS mensal?  
-2. Confirmar domínio `casadosdiscipulos.org`?  
-3. Nomear responsável por cartão e DNS?  
-4. Após o Droplet, autorizar acesso SSH para concluir o deploy?
+1. Aprovar VPS mensal?  
+2. Confirmar `casadosdiscipulos.org`?  
+3. Nomear responsável cartão/DNS?  
+4. Autorizar SSH após o Droplet?
 
-Guia operacional: [Hospedagem](./HOSPEDAGEM.md).
+Guia: [Hospedagem](./HOSPEDAGEM.md)
 
 ---
 
 <div align="center">
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Hospedagem](./HOSPEDAGEM.md)
+<img src="./assets/divider-animated.svg" width="360" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · Relatório · Outubro 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:f4b002,100:02869b&height=110&section=footer" width="100%" alt="" />
 
 </div>

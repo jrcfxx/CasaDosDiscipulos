@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="1200" height="200" role="img" aria-label="Casa dos Discípulos">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#02869b">
+        <animate attributeName="stop-color" values="#02869b;#046a7a;#02869b" dur="6s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="55%" stop-color="#0a3d45"/>
+      <stop offset="100%" stop-color="#f4b002">
+        <animate attributeName="stop-color" values="#f4b002;#d9a002;#f4b002" dur="6s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#fff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+      <animateTransform attributeName="gradientTransform" type="translate" from="-1 0" to="1 0" dur="4s" repeatCount="indefinite" additive="sum"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="200" fill="#0a0a0a"/>
+  <path fill="url(#g)" opacity="0.95" d="M0,120 C200,80 400,160 600,110 C800,60 1000,140 1200,90 L1200,200 L0,200 Z">
+    <animate attributeName="d" dur="8s" repeatCount="indefinite"
+      values="M0,120 C200,80 400,160 600,110 C800,60 1000,140 1200,90 L1200,200 L0,200 Z;
+              M0,100 C220,150 380,70 600,120 C820,170 980,80 1200,110 L1200,200 L0,200 Z;
+              M0,120 C200,80 400,160 600,110 C800,60 1000,140 1200,90 L1200,200 L0,200 Z"/>
+  </path>
+  <rect width="1200" height="200" fill="url(#shine)"/>
+  <circle cx="180" cy="48" r="3" fill="#f4b002" opacity="0.7">
+    <animate attributeName="opacity" values="0.2;0.9;0.2" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="920" cy="36" r="2.5" fill="#02869b" opacity="0.8">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="2.4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="640" cy="56" r="2" fill="#ebebeb" opacity="0.5">
+    <animate attributeName="opacity" values="0.1;0.7;0.1" dur="4s" repeatCount="indefinite"/>
+  </circle>
+</svg>

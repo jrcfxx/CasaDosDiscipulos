@@ -1,114 +1,76 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="./assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
 
 # Segurança
 
-**Camadas de proteção da plataforma e checklist de produção**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=02869B&center=true&vCenter=true&width=560&height=40&lines=Camadas+de+prote%C3%A7%C3%A3o;JWT+%C2%B7+Helmet+%C2%B7+Rate+limit" alt="" />
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Hospedagem](./HOSPEDAGEM.md)
-&nbsp;·&nbsp;
-[Arquitetura](./ARQUITETURA.md)
+<img src="./assets/divider-animated.svg" width="400" alt="" />
+
+<img src="./assets/docs-emblem.jpg" width="110" alt="" />
+
+<br />
+
+[Índice](./README.md) ✦ [Hospedagem](./HOSPEDAGEM.md)
 
 </div>
 
 ---
 
-## Autenticação e papéis
-
-| Recurso | Regra |
-|---------|-------|
-| Registro público | Apenas `tipo: "membro"` |
-| JWT | Obrigatório nas rotas protegidas |
-| Senhas | Hash com bcrypt |
+## Auth e papéis
 
 | Middleware | Quem passa |
 |------------|------------|
-| `verificarToken` | Token válido + usuário ativo |
+| `verificarToken` | Token válido + ativo |
 | `adminOnly` | Administrador |
 | `adminAndLeader` | Admin ou líder |
-| `adminAndLiderMinisterio` | Admin ou líder de ministério |
+| `adminAndLiderMinisterio` | Admin / líder de ministério |
 | `authenticatedOnly` | Qualquer autenticado |
 
-### Matriz resumida
-
-| Área | Leitura | Escrita |
-|------|---------|---------|
-| Eventos públicos | Aberto (`/ativos`) | Admin |
-| Células públicas | Aberto (`/publicas`) | Admin |
-| Usuários (lista) | Admin | Admin |
-| Ministérios (lista) | Admin / líder | Admin |
-| Escala (visão) | Autenticado | Admin / líder ministério |
-| Lições / formulários | Autenticado | Admin (CRUD) · líder (respostas) |
+Registro público: apenas `membro`.
 
 ---
 
-## Rate limiting
+## Rate limit (produção)
 
-| Escopo | Produção | Desenvolvimento |
-|--------|----------|-----------------|
-| API geral | 300 req / 15 min | 5000 (ajustável) |
-| Login / registro | 30 req / 15 min | 500 (ajustável) |
-
-Variáveis: `RATE_LIMIT_MAX`, `AUTH_RATE_LIMIT_MAX`.
+| Escopo | Limite |
+|--------|--------|
+| API | 300 / 15 min |
+| Login · registro | 30 / 15 min |
 
 ---
 
-## Headers e CORS
-
-- **Helmet** — `nosniff`, frame options, etc.
-- **CORS** em produção:
+## Produção
 
 ```env
 CORS_ORIGIN=https://app.casadosdiscipulos.org
+JWT_SECRET=...   # openssl rand -hex 32
 ```
 
-Sem `CORS_ORIGIN`, qualquer origem é aceita (somente adequado em desenvolvimento).
+- HTTPS obrigatório  
+- Evolution só em `127.0.0.1:8080`  
+- Firewall: 22 · 80 · 443  
+- Backups de MySQL e uploads  
 
 ---
 
-## Segredos
+## Checklist
 
-```bash
-openssl rand -hex 32   # JWT_SECRET (mín. 32 caracteres)
-```
-
-Nunca commitar `.env`. Em deploy, use `deploy/.env` a partir de `.env.example`.
-
----
-
-## Validação e uploads
-
-- **Joi** em rotas sensíveis  
-- Uploads com tipo/tamanho validados e nomes gerados pelo servidor  
-- Limites típicos: 5 MB imagens · 10 MB documentos  
-
----
-
-## Checklist de produção
-
-- [ ] `JWT_SECRET` forte e único  
-- [ ] `CORS_ORIGIN` com o domínio HTTPS real  
-- [ ] HTTPS (Let's Encrypt) ativo  
-- [ ] MySQL sem usuário root na aplicação  
-- [ ] Evolution apenas em `127.0.0.1:8080` (túnel SSH para QR)  
-- [ ] Firewall: 22, 80, 443  
-- [ ] Backups de banco e `/uploads`  
+- [ ] `JWT_SECRET` forte  
+- [ ] `CORS_ORIGIN` HTTPS  
+- [ ] Let's Encrypt  
+- [ ] MySQL sem root na app  
 - [ ] `NODE_ENV=production`  
-- [ ] Logs sem senha/token  
 
 ---
 
 <div align="center">
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Hospedagem](./HOSPEDAGEM.md)
+<img src="./assets/divider-animated.svg" width="360" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · Segurança · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0a0a0a,100:02869b&height=100&section=footer" width="100%" alt="" />
 
 </div>

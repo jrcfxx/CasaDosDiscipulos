@@ -1,16 +1,20 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="./assets/wave-banner.svg" width="100%" alt="" />
 
-# WhatsApp no ambiente local
+<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
 
-**Evolution API + Docker na sua máquina**
+# WhatsApp local
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[WhatsApp](./WHATSAPP.md)
-&nbsp;·&nbsp;
-[Começando](./COMEÇANDO.md)
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=F4B002&center=true&vCenter=true&width=560&height=40&lines=Evolution+%2B+Docker;Na+sua+m%C3%A1quina" alt="" />
+
+<img src="./assets/divider-animated.svg" width="400" alt="" />
+
+<img src="./assets/docs-emblem.jpg" width="100" alt="" />
+
+<br />
+
+[Índice](./README.md) ✦ [WhatsApp](./WHATSAPP.md)
 
 </div>
 
@@ -18,73 +22,22 @@
 
 ## Pré-requisitos
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) em execução  
-- Backend e frontend da Casa rodando ([Começando](./COMEÇANDO.md))  
-- WhatsApp no celular (número que enviará as mensagens)
+Docker Desktop · backend/frontend locais · WhatsApp no celular  
 
-> A Evolution **v2** exige PostgreSQL e Redis. Use o `docker compose` da pasta `evolution-whatsapp` — o `docker run` simples falha com *Database provider invalid*.
+> Evolution v2 precisa de Postgres + Redis → use `evolution-whatsapp/docker-compose.yml`.
 
 ---
 
-## 1 · Subir a Evolution
+## Passos
 
 ```bash
-# Na raiz do repositório
-cd evolution-whatsapp
-docker compose up -d
-docker ps
+cd evolution-whatsapp && docker compose up -d
 ```
 
-Containers esperados: `evolution_api` (8080), Postgres e Redis.
-
-Se houver restos antigos:
-
-```bash
-docker rm -f evolution_api evolution_postgres evolution_redis 2>/dev/null
-```
-
----
-
-## 2 · Criar instância e QR
-
-**POST** `http://localhost:8080/instance/create`
-
-Headers: `Content-Type: application/json` · `apikey: casadosdiscipulos-local`  
-(use a mesma chave definida no compose local)
-
-```json
-{
-  "instanceName": "casadosdiscipulos",
-  "integration": "WHATSAPP-BAILEYS",
-  "qrcode": true
-}
-```
-
-**GET** `http://localhost:8080/instance/connect/casadosdiscipulos`  
-Header: `apikey: casadosdiscipulos-local`
-
-No PowerShell:
-
-```powershell
-$h = @{ "Content-Type"="application/json"; "apikey"="casadosdiscipulos-local" }
-Invoke-RestMethod -Uri "http://localhost:8080/instance/create" -Method Post -Headers $h `
-  -Body '{"instanceName":"casadosdiscipulos","integration":"WHATSAPP-BAILEYS","qrcode":true}'
-
-Invoke-RestMethod -Uri "http://localhost:8080/instance/connect/casadosdiscipulos" -Method Get `
-  -Headers @{ apikey = "casadosdiscipulos-local" }
-```
-
----
-
-## 3 · Conectar o celular
-
-WhatsApp → **Aparelhos conectados** → **Conectar aparelho** → escanear o QR (ou pairing code).
-
----
-
-## 4 · Backend `.env`
-
-Em `Codigo/backend/.env`:
+1. `POST /instance/create` (apikey do compose)  
+2. `GET /instance/connect/casadosdiscipulos` → QR  
+3. Celular: Aparelhos conectados  
+4. Backend `.env`:
 
 ```env
 EVOLUTION_API_URL=http://localhost:8080
@@ -92,31 +45,7 @@ EVOLUTION_INSTANCE_NAME=casadosdiscipulos
 EVOLUTION_API_KEY=casadosdiscipulos-local
 ```
 
-Reinicie: `npm run dev`.
-
----
-
-## 5 · Telefone nos usuários
-
-Perfil do membro ou **Gerenciamento** (admin). Formatos: `(11) 99999-9999` · `11999999999`.
-
----
-
-## 6 · Testar
-
-1. Login admin → **Escala** → escalar alguém com telefone  
-2. Confirmar mensagem no WhatsApp  
-3. Lembrete de módulos: cron semanal (ver [WhatsApp](./WHATSAPP.md))
-
----
-
-## Docker útil
-
-| Comando | Uso |
-|---------|-----|
-| `docker ps` | Status |
-| `docker logs evolution_api` | Logs |
-| `docker compose -f evolution-whatsapp/docker-compose.yml down` | Parar stack |
+5. Telefone no perfil · testar escala  
 
 ---
 
@@ -124,24 +53,14 @@ Perfil do membro ou **Gerenciamento** (admin). Formatos: `(11) 99999-9999` · `1
 
 | Erro | Solução |
 |------|---------|
-| Database provider invalid | Use o compose de `evolution-whatsapp` |
-| Docker daemon | Abra o Docker Desktop |
-| Porta 8080 ocupada | Mapeie outra porta e ajuste `EVOLUTION_API_URL` |
-| QR expira | Gere de novo o `/instance/connect/...` |
-| Sem mensagem | Instância online · telefone válido · logs backend/Evolution |
-
-Para desligar: comente `EVOLUTION_API_URL` no `.env` e reinicie o backend.
+| Database provider invalid | Use o compose do projeto |
+| Porta 8080 | Remapeie e ajuste `.env` |
+| Sem mensagem | Instância online + telefone |
 
 ---
 
 <div align="center">
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[WhatsApp](./WHATSAPP.md)
-
-<br />
-
-<sub>Casa dos Discípulos · WhatsApp local · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:02869b,100:0a0a0a&height=100&section=footer" width="100%" alt="" />
 
 </div>

@@ -1,22 +1,22 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="./assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
 
 # WhatsApp
 
-**Notificações da Casa via Evolution API**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=02869B&center=true&vCenter=true&width=560&height=40&lines=Notifica%C3%A7%C3%B5es+da+Casa;Evolution+API+%C2%B7+Baileys" alt="" />
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Setup local](./CONFIGURAR_WHATSAPP_LOCAL.md)
-&nbsp;·&nbsp;
-[Hospedagem](./HOSPEDAGEM.md)
+<img src="./assets/divider-animated.svg" width="400" alt="" />
+
+<img src="./assets/docs-emblem.jpg" width="110" alt="" />
+
+<br />
+
+[Índice](./README.md) ✦ [Setup local](./CONFIGURAR_WHATSAPP_LOCAL.md) ✦ [Hospedagem](./HOSPEDAGEM.md)
 
 </div>
-
----
-
-O sistema envia avisos automáticos pelo WhatsApp usando a **Evolution API** (open source, Baileys). Sem `EVOLUTION_API_URL`, só as notificações **in-app** continuam ativas.
 
 ---
 
@@ -24,24 +24,13 @@ O sistema envia avisos automáticos pelo WhatsApp usando a **Evolution API** (op
 
 | Evento | Conteúdo |
 |--------|----------|
-| Escalação | Evento, área, data, horário, detalhes |
-| Atribuição alterada | Instrumento, função, observações |
-| Remoção da escala | Aviso de saída do evento |
-| Evento atualizado | Data, título, áreas — todos os escalados |
-| Evento cancelado | Exclusão — todos os escalados |
-| Módulos pendentes | Lembrete semanal (padrão: segunda 9h) |
+| Escalação / atualização / remoção | Escala |
+| Evento alterado ou cancelado | Todos os escalados |
+| Módulos pendentes | Lembrete semanal (seg 9h) |
 
 ---
 
-## Pré-requisitos
-
-- Evolution API em execução (Docker)  
-- Telefone no perfil do usuário  
-- Formatos: `(11) 99999-9999` ou `11999999999`
-
----
-
-## Variáveis (backend)
+## Variáveis
 
 ```env
 EVOLUTION_API_URL=http://localhost:8080
@@ -50,57 +39,16 @@ EVOLUTION_API_KEY=sua-chave-segura
 WHATSAPP_CRON_MODULOS=0 9 * * 1
 ```
 
-Timezone: `America/Sao_Paulo`.
+Sem `EVOLUTION_API_URL`, só notificações in-app.
 
-| Cron | Significado |
-|------|-------------|
-| `0 9 * * 1` | Segunda 9h |
-| `0 10 * * 0` | Domingo 10h |
-| `0 20 * * 5` | Sexta 20h |
-
----
-
-## Fluxo
-
-1. Usuário cadastra telefone no **Perfil** (ou admin em Gerenciamento)  
-2. Escala / jobs disparam mensagem se a Evolution estiver configurada  
-3. Falha de envio não bloqueia a operação principal do sistema  
-
----
-
-## Produção
-
-No VPS, a Evolution escuta só em `127.0.0.1:8080`. Use túnel SSH para o QR:
-
-```bash
-ssh -L 8080:127.0.0.1:8080 usuario@SEU_IP
-```
-
-Detalhes: [Hospedagem](./HOSPEDAGEM.md).
-
----
-
-## Local
-
-Guia completo: [Configurar WhatsApp local](./CONFIGURAR_WHATSAPP_LOCAL.md).
-
----
-
-## Referências
-
-- [Evolution API](https://github.com/EvolutionAPI/evolution-api)  
-- [Documentação Evolution](https://doc.evolution-api.com)
+Produção: túnel SSH para `127.0.0.1:8080` — ver [Hospedagem](./HOSPEDAGEM.md).
 
 ---
 
 <div align="center">
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Setup local](./CONFIGURAR_WHATSAPP_LOCAL.md)
+<img src="./assets/divider-animated.svg" width="360" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · WhatsApp · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:025c6b,100:02869b&height=100&section=footer" width="100%" alt="" />
 
 </div>

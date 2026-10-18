@@ -1,31 +1,39 @@
 <div align="center">
 
-<img src="../../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="56" />
+<img src="./wave-banner.svg" alt="" width="100%" />
 
-# Assets da documentação
+<img src="./logo-glow.svg" alt="Casa dos Discípulos" width="120" />
+
+# Assets visuais da documentação
+
+<img src="./divider-animated.svg" alt="" width="420" />
 
 </div>
 
 ---
 
-A marca usada nos READMEs aponta para o mesmo arquivo do portal:
+Pacote artístico da marca **Casa dos Discípulos** (teal `#02869b` · dourado `#f4b002`).
 
-```
-Codigo/frontend/src/assets/logo_mark.png
-```
+| Arquivo | Uso |
+|---------|-----|
+| `docs-hero-banner.jpg` | Hero cinematográfico |
+| `docs-emblem.jpg` | Emblema / selo |
+| `docs-divider.jpg` | Separador fotográfico |
+| `wave-banner.svg` | Faixa animada (ondas) |
+| `divider-animated.svg` | Linha teal → dourado |
+| `logo-glow.svg` | Marca com pulso de luz |
+| `logo_mark.png` | Logo oficial do portal |
 
-| Token | Hex |
-|-------|-----|
-| Teal | `#02869b` |
-| Dourado | `#f4b002` |
-| Preto | `#0a0a0a` |
-
-Fonte da interface: **Montserrat**.
+Fotos da comunidade no app: `Codigo/frontend/src/assets/` (células, staff, culto).
 
 ---
 
 <div align="center">
 
-[Voltar ao índice](../README.md)
+<img src="./docs-emblem.jpg" alt="" width="160" />
+
+<br />
+
+[Índice da documentação](../README.md)
 
 </div>

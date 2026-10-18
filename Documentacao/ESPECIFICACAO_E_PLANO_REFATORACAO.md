@@ -1,22 +1,22 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="./assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
 
 # Especificação
 
-**Módulos do produto e histórico de evolução**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=02869B&center=true&vCenter=true&width=560&height=40&lines=M%C3%B3dulos+do+produto;Hist%C3%B3rico+de+evolu%C3%A7%C3%A3o" alt="" />
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Arquitetura](./ARQUITETURA.md)
+<img src="./assets/divider-animated.svg" width="400" alt="" />
+
+<img src="./assets/docs-hero-banner.jpg" width="80%" alt="" />
+
+<br />
+
+[Índice](./README.md) ✦ [Arquitetura](./ARQUITETURA.md)
 
 </div>
-
----
-
-## Escopo
-
-Plataforma web da **Casa dos Discípulos** para formação (Escola), células (Secretaria), eventos, escala e gestão — com identidade visual teal `#02869b`, dourado `#f4b002` e Montserrat.
 
 ---
 
@@ -24,79 +24,37 @@ Plataforma web da **Casa dos Discípulos** para formação (Escola), células (S
 
 | Módulo | Propósito | Quem usa |
 |--------|-----------|----------|
-| Escola de Discípulos | Conteúdo + quiz + ranking | Membros e líderes |
-| Lições | Material para células | Líderes de célula |
-| Formulários | Relatórios semanais | Líderes preenchem · admin vê |
-| Eventos | Carrossel e divulgação | Admin edita · todos veem |
-| Escala | Ministérios e calendário | Admin / líderes de ministério |
+| Escola | Conteúdo + quiz + ranking | Membros / líderes |
+| Lições | Material de célula | Líderes |
+| Formulários | Relatórios semanais | Líderes / admin |
+| Eventos | Carrossel | Todos |
+| Escala | Ministérios | Admin / líderes ministério |
 | Fala Aí | Devocional | Autenticados |
-| Usuários e células | Cadastro e vínculos | Admin · perfil do membro |
+| Gestão | Pessoas e células | Admin |
+
+<p align="center">
+  <img src="../Codigo/frontend/src/assets/celulas/hero-celulas.jpg" width="45%" alt="Células" />
+  <img src="./assets/docs-emblem.jpg" width="28%" alt="" />
+</p>
 
 ---
 
-## Regras de negócio (resumo)
+## Regras (resumo)
 
-### Escola
-
-- Progressão na ordem definida pelo admin  
-- Quiz opcional por módulo  
-- Mesmo quiz em vários módulos: 1ª vez pontuação cheia · replicação com pontuação reduzida  
-- Ranking e níveis gamificados  
-
-### Secretaria
-
-- Lições: texto, link, vídeo, upload  
-- Formulários: campos dinâmicos · líder escolhe a célula · múltiplos envios  
-
-### Pessoas
-
-- Tipos: `administrador` · `lider` · `membro`  
-- Flags: `lider_celula` · `lider_ministerio`  
-- Célula principal no perfil  
+Progressão ordenada · quiz opcional · ranking · formulários dinâmicos · papéis `administrador` / `lider` / `membro` · flags `lider_celula` / `lider_ministerio`
 
 ---
 
-## Arquitetura desejada
+## Entregas
 
-- Separação pages / services / hooks  
-- API via `apiClient` (JWT)  
-- Tokens CSS e marca consistentes  
-- Rotas `/admin/*` e `/usuario/*`  
-
----
-
-## Histórico de entrega
-
-| Fase | Status |
-|------|--------|
-| Limpeza e rotas | Concluída |
-| Escola (usuário) | Concluída |
-| Formulários líder/admin | Concluída |
-| Modelo de dados (célula, ordem) | Concluída |
-| Lições, perfil, eventos | Concluída |
-| Escala, WhatsApp, acessibilidade | Concluída |
-| Deploy Docker e docs de produção | Concluída |
-
----
-
-## Formulários (fluxo atual)
-
-1. Líder em `/usuario/formularios`  
-2. Escolhe formulário e célula  
-3. `POST /api/formulario-resposta` com campos  
-
-Deep link opcional: `?formularioId=X`.
+Limpeza de rotas · Escola · Formulários · Modelo de dados · Lições/perfil/eventos · Escala/WhatsApp/a11y · Deploy Docker — **concluídas**
 
 ---
 
 <div align="center">
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Arquitetura](./ARQUITETURA.md)
+<img src="./assets/divider-animated.svg" width="360" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · Especificação · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:f4b002,100:02869b&height=100&section=footer" width="100%" alt="" />
 
 </div>

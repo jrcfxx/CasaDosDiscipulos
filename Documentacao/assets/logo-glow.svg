@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Casa dos Discípulos">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f4b002" stop-opacity="0.55"/>
+      <stop offset="45%" stop-color="#02869b" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#0a0a0a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#02869b"/>
+      <stop offset="100%" stop-color="#f4b002"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#glow)">
+    <animate attributeName="r" values="84;92;84" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="100" r="62" fill="none" stroke="url(#ring)" stroke-width="3" stroke-dasharray="12 8">
+    <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="18s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="100" r="48" fill="#0a0a0a" stroke="#02869b" stroke-width="2"/>
+  <path d="M100 72 L112 100 L100 128 L88 100 Z" fill="#f4b002" opacity="0.95">
+    <animate attributeName="opacity" values="0.75;1;0.75" dur="2s" repeatCount="indefinite"/>
+  </path>
+  <circle cx="100" cy="100" r="6" fill="#ebebeb"/>
+</svg>

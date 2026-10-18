@@ -1,68 +1,43 @@
 <div align="center">
 
-<img src="../frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="../../Documentacao/assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="../../Documentacao/assets/logo-glow.svg" width="120" alt="Casa dos Discípulos" />
+
+<img src="../frontend/src/assets/logo_mark.png" width="72" alt="Logo" />
 
 # Backend API
 
-**Node.js · Express 5 · MySQL · JWT**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=24&duration=3000&pause=900&color=02869B&center=true&vCenter=true&width=560&height=42&lines=Node.js+%C2%B7+Express+5;MySQL+%C2%B7+JWT+%C2%B7+Knex" alt="" />
+
+<img src="../../Documentacao/assets/divider-animated.svg" width="420" alt="" />
+
+<img src="../../Documentacao/assets/docs-emblem.jpg" width="120" alt="" />
+
+<br />
 
 [Documentação](../../Documentacao/README.md)
-&nbsp;·&nbsp;
+&nbsp;✦&nbsp;
 [Segurança](../../Documentacao/SEGURANCA.md)
-&nbsp;·&nbsp;
+&nbsp;✦&nbsp;
 [Começando](../../Documentacao/COMEÇANDO.md)
 
 </div>
 
 ---
 
-## Módulos
-
-Escola de Discípulos · Secretaria das Células · Eventos · Escala · Fala Aí · Usuários e células · Ministérios · Notificações
-
----
-
 ## Quick start
 
 ```bash
-npm install
-cp .env.example .env
-# edite DB_* e JWT_SECRET
-npm run migrate
-npm run seed
-npm run dev
+npm install && cp .env.example .env
+npm run migrate && npm run seed && npm run dev
 ```
 
-API: `http://localhost:3001` · health: `/api/health`
-
-```env
-PORT=3001
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=sua_senha
-DB_NAME=CasaDosDiscipulos
-JWT_SECRET=minimo_32_caracteres_aleatorios_seguros
-NODE_ENV=development
-CORS_ORIGIN=
-```
+`http://localhost:3001` · `/api/health`
 
 ---
 
-## Comandos
-
-| Comando | Uso |
-|---------|-----|
-| `npm run dev` | Hot reload |
-| `npm run migrate` | Migrations |
-| `npm run migrate:rollback` | Rollback |
-| `npm run seed` | Seeds |
-| `npm start` | Produção |
-| `node scripts/e2eRoutesTest.mjs` | Suite E2E da API |
-
----
-
-## Seeds de teste
+## Seeds
 
 | Email | Senha | Tipo |
 |-------|-------|------|
@@ -72,49 +47,27 @@ CORS_ORIGIN=
 
 ---
 
+## Comandos
+
+| Comando | Uso |
+|---------|-----|
+| `npm run dev` | Hot reload |
+| `npm run migrate` | Migrations |
+| `npm run seed` | Seeds |
+| `node scripts/e2eRoutesTest.mjs` | E2E API |
+
+---
+
 ## Rotas (amostra)
 
-| Grupo | Exemplos |
-|-------|----------|
-| Auth | `POST /api/auth/login` · `POST /api/auth/register` |
-| Escola | `GET /api/modulo` · `POST /api/quiz/:id/responder` |
-| Secretaria | `GET /api/licao` · `POST /api/formulario-resposta` |
-| Eventos | `GET /api/evento/ativos` · CRUD admin |
-| Escala | `/api/escala/*` |
-| Saúde | `GET /api/health` |
-
-Coleção Postman: `Casa_dos_Discipulos_API.postman_collection.json` (se presente no repo).
-
----
-
-## Segurança
-
-- JWT · bcrypt · Helmet · Joi  
-- Rate limit: 300/15min (prod API) · 30/15min (login)  
-- `CORS_ORIGIN` obrigatório em produção  
-
-Detalhes: [SEGURANCA.md](../../Documentacao/SEGURANCA.md).
-
----
-
-## Estrutura
-
-```
-backend/
-├── src/app.js · controllers · services · models · routes · middlewares
-├── docker-entrypoint.sh   # migrate + start (imagem Docker)
-├── knexfile.cjs
-└── scripts/               # e2e e utilitários
-```
+Auth · módulos · quiz · lições · formulários · células · eventos · escala · fala-aí · upload · health
 
 ---
 
 <div align="center">
 
-[Documentação](../../Documentacao/README.md)
+<img src="../../Documentacao/assets/divider-animated.svg" width="360" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · Backend · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0a0a0a,100:02869b&height=110&section=footer" width="100%" alt="" />
 
 </div>

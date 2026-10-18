@@ -1,105 +1,57 @@
 <div align="center">
 
-<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+<img src="./assets/wave-banner.svg" width="100%" alt="" />
+
+<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
 
 # Acessibilidade
 
-**Para que toda a Casa possa participar — WCAG 2.1 AA**
+<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=F4B002&center=true&vCenter=true&width=580&height=40&lines=Toda+a+Casa+pode+participar;WCAG+2.1+AA" alt="" />
 
-[Índice](./README.md)
-&nbsp;·&nbsp;
-[Frontend](../Codigo/frontend/README.md)
+<img src="./assets/divider-animated.svg" width="400" alt="" />
+
+<img src="../Codigo/frontend/src/assets/oracao-cabeca-baixa.jpg" width="55%" alt="Comunhão inclusiva" />
+
+<br />
+
+[Índice](./README.md) ✦ [Frontend](../Codigo/frontend/README.md)
 
 </div>
 
 ---
 
-A plataforma foi pensada para pessoas cegas, surdas, com baixa visão ou mobilidade reduzida usarem o sistema com autonomia — no mesmo cuidado visual do portal (contraste, tipografia Montserrat e foco visível).
-
----
-
 ## Leitores de tela
 
-| Recurso | Detalhe |
-|---------|---------|
-| Skip link | Primeiro Tab → conteúdo principal |
-| Título dinâmico | Ex.: “Casa dos Discípulos – Entrar” |
-| Landmarks | `main`, `nav`, `section` com rótulos |
-| Formulários | `label` + `htmlFor` / `id` |
-| ARIA | `aria-label`, `aria-live`, `aria-current` |
-| Modais | FocusTrap · Esc · foco restaurado |
-| Erros | `role="alert"` no login e toasts |
+Skip link · títulos dinâmicos · landmarks · labels · ARIA · FocusTrap · `role="alert"`
 
-**Testado com:** NVDA, JAWS, VoiceOver, TalkBack.
+Testado: NVDA · JAWS · VoiceOver · TalkBack
 
 ---
 
-## Surdez
+## Surdez · baixa visão · mobilidade
 
-| Recurso | Detalhe |
-|---------|---------|
-| Vídeos | Legendas (YouTube `cc_load_policy`, tracks em MP4/Vimeo) |
-| Conteúdo | Nada essencial só em áudio |
-| Avisos | Notificações visuais in-app |
-
----
-
-## Baixa visão
-
-| Recurso | Detalhe |
-|---------|---------|
-| Tamanho do texto | Barra de acessibilidade: 100%–150% |
-| Alto contraste | Fundo claro / texto escuro |
-| Zoom | Sem bloqueio do navegador |
-| Foco | Outline claro em `:focus-visible` |
-| Movimento | Respeita `prefers-reduced-motion` |
-
----
-
-## Mobilidade reduzida
-
-Tudo operável por teclado · alvos clicáveis adequados · Enter / Espaço / Esc.
+Legendas em vídeos · barra de tamanho de texto · alto contraste · zoom livre · foco visível · teclado completo · `prefers-reduced-motion`
 
 | Tecla | Ação |
 |-------|------|
-| Tab / Shift+Tab | Navegar |
+| Tab | Avançar |
 | Enter / Espaço | Ativar |
-| Esc | Fechar overlays |
+| Esc | Fechar |
 
 ---
 
-## Componentes
+## Conteúdo
 
-| Componente | Função |
-|------------|--------|
-| SkipLink | Pular navegação |
-| AccessibilityBar | Texto e contraste |
-| LiveAnnouncer | Anúncios para leitores |
-| Toast / ConfirmModal | Feedback acessível |
+Vídeos legendados · `alt` em imagens · texto claro · links descritivos
 
----
-
-## Para quem publica conteúdo
-
-1. Vídeos sempre com legendas  
-2. Imagens com `alt` descritivo  
-3. Texto claro, sem jargão desnecessário  
-4. Links com rótulo significativo (evitar “clique aqui”)
-
----
-
-## Auditoria
-
-Com `npm start`, o **@axe-core/react** reporta violações no console do navegador.
+Auditoria em dev: `@axe-core/react` no console.
 
 ---
 
 <div align="center">
 
-[Índice](./README.md)
+<img src="./assets/docs-emblem.jpg" width="100" alt="" />
 
-<br />
-
-<sub>Casa dos Discípulos · Acessibilidade · 2026</sub>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:02869b,100:f4b002&height=100&section=footer" width="100%" alt="" />
 
 </div>
