@@ -1,28 +1,22 @@
 <div align="center">
 
-<img src="./assets/wave-banner.svg" width="100%" alt="" />
-
-<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
+<img src="./assets/logo_mark.png" alt="Casa dos Discípulos" width="48" />
 
 # Relatório de custos e deploy
 
-<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=F4B002&center=true&vCenter=true&width=620&height=40&lines=O+que+gastar+%C2%B7+o+que+fazer+%C2%B7+por+qu%C3%AA;Para+a+lideran%C3%A7a+da+Casa" alt="" />
+O que gastar, o que fazer e por quê
 
-<img src="./assets/divider-animated.svg" width="400" alt="" />
-
-<img src="./assets/docs-emblem.jpg" width="130" alt="" />
+<img src="./assets/header-line.svg" alt="" width="200" />
 
 <br />
 
-[Índice](./README.md) ✦ [Hospedagem](./HOSPEDAGEM.md)
+[`Índice`](./README.md)
+&nbsp;&nbsp;·&nbsp;&nbsp;
+[`Hospedagem`](./HOSPEDAGEM.md)
 
 </div>
 
 ---
-
-<p align="center">
-  <img src="./assets/docs-hero-banner.jpg" width="80%" alt="Banner" />
-</p>
 
 ## Resumo
 
@@ -34,7 +28,7 @@
 | WhatsApp (Evolution no VPS) | Sem custo extra | Se quiserem avisos |
 | Código / deploy | Já no repositório | — |
 
-**1º ano típico:** ~US$ 144 de servidor (domínio já da igreja).
+**1º ano típico (domínio já da igreja):** ~US$ 144 de servidor.
 
 ---
 
@@ -51,29 +45,29 @@
 
 ## Tarefas
 
-**Fase A (igreja):** aprovar custo · confirmar domínio · criar Droplet · DNS `app` → IP · responsável pela fatura  
+**Fase A — Igreja:** aprovar custo · confirmar domínio · criar Droplet · DNS `app` → IP · responsável pela fatura
 
-**Fase B (técnico):** Docker · `./deploy.sh` · seed · SSL · QR WhatsApp · testes  
+**Fase B — Técnico:** Docker · `./deploy.sh` · seed · SSL · QR WhatsApp · testes
 
-**Fase C:** pagar VPS · backups · atualizações (`git pull` + `./deploy.sh`)
+**Fase C — Contínuo:** pagar VPS · backups · `git pull` + `./deploy.sh`
 
 ---
 
 ## Decisão pedida
 
-1. Aprovar VPS mensal?  
-2. Confirmar `casadosdiscipulos.org`?  
-3. Nomear responsável cartão/DNS?  
+1. Aprovar o VPS mensal?  
+2. Confirmar administração de `casadosdiscipulos.org`?  
+3. Nomear responsável por cartão e DNS?  
 4. Autorizar SSH após o Droplet?
 
-Guia: [Hospedagem](./HOSPEDAGEM.md)
+Guia operacional: [Hospedagem](./HOSPEDAGEM.md)
 
 ---
 
 <div align="center">
 
-<img src="./assets/divider-animated.svg" width="360" alt="" />
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:f4b002,100:02869b&height=110&section=footer" width="100%" alt="" />
+[`Índice`](./README.md)
+&nbsp;&nbsp;·&nbsp;&nbsp;
+[`Hospedagem`](./HOSPEDAGEM.md)
 
 </div>

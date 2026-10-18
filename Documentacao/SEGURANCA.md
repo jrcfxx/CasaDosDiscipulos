@@ -1,20 +1,18 @@
 <div align="center">
 
-<img src="./assets/wave-banner.svg" width="100%" alt="" />
-
-<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
+<img src="./assets/logo_mark.png" alt="Casa dos Discípulos" width="48" />
 
 # Segurança
 
-<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=02869B&center=true&vCenter=true&width=560&height=40&lines=Camadas+de+prote%C3%A7%C3%A3o;JWT+%C2%B7+Helmet+%C2%B7+Rate+limit" alt="" />
+Camadas de proteção e checklist de produção
 
-<img src="./assets/divider-animated.svg" width="400" alt="" />
-
-<img src="./assets/docs-emblem.jpg" width="110" alt="" />
+<img src="./assets/header-line.svg" alt="" width="200" />
 
 <br />
 
-[Índice](./README.md) ✦ [Hospedagem](./HOSPEDAGEM.md)
+[`Índice`](./README.md)
+&nbsp;&nbsp;·&nbsp;&nbsp;
+[`Hospedagem`](./HOSPEDAGEM.md)
 
 </div>
 
@@ -24,13 +22,13 @@
 
 | Middleware | Quem passa |
 |------------|------------|
-| `verificarToken` | Token válido + ativo |
+| `verificarToken` | Token válido + usuário ativo |
 | `adminOnly` | Administrador |
 | `adminAndLeader` | Admin ou líder |
 | `adminAndLiderMinisterio` | Admin / líder de ministério |
 | `authenticatedOnly` | Qualquer autenticado |
 
-Registro público: apenas `membro`.
+Registro público: apenas `tipo: "membro"`.
 
 ---
 
@@ -38,8 +36,8 @@ Registro público: apenas `membro`.
 
 | Escopo | Limite |
 |--------|--------|
-| API | 300 / 15 min |
-| Login · registro | 30 / 15 min |
+| API geral | 300 req / 15 min |
+| Login e registro | 30 req / 15 min |
 
 ---
 
@@ -51,7 +49,7 @@ JWT_SECRET=...   # openssl rand -hex 32
 ```
 
 - HTTPS obrigatório  
-- Evolution só em `127.0.0.1:8080`  
+- Evolution apenas em `127.0.0.1:8080`  
 - Firewall: 22 · 80 · 443  
 - Backups de MySQL e uploads  
 
@@ -60,17 +58,15 @@ JWT_SECRET=...   # openssl rand -hex 32
 ## Checklist
 
 - [ ] `JWT_SECRET` forte  
-- [ ] `CORS_ORIGIN` HTTPS  
-- [ ] Let's Encrypt  
-- [ ] MySQL sem root na app  
+- [ ] `CORS_ORIGIN` com domínio HTTPS  
+- [ ] Let's Encrypt ativo  
+- [ ] MySQL sem root na aplicação  
 - [ ] `NODE_ENV=production`  
 
 ---
 
 <div align="center">
 
-<img src="./assets/divider-animated.svg" width="360" alt="" />
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0a0a0a,100:02869b&height=100&section=footer" width="100%" alt="" />
+[`Índice`](./README.md)
 
 </div>

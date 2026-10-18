@@ -1,20 +1,18 @@
 <div align="center">
 
-<img src="./assets/wave-banner.svg" width="100%" alt="" />
-
-<img src="./assets/logo-glow.svg" width="110" alt="Casa dos Discípulos" />
+<img src="./assets/logo_mark.png" alt="Casa dos Discípulos" width="48" />
 
 # Especificação
 
-<img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&duration=3000&pause=900&color=02869B&center=true&vCenter=true&width=560&height=40&lines=M%C3%B3dulos+do+produto;Hist%C3%B3rico+de+evolu%C3%A7%C3%A3o" alt="" />
+Módulos do produto e evolução do sistema
 
-<img src="./assets/divider-animated.svg" width="400" alt="" />
-
-<img src="./assets/docs-hero-banner.jpg" width="80%" alt="" />
+<img src="./assets/header-line.svg" alt="" width="200" />
 
 <br />
 
-[Índice](./README.md) ✦ [Arquitetura](./ARQUITETURA.md)
+[`Índice`](./README.md)
+&nbsp;&nbsp;·&nbsp;&nbsp;
+[`Arquitetura`](./ARQUITETURA.md)
 
 </div>
 
@@ -24,18 +22,13 @@
 
 | Módulo | Propósito | Quem usa |
 |--------|-----------|----------|
-| Escola | Conteúdo + quiz + ranking | Membros / líderes |
+| Escola de Discípulos | Conteúdo, quiz e ranking | Membros e líderes |
 | Lições | Material de célula | Líderes |
 | Formulários | Relatórios semanais | Líderes / admin |
 | Eventos | Carrossel | Todos |
-| Escala | Ministérios | Admin / líderes ministério |
+| Escala | Ministérios | Admin / líderes de ministério |
 | Fala Aí | Devocional | Autenticados |
 | Gestão | Pessoas e células | Admin |
-
-<p align="center">
-  <img src="../Codigo/frontend/src/assets/celulas/hero-celulas.jpg" width="45%" alt="Células" />
-  <img src="./assets/docs-emblem.jpg" width="28%" alt="" />
-</p>
 
 ---
 
@@ -47,14 +40,12 @@ Progressão ordenada · quiz opcional · ranking · formulários dinâmicos · p
 
 ## Entregas
 
-Limpeza de rotas · Escola · Formulários · Modelo de dados · Lições/perfil/eventos · Escala/WhatsApp/a11y · Deploy Docker — **concluídas**
+Limpeza de rotas · Escola · Formulários · modelo de dados · Lições / perfil / eventos · Escala / WhatsApp / a11y · Deploy Docker — concluídas.
 
 ---
 
 <div align="center">
 
-<img src="./assets/divider-animated.svg" width="360" alt="" />
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:f4b002,100:02869b&height=100&section=footer" width="100%" alt="" />
+[`Índice`](./README.md)
 
 </div>
