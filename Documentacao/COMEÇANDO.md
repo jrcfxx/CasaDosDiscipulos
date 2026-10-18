@@ -1,40 +1,46 @@
-# Começando — Casa dos Discípulos
+<div align="center">
 
-Guia para rodar o projeto em ambiente de desenvolvimento.
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# Começando
+
+**Ambiente de desenvolvimento em poucos passos**
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Arquitetura](./ARQUITETURA.md)
+&nbsp;·&nbsp;
+[Hospedagem](./HOSPEDAGEM.md)
+
+</div>
 
 ---
 
 ## Pré-requisitos
 
-| Ferramenta | Versão mínima |
-|------------|---------------|
-| **Node.js** | 18+ |
-| **npm** | 9+ |
-| **MySQL** | 8+ |
-| **Git** | 2.x |
+| Ferramenta | Versão |
+|------------|--------|
+| Node.js | 18+ |
+| npm | 9+ |
+| MySQL | 8+ |
+| Git | 2.x |
 
 ---
 
-## 1. Clonar o repositório
+## 1. Clonar
 
 ```bash
-git clone https://github.com/SEU_ORG/CasaDosDiscipulos.git
+git clone https://github.com/jrcfxx/CasaDosDiscipulos.git
 cd CasaDosDiscipulos
 ```
 
 ---
 
-## 2. Banco de dados MySQL
-
-### Criar o banco
+## 2. Banco MySQL
 
 ```sql
 CREATE DATABASE CasaDosDiscipulos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
 
-### Usuário dedicado (recomendado)
-
-```sql
 CREATE USER 'casadiscipulos'@'localhost' IDENTIFIED BY 'sua_senha_segura';
 GRANT ALL PRIVILEGES ON CasaDosDiscipulos.* TO 'casadiscipulos'@'localhost';
 FLUSH PRIVILEGES;
@@ -42,22 +48,15 @@ FLUSH PRIVILEGES;
 
 ---
 
-## 3. Backend (API)
-
-### 3.1 Instalar dependências
+## 3. Backend
 
 ```bash
 cd Codigo/backend
 npm install
-```
-
-### 3.2 Configurar variáveis de ambiente
-
-```bash
 cp .env.example .env
 ```
 
-Edite o `.env`:
+Configure o `.env`:
 
 ```env
 PORT=3001
@@ -66,142 +65,123 @@ DB_PORT=3306
 DB_USER=casadiscipulos
 DB_PASSWORD=sua_senha
 DB_NAME=CasaDosDiscipulos
-JWT_SECRET=gere-uma-chave-forte-com-openssl-rand-hex-32
+JWT_SECRET=gere-com-openssl-rand-hex-32
 NODE_ENV=development
 ```
 
-**Gerar JWT_SECRET:**
 ```bash
-openssl rand -hex 32
-```
-
-### 3.3 Executar migrations
-
-```bash
+openssl rand -hex 32   # JWT_SECRET
 npm run migrate
-```
-
-### 3.4 Popular com dados de teste
-
-```bash
 npm run seed
-```
-
-### 3.5 Iniciar o servidor
-
-```bash
 npm run dev
 ```
 
-A API ficará disponível em `http://localhost:3001`.
+API em `http://localhost:3001` · health: `http://localhost:3001/api/health`
 
 ---
 
-## 4. Frontend (React)
-
-### 4.1 Instalar dependências
+## 4. Frontend
 
 ```bash
 cd Codigo/frontend
 npm install
 ```
 
-### 4.2 Configurar API
-
-Crie `.env` no diretório do frontend:
+Crie `.env`:
 
 ```env
 REACT_APP_API_URL=http://localhost:3001/api
 ```
 
-### 4.3 Iniciar a aplicação
-
 ```bash
 npm start
 ```
 
-A aplicação abrirá em `http://localhost:3000`.
+App em `http://localhost:3000`
 
 ---
 
-## 5. Usuários de teste (seeds)
+## 5. Contas de teste (seed)
 
-| Email | Senha | Tipo |
-|-------|-------|------|
-| admin@test.com | 123456 | administrador |
-| lider@test.com | 123456 | lider |
-| membro@test.com | 123456 | membro |
-
----
-
-## 6. Verificar instalação
-
-1. **Backend:** `http://localhost:3001` deve retornar `{"message":"API Casa dos Discípulos - Online"}`
-2. **Frontend:** Acesse `http://localhost:3000` e faça login com um dos usuários acima
-3. **Admin:** Acesse o portal admin e explore os módulos
+| Email | Senha | Perfil |
+|-------|-------|--------|
+| `admin@test.com` | `123456` | Administrador |
+| `lider@test.com` | `123456` | Líder |
+| `membro@test.com` | `123456` | Membro |
 
 ---
 
-## 7. Estrutura de diretórios
+## 6. Conferir
+
+1. Backend responde em `/` ou `/api/health`
+2. Frontend abre a home com a marca da Casa
+3. Login admin → portal administrativo
+
+---
+
+## Estrutura
 
 ```
 CasaDosDiscipulos/
 ├── Codigo/
-│   ├── frontend/       # React (porta 3000)
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   ├── pages/
-│   │   │   ├── services/
-│   │   │   ├── hooks/
-│   │   │   └── style/
-│   │   └── public/
-│   └── backend/        # Node.js (porta 3001)
-│       ├── src/
-│       │   ├── controllers/
-│       │   ├── models/
-│       │   ├── services/
-│       │   ├── routes/
-│       │   ├── middlewares/
-│       │   └── validations/
-│       ├── migrations/
-│       └── seeds/
-├── Documentacao/
-├── evolution-whatsapp/ # Docker WhatsApp (opcional)
-└── deploy/             # Docker produção
+│   ├── frontend/          # React · porta 3000
+│   └── backend/           # API · porta 3001
+├── Documentacao/          # Este guia
+├── deploy/                # Produção (Docker)
+└── evolution-whatsapp/    # WhatsApp local (opcional)
 ```
 
 ---
 
-## 8. Comandos úteis
+## Comandos
 
-### Backend
+<details>
+<summary><strong>Backend</strong></summary>
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Desenvolvimento com hot reload |
-| `npm run migrate` | Executar migrations |
-| `npm run migrate:rollback` | Reverter última migration |
-| `npm run seed` | Popular banco |
-| `npm start` | Produção |
+| Comando | Uso |
+|---------|-----|
+| `npm run dev` | Hot reload |
+| `npm run migrate` | Migrations |
+| `npm run migrate:rollback` | Reverter |
+| `npm run seed` | Dados iniciais |
+| `npm start` | Produção local |
 
-### Frontend
+</details>
 
-| Comando | Descrição |
-|---------|-----------|
+<details>
+<summary><strong>Frontend</strong></summary>
+
+| Comando | Uso |
+|---------|-----|
 | `npm start` | Desenvolvimento |
-| `npm run build` | Build para produção |
+| `npm run build` | Build produção |
+| `npm run test:e2e` | Crawl E2E (Playwright) |
+
+</details>
 
 ---
 
-## 9. Problemas comuns
+## Problemas comuns
 
-| Problema | Solução |
-|----------|---------|
-| Erro de conexão MySQL | Verifique MySQL em execução e credenciais no `.env`; teste: `mysql -u casadiscipulos -p -e "USE CasaDosDiscipulos;"` |
-| Porta em uso | Altere `PORT` no `.env` do backend; no frontend, crie `.env` com `PORT=3002` |
-| CORS | Em desenvolvimento, CORS aceita qualquer origem; confirme frontend em `:3000` e backend em `:3001` |
-| Migrations falham | `npm run migrate:rollback` e depois `npm run migrate` |
+| Sintoma | Caminho |
+|---------|---------|
+| Erro MySQL | Serviço ativo + credenciais no `.env` |
+| Porta ocupada | Altere `PORT` no backend ou frontend |
+| CORS | Frontend `:3000` e API `:3001` |
+| Migrate falha | `migrate:rollback` e `migrate` de novo |
 
 ---
 
-[← Voltar ao índice](./README.md) · [Arquitetura →](./ARQUITETURA.md) · [Hospedagem →](./HOSPEDAGEM.md)
+<div align="center">
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Arquitetura →](./ARQUITETURA.md)
+&nbsp;·&nbsp;
+[Hospedagem →](./HOSPEDAGEM.md)
+
+<br />
+
+<sub>Casa dos Discípulos · Teal `#02869b` · Dourado `#f4b002`</sub>
+
+</div>

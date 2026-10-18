@@ -1,74 +1,56 @@
-# Configurar WhatsApp no ambiente local — Casa dos Discípulos
+<div align="center">
 
-Guia passo a passo para conectar o sistema ao WhatsApp usando a Evolution API, com tudo rodando na sua máquina (backend, banco e Evolution).
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# WhatsApp no ambiente local
+
+**Evolution API + Docker na sua máquina**
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[WhatsApp](./WHATSAPP.md)
+&nbsp;·&nbsp;
+[Começando](./COMEÇANDO.md)
+
+</div>
 
 ---
 
 ## Pré-requisitos
 
-- **Docker** instalado e em execução ([Baixar Docker](https://www.docker.com/products/docker-desktop/))
-- **Backend** e **frontend** do Casa dos Discípulos rodando localmente
-- **WhatsApp** instalado no celular (número que será usado para enviar notificações)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) em execução  
+- Backend e frontend da Casa rodando ([Começando](./COMEÇANDO.md))  
+- WhatsApp no celular (número que enviará as mensagens)
+
+> A Evolution **v2** exige PostgreSQL e Redis. Use o `docker compose` da pasta `evolution-whatsapp` — o `docker run` simples falha com *Database provider invalid*.
 
 ---
 
-## Passo 1: Subir a Evolution API com Docker
+## 1 · Subir a Evolution
 
-A Evolution API **v2** precisa de **PostgreSQL** e **Redis**. O comando simples `docker run` não funciona mais — use o **docker-compose** incluído no projeto.
-
-### Por quê?
-
-A Evolution API v2 armazena instâncias e mensagens em um banco de dados e usa Redis para cache. Sem isso, ela exibe o erro: *"Database provider invalid"*.
-
-### 1.1 Remover o container antigo (se existir)
-
-Se você tentou antes com `docker run`, remova o container que pode ter falhado:
-
-```powershell
-docker rm -f evolution_api 2>$null; docker rm -f evolution_postgres 2>$null; docker rm -f evolution_redis 2>$null
-```
-
-### 1.2 Subir com docker-compose
-
-No terminal, na pasta do projeto:
-
-```powershell
-cd C:\Users\Júlia\OneDrive\Documentos\Projects\CasaDosDiscipulos\evolution-whatsapp
+```bash
+# Na raiz do repositório
+cd evolution-whatsapp
 docker compose up -d
-```
-
-Isso sobe 3 containers:
-- **evolution_api** (porta 8080) — a API
-- **evolution_postgres** — banco PostgreSQL
-- **evolution_redis** — cache Redis
-
-### 1.3 Verificar se subiu
-
-```powershell
 docker ps
 ```
 
-Os 3 containers devem estar com status "Up". A Evolution API deve responder em `http://localhost:8080`.
+Containers esperados: `evolution_api` (8080), Postgres e Redis.
+
+Se houver restos antigos:
+
+```bash
+docker rm -f evolution_api evolution_postgres evolution_redis 2>/dev/null
+```
 
 ---
 
-## Passo 2: Criar a instância do WhatsApp
+## 2 · Criar instância e QR
 
-### Opção A: Via API (Postman, Insomnia ou curl)
+**POST** `http://localhost:8080/instance/create`
 
-**2.1 Criar instância**
-
-Envie uma requisição **POST** para:
-
-```
-http://localhost:8080/instance/create
-```
-
-**Headers:**
-- `Content-Type: application/json`
-- `apikey: casadosdiscipulos-local` (mesma chave do passo 1)
-
-**Body (JSON):**
+Headers: `Content-Type: application/json` · `apikey: casadosdiscipulos-local`  
+(use a mesma chave definida no compose local)
 
 ```json
 {
@@ -78,174 +60,88 @@ http://localhost:8080/instance/create
 }
 ```
 
-**2.2 Obter o QR Code**
+**GET** `http://localhost:8080/instance/connect/casadosdiscipulos`  
+Header: `apikey: casadosdiscipulos-local`
 
-Envie uma requisição **GET** para:
-
-```
-http://localhost:8080/instance/connect/casadosdiscipulos
-```
-
-**Headers:**
-- `apikey: casadosdiscipulos-local`
-
-A resposta traz um `code` (QR code em base64) ou `pairingCode` (código numérico para parear).
-
-- Se vier **base64 no `code`**: converta ou use ferramenta para exibir o QR.
-- Se vier **`pairingCode`**: use no celular: WhatsApp → **Aparelhos conectados** → **Conectar com número de telefone** → informe o código.
-
-### Opção B: Via interface web (se disponível)
-
-Algumas versões da Evolution API oferecem interface em `http://localhost:8080`. Verifique se há opção de criar instância e ver o QR Code pela tela.
-
-### Opção C: Via curl (PowerShell)
-
-**Criar instância:**
+No PowerShell:
 
 ```powershell
-$headers = @{
-  "Content-Type" = "application/json"
-  "apikey" = "casadosdiscipulos-local"
-}
-$body = '{"instanceName":"casadosdiscipulos","integration":"WHATSAPP-BAILEYS","qrcode":true}'
-Invoke-RestMethod -Uri "http://localhost:8080/instance/create" -Method Post -Headers $headers -Body $body
-```
+$h = @{ "Content-Type"="application/json"; "apikey"="casadosdiscipulos-local" }
+Invoke-RestMethod -Uri "http://localhost:8080/instance/create" -Method Post -Headers $h `
+  -Body '{"instanceName":"casadosdiscipulos","integration":"WHATSAPP-BAILEYS","qrcode":true}'
 
-**Obter QR Code:**
-
-```powershell
-$headers = @{ "apikey" = "casadosdiscipulos-local" }
-Invoke-RestMethod -Uri "http://localhost:8080/instance/connect/casadosdiscipulos" -Method Get -Headers $headers
+Invoke-RestMethod -Uri "http://localhost:8080/instance/connect/casadosdiscipulos" -Method Get `
+  -Headers @{ apikey = "casadosdiscipulos-local" }
 ```
 
 ---
 
-## Passo 3: Conectar o WhatsApp no celular
+## 3 · Conectar o celular
 
-1. Abra o **WhatsApp** no celular
-2. Vá em **Configurações** (ou **Mais opções** → **Aparelhos conectados**)
-3. Toque em **Aparelhos conectados**
-4. Toque em **Conectar aparelho**
-5. **Escaneie o QR Code** que apareceu no passo 2 (ou use o código numérico, se disponível)
-6. Aguarde a conexão. Quando conectar, a instância ficará "online"
+WhatsApp → **Aparelhos conectados** → **Conectar aparelho** → escanear o QR (ou pairing code).
 
 ---
 
-## Passo 4: Configurar o backend (.env)
+## 4 · Backend `.env`
 
-No arquivo `.env` do **backend** (`Codigo/backend/.env`), adicione ou ajuste:
+Em `Codigo/backend/.env`:
 
 ```env
-# WhatsApp (Evolution API)
 EVOLUTION_API_URL=http://localhost:8080
 EVOLUTION_INSTANCE_NAME=casadosdiscipulos
 EVOLUTION_API_KEY=casadosdiscipulos-local
 ```
 
-| Variável | Valor | Descrição |
-|----------|-------|-----------|
-| `EVOLUTION_API_URL` | `http://localhost:8080` | URL da Evolution API local |
-| `EVOLUTION_INSTANCE_NAME` | `casadosdiscipulos` | Nome da instância criada no passo 2 |
-| `EVOLUTION_API_KEY` | `casadosdiscipulos-local` | Mesma chave usada no `AUTHENTICATION_API_KEY` do Docker |
-
-**Reinicie o backend** para carregar as variáveis:
-
-```bash
-cd Codigo/backend
-npm run dev
-```
+Reinicie: `npm run dev`.
 
 ---
 
-## Passo 5: Garantir telefone nos usuários
+## 5 · Telefone nos usuários
 
-Para receber WhatsApp, o usuário precisa ter **telefone** cadastrado.
-
-**Opção 1 — Perfil:** O usuário acessa seu perfil e preenche o campo telefone.
-
-**Opção 2 — Admin:** O administrador edita o usuário em **Gerir Usuários** e define o telefone.
-
-**Formato aceito:** `(11) 99999-9999` ou `11999999999` ou `+55 11 99999-9999`
+Perfil do membro ou **Gerenciamento** (admin). Formatos: `(11) 99999-9999` · `11999999999`.
 
 ---
 
-## Passo 6: Testar as notificações
+## 6 · Testar
 
-### 6.1 Teste de escalação
-
-1. Faça login como **admin** (ex: admin@test.com / 123456)
-2. Acesse a área de **Escala** e crie ou edite um evento
-3. **Escale um usuário** que tenha telefone cadastrado
-4. O usuário deve receber uma mensagem no WhatsApp com o título do evento, área e data
-
-### 6.2 Teste de módulos pendentes
-
-O lembrete semanal roda por **cron** (ex: segundas às 9h). Para testar sem esperar:
-
-1. Crie um usuário com telefone e sem módulos concluídos
-2. Ou ajuste temporariamente o cron no código para rodar em alguns minutos (apenas para teste)
+1. Login admin → **Escala** → escalar alguém com telefone  
+2. Confirmar mensagem no WhatsApp  
+3. Lembrete de módulos: cron semanal (ver [WhatsApp](./WHATSAPP.md))
 
 ---
 
-## Comandos úteis Docker
+## Docker útil
 
-| Comando | Descrição |
-|---------|-----------|
-| `docker ps` | Listar containers (ver se Evolution está rodando) |
-| `docker logs evolution_api` | Ver logs da Evolution API |
-| `docker stop evolution_api` | Parar a Evolution API |
-| `docker start evolution_api` | Iniciar novamente |
-| `docker rm -f evolution_api` | Remover o container (dados nos volumes podem ser mantidos) |
+| Comando | Uso |
+|---------|-----|
+| `docker ps` | Status |
+| `docker logs evolution_api` | Logs |
+| `docker compose -f evolution-whatsapp/docker-compose.yml down` | Parar stack |
 
 ---
 
-## Possíveis erros
+## Problemas
 
-### "Database provider invalid"
+| Erro | Solução |
+|------|---------|
+| Database provider invalid | Use o compose de `evolution-whatsapp` |
+| Docker daemon | Abra o Docker Desktop |
+| Porta 8080 ocupada | Mapeie outra porta e ajuste `EVOLUTION_API_URL` |
+| QR expira | Gere de novo o `/instance/connect/...` |
+| Sem mensagem | Instância online · telefone válido · logs backend/Evolution |
 
-- A Evolution API v2 **exige** PostgreSQL e Redis; o `docker run` simples não é suficiente
-- Use o **docker-compose** na pasta `evolution-whatsapp` (Passo 1.2)
-
-### "Cannot connect to Docker daemon"
-
-- Docker Desktop não está aberto ou não está rodando
-- Inicie o Docker Desktop e espere carregar
-
-### Porta 8080 em uso
-
-- Altere a porta: `-p 8081:8080` e use `EVOLUTION_API_URL=http://localhost:8081` no `.env`
-
-### QR Code expira muito rápido
-
-- Gere um novo: `GET /instance/connect/casadosdiscipulos`
-- Escaneie logo após aparecer
-
-### "Instance not found" ou erro 404
-
-- Confirme que a instância `casadosdiscipulos` foi criada (Passo 2)
-- Verifique se `EVOLUTION_INSTANCE_NAME` no `.env` é exatamente o mesmo nome
-
-### Mensagens não chegam
-
-- Confirme que o WhatsApp está conectado (instância online)
-- Verifique se o número do usuário está no formato correto
-- Veja os logs do backend: `[WhatsApp] Erro ao notificar...`
-- Veja os logs da Evolution: `docker logs evolution_api`
+Para desligar: comente `EVOLUTION_API_URL` no `.env` e reinicie o backend.
 
 ---
 
-## Desativar WhatsApp
+<div align="center">
 
-Para desativar sem remover o código:
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[WhatsApp](./WHATSAPP.md)
 
-1. Remova ou comente no `.env` do backend:
-   ```env
-   # EVOLUTION_API_URL=http://localhost:8080
-   ```
-2. Reinicie o backend
+<br />
 
-As notificações **in-app** continuam funcionando. Apenas o envio via WhatsApp será desativado.
+<sub>Casa dos Discípulos · WhatsApp local · 2026</sub>
 
----
-
-[← Voltar ao índice](./README.md)
+</div>

@@ -1,12 +1,29 @@
 <div align="center">
 
-![Logo Casa dos Discípulos](../Codigo/frontend/src/assets/icone-igreja.png)
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="72" />
 
-# Casa dos Discípulos — Documentação
+# Casa dos Discípulos
 
-**Plataforma digital para formação, gestão de células e divulgação de eventos da comunidade cristã.**
+### Documentação
 
-[Começando](./COMEÇANDO.md) · [Arquitetura](./ARQUITETURA.md) · [Hospedagem](./HOSPEDAGEM.md) · [Segurança](./SEGURANCA.md)
+Plataforma digital para formação, células, escala e comunhão da comunidade cristã.
+
+[![Teal](https://img.shields.io/badge/Teal-%2302869b?style=flat-square)](#marca)
+[![Dourado](https://img.shields.io/badge/Dourado-%23f4b002?style=flat-square)](#marca)
+[![Montserrat](https://img.shields.io/badge/Fonte-Montserrat-0a0a0a?style=flat-square)](#marca)
+[![pt-BR](https://img.shields.io/badge/Idioma-pt--BR-02869b?style=flat-square)](#marca)
+
+<br />
+
+[Começando](./COMEÇANDO.md)
+&nbsp;·&nbsp;
+[Arquitetura](./ARQUITETURA.md)
+&nbsp;·&nbsp;
+[Hospedagem](./HOSPEDAGEM.md)
+&nbsp;·&nbsp;
+[Custos](./RELATORIO_CUSTOS_E_DEPLOY.md)
+&nbsp;·&nbsp;
+[Segurança](./SEGURANCA.md)
 
 </div>
 
@@ -14,84 +31,98 @@
 
 ## Bem-vindo
 
-Esta documentação cobre o sistema **Casa dos Discípulos** em sua totalidade: desde a instalação local até a hospedagem em produção, passando por segurança, acessibilidade e integração com WhatsApp.
+Esta documentação cobre o sistema **Casa dos Discípulos** de ponta a ponta: desenvolvimento local, arquitetura, produção, segurança, acessibilidade e WhatsApp — no mesmo tom visual do portal (teal, dourado e Montserrat).
 
 ---
 
-## Índice da documentação
+## Navegação
 
-### Começando
-
-| Documento | Descrição |
-|-----------|-----------|
-| [**Começando**](./COMEÇANDO.md) | Instalação, configuração e execução em desenvolvimento |
-| [**Arquitetura**](./ARQUITETURA.md) | Visão geral técnica, stack e estrutura do projeto |
-
-### Operação e deploy
+### Começar
 
 | Documento | Descrição |
 |-----------|-----------|
-| [**Hospedagem**](./HOSPEDAGEM.md) | Deploy em VPS com Docker, Nginx, MySQL e Evolution API |
-| [**Segurança**](./SEGURANCA.md) | Medidas de segurança, autenticação, rate limiting e checklist de produção |
+| [Começando](./COMEÇANDO.md) | Instalar, configurar e rodar em desenvolvimento |
+| [Arquitetura](./ARQUITETURA.md) | Stack, pastas e fluxo de dados |
 
-### Funcionalidades
-
-| Documento | Descrição |
-|-----------|-----------|
-| [**Acessibilidade**](./ACESSIBILIDADE.md) | Recursos para cegos, surdos, baixa visão e mobilidade reduzida |
-| [**WhatsApp**](./WHATSAPP.md) | Notificações por WhatsApp (Evolution API) |
-| [**Configurar WhatsApp local**](./CONFIGURAR_WHATSAPP_LOCAL.md) | Guia passo a passo para ambiente local |
-| [**Especificação**](./ESPECIFICACAO_E_PLANO_REFATORACAO.md) | Visão geral dos módulos e plano de refatoração |
-
-### Referência técnica
+### Operação
 
 | Documento | Descrição |
 |-----------|-----------|
-| [**Backend**](../Codigo/backend/README.md) | API Node.js, rotas, comandos e testes |
-| [**Frontend**](../Codigo/frontend/README.md) | Aplicação React e scripts |
+| [Hospedagem](./HOSPEDAGEM.md) | Deploy do zero: VPS, domínio, Docker, HTTPS |
+| [Relatório de custos](./RELATORIO_CUSTOS_E_DEPLOY.md) | Gastos, tarefas e porquês (para liderança) |
+| [Segurança](./SEGURANCA.md) | Auth, rate limit e checklist de produção |
+
+### Produto
+
+| Documento | Descrição |
+|-----------|-----------|
+| [Acessibilidade](./ACESSIBILIDADE.md) | WCAG 2.1 e recursos inclusivos |
+| [WhatsApp](./WHATSAPP.md) | Notificações via Evolution API |
+| [WhatsApp local](./CONFIGURAR_WHATSAPP_LOCAL.md) | Conectar Evolution na máquina de desenvolvimento |
+| [Especificação](./ESPECIFICACAO_E_PLANO_REFATORACAO.md) | Módulos e histórico de evolução do sistema |
+
+### Código
+
+| Documento | Descrição |
+|-----------|-----------|
+| [Backend](../Codigo/backend/README.md) | API Node.js, rotas e seeds |
+| [Frontend](../Codigo/frontend/README.md) | React, scripts e tokens de marca |
 
 ---
 
-## Módulos do sistema
+## Módulos
 
-| Módulo | Público | Descrição |
-|--------|---------|-----------|
-| **Escola de Discípulos** | Membros e líderes | Módulos educacionais com quiz e gamificação |
-| **Secretaria das Células** | Líderes e admin | Lições, formulários e relatórios semanais |
-| **Eventos** | Todos | Carrossel na home e divulgação de eventos |
+| Módulo | Quem usa | Propósito |
+|--------|----------|-----------|
+| **Escola de Discípulos** | Membros e líderes | Módulos, quizzes e ranking |
+| **Secretaria das Células** | Líderes e admin | Lições, formulários e relatórios |
+| **Eventos** | Todos | Carrossel e divulgação |
 | **Fala Aí, Discípulo** | Todos | Devocional e palavra do dia |
-| **Escala** | Líderes e admin | Calendário e escalas de ministérios |
+| **Escala** | Líderes e admin | Ministérios, calendário e avisos |
 | **Gestão** | Admin | Usuários, células, níveis e ministérios |
 
 ---
 
-## Stack tecnológica
+## Stack
 
 | Camada | Tecnologias |
 |--------|-------------|
-| **Frontend** | React 18, TypeScript, React Router 6 |
-| **Backend** | Node.js, Express 5, Knex.js (MySQL 8) |
-| **Autenticação** | JWT com bcrypt |
-| **Notificações** | Evolution API (WhatsApp) |
+| Frontend | React 18 · TypeScript · React Router 6 |
+| Backend | Node.js · Express 5 · Knex · MySQL 8 |
+| Auth | JWT · bcrypt · Helmet · rate limit |
+| Notificações | Evolution API (WhatsApp) |
+| Produção | Docker · Nginx · Let's Encrypt |
 
 ---
 
-## Marca e design
+## Marca
 
-| Elemento | Especificação |
-|----------|---------------|
-| **Fonte** | Montserrat (fonte oficial da Casa dos Discípulos) |
-| **Teal** | `#02869b` — cor primária |
-| **Dourado** | `#f4b002` — destaque |
-| **Preto** | `#0a0a0a` — textos e fundos |
-| **Idioma** | Português (pt-BR) |
+Identidade alinhada ao portal e à comunicação da Casa.
 
----
-
-## Suporte
-
-Para dúvidas sobre instalação, configuração ou uso, consulte os documentos acima ou entre em contato com a equipe técnica do projeto.
+| Token | Valor | Uso |
+|-------|-------|-----|
+| Teal | `#02869b` | Primária, links, CTAs |
+| Dourado | `#f4b002` | Destaque e acentos |
+| Preto | `#0a0a0a` | Texto e fundos fortes |
+| Claro | `#ebebeb` | Superfícies claras |
+| Fonte | **Montserrat** | Interface e títulos |
+| Idioma | Português (pt-BR) | Toda a experiência |
 
 ---
 
-*Documentação Casa dos Discípulos — Atualizada em fevereiro de 2025*
+## Caminhos rápidos
+
+| Objetivo | Comece em |
+|----------|-----------|
+| Rodar na minha máquina | [Começando](./COMEÇANDO.md) |
+| Entender o sistema | [Arquitetura](./ARQUITETURA.md) |
+| Colocar no ar | [Hospedagem](./HOSPEDAGEM.md) |
+| Aprovar orçamento | [Relatório de custos](./RELATORIO_CUSTOS_E_DEPLOY.md) |
+
+---
+
+<div align="center">
+
+<sub>Casa dos Discípulos · Documentação · Outubro 2026</sub>
+
+</div>

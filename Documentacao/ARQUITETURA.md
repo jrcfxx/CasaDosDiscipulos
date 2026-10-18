@@ -1,193 +1,162 @@
-# Arquitetura — Casa dos Discípulos
+<div align="center">
 
-Visão técnica do sistema e organização do código.
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# Arquitetura
+
+**Como o sistema se organiza — do navegador ao banco**
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Começando](./COMEÇANDO.md)
+&nbsp;·&nbsp;
+[Segurança](./SEGURANCA.md)
+
+</div>
 
 ---
 
 ## Visão geral
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                     FRONTEND (React)                             │
-│  React Router 6 · TypeScript · Hooks · Context API · Axios        │
-└─────────────────────────────┬───────────────────────────────────┘
-                              │ HTTP/REST + JWT
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   BACKEND (Node.js + Express 5)                  │
-│  Rotas · Controllers · Services · Models · Middlewares          │
-└─────────────────────────────┬───────────────────────────────────┘
-                              │ Knex (Query Builder)
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        MySQL 8+                                  │
-│  Usuários · Módulos · Quizzes · Lições · Formulários · Células   │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│  Frontend · React 18 · TypeScript · HashRouter · Axios   │
+│  Marca: Montserrat · teal #02869b · dourado #f4b002      │
+└────────────────────────────┬─────────────────────────────┘
+                             │  HTTPS / REST + JWT
+                             ▼
+┌──────────────────────────────────────────────────────────┐
+│  Backend · Express 5 · Controllers · Services · Models   │
+└────────────────────────────┬─────────────────────────────┘
+                             │  Knex
+                             ▼
+┌──────────────────────────────────────────────────────────┐
+│  MySQL 8 · usuários · módulos · células · escala · …     │
+└──────────────────────────────────────────────────────────┘
 ```
+
+Em produção, o **Nginx** serve o build React e faz proxy de `/api` e `/uploads` para o Node. Opcionalmente, a **Evolution API** envia WhatsApp.
 
 ---
 
-## Frontend (React)
+## Frontend
 
-### Stack
-
-| Tecnologia | Uso |
-|------------|-----|
-| **React 18** | Biblioteca UI |
-| **TypeScript** | Tipagem estática |
-| **React Router 6** | Roteamento (HashRouter) |
-| **Axios** | Cliente HTTP com interceptors JWT |
-| **CSS Modules / CSS** | Estilos (tokens em `tokens.css`) |
-
-### Estrutura
+| Tecnologia | Papel |
+|------------|-------|
+| React 18 | UI |
+| TypeScript | Tipagem |
+| React Router 6 | Rotas (`HashRouter`) |
+| Axios (`apiClient`) | HTTP + JWT automático |
+| CSS + tokens | Design system da Casa |
 
 ```
 frontend/src/
-├── components/         # Componentes reutilizáveis
-│   ├── accessibility/  # SkipLink, LiveAnnouncer, AccessibilityBar
-│   ├── fields/         # Campos de formulário (TextField, TextareaField, etc.)
-│   ├── layout/         # Header, Footer, Layout
-│   └── ui/             # Toast, ConfirmModal, InputModal
-├── config/             # api.ts, constantes
-├── contexts/           # AuthContext, AccessibilityContext
-├── hooks/              # useAuth, usePageTitle
-├── pages/              # Telas da aplicação
-├── services/           # API (authService, eventoService, etc.)
-├── style/              # CSS global e por página
-├── types/              # Interfaces TypeScript
-└── utils/              # generateUid, errorUtils
+├── components/     # layout, ui, fields, accessibility
+├── contexts/       # Auth, Accessibility
+├── hooks/          # useAuth, usePageTitle
+├── pages/          # Telas públicas, admin e usuário
+├── services/       # Chamadas à API
+├── style/          # tokens.css e estilos por página
+└── utils/
 ```
 
-### Padrões
-
-- **Serviços:** Um por entidade (eventoService, licaoService, etc.)
-- **Rotas protegidas:** `ProtectedRoute` com verificação de auth
-- **Títulos dinâmicos:** `usePageTitle` para leitores de tela
-- **Design:** Tokens CSS, Montserrat, teal (#02869b) e dourado (#f4b002)
+**Padrões:** `ProtectedRoute` por papel · títulos dinâmicos · modais com FocusTrap · serviços por domínio.
 
 ---
 
-## Backend (Node.js)
+## Backend
 
-### Stack
-
-| Tecnologia | Uso |
-|------------|-----|
-| **Express 5** | Framework web |
-| **Knex.js** | Query builder para MySQL |
-| **JWT** | Autenticação |
-| **Bcrypt** | Hash de senhas |
-| **Joi** | Validação de entrada |
-| **Helmet** | Headers de segurança |
-| **express-rate-limit** | Rate limiting |
-
-### Arquitetura (MVC + Service Layer)
+| Tecnologia | Papel |
+|------------|-------|
+| Express 5 | HTTP |
+| Knex.js | MySQL |
+| JWT + bcrypt | Auth |
+| Joi | Validação |
+| Helmet + rate-limit | Segurança |
 
 ```
-Request → Route → Middleware (auth, validate) → Controller → Service → Model → DB
-                                                                          ↓
-Response ←───────────────────────────────────────────────────────────────┘
+Request → Route → Middleware → Controller → Service → Model → DB
+                                                              ↓
+Response ←────────────────────────────────────────────────────┘
 ```
-
-### Estrutura
 
 ```
 backend/src/
-├── app.js             # Express, CORS, rate limit, rotas
-├── controllers/      # Lógica HTTP (recebe req, chama service, retorna res)
-├── models/            # Acesso ao banco (Knex)
-├── services/          # Lógica de negócio
-├── routes/            # Definição de rotas e middlewares
-├── middlewares/       # verificarToken, checkRole, validate, errorHandler
-├── validations/       # Schemas Joi
-├── utils/             # AppError, constants
-├── migrations/        # Migrations Knex
-└── seeds/             # Dados iniciais
+├── app.js
+├── controllers/ · services/ · models/ · routes/
+├── middlewares/   # auth, roles, validate, errors
+├── validations/   # Joi
+├── jobs/          # WhatsApp módulos
+└── seeds/
 ```
-
-### Middlewares de segurança
-
-| Middleware | Função |
-|------------|--------|
-| `verificarToken` | Valida JWT e popula `req.usuario` |
-| `adminOnly` | Apenas `tipo === "administrador"` |
-| `adminAndLeader` | Administrador ou líder |
-| `authenticatedOnly` | Qualquer usuário autenticado |
-| `validate(schema)` | Valida body com Joi |
 
 ---
 
-## API REST
+## API
 
-### Base URL
-
-- Desenvolvimento: `http://localhost:3001/api`
-- Produção: `https://seudominio.com/api` (via proxy Nginx)
-
-### Autenticação
+| Ambiente | Base |
+|----------|------|
+| Dev | `http://localhost:3001/api` |
+| Prod | `https://seu-dominio/api` |
 
 ```
-Authorization: Bearer <token_jwt>
+Authorization: Bearer <token>
 ```
 
-### Principais grupos de rotas
-
-| Prefixo | Descrição |
-|---------|-----------|
+| Prefixo | Domínio |
+|---------|---------|
 | `/api/auth` | Login e registro |
-| `/api/usuarios` | CRUD de usuários |
-| `/api/modulo` | Módulos (Escola de Discípulos) |
-| `/api/quiz` | Quizzes |
-| `/api/licao` | Lições (Secretaria) |
-| `/api/formulario` | Formulários |
-| `/api/formulario-resposta` | Respostas de formulários |
-| `/api/celula` | Células |
-| `/api/evento` | Eventos (carrossel) |
-| `/api/escala` | Escala de ministérios |
-| `/api/fala-ai` | Fala Aí, Discípulo |
-| `/api/upload` | Upload de arquivos |
-
-Detalhes em [backend/README.md](../Codigo/backend/README.md).
+| `/api/usuarios` | Pessoas e perfil |
+| `/api/modulo` · `/api/quiz` | Escola de Discípulos |
+| `/api/licao` · `/api/formulario` | Secretaria |
+| `/api/celula` · `/api/ministerios` | Células e ministérios |
+| `/api/evento` · `/api/escala` | Eventos e escala |
+| `/api/fala-ai` | Devocional |
+| `/api/upload` | Arquivos |
+| `/api/health` | Saúde da API |
 
 ---
 
-## Banco de dados (MySQL)
+## Dados
 
-### Principais tabelas
-
-- `usuario` — Usuários e credenciais
-- `modulo`, `quiz`, `quiz_questao`, `quiz_resposta` — Escola de Discípulos
-- `licao`, `licao_campo` — Lições
-- `formulario`, `formulario_campo`, `formulario_resposta` — Formulários
-- `celula`, `usuario_celula` — Células e vínculos
-- `evento` — Eventos do carrossel
-- `escala_evento`, `escala_atribuicao` — Escalas
-- `campo_personalizado` — Campos reutilizáveis (texto, textarea, número, data, etc.)
-
-### Migrations
+Principais entidades: `usuario`, `modulo`, `quiz`, `licao`, `formulario`, `celula`, `evento`, `escala_*`, `campo_personalizado`, `notificacao`.
 
 ```bash
-npm run migrate        # Aplicar
-npm run migrate:rollback  # Reverter
+cd Codigo/backend
+npm run migrate
+npm run migrate:rollback
 ```
 
 ---
 
-## Fluxo de dados típico
+## Fluxo típico
 
-1. **Login:** Frontend → POST `/api/auth/login` → Backend valida → JWT + usuário
-2. **Request autenticada:** Frontend envia `Authorization: Bearer <token>` em cada request
-3. **API Client:** Interceptor adiciona token automaticamente; em 401 faz logout
-4. **Proteção de rotas:** `ProtectedRoute` verifica auth antes de renderizar página
-5. **Roles:** Backend usa `checkRole` para restringir acesso por tipo de usuário
-
----
-
-## Integrações externas
-
-- **Evolution API** — Envio de notificações por WhatsApp (opcional)
-- **Upload de arquivos** — Armazenamento em disco (`/uploads`)
+1. Login → JWT + dados do usuário  
+2. `apiClient` anexa o token em cada request  
+3. `401` → logout e redirecionamento ao login  
+4. Frontend protege rotas; backend reforça com `checkRole`
 
 ---
 
-[← Voltar ao índice](./README.md)
+## Integrações
+
+| Serviço | Uso |
+|---------|-----|
+| Evolution API | WhatsApp (escala, módulos) |
+| Disco `/uploads` | Fotos, campos e mídia |
+
+---
+
+<div align="center">
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Começando](./COMEÇANDO.md)
+&nbsp;·&nbsp;
+[Backend](../Codigo/backend/README.md)
+
+<br />
+
+<sub>Casa dos Discípulos · Arquitetura · 2026</sub>
+
+</div>

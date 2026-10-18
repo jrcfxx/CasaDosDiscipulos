@@ -1,117 +1,105 @@
-# Acessibilidade — Casa dos Discípulos
+<div align="center">
 
-O sistema foi desenvolvido para que **cegos, surdos, pessoas com baixa visão ou mobilidade reduzida** possam utilizá-lo de forma independente.
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
 
----
+# Acessibilidade
 
-## Princípios
+**Para que toda a Casa possa participar — WCAG 2.1 AA**
 
-A Casa dos Discípulos segue as diretrizes **WCAG 2.1 nível AA** e adota boas práticas de acessibilidade em todas as áreas da aplicação.
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Frontend](../Codigo/frontend/README.md)
 
----
-
-## Recursos por necessidade
-
-### 👁️ Usuários cegos (leitores de tela)
-
-| Recurso | Descrição |
-|---------|-----------|
-| **Skip Link** | Primeiro elemento ao pressionar Tab; pula a navegação e vai direto ao conteúdo |
-| **Título dinâmico** | Cada tela tem título descritivo (ex.: "Casa dos Discípulos – Gerenciar usuários") |
-| **Landmarks** | `<main id="main-content">`, `<nav>`, `<section>` com `aria-label` |
-| **Labels em formulários** | Todo campo tem `label` associado via `htmlFor`/`id` |
-| **ARIA** | `aria-label`, `aria-describedby`, `role`, `aria-live` em elementos dinâmicos |
-| **Modais** | Foco preso com FocusTrap; fechar com Esc; foco restaurado ao fechar |
-| **Navegação ativa** | Links atuais com `aria-current="page"` |
-| **Login** | Labels para leitores de tela; erros com `role="alert"` e `aria-describedby` |
-| **Teclado** | Tab, Enter, Esc; setas em listas quando aplicável |
-| **Imagens** | `alt` descritivo em todas as imagens |
-| **Notificações** | Toasts e mensagens com `aria-live` e `role="alert"` |
-
-**Leitores testados:** NVDA (Windows), JAWS (Windows), VoiceOver (macOS/iOS), TalkBack (Android)
+</div>
 
 ---
 
-### 👂 Usuários surdos
-
-| Recurso | Descrição |
-|---------|-----------|
-| **Vídeos legendados** | YouTube com `cc_load_policy=1`; Vimeo e .mp4 com `<track kind="captions">` |
-| **Instruções** | Campo de vídeo orienta o uso de legendas |
-| **Sem áudio exclusivo** | Toda informação importante tem alternativa visual |
-| **Notificações** | Notificações in-app; nada depende apenas de som |
+A plataforma foi pensada para pessoas cegas, surdas, com baixa visão ou mobilidade reduzida usarem o sistema com autonomia — no mesmo cuidado visual do portal (contraste, tipografia Montserrat e foco visível).
 
 ---
 
-### 👓 Usuários com baixa visão
+## Leitores de tela
 
-| Recurso | Descrição |
-|---------|-----------|
-| **Tamanho do texto** | Botão ♿ no canto inferior direito: 100%, 110%, 125% ou 150% |
-| **Alto contraste** | Modo alto contraste (fundo branco, texto preto) no mesmo menu |
-| **Zoom** | Zoom do navegador permitido (sem restrições) |
-| **Foco visível** | Outline claro ao navegar com Tab (`:focus-visible`) |
-| **Redução de movimento** | Respeita `prefers-reduced-motion` |
+| Recurso | Detalhe |
+|---------|---------|
+| Skip link | Primeiro Tab → conteúdo principal |
+| Título dinâmico | Ex.: “Casa dos Discípulos – Entrar” |
+| Landmarks | `main`, `nav`, `section` com rótulos |
+| Formulários | `label` + `htmlFor` / `id` |
+| ARIA | `aria-label`, `aria-live`, `aria-current` |
+| Modais | FocusTrap · Esc · foco restaurado |
+| Erros | `role="alert"` no login e toasts |
 
----
-
-### ⌨️ Usuários com mobilidade reduzida
-
-| Recurso | Descrição |
-|---------|-----------|
-| **Teclado** | Todas as funções acessíveis por teclado |
-| **Áreas clicáveis** | Tamanho adequado; suporte a Enter e Espaço |
-| **Sem voz** | Nenhum comando por voz necessário |
+**Testado com:** NVDA, JAWS, VoiceOver, TalkBack.
 
 ---
 
-## Navegação por teclado
+## Surdez
+
+| Recurso | Detalhe |
+|---------|---------|
+| Vídeos | Legendas (YouTube `cc_load_policy`, tracks em MP4/Vimeo) |
+| Conteúdo | Nada essencial só em áudio |
+| Avisos | Notificações visuais in-app |
+
+---
+
+## Baixa visão
+
+| Recurso | Detalhe |
+|---------|---------|
+| Tamanho do texto | Barra de acessibilidade: 100%–150% |
+| Alto contraste | Fundo claro / texto escuro |
+| Zoom | Sem bloqueio do navegador |
+| Foco | Outline claro em `:focus-visible` |
+| Movimento | Respeita `prefers-reduced-motion` |
+
+---
+
+## Mobilidade reduzida
+
+Tudo operável por teclado · alvos clicáveis adequados · Enter / Espaço / Esc.
 
 | Tecla | Ação |
 |-------|------|
-| **Tab** | Avançar entre links, botões e campos |
-| **Shift+Tab** | Voltar |
-| **Enter** | Ativar links e botões |
-| **Espaço** | Marcar checkboxes; ativar botões |
-| **Esc** | Fechar modais, dropdowns e menus |
-| **Setas** | Navegar em listas e opções (quando implementado) |
+| Tab / Shift+Tab | Navegar |
+| Enter / Espaço | Ativar |
+| Esc | Fechar overlays |
 
 ---
 
-## Componentes acessíveis
+## Componentes
 
 | Componente | Função |
 |------------|--------|
-| **SkipLink** | Link de pular navegação (visível ao focar) |
-| **AccessibilityBar** | Tamanho do texto e alto contraste; Tab + Enter para abrir; Esc para fechar |
-| **LiveAnnouncer** | Anuncia mensagens para leitores de tela |
-| **Toast** | `role="alert"` e `aria-live="polite"` |
-| **Modais** | FocusTrap, fechamento com Esc, foco restaurado |
+| SkipLink | Pular navegação |
+| AccessibilityBar | Texto e contraste |
+| LiveAnnouncer | Anúncios para leitores |
+| Toast / ConfirmModal | Feedback acessível |
 
 ---
 
-## Diretrizes para criadores de conteúdo
+## Para quem publica conteúdo
 
-1. **Vídeos** — Use apenas vídeos com legendas. No YouTube, ative legendas; no Vimeo, adicione na configuração.
-2. **Imagens** — Descreva no campo alt o que a imagem mostra.
-3. **Textos** — Evite jargões; use linguagem clara.
-4. **Links** — Use texto descritivo (evite "clique aqui").
-
----
-
-## WCAG 2.1 — Princípios aplicados
-
-- **Percepção** — Alternativas textuais, contraste adequado, conteúdo adaptável
-- **Operabilidade** — Teclado, tempo suficiente, navegação clara
-- **Compreensão** — Texto legível, previsível, assistência de entrada
-- **Robustez** — Compatível com tecnologias assistivas
+1. Vídeos sempre com legendas  
+2. Imagens com `alt` descritivo  
+3. Texto claro, sem jargão desnecessário  
+4. Links com rótulo significativo (evitar “clique aqui”)
 
 ---
 
-## Auditoria em desenvolvimento
+## Auditoria
 
-Com `npm start`, o **@axe-core/react** analisa a página e reporta violações no **console do DevTools** (F12). Use isso para corrigir problemas durante o desenvolvimento.
+Com `npm start`, o **@axe-core/react** reporta violações no console do navegador.
 
 ---
 
-[← Voltar ao índice](./README.md)
+<div align="center">
+
+[Índice](./README.md)
+
+<br />
+
+<sub>Casa dos Discípulos · Acessibilidade · 2026</sub>
+
+</div>

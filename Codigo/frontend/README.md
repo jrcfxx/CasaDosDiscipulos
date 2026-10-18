@@ -1,58 +1,66 @@
-# Casa dos Discípulos — Frontend
+<div align="center">
 
-Aplicação React da plataforma Casa dos Discípulos: formação, células e eventos.
+<img src="src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# Frontend
+
+**React · TypeScript · marca da Casa**
+
+[Documentação](../../Documentacao/README.md)
+&nbsp;·&nbsp;
+[Começando](../../Documentacao/COMEÇANDO.md)
+&nbsp;·&nbsp;
+[Acessibilidade](../../Documentacao/ACESSIBILIDADE.md)
+
+</div>
 
 ---
 
 ## Stack
 
-- **React** 18
-- **TypeScript**
-- **React Router** 6
-- **Axios** (via apiClient)
-- **CSS** com variáveis (tokens) e Montserrat como fonte principal
+| Tecnologia | Uso |
+|------------|-----|
+| React 18 | UI |
+| TypeScript | Tipagem |
+| React Router 6 | HashRouter |
+| Axios (`apiClient`) | API + JWT |
+| CSS + tokens | Teal `#02869b` · Dourado `#f4b002` · Montserrat |
 
 ---
 
-## Scripts disponíveis
+## Scripts
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm start` | Desenvolvimento em `http://localhost:3000` |
-| `npm run build` | Build de produção em `build/` |
-| `npm test` | Rodar testes (interativo) |
-| `npm run eject` | Ejetar CRA (operação irreversível; não recomendado) |
+| `npm start` | Dev em `http://localhost:3000` |
+| `npm run build` | Build em `build/` |
+| `npm test` | Testes CRA |
+| `npm run test:e2e` | Crawl E2E (Playwright) |
 
 ---
 
-## Estrutura principal
+## Estrutura
 
 ```
 src/
-├── components/       # Componentes reutilizáveis
-│   ├── layout/       # Header, Footer, Layout, etc.
-│   ├── ui/           # Buttons, Toast, modais
-│   └── acessibilidade/  # SkipLink, AccessibilityBar, LiveAnnouncer
-├── pages/            # Páginas/rotas
-├── services/         # API (eventoService, apiClient)
-├── contexts/         # AuthContext
-├── hooks/            # usePageTitle, etc.
-├── utils/            # generateUid, errorUtils
-├── types/            # Tipos TypeScript
-└── index.css         # Estilos globais e tokens
+├── components/   # layout · ui · fields · accessibility
+├── pages/
+├── services/     # apiClient e domínios
+├── contexts/     # Auth · Accessibility
+├── hooks/
+├── style/        # tokens.css e páginas
+└── utils/
 ```
 
 ---
 
-## Variáveis de ambiente
-
-Crie `.env` na raiz do frontend:
+## Ambiente
 
 ```env
 REACT_APP_API_URL=http://localhost:3001/api
 ```
 
-Em produção (com proxy Nginx), use:
+Produção (Nginx no mesmo domínio):
 
 ```env
 REACT_APP_API_URL=/api
@@ -60,24 +68,22 @@ REACT_APP_API_URL=/api
 
 ---
 
-## Acessibilidade
-
-O frontend segue WCAG 2.1 e inclui:
-
-- Skip Link e barra de acessibilidade (tamanho de texto, alto contraste)
-- Títulos dinâmicos por página
-- Formulários com labels e ARIA
-- Navegação por teclado
-
-Consulte [ACESSIBILIDADE.md](../../Documentacao/ACESSIBILIDADE.md) para detalhes.
-
----
-
 ## Marca
 
-- **Fonte:** Montserrat (`tokens.css`: `--font-sans`)
-- **Cores:** Teal `#02869b`, Dourado `#f4b002`
+| Token | Valor |
+|-------|-------|
+| Primária | `#02869b` |
+| Destaque | `#f4b002` |
+| Fonte | Montserrat |
 
 ---
 
-*[Voltar ao índice da documentação](../../Documentacao/README.md)*
+<div align="center">
+
+[Documentação](../../Documentacao/README.md)
+
+<br />
+
+<sub>Casa dos Discípulos · Frontend · 2026</sub>
+
+</div>

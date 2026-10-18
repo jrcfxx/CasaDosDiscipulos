@@ -1,118 +1,114 @@
-# Segurança — Casa dos Discípulos
+<div align="center">
 
-Medidas de segurança implementadas na aplicação e checklist para produção.
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# Segurança
+
+**Camadas de proteção da plataforma e checklist de produção**
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Hospedagem](./HOSPEDAGEM.md)
+&nbsp;·&nbsp;
+[Arquitetura](./ARQUITETURA.md)
+
+</div>
 
 ---
 
-## Autenticação e autorização
+## Autenticação e papéis
 
-### Registro público
+| Recurso | Regra |
+|---------|-------|
+| Registro público | Apenas `tipo: "membro"` |
+| JWT | Obrigatório nas rotas protegidas |
+| Senhas | Hash com bcrypt |
 
-- **`/api/auth/register`** — Aceita apenas `tipo: "membro"`.
-- Não é possível registrar-se como administrador ou líder por meio do registro público.
+| Middleware | Quem passa |
+|------------|------------|
+| `verificarToken` | Token válido + usuário ativo |
+| `adminOnly` | Administrador |
+| `adminAndLeader` | Admin ou líder |
+| `adminAndLiderMinisterio` | Admin ou líder de ministério |
+| `authenticatedOnly` | Qualquer autenticado |
 
-### Rotas protegidas
+### Matriz resumida
 
-| Recurso | Leitura | Escrita |
-|---------|---------|---------|
-| Eventos | `/ativos` público | Admin |
-| Módulos | Público (index, active, ranking) | Admin |
-| Quiz | Público (listar) | Admin |
-| Lições | Autenticado | Admin |
-| Formulários | Autenticado | Admin |
-| Campos personalizados | Admin | Admin |
-| Quiz respostas | Admin | Admin |
-| Formulário respostas | Admin/Líder | Admin/Líder ou usuário (store) |
-| Upload de arquivos | — | Autenticado |
-
-### Middlewares
-
-| Middleware | Função |
-|------------|--------|
-| `verificarToken` | Valida JWT e inclui `req.usuario` |
-| `adminOnly` | Apenas `tipo === "administrador"` |
-| `adminAndLeader` | Administrador ou líder |
-| `authenticatedOnly` | Qualquer usuário autenticado |
+| Área | Leitura | Escrita |
+|------|---------|---------|
+| Eventos públicos | Aberto (`/ativos`) | Admin |
+| Células públicas | Aberto (`/publicas`) | Admin |
+| Usuários (lista) | Admin | Admin |
+| Ministérios (lista) | Admin / líder | Admin |
+| Escala (visão) | Autenticado | Admin / líder ministério |
+| Lições / formulários | Autenticado | Admin (CRUD) · líder (respostas) |
 
 ---
 
 ## Rate limiting
 
-| Endpoint | Limite | Janela | Configurável |
-|----------|--------|--------|--------------|
-| API geral | 300 requisições | 15 min por IP | `RATE_LIMIT_MAX` no `.env` |
-| Login e registro | 10 requisições | 15 min por IP | — |
+| Escopo | Produção | Desenvolvimento |
+|--------|----------|-----------------|
+| API geral | 300 req / 15 min | 5000 (ajustável) |
+| Login / registro | 30 req / 15 min | 500 (ajustável) |
 
-Objetivo: reduzir risco de brute-force e abuso da API.
-
----
-
-## Headers de segurança (Helmet)
-
-O Helmet adiciona headers HTTP como:
-
-- `X-Content-Type-Options: nosniff`
-- `X-Frame-Options: SAMEORIGIN`
-- `X-XSS-Protection: 1; mode=block`
-- `Strict-Transport-Security` (em produção com HTTPS)
+Variáveis: `RATE_LIMIT_MAX`, `AUTH_RATE_LIMIT_MAX`.
 
 ---
 
-## CORS
+## Headers e CORS
 
-Configure em produção no `.env` do backend:
+- **Helmet** — `nosniff`, frame options, etc.
+- **CORS** em produção:
 
 ```env
-CORS_ORIGIN=https://seudominio.com,https://www.seudominio.com
+CORS_ORIGIN=https://app.casadosdiscipulos.org
 ```
 
-- Sem `CORS_ORIGIN`, qualquer origem é aceita (apenas para desenvolvimento).
-- Em produção, use exatamente o(s) domínio(s) do frontend.
+Sem `CORS_ORIGIN`, qualquer origem é aceita (somente adequado em desenvolvimento).
 
 ---
 
-## JWT_SECRET
-
-Use um valor aleatório forte em produção (mínimo 32 caracteres):
+## Segredos
 
 ```bash
-openssl rand -hex 32
+openssl rand -hex 32   # JWT_SECRET (mín. 32 caracteres)
 ```
 
-Depois defina no `.env`:
-
-```env
-JWT_SECRET=valor_gerado_acima
-```
+Nunca commitar `.env`. Em deploy, use `deploy/.env` a partir de `.env.example`.
 
 ---
 
-## Validação de entrada
+## Validação e uploads
 
-- **Joi** — Validação de body e parâmetros em todas as rotas sensíveis.
-- **Sanitização** — Evita injeção e dados malformados.
-
----
-
-## Upload de arquivos
-
-- Validação de tipo (MIME e extensão)
-- Limite de tamanho (5MB imagens; 10MB documentos)
-- Nomes de arquivo gerados pelo servidor (evita path traversal)
+- **Joi** em rotas sensíveis  
+- Uploads com tipo/tamanho validados e nomes gerados pelo servidor  
+- Limites típicos: 5 MB imagens · 10 MB documentos  
 
 ---
 
 ## Checklist de produção
 
-- [ ] `JWT_SECRET` forte e único (gerado com `openssl rand -hex 32`)
-- [ ] `CORS_ORIGIN` configurado com o domínio do frontend
-- [ ] HTTPS ativado no servidor
-- [ ] Banco de dados com usuário limitado (não root)
-- [ ] Logs sem dados sensíveis (senha, token)
-- [ ] Backups regulares do banco
-- [ ] Firewall configurado (portas 80, 443, 22)
-- [ ] `NODE_ENV=production`
+- [ ] `JWT_SECRET` forte e único  
+- [ ] `CORS_ORIGIN` com o domínio HTTPS real  
+- [ ] HTTPS (Let's Encrypt) ativo  
+- [ ] MySQL sem usuário root na aplicação  
+- [ ] Evolution apenas em `127.0.0.1:8080` (túnel SSH para QR)  
+- [ ] Firewall: 22, 80, 443  
+- [ ] Backups de banco e `/uploads`  
+- [ ] `NODE_ENV=production`  
+- [ ] Logs sem senha/token  
 
 ---
 
-[← Voltar ao índice](./README.md)
+<div align="center">
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Hospedagem](./HOSPEDAGEM.md)
+
+<br />
+
+<sub>Casa dos Discípulos · Segurança · 2026</sub>
+
+</div>

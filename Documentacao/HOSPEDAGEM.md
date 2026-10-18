@@ -1,307 +1,188 @@
-# Hospedagem — Casa dos Discípulos
+<div align="center">
 
-Guia para hospedar a aplicação em produção, com suporte a **~50 acessos simultâneos** e **notificações WhatsApp**.
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# Hospedagem
+
+**Do zero ao ar — VPS, domínio, Docker, HTTPS e WhatsApp**
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Custos](./RELATORIO_CUSTOS_E_DEPLOY.md)
+&nbsp;·&nbsp;
+[Segurança](./SEGURANCA.md)
+
+</div>
 
 ---
 
-## Visão geral da arquitetura
+## Arquitetura em produção
 
 ```
-                    ┌─────────────────────────────────────┐
-                    │           NGINX (porta 80)          │
-                    │  - Serve frontend React             │
-                    │  - Proxy /api e /uploads → backend │
-                    └─────────────────┬─────────────────┘
-                                       │
-         ┌─────────────────────────────┼─────────────────────────────┐
-         │                             │                             │
-         ▼                             ▼                             │
-┌─────────────────┐          ┌─────────────────┐                     │
-│    Backend      │          │    MySQL         │                     │
-│   (Node.js)     │◄────────►│   (dados)       │                     │
-│   porta 3001    │          │   porta 3306     │                     │
-└────────┬────────┘          └─────────────────┘                     │
-         │                                                             │
-         │ EVOLUTION_API_URL                                            │
-         ▼                                                             │
-┌─────────────────┐                                                    │
-│  Evolution API  │  (WhatsApp - porta 8080)                          │
-│  (Baileys)      │                                                    │
-└─────────────────┘                                                    │
+        Usuário
+           │
+           ▼
+   ┌───────────────┐
+   │  Nginx 80/443 │  React + proxy /api · /uploads
+   └───────┬───────┘
+           │
+     ┌─────┴─────┐
+     ▼           ▼
+  Backend      MySQL
+     │
+     ▼
+ Evolution (WhatsApp · só localhost:8080)
 ```
 
-- **Web**: Nginx serve o React e faz proxy para o backend
-- **Backend**: API Node.js + Express
-- **MySQL**: Banco de dados
-- **Evolution API**: Envio de mensagens WhatsApp
+Código: pasta [`deploy/`](../deploy/) · script [`deploy.sh`](../deploy/deploy.sh)
 
 ---
 
-## Passo 1: Escolher o provedor (VPS)
+## Checklist antes de começar
 
-Para ~50 usuários simultâneos, um **VPS modesto** é suficiente.
+| Item | Onde |
+|------|------|
+| Cartão / conta VPS | DigitalOcean ou Hetzner |
+| Domínio | Painel de `casadosdiscipulos.org` ou Registro.br |
+| Chave SSH | Seu computador |
+| WhatsApp da igreja | Celular para o QR |
 
-| Provedor      | Plano sugerido | RAM  | Custo aprox. |
-|---------------|----------------|------|--------------|
-| **DigitalOcean** | Basic Droplet  | 2GB  | ~US$ 12/mês  |
-| **Hetzner**      | CX22           | 2GB  | ~€ 4/mês     |
-| **Vultr**        | Cloud Compute  | 2GB  | ~US$ 12/mês  |
-| **Contabo**      | VPS S          | 4GB  | ~€ 5/mês     |
-
-**Sistema operacional:** Ubuntu 22.04 LTS
+Orçamento e porquês: [Relatório de custos](./RELATORIO_CUSTOS_E_DEPLOY.md).
 
 ---
 
-## Passo 2: Preparar o servidor
+## Do zero em 5 passos
 
-### 2.1 Conectar via SSH
+### 1 · Domínio
+
+O **domínio** é o nome público (ex.: `app.casadosdiscipulos.org`).  
+Você compra/renova num registrador; no **DNS** aponta para o IP do servidor.
+
+| Onde | Quando |
+|------|--------|
+| Painel atual de `casadosdiscipulos.org` | Preferível — só criar subdomínio `app` |
+| [Registro.br](https://registro.br) | Novo `.com.br` / `.org.br` |
+| [Cloudflare](https://www.cloudflare.com) | DNS / CDN |
+
+Confirme com a diretoria quem administra o domínio antes de comprar outro.
+
+### 2 · VPS
+
+**Padrão:** DigitalOcean Droplet · Ubuntu 22.04 · **2 GB RAM** · São Paulo se disponível.  
+**Alternativa:** Hetzner CX22.
 
 ```bash
-ssh root@SEU_IP_DO_SERVIDOR
-```
-
-### 2.2 Instalar Docker e Docker Compose
-
-```bash
-# Atualizar sistema
+ssh root@SEU_IP
 apt update && apt upgrade -y
-
-# Instalar Docker
 curl -fsSL https://get.docker.com | sh
-
-# Instalar Docker Compose
-apt install docker-compose-plugin -y
-
-# Verificar
-docker --version
-docker compose version
+apt install docker-compose-plugin curl -y
+ufw allow 22 && ufw allow 80 && ufw allow 443 && ufw --force enable
 ```
 
-### 2.3 Opcional: criar usuário não-root
+### 3 · DNS
 
-```bash
-adduser deploy
-usermod -aG docker deploy
-usermod -aG sudo deploy
-su - deploy
-```
+| Tipo | Nome | Valor |
+|------|------|--------|
+| A | `app` | IP do Droplet |
 
----
-
-## Passo 3: Enviar o projeto para o servidor
-
-### Opção A: via Git (recomendado)
-
-No servidor:
+### 4 · Aplicação
 
 ```bash
 cd /opt
-git clone https://github.com/SEU_USUARIO/CasaDosDiscipulos.git
-cd CasaDosDiscipulos
-```
-
-### Opção B: via SCP/SFTP
-
-No seu computador:
-
-```bash
-scp -r Caminho/Local/CasaDosDiscipulos deploy@SEU_IP:/opt/
-```
-
-### Opção C: via rsync
-
-```bash
-rsync -avz --exclude node_modules --exclude .git ./CasaDosDiscipulos deploy@SEU_IP:/opt/
-```
-
----
-
-## Passo 4: Configurar variáveis de ambiente
-
-```bash
-cd /opt/CasaDosDiscipulos/deploy
-
+git clone https://github.com/jrcfxx/CasaDosDiscipulos.git
+cd CasaDosDiscipulos/deploy
 cp .env.example .env
-nano .env
+nano .env   # DB_PASSWORD, JWT_SECRET, EVOLUTION_API_KEY, DOMAIN, CORS_ORIGIN
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-**Configure:**
-
-```env
-DB_USER=casadiscipulos
-DB_PASSWORD=SENHA_MUITO_SEGURA_AQUI
-DB_NAME=CasaDosDiscipulos
-
-JWT_SECRET=MINIMO_32_CARACTERES_ALEATORIOS_SEGUROS
-
-CORS_ORIGIN=https://app.seudominio.com.br,https://seudominio.com.br
-
-REACT_APP_API_URL=/api
-
-EVOLUTION_API_KEY=chave-que-voce-escolher
-EVOLUTION_INSTANCE_NAME=casadosdiscipulos
-```
-
-- **JWT_SECRET**: gere com `openssl rand -hex 32`
-- **CORS_ORIGIN**: domínios permitidos separados por vírgula
-- **EVOLUTION_API_KEY**: use a mesma chave configurada na Evolution
-
----
-
-## Passo 5: Fazer o deploy
-
-```bash
-cd /opt/CasaDosDiscipulos/deploy
-
-# Build das imagens
-docker compose build
-
-# Subir os containers
-docker compose up -d
-
-# Verificar se tudo está rodando
-docker compose ps
-```
-
-Deve aparecer:
-- `casadiscipulos_web` (porta 80)
-- `casadiscipulos_backend` (interno)
-- `casadiscipulos_mysql` (interno)
-- `casadiscipulos_evolution` (porta 8080)
-
----
-
-## Passo 6: Configurar o WhatsApp (Evolution API)
-
-1. Acesse no navegador: `http://SEU_IP:8080`
-2. Crie uma **instância** com o nome `casadosdiscipulos` (ou o que definiu em `EVOLUTION_INSTANCE_NAME`)
-3. Aparecerá um **QR Code**
-4. No celular: WhatsApp → **Configurações** → **Aparelhos conectados** → **Conectar aparelho**
-5. Escaneie o QR Code
-
-Depois disso, o número fica conectado e as notificações passam a funcionar.
-
----
-
-## Passo 7: Domínio e SSL (HTTPS)
-
-### 7.1 Apontar o domínio
-
-No painel do seu provedor de domínio (Registro.br, GoDaddy, etc.):
-
-- **A**: `app.seudominio.com.br` → IP do servidor
-
-### 7.2 Instalar certificado SSL (Let's Encrypt)
-
-```bash
-apt install certbot -y
-
-# Gerar certificado
-certbot certonly --standalone -d app.seudominio.com.br
-```
-
-Os arquivos ficam em:
-- `/etc/letsencrypt/live/app.seudominio.com.br/fullchain.pem`
-- `/etc/letsencrypt/live/app.seudominio.com.br/privkey.pem`
-
-### 7.3 Ativar HTTPS no Nginx
-
-1. Copie os certificados para o projeto:
-
-```bash
-mkdir -p /opt/CasaDosDiscipulos/deploy/nginx/ssl
-cp /etc/letsencrypt/live/app.seudominio.com.br/fullchain.pem /opt/CasaDosDiscipulos/deploy/nginx/ssl/
-cp /etc/letsencrypt/live/app.seudominio.com.br/privkey.pem /opt/CasaDosDiscipulos/deploy/nginx/ssl/
-```
-
-2. Atualize o `deploy/nginx/nginx.conf` para incluir o bloco HTTPS (veja comentário no arquivo) e reinicie:
-
-```bash
-docker compose restart web
-```
-
----
-
-## Passo 8: Seed inicial (primeira vez)
-
-Para popular o banco com dados de exemplo:
+Primeira vez (dados iniciais):
 
 ```bash
 docker compose exec backend node ./src/seeds/runSeeds.js
 ```
 
----
-
-## Comandos úteis
-
-| Comando | Descrição |
-|--------|-----------|
-| `docker compose logs -f` | Ver logs em tempo real |
-| `docker compose logs -f backend` | Logs só do backend |
-| `docker compose restart backend` | Reiniciar o backend |
-| `docker compose down` | Parar todos os containers |
-| `docker compose up -d --build` | Reconstruir e subir |
-
----
-
-## Atualizar a aplicação
-
-Quando houver mudanças no código:
+### 5 · HTTPS + WhatsApp
 
 ```bash
-cd /opt/CasaDosDiscipulos
-git pull   # se usar Git
+docker compose stop web
+apt install certbot -y
+certbot certonly --standalone -d app.seudominio.org
+mkdir -p nginx/ssl
+cp /etc/letsencrypt/live/app.seudominio.org/fullchain.pem nginx/ssl/
+cp /etc/letsencrypt/live/app.seudominio.org/privkey.pem nginx/ssl/
+# .env → CORS_ORIGIN=https://app.seudominio.org
+./deploy.sh --enable-ssl
+```
 
-cd deploy
-docker compose build
-docker compose up -d
+WhatsApp (porta só em localhost):
+
+```bash
+ssh -L 8080:127.0.0.1:8080 root@SEU_IP
+# abra http://localhost:8080 · crie a instância · escaneie o QR
+```
+
+---
+
+## Arquivos-chave
+
+| Arquivo | Função |
+|---------|--------|
+| `deploy/docker-compose.yml` | web · backend · mysql · evolution |
+| `deploy/.env.example` | Modelo de variáveis |
+| `deploy/deploy.sh` | Build, up, smoke `/api/health` |
+| `deploy/nginx/nginx.conf` | HTTP |
+| `deploy/nginx/nginx-ssl.conf` | Template HTTPS |
+
+---
+
+## Dia a dia
+
+| Comando | Uso |
+|---------|-----|
+| `./deploy.sh` | Atualizar / subir |
+| `docker compose logs -f backend` | Logs da API |
+| `docker compose ps` | Status |
+| `curl -s http://127.0.0.1/api/health` | Saúde |
+
+```bash
+cd /opt/CasaDosDiscipulos && git pull && cd deploy && ./deploy.sh
 ```
 
 ---
 
 ## Backup
 
-### Banco de dados
-
 ```bash
-docker compose exec mysql mysqldump -u casadiscipulos -p CasaDosDiscipulos > backup_$(date +%Y%m%d).sql
+docker compose exec -T mysql mysqldump -u casadiscipulos -p CasaDosDiscipulos > backup.sql
 ```
 
-### Uploads (fotos)
-
-```bash
-docker compose run --rm -v casadiscipulos_backend_uploads:/data -v $(pwd):/backup alpine tar czf /backup/uploads_backup.tar.gz -C /data .
-```
+Guarde também o volume de uploads (`backend_uploads`).
 
 ---
 
-## Segurança recomendada
+## Problemas
 
-1. **Firewall (UFW)**:
-   ```bash
-   ufw allow 22    # SSH
-   ufw allow 80    # HTTP
-   ufw allow 443   # HTTPS
-   ufw enable
-   ```
-
-2. **CORS_ORIGIN** no `.env` com o(s) domínio(s) do frontend.
-
-3. **Restringir Evolution**: Após conectar o WhatsApp, considere fechar a porta 8080 no firewall se não precisar acessá-la externamente.
-
-4. **Senhas fortes** para `DB_PASSWORD` e `JWT_SECRET` (mín. 32 caracteres aleatórios).
+| Sintoma | Ação |
+|---------|------|
+| Site offline | `docker compose ps` · logs `web` |
+| 502 | Logs `backend` · migrate / MySQL |
+| Health falha | Aguarde start_period · confira MySQL healthy |
+| SSL | Certs em `nginx/ssl/` + `DOMAIN` + `--enable-ssl` |
 
 ---
 
-## Resolução de problemas
+<div align="center">
 
-| Problema | Solução |
-|----------|---------|
-| Site não carrega | `docker compose ps` → conferir containers; `docker compose logs web` |
-| Erro 502 | Backend pode não ter iniciado; `docker compose logs backend` |
-| Migrations falham | MySQL pode ainda não estar pronto; aguardar e `docker compose restart backend` |
-| WhatsApp não envia | Verificar Evolution em `http://IP:8080`; conferir `EVOLUTION_INSTANCE_NAME` e `EVOLUTION_API_KEY` no `.env` |
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Custos](./RELATORIO_CUSTOS_E_DEPLOY.md)
+&nbsp;·&nbsp;
+[Segurança](./SEGURANCA.md)
 
----
+<br />
 
-[← Voltar ao índice](./README.md)
+<sub>Casa dos Discípulos · Hospedagem · 2026</sub>
+
+</div>

@@ -1,34 +1,39 @@
-# Casa dos Discípulos — Backend API
+<div align="center">
 
-API REST em Node.js para o sistema de gestão da Casa dos Discípulos.
+<img src="../frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# Backend API
+
+**Node.js · Express 5 · MySQL · JWT**
+
+[Documentação](../../Documentacao/README.md)
+&nbsp;·&nbsp;
+[Segurança](../../Documentacao/SEGURANCA.md)
+&nbsp;·&nbsp;
+[Começando](../../Documentacao/COMEÇANDO.md)
+
+</div>
 
 ---
 
-## Módulos principais
+## Módulos
 
-- **Escola de Discípulos** — Módulos educacionais com quizzes gamificados
-- **Secretaria das Células** — Lições e formulários para líderes de células
-- **Eventos** — CRUD e divulgação de eventos
-- **Escala** — Calendário e escalas de ministérios
-- **Usuários** — Autenticação JWT, RBAC (admin, líder, membro)
+Escola de Discípulos · Secretaria das Células · Eventos · Escala · Fala Aí · Usuários e células · Ministérios · Notificações
 
 ---
 
-## Quick Start
-
-### 1. Instalar dependências
+## Quick start
 
 ```bash
 npm install
-```
-
-### 2. Configurar `.env`
-
-```bash
 cp .env.example .env
+# edite DB_* e JWT_SECRET
+npm run migrate
+npm run seed
+npm run dev
 ```
 
-Edite `.env`:
+API: `http://localhost:3001` · health: `/api/health`
 
 ```env
 PORT=3001
@@ -39,46 +44,25 @@ DB_PASSWORD=sua_senha
 DB_NAME=CasaDosDiscipulos
 JWT_SECRET=minimo_32_caracteres_aleatorios_seguros
 NODE_ENV=development
+CORS_ORIGIN=
 ```
-
-> **Produção:** Use `CORS_ORIGIN` e `JWT_SECRET` forte. Ver [SEGURANCA.md](../../Documentacao/SEGURANCA.md).
-
-### 3. Criar banco no MySQL
-
-```sql
-CREATE DATABASE CasaDosDiscipulos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-### 4. Migrations e seed
-
-```bash
-npm run migrate
-npm run seed
-```
-
-### 5. Rodar o servidor
-
-```bash
-npm run dev
-```
-
-API em: `http://localhost:3001`
 
 ---
 
-## Comandos úteis
+## Comandos
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run dev` | Desenvolvimento com hot reload |
-| `npm run migrate` | Executa migrations |
-| `npm run migrate:rollback` | Desfaz última migration |
-| `npm run seed` | Popula dados de teste |
+| Comando | Uso |
+|---------|-----|
+| `npm run dev` | Hot reload |
+| `npm run migrate` | Migrations |
+| `npm run migrate:rollback` | Rollback |
+| `npm run seed` | Seeds |
 | `npm start` | Produção |
+| `node scripts/e2eRoutesTest.mjs` | Suite E2E da API |
 
 ---
 
-## Usuários padrão (seeds)
+## Seeds de teste
 
 | Email | Senha | Tipo |
 |-------|-------|------|
@@ -88,97 +72,49 @@ API em: `http://localhost:3001`
 
 ---
 
-## Rotas principais
+## Rotas (amostra)
 
-### Autenticação
+| Grupo | Exemplos |
+|-------|----------|
+| Auth | `POST /api/auth/login` · `POST /api/auth/register` |
+| Escola | `GET /api/modulo` · `POST /api/quiz/:id/responder` |
+| Secretaria | `GET /api/licao` · `POST /api/formulario-resposta` |
+| Eventos | `GET /api/evento/ativos` · CRUD admin |
+| Escala | `/api/escala/*` |
+| Saúde | `GET /api/health` |
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| POST | `/api/auth/register` | Cadastrar membro (apenas `tipo: membro`) |
-| POST | `/api/auth/login` | Login |
-
-### Escola de Discípulos
-
-| Método | Rota | Acesso |
-|--------|------|--------|
-| GET | `/api/modulo` | Público |
-| GET | `/api/quiz/:id` | Público |
-| POST | `/api/quiz/:id/responder` | Autenticado |
-| POST | `/api/modulo` | Admin |
-
-### Secretaria das Células
-
-| Método | Rota | Acesso |
-|--------|------|--------|
-| GET | `/api/licao` | Autenticado |
-| GET | `/api/formulario` | Autenticado |
-| POST | `/api/formulario-resposta` | Autenticado |
-| POST | `/api/licao` | Admin |
-
-### Eventos
-
-| Método | Rota | Acesso |
-|--------|------|--------|
-| GET | `/api/evento/ativos` | Público |
-| GET | `/api/evento` | Admin |
-| POST | `/api/evento` | Admin |
-| PUT | `/api/evento/:id` | Admin |
-| DELETE | `/api/evento/:id` | Admin |
-| POST | `/api/evento/:id/upload` | Admin |
-
-### Upload
-
-| Método | Rota | Acesso |
-|--------|------|--------|
-| POST | `/api/upload/campo` | Autenticado |
-
----
-
-## Estrutura do projeto
-
-```
-backend/
-├── src/
-│   ├── app.js              # Express, Helmet, CORS, rate limit
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middlewares/        # verificarToken, adminOnly, adminAndLeader
-│   ├── validations/        # Joi (authValidation, etc.)
-│   ├── migrations/
-│   └── seeds/
-├── knexfile.cjs
-└── .env
-```
+Coleção Postman: `Casa_dos_Discipulos_API.postman_collection.json` (se presente no repo).
 
 ---
 
 ## Segurança
 
-- **JWT** — Autenticação em rotas protegidas
-- **Helmet** — Headers de segurança
-- **Rate limiting** — 300 req/15min (API geral); 10 req/15min (login/registro)
-- **CORS** — Configure `CORS_ORIGIN` em produção
-- **Validação** — Joi em rotas sensíveis
+- JWT · bcrypt · Helmet · Joi  
+- Rate limit: 300/15min (prod API) · 30/15min (login)  
+- `CORS_ORIGIN` obrigatório em produção  
 
-Ver [SEGURANCA.md](../../Documentacao/SEGURANCA.md) para checklist completo.
+Detalhes: [SEGURANCA.md](../../Documentacao/SEGURANCA.md).
 
 ---
 
-## Tecnologias
+## Estrutura
 
-- Node.js 18+
-- Express 5
-- MySQL 8
-- Knex.js (query builder)
-- JWT, bcrypt, Joi, dotenv
-
----
-
-## Postman
-
-Importe `Casa_dos_Discipulos_API.postman_collection.json` para testar as rotas.
+```
+backend/
+├── src/app.js · controllers · services · models · routes · middlewares
+├── docker-entrypoint.sh   # migrate + start (imagem Docker)
+├── knexfile.cjs
+└── scripts/               # e2e e utilitários
+```
 
 ---
 
-*[Voltar ao índice da documentação](../../Documentacao/README.md)*
+<div align="center">
+
+[Documentação](../../Documentacao/README.md)
+
+<br />
+
+<sub>Casa dos Discípulos · Backend · 2026</sub>
+
+</div>

@@ -1,128 +1,102 @@
-# Especificação e Plano de Refatoração — Casa dos Discípulos
+<div align="center">
 
-Visão técnica dos módulos e histórico de refatoração.
+<img src="../Codigo/frontend/src/assets/logo_mark.png" alt="Casa dos Discípulos" width="64" />
+
+# Especificação
+
+**Módulos do produto e histórico de evolução**
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Arquitetura](./ARQUITETURA.md)
+
+</div>
 
 ---
 
-## 1. Visão geral do sistema
+## Escopo
 
-### 1.1 Escopo
+Plataforma web da **Casa dos Discípulos** para formação (Escola), células (Secretaria), eventos, escala e gestão — com identidade visual teal `#02869b`, dourado `#f4b002` e Montserrat.
 
-Plataforma web para gestão de igrejas: formação (Escola de Discípulos), acompanhamento de células (Secretaria) e divulgação de eventos.
+---
 
-### 1.2 Módulos independentes
+## Módulos
 
 | Módulo | Propósito | Quem usa |
 |--------|-----------|----------|
-| **Módulos (Escola de Discípulos)** | Estudo com conteúdo + quiz opcional | Todos (membros e líderes) |
-| **Lições** | Conteúdo para visualização e download | Líderes de células |
-| **Formulários** | Relatórios semanais das células | Líderes preenchem; Admin visualiza |
-| **Eventos** | Informações e próximos eventos (carrossel na home) | Admin altera; todos veem |
-| **Usuários e Células** | Gestão de pessoas e grupos | Admin, líderes, membros (perfil) |
+| Escola de Discípulos | Conteúdo + quiz + ranking | Membros e líderes |
+| Lições | Material para células | Líderes de célula |
+| Formulários | Relatórios semanais | Líderes preenchem · admin vê |
+| Eventos | Carrossel e divulgação | Admin edita · todos veem |
+| Escala | Ministérios e calendário | Admin / líderes de ministério |
+| Fala Aí | Devocional | Autenticados |
+| Usuários e células | Cadastro e vínculos | Admin · perfil do membro |
 
 ---
 
-## 2. Especificação por módulo
+## Regras de negócio (resumo)
 
-### 2.1 Escola de Discípulos (Módulos e Quizzes)
+### Escola
 
-**Fluxo:** Módulo (conteúdo) → Quiz (se existir) → Pontuação → Ranking
+- Progressão na ordem definida pelo admin  
+- Quiz opcional por módulo  
+- Mesmo quiz em vários módulos: 1ª vez pontuação cheia · replicação com pontuação reduzida  
+- Ranking e níveis gamificados  
 
-- **Progressão obrigatória:** Admin define ordem; usuário deve concluir na sequência.
-- **Módulo = Nível:** Nível do usuário = quantidade de módulos concluídos.
-- **Quiz opcional:** Módulo pode ou não ter quiz.
-- **Quiz em múltiplos módulos:** Um quiz pode pertencer a vários módulos.
-  - **1ª realização:** Pontuação integral.
-  - **Replicação (mesmo quiz, outro módulo):** 1/3 da pontuação (participação).
-- **Gamificação:** Pontos, ranking, níveis.
+### Secretaria
 
-### 2.2 Lições (Secretaria das Células)
+- Lições: texto, link, vídeo, upload  
+- Formulários: campos dinâmicos · líder escolhe a célula · múltiplos envios  
 
-- **Público:** Líderes de células.
-- **Conteúdo:** Texto, links, vídeos, arquivos (PDF etc.).
-- **Ações:** Visualizar e baixar.
-- **Upload:** Admin pode anexar arquivos em campos tipo upload.
+### Pessoas
 
-### 2.3 Formulários (Secretaria das Células)
-
-- **Criação:** Admin define formulários com campos dinâmicos (texto, textarea, número, data, link, upload, vídeo).
-- **Tipos de campo:** Admin escolhe entre linha única ou área de texto por campo.
-- **Preenchimento:** Líder escolhe a célula e preenche.
-- **Periodicidade:** Vários envios por célula (ex.: relatórios semanais).
-- **Visualização Admin:** Lista de respostas, expandir detalhes, dashboard de células respondidas.
-
-### 2.4 Eventos
-
-- **Uso:** Alteração frequente (ex.: semanal).
-- **Exibição:** Carrossel na homepage (informações importantes + próximos eventos).
-
-### 2.5 Usuários e Células
-
-- **Tipos:** administrador, lider, membro.
-- **Célula principal:** Membro escolhe no perfil (vinculação opcional).
-- **Visitas:** Registradas via formulários (relatórios).
+- Tipos: `administrador` · `lider` · `membro`  
+- Flags: `lider_celula` · `lider_ministerio`  
+- Célula principal no perfil  
 
 ---
 
-## 3. Arquitetura e padrões
+## Arquitetura desejada
 
-- Código limpo e bem organizado.
-- Separação clara: componentes, serviços, hooks.
-- Variáveis de ambiente para URLs da API.
-- Nomenclatura consistente (ex.: Quiz na Escola de Discípulos, não na Secretaria).
-- Remoção de código morto e páginas obsoletas.
-
----
-
-## 4. Plano de refatoração (status)
-
-### Fase 1: Limpeza e consistência ✅
-
-- Remover páginas obsoletas e referências.
-- Padronizar rotas (`/admin/*` e `/usuario/*`).
-- Padronizar links no Portal Admin.
-- Corrigir rota desprotegida e navigations internas.
-
-### Fase 2: Escola de Discípulos (Usuário) ✅
-
-- ModulosEscolaDiscipulosUser integrado com API.
-- PreencherModulosEscolaDiscipulosUser com conteúdo real e quiz.
-- Progressão sequencial e pontuação diferenciada no quiz.
-
-### Fase 3: Formulários (Líder e Admin) ✅
-
-- FormulariosSecretariaCelulasLeader com seletor de célula e integração com API.
-- FormulariosSecretariaCelulasAdmin com listagem, expansão e dashboard.
-- Campos dinâmicos: admin define tipo (texto vs. textarea).
-
-### Fase 4: Banco de dados e modelo ✅
-
-- Tabela `usuario_celula` (id_usuario, id_celula, principal).
-- Nível mantido; ordem de módulos validada.
-- Campo `ordem` em `modulo`.
-
-### Fase 5: Lições, Perfil e Eventos ✅
-
-- Lições com upload/download.
-- Perfil com seleção de célula principal.
-- HomePage com carrossel de eventos.
-- CRUD de eventos.
-
-### Fase 6: Refinamentos e qualidade ✅
-
-- URLs da API em configuração.
-- Tratamento de erros padronizado.
-- Documentação atualizada.
+- Separação pages / services / hooks  
+- API via `apiClient` (JWT)  
+- Tokens CSS e marca consistentes  
+- Rotas `/admin/*` e `/usuario/*`  
 
 ---
 
-## 5. Fluxo de formulários (atual)
+## Histórico de entrega
 
-- **FormulariosSecretariaCelulasLeader:** Lista formulários → escolhe formulário → escolhe célula → preenche → envia.
-- **Rota:** `/usuario/formularios` (opcional: `?formularioId=X` para deep link).
-- **API:** `POST /api/formulario-resposta` com `{ id_formulario, id_celula, campos: [...] }`.
-- **Campos:** Admin define tipo em cada campo (texto linha única ou área de texto multilinhas).
+| Fase | Status |
+|------|--------|
+| Limpeza e rotas | Concluída |
+| Escola (usuário) | Concluída |
+| Formulários líder/admin | Concluída |
+| Modelo de dados (célula, ordem) | Concluída |
+| Lições, perfil, eventos | Concluída |
+| Escala, WhatsApp, acessibilidade | Concluída |
+| Deploy Docker e docs de produção | Concluída |
 
 ---
 
-[← Voltar ao índice](./README.md)
+## Formulários (fluxo atual)
+
+1. Líder em `/usuario/formularios`  
+2. Escolhe formulário e célula  
+3. `POST /api/formulario-resposta` com campos  
+
+Deep link opcional: `?formularioId=X`.
+
+---
+
+<div align="center">
+
+[Índice](./README.md)
+&nbsp;·&nbsp;
+[Arquitetura](./ARQUITETURA.md)
+
+<br />
+
+<sub>Casa dos Discípulos · Especificação · 2026</sub>
+
+</div>
