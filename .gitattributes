@@ -1,0 +1,4 @@
+# Scripts e configs de deploy devem usar LF no Linux/Docker
+deploy/**/*.sh text eol=lf
+Codigo/backend/docker-entrypoint.sh text eol=lf
+*.sh text eol=lf

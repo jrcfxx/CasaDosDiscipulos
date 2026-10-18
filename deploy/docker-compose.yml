@@ -1,8 +1,7 @@
-# Casa dos Discípulos - Deploy em Produção
-# Uso: cp .env.example .env, configure as variáveis, execute:
-#       docker-compose build && docker-compose up -d
-
-version: "3.9"
+# Casa dos Discípulos — Deploy em Produção
+# Uso:
+#   cp .env.example .env   # configure as variáveis
+#   ./deploy.sh
 
 services:
   # ============ WEB - Frontend + Nginx (reverse proxy) ============
@@ -11,18 +10,20 @@ services:
       context: ../Codigo/frontend
       dockerfile: Dockerfile
       args:
-        # Em produção, a API está no mesmo domínio - path relativo
         REACT_APP_API_URL: ${REACT_APP_API_URL:-/api}
     image: casadiscipulos-web:latest
     container_name: casadiscipulos_web
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Certificados Let's Encrypt (copie fullchain.pem e privkey.pem para cá)
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
     networks:
       - app-net
 
@@ -43,6 +44,7 @@ services:
       DB_NAME: ${DB_NAME}
       DB_PORT: 3306
       JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
       EVOLUTION_API_URL: http://evolution:8080
       EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME:-casadosdiscipulos}
       EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
@@ -51,10 +53,22 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     networks:
       - app-net
 
-  # ============ MYSQL - Banco de dados ============
+  # ============ MYSQL - Banco de dados (não exposto publicamente) ============
   mysql:
     image: mysql:8.0
     container_name: casadiscipulos_mysql
@@ -70,19 +84,24 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 8
+      start_period: 30s
     networks:
       - app-net
 
   # ============ EVOLUTION API - WhatsApp ============
+  # Porta só em localhost: use SSH tunnel para o QR Code
+  #   ssh -L 8080:127.0.0.1:8080 usuario@SEU_IP
+  # Depois acesse http://localhost:8080 no seu computador.
+  # Após conectar o WhatsApp, pode remover a publicação da porta.
   evolution:
     image: evoapicloud/evolution-api:latest
     container_name: casadiscipulos_evolution
     restart: unless-stopped
     ports:
-      - "8080:8080"  # Acesso para criar instância e escanear QR Code
+      - "127.0.0.1:8080:8080"
     environment:
-      SERVER_URL: ${EVOLUTION_SERVER_URL:-http://localhost:8080}
+      SERVER_URL: ${EVOLUTION_SERVER_URL:-http://127.0.0.1:8080}
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
       DATABASE_ENABLED: "false"
       CACHE_LOCAL_ENABLED: "true"

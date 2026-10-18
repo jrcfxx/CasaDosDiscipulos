@@ -72,9 +72,12 @@ app.use(
   express.static(path.join(__dirname, "../uploads"))
 );
 
-// Health check
+// Health check (raiz e /api/health para proxy Nginx)
 app.get("/", (req, res) => {
-  res.json({ message: "API Casa dos Discípulos - Online" });
+  res.json({ message: "API Casa dos Discípulos - Online", status: "ok" });
+});
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", service: "casa-dos-discipulos-api" });
 });
 
 // Rotas de autenticação

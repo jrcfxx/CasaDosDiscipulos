@@ -3,17 +3,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copia apenas arquivos de dependência
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
-# Copia código
 COPY . .
 
-# Cria diretório para uploads
-RUN mkdir -p uploads/perfil
+RUN mkdir -p uploads/perfil uploads/celulas uploads/fala-ai uploads/campos \
+  && chmod +x docker-entrypoint.sh
 
 EXPOSE 3001
 
-# Migrations rodam no entrypoint antes de iniciar
-CMD ["sh", "-c", "npx knex migrate:latest --knexfile knexfile.cjs || true && node src/app.js"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

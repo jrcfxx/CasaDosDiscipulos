@@ -1,0 +1,33 @@
+# CI: valida que as imagens Docker de produção compilam.
+# Não faz push nem deploy remoto (requer VPS + secrets SSH).
+name: Docker build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Codigo/backend/**"
+      - "Codigo/frontend/**"
+      - "deploy/**"
+      - ".github/workflows/docker-build.yml"
+  pull_request:
+    paths:
+      - "Codigo/backend/**"
+      - "Codigo/frontend/**"
+      - "deploy/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t casadiscipulos-backend:ci ./Codigo/backend
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            --build-arg REACT_APP_API_URL=/api \
+            -t casadiscipulos-web:ci \
+            ./Codigo/frontend

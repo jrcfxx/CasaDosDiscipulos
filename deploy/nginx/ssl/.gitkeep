@@ -1,0 +1,2 @@
+# Coloque aqui fullchain.pem e privkey.pem (Let's Encrypt).
+# Este diretório é montado em /etc/nginx/ssl no container web.
