@@ -2,8 +2,8 @@
 # Backup — Casa dos Discípulos
 # Salva o banco (todas as bases: app + evolution) e os arquivos enviados (uploads).
 #
-# Uso manual:   ./backup.sh
-# Agendamento:  ./backup.sh --instalar-cron   (todo dia às 03:00, horário do servidor)
+# Uso manual:   bash backup.sh
+# Agendamento:  bash backup.sh --instalar-cron   (todo dia às 03:00, horário do servidor)
 # Restaurar:    ver deploy/README.md, seção "Backup e restauração"
 #
 # ATENÇÃO: os arquivos ficam no próprio servidor. Para proteger contra perda do servidor,
@@ -16,7 +16,8 @@ BACKUP_DIR="${BACKUP_DIR:-/opt/backups/casadosdiscipulos}"
 RETENCAO_DIAS="${RETENCAO_DIAS:-14}"
 
 if [ "${1:-}" = "--instalar-cron" ]; then
-  linha="0 3 * * * cd $DEPLOY_DIR && ./backup.sh >> /var/log/casadiscipulos-backup.log 2>&1"
+  # "bash ./backup.sh": funciona mesmo se o arquivo perder a permissão de execução no Git
+  linha="0 3 * * * cd $DEPLOY_DIR && bash ./backup.sh >> /var/log/casadiscipulos-backup.log 2>&1"
   ( crontab -l 2>/dev/null | grep -v "casadiscipulos-backup" ; echo "$linha" ) | crontab -
   echo "Backup diário agendado (03:00). Log: /var/log/casadiscipulos-backup.log"
   exit 0

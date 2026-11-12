@@ -139,8 +139,8 @@ mantendo 14 dias. Ative uma vez no servidor:
 
 ```bash
 cd /opt/CasaDosDiscipulos/deploy
-./backup.sh                  # primeiro backup (confira a saída "OK")
-./backup.sh --instalar-cron  # todo dia às 03:00
+bash backup.sh                  # primeiro backup (confira a saída "OK")
+bash backup.sh --instalar-cron  # todo dia às 03:00
 ```
 
 Os arquivos ficam no próprio servidor: ative também os **Backups do droplet** na DigitalOcean
