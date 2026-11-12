@@ -18,8 +18,18 @@ RETENCAO_DIAS="${RETENCAO_DIAS:-14}"
 if [ "${1:-}" = "--instalar-cron" ]; then
   # "bash ./backup.sh": funciona mesmo se o arquivo perder a permissão de execução no Git
   linha="0 3 * * * cd $DEPLOY_DIR && bash ./backup.sh >> /var/log/casadiscipulos-backup.log 2>&1"
-  ( crontab -l 2>/dev/null | grep -v "casadiscipulos-backup" ; echo "$linha" ) | crontab -
-  echo "Backup diário agendado (03:00). Log: /var/log/casadiscipulos-backup.log"
+  # "|| true": sem crontab ainda, `crontab -l` e o grep retornam erro e, com set -e/pipefail,
+  # o script parava em silêncio sem agendar nada.
+  {
+    { crontab -l 2>/dev/null || true; } | { grep -v "casadiscipulos-backup" || true; }
+    echo "$linha"
+  } | crontab -
+  if crontab -l | grep -q "casadiscipulos-backup"; then
+    echo "Backup diário agendado (03:00 do servidor). Log: /var/log/casadiscipulos-backup.log"
+  else
+    echo "Erro: não foi possível agendar o backup" >&2
+    exit 1
+  fi
   exit 0
 fi
 
