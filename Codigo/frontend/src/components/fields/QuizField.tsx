@@ -6,8 +6,9 @@ import "../../style/form.css";
 interface QuizFieldProps {
   name: string;
   label: string;
-  value: any;
-  onChange: (value: any) => void;
+  /** ID do quiz vinculado */
+  value: number | null;
+  onChange: (value: number | null) => void;
   error?: string;
   required?: boolean;
   disabled?: boolean;

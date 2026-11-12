@@ -1,6 +1,5 @@
 import type { ErroApi } from "../utils/errorUtils";
 import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import {
   DndContext,
   closestCenter,
@@ -13,11 +12,9 @@ import {
 import {
   SortableContext,
   verticalListSortingStrategy,
-  useSortable,
   arrayMove,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import "../style/GerirUser.css";
 
 import Header from "../components/layout/Header";
@@ -38,140 +35,12 @@ import {
   reordenarNiveis,
 } from "../services/nivel";
 import ministerioService from "../services/ministerioService";
+import SortableNivelRow from "../components/gerirUser/SortableNivelRow";
+import ModalUsuario from "../components/gerirUser/ModalUsuario";
+import ModalNivel from "../components/gerirUser/ModalNivel";
+import ModalMinisterio from "../components/gerirUser/ModalMinisterio";
+import type { Nivel, Usuario, UsuarioModal, NivelModal, MinisterioModal } from "../components/gerirUser/tipos";
 
-interface Nivel {
-  id_nivel: number;
-  nome: string;
-  descricao?: string;
-  ordem: number;
-  ativo: boolean;
-}
-
-function SortableNivelRow({
-  nivel,
-  onEditar,
-  onInativar,
-  onReativar,
-  onExcluir,
-}: {
-  nivel: Nivel;
-  onEditar: (n: Nivel) => void;
-  onInativar: (id: number) => void;
-  onReativar: (id: number) => void;
-  onExcluir: (id: number) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: nivel.id_nivel });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.7 : 1,
-  };
-
-  const inativo = !nivel.ativo;
-
-  return (
-    <tr
-      ref={setNodeRef}
-      style={style}
-      className={`${inativo ? "nivel-inativo" : ""} ${isDragging ? "nivel-dragging" : ""}`}
-    >
-      <td className="nivel-ordem-cell">
-        <button
-          type="button"
-          className="nivel-drag-handle"
-          title="Arrastar para reordenar"
-          aria-label={`Arrastar nível ${nivel.nome}`}
-          {...attributes}
-          {...listeners}
-        >
-          ⋮⋮
-        </button>
-        <span className="nivel-ordem-num">{nivel.ordem}</span>
-      </td>
-      <td>
-        {nivel.nome}
-        {inativo && <span className="badge-inativo">Inativo</span>}
-      </td>
-      <td>{nivel.descricao || "-"}</td>
-      <td className="acoes">
-        <button className="btn-edit" onClick={() => onEditar(nivel)}>
-          Editar
-        </button>
-        {inativo ? (
-          <button className="btn-reativar" onClick={() => onReativar(nivel.id_nivel)}>
-            Reativar
-          </button>
-        ) : (
-          <button className="btn-delete" onClick={() => onInativar(nivel.id_nivel)}>
-            Inativar
-          </button>
-        )}
-        <button className="btn-excluir-nivel" onClick={() => onExcluir(nivel.id_nivel)}>
-          Excluir
-        </button>
-      </td>
-    </tr>
-  );
-}
-
-interface Usuario {
-  id_usuario?: number;
-  nome: string;
-  email: string;
-  telefone?: string;
-  senha?: string;
-  foto?: string;
-  tipo: "lider" | "administrador" | "membro";
-  id_nivel?: number | null;
-  nivel_nome?: string | null;
-  nivel_escola?: number | null;
-  nivel_escola_nome?: string | null;
-  nivel_exibir?: string | null;
-  ativo?: boolean;
-  lider_celula?: boolean;
-  lider_ministerio?: boolean;
-}
-
-interface UsuarioModal {
-  id_usuario?: number;
-  nome: string;
-  email: string;
-  telefone: string;
-  senha: string;
-  foto?: File | string | null;
-  confirmarSenha?: string;
-  tipo: "lider" | "administrador" | "membro" | "";
-  id_nivel?: number | null;
-  lider_celula?: boolean;
-  lider_ministerio?: boolean;
-  id_ministerios_lider?: number[];
-  id_ministerios_participa?: number[];
-}
-
-interface NivelModal {
-  id_nivel?: number;
-  nome: string;
-  descricao: string;
-  ordem: number;
-}
-
-interface MinisterioModal {
-  id_ministerio?: number;
-  nome: string;
-  descricao: string;
-  ordem: number;
-  ativo: boolean;
-  id_lideres: number[];
-  id_paralelismos: number[];
-}
 
 export default function GerenciarUsuarios() {
   const [abaAtiva, setAbaAtiva] = useState<"usuarios" | "niveis" | "ministerios">("usuarios");
@@ -514,7 +383,7 @@ export default function GerenciarUsuarios() {
       }
     }
 
-    const userData: any = {
+    const userData: Record<string, unknown> = {
       nome: usuarioModal.nome,
       email: usuarioModal.email,
       telefone: telefoneNorm,
@@ -1046,255 +915,19 @@ export default function GerenciarUsuarios() {
       </main>
 
       {/* Modal de Cadastro/Edição de Usuário - renderizado no body para não herdar estilos do container */}
-      {modalAberto && createPortal(
-        <div className="modal-fundo" role="dialog" aria-modal="true">
-          <div className="modal modal-usuario">
-            <div className="cd-modal-header">
-              <div className="cd-modal-header-content">
-                <span className="cd-modal-icon" aria-hidden>👤</span>
-                <div>
-                  <h2 className="cd-modal-title">
-                    {usuarioModal.id_usuario ? "Editar Usuário" : "Novo Usuário"}
-                  </h2>
-                  <p className="cd-modal-subtitle">
-                    {usuarioModal.id_usuario
-                      ? "Atualize os dados e permissões deste usuário"
-                      : "Preencha os dados para cadastrar um novo usuário"}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="cd-modal-close"
-                onClick={fecharModal}
-                title="Fechar"
-                aria-label="Fechar"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="modal-content modal-usuario-grid">
-              <div className="form-field">
-                <label htmlFor="usuarioModalNome">Nome Completo</label>
-                <input
-                  id="usuarioModalNome"
-                  type="text"
-                  value={usuarioModal.nome || ""}
-                  onChange={(e) => handleChange("nome", e.target.value)}
-                  placeholder="Digite o nome completo"
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="usuarioModalEmail">Email</label>
-                <input
-                  id="usuarioModalEmail"
-                  type="email"
-                  value={usuarioModal.email || ""}
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  placeholder="Digite o email"
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="usuarioModalTelefone">Telefone / WhatsApp</label>
-                <input
-                  id="usuarioModalTelefone"
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel"
-                  value={usuarioModal.telefone || ""}
-                  onChange={(e) => handleChange("telefone", formatarTelefoneInput(e.target.value))}
-                  placeholder="11999999999 (apenas números)"
-                />
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="usuarioModalTipo">Tipo de Usuário</label>
-                <select
-                  id="usuarioModalTipo"
-                  value={usuarioModal.tipo}
-                  onChange={(e) => handleChange("tipo", e.target.value)}
-                >
-                  <option value="">Selecione o tipo</option>
-                  <option value="membro">Membro</option>
-                  <option value="lider">Líder</option>
-                  <option value="administrador">Administrador</option>
-                </select>
-              </div>
-
-              <div className="form-field">
-                <label htmlFor="usuarioModalNivel">Nível</label>
-                <select
-                  id="usuarioModalNivel"
-                  key={`nivel-${usuarioModal.id_usuario ?? "new"}-${usuarioModal.id_nivel ?? "x"}`}
-                  value={
-                    usuarioModal.id_nivel != null && usuarioModal.id_nivel !== 0
-                      ? String(usuarioModal.id_nivel)
-                      : ""
-                  }
-                  onChange={(e) =>
-                    handleChange(
-                      "id_nivel",
-                      e.target.value ? parseInt(e.target.value, 10) : null
-                    )
-                  }
-                >
-                  <option value="">Sem nível atribuído</option>
-                  {niveisAtivos.map((nivel) => (
-                    <option key={nivel.id_nivel} value={String(nivel.id_nivel)}>
-                      {nivel.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {usuarioModal.tipo === "lider" && (
-                <div className="form-field form-field-full lider-permissoes">
-                  <p className="lider-permissoes-title">Permissões do líder</p>
-                  <label className="checkbox-row">
-                    <input
-                      type="checkbox"
-                      checked={usuarioModal.lider_celula ?? true}
-                      onChange={(e) => handleChange("lider_celula", e.target.checked)}
-                    />
-                    <span>Líder de célula (acesso à Secretaria das Células)</span>
-                  </label>
-                  <div className="ministerios-lider-box ministerios-grid">
-                    <p className="lider-permissoes-title">Ministérios que lidera (acesso à Escala)</p>
-                    {ministerios.filter((m) => m.ativo).map((m) => (
-                      <label key={m.id_ministerio} className="checkbox-row">
-                        <input
-                          type="checkbox"
-                          checked={(usuarioModal.id_ministerios_lider ?? []).includes(m.id_ministerio)}
-                          onChange={(e) => {
-                            const prev = usuarioModal.id_ministerios_lider ?? [];
-                            const next = e.target.checked
-                              ? [...prev, m.id_ministerio]
-                              : prev.filter((id) => id !== m.id_ministerio);
-                            handleChange("id_ministerios_lider", next);
-                          }}
-                        />
-                        <span>{m.nome}</span>
-                      </label>
-                    ))}
-                    {ministerios.filter((m) => m.ativo).length === 0 && (
-                      <p className="hint">Cadastre ministérios na aba Ministérios</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="form-field form-field-full">
-                <span>Ministérios em que participa</span>
-                <div className="ministerios-participa-box ministerios-grid">
-                {ministerios.filter((m) => m.ativo).map((m) => (
-                  <label key={m.id_ministerio} className="checkbox-row">
-                    <input
-                      type="checkbox"
-                      checked={(usuarioModal.id_ministerios_participa ?? []).includes(m.id_ministerio)}
-                      onChange={(e) => {
-                        const prev = usuarioModal.id_ministerios_participa ?? [];
-                        const next = e.target.checked
-                          ? [...prev, m.id_ministerio]
-                          : prev.filter((id) => id !== m.id_ministerio);
-                        handleChange("id_ministerios_participa", next);
-                      }}
-                    />
-                    <span>{m.nome}</span>
-                  </label>
-                ))}
-                {ministerios.filter((m) => m.ativo).length === 0 && (
-                  <p className="hint">Nenhum ministério cadastrado</p>
-                )}
-                </div>
-              </div>
-
-              <div className="form-field form-field-full form-field-senhas">
-                <div className="form-field">
-                  <label htmlFor="usuarioModalSenha">
-                    Senha{" "}
-                    {usuarioModal.id_usuario && "(Deixar vazio para não alterar)"}
-                  </label>
-                  <div className="password-input-wrapper">
-                    <input
-                      id="usuarioModalSenha"
-                      type={showSenha ? "text" : "password"}
-                      value={usuarioModal.senha || ""}
-                      onChange={(e) => handleChange("senha", e.target.value)}
-                      placeholder={
-                        usuarioModal.id_usuario
-                          ? "Nova senha (opcional)"
-                          : "Mínimo 6 caracteres"
-                      }
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={() => setShowSenha((v) => !v)}
-                      tabIndex={-1}
-                      aria-label={showSenha ? "Ocultar senha" : "Mostrar senha"}
-                    >
-                      {showSenha ? (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                          <line x1="1" y1="1" x2="23" y2="23" />
-                        </svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <div className="form-field">
-                  <label htmlFor="usuarioModalConfirmarSenha">Confirmar Senha</label>
-                  <div className="password-input-wrapper">
-                    <input
-                      id="usuarioModalConfirmarSenha"
-                      type={showConfirmarSenha ? "text" : "password"}
-                      value={usuarioModal.confirmarSenha || ""}
-                      onChange={(e) => handleChange("confirmarSenha", e.target.value)}
-                      placeholder="Repita a senha"
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={() => setShowConfirmarSenha((v) => !v)}
-                      tabIndex={-1}
-                      aria-label={showConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
-                    >
-                      {showConfirmarSenha ? (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                          <line x1="1" y1="1" x2="23" y2="23" />
-                        </svg>
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-buttons">
-              <button onClick={fecharModal}>Cancelar</button>
-              <button onClick={salvarUsuario}>
-                {usuarioModal.id_usuario
-                  ? "Salvar Alterações"
-                  : "Criar Usuário"}
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
+      {modalAberto && (
+        <ModalUsuario
+          usuarioModal={usuarioModal}
+          handleChange={handleChange}
+          niveisAtivos={niveisAtivos}
+          ministerios={ministerios}
+          showSenha={showSenha}
+          setShowSenha={setShowSenha}
+          showConfirmarSenha={showConfirmarSenha}
+          setShowConfirmarSenha={setShowConfirmarSenha}
+          onFechar={fecharModal}
+          onSalvar={salvarUsuario}
+        />
       )}
 
       <ConfirmModal
@@ -1317,73 +950,12 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Cadastro/Edição de Nível */}
       {modalNivelAberto && (
-        <div className="modal-fundo" role="dialog" aria-modal="true">
-          <div className="modal">
-            <div className="cd-modal-header">
-              <div className="cd-modal-header-content">
-                <span className="cd-modal-icon" aria-hidden>🎓</span>
-                <div>
-                  <h2 className="cd-modal-title">
-                    {nivelModal.id_nivel ? "Editar Nível" : "Novo Nível"}
-                  </h2>
-                  <p className="cd-modal-subtitle">
-                    {nivelModal.id_nivel
-                      ? "Atualize as informações deste nível"
-                      : "Preencha os dados para criar um novo nível"}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="cd-modal-close"
-                onClick={fecharModalNivel}
-                title="Fechar"
-                aria-label="Fechar"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="modal-content">
-              <label htmlFor="nivelModalNome">Nome do Nível</label>
-              <input
-                id="nivelModalNome"
-                type="text"
-                value={nivelModal.nome || ""}
-                onChange={(e) =>
-                  setNivelModal((prev) => ({ ...prev, nome: e.target.value }))
-                }
-                placeholder="Ex: Discípulo"
-              />
-
-              <label htmlFor="nivelModalDescricao">Descrição</label>
-              <textarea
-                id="nivelModalDescricao"
-                value={nivelModal.descricao || ""}
-                onChange={(e) =>
-                  setNivelModal((prev) => ({
-                    ...prev,
-                    descricao: e.target.value,
-                  }))
-                }
-                placeholder="Descrição opcional do nível"
-                rows={3}
-              />
-
-              <p className="hint">
-                A ordem de progressão é definida arrastando os níveis na lista.
-                {nivelModal.id_nivel ? ` Ordem atual: ${nivelModal.ordem}.` : " Novos níveis entram no final."}
-              </p>
-            </div>
-
-            <div className="modal-buttons">
-              <button onClick={fecharModalNivel}>Cancelar</button>
-              <button onClick={salvarNivel}>
-                {nivelModal.id_nivel ? "Salvar Alterações" : "Criar Nível"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalNivel
+          nivelModal={nivelModal}
+          setNivelModal={setNivelModal}
+          onFechar={fecharModalNivel}
+          onSalvar={salvarNivel}
+        />
       )}
 
       <ConfirmModal
@@ -1430,174 +1002,16 @@ export default function GerenciarUsuarios() {
 
       {/* Modal de Cadastro/Edição de Ministério */}
       {modalMinisterioAberto && (
-        <div className="modal-ministerio-overlay">
-          <div className="modal-ministerio">
-            <div className="modal-ministerio-header cd-modal-header">
-              <div className="modal-ministerio-header-content cd-modal-header-content">
-                <span className="modal-ministerio-icon cd-modal-icon" aria-hidden>⛪</span>
-                <div>
-                  <h2 className="modal-ministerio-title cd-modal-title">
-                    {ministerioModal.id_ministerio ? "Editar Ministério" : "Novo Ministério"}
-                  </h2>
-                  <p className="modal-ministerio-subtitle cd-modal-subtitle">
-                    {ministerioModal.id_ministerio
-                      ? "Atualize as informações do ministério"
-                      : "Preencha os dados para criar um novo ministério"}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="modal-ministerio-close cd-modal-close"
-                onClick={() => setModalMinisterioAberto(false)}
-                title="Fechar"
-                aria-label="Fechar"
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-ministerio-body">
-              <div className="modal-ministerio-form-group">
-                <label htmlFor="ministerioModalNome">Nome *</label>
-                <input
-                  id="ministerioModalNome"
-                  type="text"
-                  value={ministerioModal.nome || ""}
-                  onChange={(e) => setMinisterioModal((p) => ({ ...p, nome: e.target.value }))}
-                  placeholder="Ex: Louvor, Som, Voluntários"
-                />
-              </div>
-              <div className="modal-ministerio-form-group">
-                <label htmlFor="ministerioModalDescricao">Descrição</label>
-                <textarea
-                  id="ministerioModalDescricao"
-                  value={ministerioModal.descricao || ""}
-                  onChange={(e) => setMinisterioModal((p) => ({ ...p, descricao: e.target.value }))}
-                  placeholder="Descrição opcional do ministério"
-                  rows={2}
-                />
-              </div>
-              <div className="modal-ministerio-row">
-                <div className="modal-ministerio-form-group modal-ministerio-form-group--sm">
-                  <label htmlFor="ministerioModalOrdem">Ordem</label>
-                  <input
-                    id="ministerioModalOrdem"
-                    type="number"
-                    value={ministerioModal.ordem || 0}
-                    onChange={(e) =>
-                      setMinisterioModal((p) => ({
-                        ...p,
-                        ordem: Math.max(0, parseInt(e.target.value, 10) || 0),
-                      }))
-                    }
-                    min="0"
-                  />
-                </div>
-                <label className="modal-ministerio-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={ministerioModal.ativo}
-                    onChange={(e) => setMinisterioModal((p) => ({ ...p, ativo: e.target.checked }))}
-                  />
-                  <span>Ministério ativo</span>
-                </label>
-              </div>
-              <div className="modal-ministerio-form-group">
-                <span>Líderes do ministério</span>
-                <div className="modal-ministerio-lideres">
-                  {lideresParaSelect.map((u) => (
-                    <label key={u.id_usuario!} className="modal-ministerio-lider-chip">
-                      <input
-                        type="checkbox"
-                        checked={(ministerioModal.id_lideres || []).includes(u.id_usuario!)}
-                        onChange={(e) => {
-                          const prev = ministerioModal.id_lideres;
-                          const next = e.target.checked
-                            ? [...prev, u.id_usuario!]
-                            : prev.filter((id) => id !== u.id_usuario);
-                          setMinisterioModal((p) => ({ ...p, id_lideres: next }));
-                        }}
-                      />
-                      <span>{u.nome}</span>
-                    </label>
-                  ))}
-                  {lideresParaSelect.length === 0 && (
-                    <p className="modal-ministerio-hint">Nenhum líder cadastrado. Crie usuários do tipo Líder na aba Usuários.</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="modal-ministerio-form-group modal-ministerio-paralelismo">
-                <div className="modal-ministerio-paralelismo-head">
-                  <span>Paralelismo na escala</span>
-                  <button
-                    type="button"
-                    className="modal-ministerio-info-btn"
-                    onClick={() => setShowParalelismoInfo((v) => !v)}
-                    aria-expanded={showParalelismoInfo}
-                    title="O que é paralelismo?"
-                  >
-                    ?
-                  </button>
-                </div>
-                {showParalelismoInfo && (
-                  <div className="modal-ministerio-info-box" role="note">
-                    <strong>O que é isso?</strong>
-                    <p>
-                      Por padrão, a mesma pessoa não pode ser escalada em dois ministérios no
-                      mesmo evento. Se marcar outro ministério aqui, a pessoa poderá estar nos
-                      dois — por exemplo, cantar no Louvor e também ministrar na Palavra.
-                    </p>
-                  </div>
-                )}
-                <p className="modal-ministerio-hint">
-                  Selecione os ministérios que podem compartilhar a mesma pessoa neste evento.
-                </p>
-                <div className="modal-ministerio-lideres">
-                  {ministerios
-                    .filter(
-                      (m) =>
-                        m.ativo &&
-                        m.id_ministerio !== ministerioModal.id_ministerio
-                    )
-                    .map((m) => (
-                      <label key={m.id_ministerio} className="modal-ministerio-lider-chip">
-                        <input
-                          type="checkbox"
-                          checked={(ministerioModal.id_paralelismos || []).includes(
-                            m.id_ministerio
-                          )}
-                          onChange={(e) => {
-                            const prev = ministerioModal.id_paralelismos || [];
-                            const next = e.target.checked
-                              ? [...prev, m.id_ministerio]
-                              : prev.filter((id) => id !== m.id_ministerio);
-                            setMinisterioModal((p) => ({ ...p, id_paralelismos: next }));
-                          }}
-                        />
-                        <span>{m.nome}</span>
-                      </label>
-                    ))}
-                  {ministerios.filter(
-                    (m) => m.ativo && m.id_ministerio !== ministerioModal.id_ministerio
-                  ).length === 0 && (
-                    <p className="modal-ministerio-hint">
-                      Cadastre outros ministérios para configurar o paralelismo.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="modal-ministerio-footer">
-              <button type="button" className="modal-ministerio-btn-cancel" onClick={() => setModalMinisterioAberto(false)}>
-                Cancelar
-              </button>
-              <button type="button" className="modal-ministerio-btn-save" onClick={salvarMinisterio}>
-                {ministerioModal.id_ministerio ? "Salvar alterações" : "Criar ministério"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ModalMinisterio
+          ministerioModal={ministerioModal}
+          setMinisterioModal={setMinisterioModal}
+          lideresParaSelect={lideresParaSelect}
+          ministerios={ministerios}
+          showParalelismoInfo={showParalelismoInfo}
+          setShowParalelismoInfo={setShowParalelismoInfo}
+          onFechar={() => setModalMinisterioAberto(false)}
+          onSalvar={salvarMinisterio}
+        />
       )}
 
       <ConfirmModal

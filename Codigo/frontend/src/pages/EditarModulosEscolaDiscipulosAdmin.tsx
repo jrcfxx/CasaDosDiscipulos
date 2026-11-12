@@ -20,15 +20,19 @@ import LinkField from "../components/fields/LinkField";
 import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import QuizField from "../components/fields/QuizField";
+import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
+
+/** Campo em edição na tela (o quiz vinculado entra como tipo "QUIZ") */
+type CampoEditor = { id: string; tipo: string; label: string; conteudo?: ValorCampo; campo?: Campo };
 
 const fieldOptions = [
-  { label: "Texto", value: FieldType.TEXT, component: TextField },
-  { label: "Número", value: FieldType.NUMBER, component: NumberField },
-  { label: "Data", value: FieldType.DATE, component: DateField },
-  { label: "Link", value: FieldType.LINK, component: LinkField },
-  { label: "Upload", value: FieldType.UPLOAD, component: UploadField },
-  { label: "Vídeo", value: "video", component: VideoField },
-  { label: "Quiz", value: "QUIZ", component: QuizField },
+  { label: "Texto", value: FieldType.TEXT, component: TextField as CampoDinamico },
+  { label: "Número", value: FieldType.NUMBER, component: NumberField as CampoDinamico },
+  { label: "Data", value: FieldType.DATE, component: DateField as CampoDinamico },
+  { label: "Link", value: FieldType.LINK, component: LinkField as CampoDinamico },
+  { label: "Upload", value: FieldType.UPLOAD, component: UploadField as CampoDinamico },
+  { label: "Vídeo", value: "video", component: VideoField as CampoDinamico },
+  { label: "Quiz", value: "QUIZ", component: QuizField as CampoDinamico },
 ];
 
 const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
@@ -38,9 +42,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [moduleName, setModuleName] = useState("");
   const [moduleDescription, setModuleDescription] = useState("");
   const [moduleOrder, setModuleOrder] = useState<number>(1);
-  const [fields, setFields] = useState<
-    { id: string; tipo: string; label: string; conteudo?: any; campo?: Campo }[]
-  >([]);
+  const [fields, setFields] = useState<CampoEditor[]>([]);
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState(false);
@@ -118,10 +120,10 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       }
 
       // Mapear campos do módulo e adicionar quiz se houver
-      const mappedFields: any[] = [];
+      const mappedFields: CampoEditor[] = [];
 
       if (modulo.campos && modulo.campos.length > 0) {
-        modulo.campos.forEach((c: any) => {
+        modulo.campos.forEach((c) => {
           mappedFields.push({
             id: `field-${c.id}`,
             tipo: c.tipo_campo || "texto",
@@ -546,7 +548,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
                       name={`field-${f.id}`}
                       label={f.label}
                       value={f.conteudo}
-                      onChange={(val: any) =>
+                      onChange={(val: ValorCampo) =>
                         setFields((prev) =>
                           prev.map((field) =>
                             field.id === f.id

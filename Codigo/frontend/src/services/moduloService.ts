@@ -24,6 +24,14 @@ export interface CreateModuloData {
   campos?: CampoModulo[]; // Campos personalizados com conteúdo
 }
 
+/** Quiz vinculado a um módulo (GET /modulo/:id/quiz); null quando não há */
+export interface QuizVinculado {
+  id_quiz: number;
+  titulo?: string;
+  descricao?: string | null;
+  ativo?: boolean | number;
+}
+
 export interface UpdateModuloData extends CreateModuloData {
   id_modulo?: number;
 }
@@ -109,7 +117,7 @@ const moduloService = {
   /**
    * Busca quiz vinculado a um módulo
    */
-  async getQuizVinculado(idModulo: number): Promise<any> {
+  async getQuizVinculado(idModulo: number): Promise<QuizVinculado | null> {
     const response = await apiClient.get(`/modulo/${idModulo}/quiz`);
     return response.data;
   },

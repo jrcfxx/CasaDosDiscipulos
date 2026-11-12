@@ -2,6 +2,7 @@ import React from "react";
 import { NumberFieldProps } from "../../types";
 import "../../style/tokens.css";
 import "../../style/form.css";
+import { valorDeInput } from "../../types/campoConteudo";
 
 /**
  * NumberField Component
@@ -46,7 +47,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
         id={fieldId}
         name={name}
         type="number"
-        value={value ?? ""}
+        value={valorDeInput(value)}
         onChange={(e) => onChange(e.target.value ? Number(e.target.value) : "")}
         disabled={disabled}
         required={required}

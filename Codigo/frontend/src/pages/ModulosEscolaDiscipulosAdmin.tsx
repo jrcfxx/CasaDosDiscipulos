@@ -9,14 +9,14 @@ import ConfirmModal from "../components/ui/ConfirmModal";
 import DarPontosModal from "../components/ui/DarPontosModal";
 import Toast from "../components/ui/Toast";
 import { formatarConteudoCampo } from "../utils/moduloConteudoUtils";
-import moduloService from "../services/moduloService";
+import moduloService, { type QuizVinculado } from "../services/moduloService";
 import usuarioService from "../services/usuarioService";
 import { Modulo } from "../types";
 
 const ModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [modulos, setModulos] = useState<Modulo[]>([]);
   const [selectedModulo, setSelectedModulo] = useState<Modulo | null>(null);
-  const [quizVinculado, setQuizVinculado] = useState<any>(null);
+  const [quizVinculado, setQuizVinculado] = useState<QuizVinculado | null>(null);
   const [ranking, setRanking] = useState<RankItem[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();

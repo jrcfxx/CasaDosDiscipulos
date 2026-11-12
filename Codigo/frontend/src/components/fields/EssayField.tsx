@@ -2,6 +2,7 @@ import React from "react";
 import { TextareaFieldProps } from "../../types";
 import "../../style/tokens.css";
 import "../../style/form.css";
+import { valorDeInput } from "../../types/campoConteudo";
 
 /**
  * EssayField Component
@@ -44,7 +45,7 @@ const EssayField: React.FC<TextareaFieldProps> = ({
       <textarea
         id={fieldId}
         name={name}
-        value={value || ""}
+        value={valorDeInput(value)}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         required={required}
@@ -57,7 +58,7 @@ const EssayField: React.FC<TextareaFieldProps> = ({
       />
 
       <div className="form-help">
-        {value?.length || 0} / {maxLength} caracteres
+        {String(valorDeInput(value)).length} / {maxLength} caracteres
       </div>
 
       {error && (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { SelectFieldProps } from "../../types";
+import { parseAlternativas, type ConteudoAlternativas } from "../../types/campoConteudo";
 import "../../style/tokens.css";
 import "../../style/form.css";
 
@@ -9,9 +10,8 @@ import "../../style/form.css";
  * Permite adicionar/remover alternativas e marcar múltiplas respostas corretas
  */
 
-interface CheckboxData {
-  alternativas: { texto: string; correta: boolean }[];
-}
+/** Formato do conteúdo: ver src/types/campoConteudo.ts */
+type CheckboxData = ConteudoAlternativas;
 
 const CheckboxField: React.FC<SelectFieldProps> = ({
   id,
@@ -28,38 +28,7 @@ const CheckboxField: React.FC<SelectFieldProps> = ({
   const hasError = Boolean(error);
 
   // Parse o valor inicial ou crie estrutura padrão
-  const parseValue = (val: any): CheckboxData => {
-    if (typeof val === "string" && val.trim()) {
-      try {
-        const parsed = JSON.parse(val);
-        // Garantir que cada alternativa tenha a propriedade correta definida
-        if (
-          parsed &&
-          parsed.alternativas &&
-          Array.isArray(parsed.alternativas)
-        ) {
-          return {
-            alternativas: parsed.alternativas.map((alt: any) => ({
-              texto: alt.texto || "",
-              correta: Boolean(alt.correta),
-            })),
-          };
-        }
-        return { alternativas: [{ texto: val, correta: true }] };
-      } catch {
-        return { alternativas: [{ texto: val, correta: true }] };
-      }
-    }
-    if (val && typeof val === "object" && val.alternativas) {
-      return {
-        alternativas: val.alternativas.map((alt: any) => ({
-          texto: alt.texto || "",
-          correta: Boolean(alt.correta),
-        })),
-      };
-    }
-    return { alternativas: [] };
-  };
+  const parseValue = parseAlternativas;
 
   const [data, setData] = useState<CheckboxData>(() => parseValue(value));
 

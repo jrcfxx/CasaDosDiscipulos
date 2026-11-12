@@ -14,6 +14,7 @@ import LinkField from "../components/fields/LinkField";
 import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import { ASSETS_BASE } from "../config/api";
+import { valorUpload, type ValorCampo } from "../types/campoConteudo";
 
 type Formulario = {
   id_formulario: number;
@@ -28,7 +29,7 @@ type LocalField = {
   id_formulario_campo: number;
   tipo: string;
   label: string;
-  conteudo: any;
+  conteudo: ValorCampo;
   obrigatorio?: boolean;
 };
 
@@ -111,7 +112,7 @@ export default function FormulariosSecretariaCelulasLeader() {
     setSuccess(false);
   };
 
-  const handleChangeField = (uid: number, value: any) => {
+  const handleChangeField = (uid: number, value: ValorCampo) => {
     setFields((prev) =>
       prev.map((f) => (f.uid === uid ? { ...f, conteudo: value } : f))
     );
@@ -123,7 +124,7 @@ export default function FormulariosSecretariaCelulasLeader() {
       const ext = fileName.split(".").pop()?.toLowerCase() || "";
       const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext);
       const url = String(campo.conteudo).startsWith("http")
-        ? campo.conteudo
+        ? String(campo.conteudo)
         : `${ASSETS_BASE}${campo.conteudo}`;
       return (
         <div className="upload-preview-campo">
@@ -138,7 +139,7 @@ export default function FormulariosSecretariaCelulasLeader() {
     }
     if (campo.tipo === "video" && campo.conteudo) {
       const url = String(campo.conteudo).startsWith("http")
-        ? campo.conteudo
+        ? String(campo.conteudo)
         : `${ASSETS_BASE}${campo.conteudo}`;
       return (
         <div className="video-preview-campo">
@@ -320,7 +321,7 @@ export default function FormulariosSecretariaCelulasLeader() {
                                   id={`campo_${campo.uid}`}
                                   name={`campo_${campo.uid}`}
                                   label=""
-                                  value={campo.conteudo}
+                                  value={valorUpload(campo.conteudo)}
                                   onChange={(v) => handleChangeField(campo.uid, v)}
                                 />
                               )}

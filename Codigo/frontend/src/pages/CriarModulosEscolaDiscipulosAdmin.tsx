@@ -21,6 +21,7 @@ import LinkField from "../components/fields/LinkField";
 import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import QuizField from "../components/fields/QuizField";
+import type { ValorCampo } from "../types/campoConteudo";
 
 // Tipos de campos disponíveis
 const fieldOptions = [
@@ -39,7 +40,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [moduleDescription, setModuleDescription] = useState("");
   const [moduleOrder, setModuleOrder] = useState<number>(1);
   const [fields, setFields] = useState<
-    { id: string; tipo: string; label: string; conteudo?: any; campo?: Campo }[]
+    { id: string; tipo: string; label: string; conteudo?: ValorCampo; campo?: Campo }[]
   >([]);
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
   const [error, setError] = useState(false);
@@ -218,7 +219,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
         campos: camposParaEnviar,
       };
 
-      const moduloCriado = await moduloService.create(moduloData as any);
+      const moduloCriado = await moduloService.create(moduloData);
 
       // Vincular quiz ao módulo, se selecionado
       if (selectedQuizId) {
@@ -398,8 +399,8 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
               const FieldComponent = fieldOption.component as React.FC<{
                 name: string;
                 label: string;
-                value: any;
-                onChange: (val: any) => void;
+                value: ValorCampo;
+                onChange: (val: ValorCampo) => void;
               }>;
 
               return (
@@ -418,9 +419,9 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
                     value={
                       f.tipo === "QUIZ" ? selectedQuizId : f.conteudo || ""
                     }
-                    onChange={(val: any) => {
+                    onChange={(val: ValorCampo) => {
                       if (f.tipo === "QUIZ") {
-                        setSelectedQuizId(val);
+                        setSelectedQuizId(typeof val === "number" ? val : null);
                       } else {
                         setFields((prev) =>
                           prev.map((field) =>

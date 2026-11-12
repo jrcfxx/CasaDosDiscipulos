@@ -29,6 +29,9 @@ import type { Usuario } from "../services/usuarioService";
 import { generateUid } from "../utils/generateUid";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
 import DarPontosModal from "../components/ui/DarPontosModal";
+import { isRecord, type Alternativa, type CampoDinamico, type CampoVinculado, type ValorCampo } from "../types/campoConteudo";
+import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
+import { getMedalIcon } from "../utils/moduloConteudoUtils";
 
 /* TYPES */
 type Quiz = {
@@ -36,7 +39,17 @@ type Quiz = {
   titulo: string;
   descricao?: string | null;
   ativo?: number;
-  campos?: any[];
+  campos?: CampoVinculado[];
+};
+
+/** Quiz como vem de GET /quiz */
+type QuizApi = {
+  id_quiz?: number;
+  id?: number;
+  titulo: string;
+  descricao?: string | null;
+  ativo?: number;
+  campos?: CampoVinculado[];
 };
 
 type QuizForm = {
@@ -56,7 +69,7 @@ type LocalField = {
   id_campo: number;
   tipo: string;
   label: string;
-  conteudo: any;
+  conteudo: ValorCampo;
 };
 
 const initialFormState: QuizForm = {
@@ -82,27 +95,28 @@ export default function QuizzesSecretariaCelulasAdmin() {
   const [toast, setToast] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
 
+  // Componentes de alternativas exigem `options`; ela chega via additionalProps no render
   const fieldOptions = [
-    { label: "Texto", tipo: "texto", component: TextField },
-    { label: "Número", tipo: "numero", component: NumberField },
-    { label: "Data", tipo: "data", component: DateField },
-    { label: "Link", tipo: "link", component: LinkField },
-    { label: "Upload", tipo: "upload", component: UploadField },
-    { label: "Vídeo", tipo: "video", component: VideoField },
-    { label: "Área de Texto", tipo: "textarea", component: TextareaField },
+    { label: "Texto", tipo: "texto", component: TextField as CampoDinamico },
+    { label: "Número", tipo: "numero", component: NumberField as CampoDinamico },
+    { label: "Data", tipo: "data", component: DateField as CampoDinamico },
+    { label: "Link", tipo: "link", component: LinkField as CampoDinamico },
+    { label: "Upload", tipo: "upload", component: UploadField as CampoDinamico },
+    { label: "Vídeo", tipo: "video", component: VideoField as CampoDinamico },
+    { label: "Área de Texto", tipo: "textarea", component: TextareaField as CampoDinamico },
     {
       label: "Múltipla Escolha",
       tipo: "multipla_escolha",
-      component: MultipleChoiceField,
+      component: MultipleChoiceField as unknown as CampoDinamico,
     },
     {
       label: "Verdadeiro/Falso",
       tipo: "verdadeiro_falso",
-      component: TrueFalseField,
+      component: TrueFalseField as unknown as CampoDinamico,
     },
-    { label: "Discursiva", tipo: "discursiva", component: EssayField },
-    { label: "Checkbox", tipo: "checkbox", component: CheckboxField },
-    { label: "Seleção", tipo: "select", component: SelectField },
+    { label: "Discursiva", tipo: "discursiva", component: EssayField as CampoDinamico },
+    { label: "Checkbox", tipo: "checkbox", component: CheckboxField as unknown as CampoDinamico },
+    { label: "Seleção", tipo: "select", component: SelectField as unknown as CampoDinamico },
   ];
 
   useEffect(() => {
@@ -124,7 +138,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
   const fetchQuizzes = async () => {
     try {
       const res = await api.get(`/quiz`);
-      const mapped: Quiz[] = (res.data || []).map((q: any) => ({
+      const mapped: Quiz[] = (res.data || []).map((q: QuizApi) => ({
         id: q.id_quiz ?? q.id ?? 0,
         titulo: q.titulo,
         descricao: q.descricao ?? "",
@@ -172,7 +186,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
       if (!quiz) return;
 
       const camposLimpos = (quiz.campos || []).map(
-        (campo: any, index: number) => ({
+        (campo: CampoVinculado, index: number) => ({
           id_campo: campo.id_campo,
           label: campo.label || "",
           conteudo: campo.conteudo || "",
@@ -214,7 +228,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
     id_campo: number,
     tipo: string,
     label = "",
-    conteudo: any = ""
+    conteudo: ValorCampo = ""
   ): LocalField => {
     return {
       uid: generateUid(),
@@ -247,7 +261,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
       return;
     }
 
-    let conteudoInicial: any = "";
+    let conteudoInicial: ValorCampo = "";
 
     // Define conteúdo inicial baseado no tipo de campo
     if (tipo === "numero") {
@@ -294,7 +308,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
         ativo: q.ativo ?? 1,
       });
 
-      const incomingFields = (q.campos ?? []).map((c: any, idx: number) => {
+      const incomingFields = (q.campos ?? []).map((c: CampoVinculado, idx: number) => {
         const tipo =
           availableFields.find((field) => field.id_campo === c.id_campo)
             ?.tipo_campo ?? "texto";
@@ -316,7 +330,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
           }
         } else if (tipo === "data") {
           const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-          if (!dateRegex.test(conteudoLimpo)) {
+          if (!dateRegex.test(String(conteudoLimpo))) {
             conteudoLimpo = "";
           }
         }
@@ -385,7 +399,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
       ordem: index,
     }));
 
-    const payload: any = {
+    const payload = {
       titulo: currentForm.nome,
       descricao: currentForm.descricao || null,
       ativo: Boolean(currentForm.ativo),
@@ -444,7 +458,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
       .substring(0, 2);
   };
 
-  const formatarConteudoCampo = (conteudo: any): React.ReactNode => {
+  const formatarConteudoCampo = (conteudo: unknown): React.ReactNode => {
     if (!conteudo) return "Sem conteúdo";
 
     // Se for uma string, tenta parsear como JSON
@@ -512,7 +526,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
     }
 
     // Se não for um objeto após o parse, retorna como está
-    if (typeof parsed !== "object" || parsed === null) {
+    if (!isRecord(parsed)) {
       return String(conteudo);
     }
 
@@ -522,7 +536,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
         <div className="quiz-alternativas">
           <strong>Alternativas:</strong>
           <ul>
-            {parsed.alternativas.map((alt: any, idx: number) => (
+            {(parsed.alternativas as Alternativa[]).map((alt, idx: number) => (
               <li key={idx} className={alt.correta ? "correta" : ""}>
                 {alt.texto}
                 {alt.correta && <span className="badge-correta">Correta</span>}
@@ -543,9 +557,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
               <li key={idx}>{opc}</li>
             ))}
           </ul>
-          {parsed.correta && (
+          {Boolean(parsed.correta) && (
             <div className="resposta-correta">
-              <strong>Resposta correta:</strong> {parsed.correta}
+              <strong>Resposta correta:</strong> {String(parsed.correta)}
             </div>
           )}
         </div>
@@ -558,166 +572,6 @@ export default function QuizzesSecretariaCelulasAdmin() {
     );
   };
 
-  const renderVideoPreview = (url: string): React.ReactNode => {
-    const convertToEmbedUrl = (videoUrl: string): string | null => {
-      try {
-        // YouTube
-        const youtubeRegex =
-          /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
-        const youtubeMatch = videoUrl.match(youtubeRegex);
-        if (youtubeMatch && youtubeMatch[1]) {
-          return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
-        }
-
-        // Vimeo
-        const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
-        const vimeoMatch = videoUrl.match(vimeoRegex);
-        if (vimeoMatch && vimeoMatch[1]) {
-          return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-        }
-
-        // Link direto de vídeo
-        if (videoUrl.match(/\.(mp4|webm|ogg)$/i)) {
-          return videoUrl;
-        }
-
-        return null;
-      } catch {
-        return null;
-      }
-    };
-
-    const embedUrl = convertToEmbedUrl(url);
-    if (!embedUrl) {
-      return (
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          {url}
-        </a>
-      );
-    }
-
-    const isDirectVideo = embedUrl.match(/\.(mp4|webm|ogg)$/i);
-
-    return (
-      <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
-        {isDirectVideo ? (
-          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
-            <source src={embedUrl} type="video/mp4" />
-            <track kind="captions" srcLang="pt-BR" label="Legendas" />
-            Seu navegador não suporta o elemento de vídeo.
-          </video>
-        ) : (
-          <iframe
-            src={embedUrl}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "225px",
-              border: "none",
-              borderRadius: "8px",
-            }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="Video preview"
-          />
-        )}
-      </div>
-    );
-  };
-
-  const getMedalIcon = (position: number) => {
-    if (position === 1) {
-      return (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="medal-icon gold"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            fill="#f4b002"
-            stroke="#f4b002"
-            strokeWidth="2"
-          />
-          <text
-            x="12"
-            y="17"
-            textAnchor="middle"
-            fill="#FFF"
-            fontSize="12"
-            fontWeight="bold"
-          >
-            1
-          </text>
-        </svg>
-      );
-    }
-    if (position === 2) {
-      return (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="medal-icon silver"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            fill="#C0C0C0"
-            stroke="#A8A8A8"
-            strokeWidth="2"
-          />
-          <text
-            x="12"
-            y="17"
-            textAnchor="middle"
-            fill="#FFF"
-            fontSize="12"
-            fontWeight="bold"
-          >
-            2
-          </text>
-        </svg>
-      );
-    }
-    if (position === 3) {
-      return (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="medal-icon bronze"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="10"
-            fill="#CD7F32"
-            stroke="#B87333"
-            strokeWidth="2"
-          />
-          <text
-            x="12"
-            y="17"
-            textAnchor="middle"
-            fill="#FFF"
-            fontSize="12"
-            fontWeight="bold"
-          >
-            3
-          </text>
-        </svg>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="quizzes-page page-with-fixed-header">
@@ -946,7 +800,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                   if (!Component) return null;
 
                   // Propriedades adicionais para campos específicos
-                  const additionalProps: any = {};
+                  const additionalProps: Record<string, unknown> = {};
 
                   if (
                     f.tipo === "select" ||
@@ -964,7 +818,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                           name={`campo_${f.uid}`}
                           label={f.label}
                           value={f.conteudo}
-                          onChange={(v: any) =>
+                          onChange={(v: ValorCampo) =>
                             setFields((prev) =>
                               prev.map((fld) =>
                                 fld.uid === f.uid

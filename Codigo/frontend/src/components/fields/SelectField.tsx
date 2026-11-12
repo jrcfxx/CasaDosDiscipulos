@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { SelectFieldProps } from "../../types";
+import { parseSelect, type ConteudoSelect } from "../../types/campoConteudo";
 import "../../style/tokens.css";
 import "../../style/form.css";
 
@@ -9,10 +10,8 @@ import "../../style/form.css";
  * O admin define as opções disponíveis no dropdown e qual é a resposta correta
  */
 
-interface SelectData {
-  opcoes: string[]; // Lista de opções disponíveis no dropdown
-  correta: string; // Qual opção é a resposta correta
-}
+/** Formato do conteúdo: ver src/types/campoConteudo.ts */
+type SelectData = ConteudoSelect;
 
 const SelectField: React.FC<SelectFieldProps> = ({
   id,
@@ -29,26 +28,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
   const hasError = Boolean(error);
 
   // Parse o valor inicial ou crie estrutura padrão
-  const parseValue = (val: any): SelectData => {
-    if (typeof val === "string" && val.trim()) {
-      try {
-        const parsed = JSON.parse(val);
-        if (parsed && parsed.opcoes && Array.isArray(parsed.opcoes)) {
-          return {
-            opcoes: parsed.opcoes,
-            correta: parsed.correta || "",
-          };
-        }
-        return { opcoes: [val], correta: val };
-      } catch {
-        return { opcoes: [val], correta: val };
-      }
-    }
-    if (val && typeof val === "object" && val.opcoes) {
-      return val;
-    }
-    return { opcoes: [], correta: "" };
-  };
+  const parseValue = parseSelect;
 
   const [data, setData] = useState<SelectData>(() => parseValue(value));
   const [novaOpcao, setNovaOpcao] = useState("");

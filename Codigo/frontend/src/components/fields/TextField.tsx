@@ -2,6 +2,7 @@ import React from "react";
 import { TextFieldProps } from "../../types";
 import "../../style/tokens.css";
 import "../../style/form.css";
+import { valorDeInput } from "../../types/campoConteudo";
 
 /**
  * TextField Component
@@ -45,7 +46,7 @@ const TextField: React.FC<TextFieldProps> = ({
         id={fieldId}
         name={name}
         type={type}
-        value={value || ""}
+        value={valorDeInput(value)}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         required={required}

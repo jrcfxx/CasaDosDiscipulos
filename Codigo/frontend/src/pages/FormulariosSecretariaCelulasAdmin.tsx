@@ -26,6 +26,10 @@ import DateField from "../components/fields/DateField";
 import LinkField from "../components/fields/LinkField";
 import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
+import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
+import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
+import { calcularStatusCelulas, filtrarRespostas, respondentesUnicos } from "../components/formularios/statusCelulas";
+import PainelStatusCelulas from "../components/formularios/PainelStatusCelulas";
 
 /* TYPES */
 type Formulario = {
@@ -34,7 +38,7 @@ type Formulario = {
   descricao?: string | null;
   ativo?: number;
   frequencia?: string | null;
-  campos?: any[];
+  campos?: FormularioCampo[];
 };
 
 type FormularioForm = {
@@ -55,7 +59,7 @@ type LocalField = {
   id_campo: number;
   tipo: string;
   label: string;
-  conteudo: any;
+  conteudo: ValorCampo;
   obrigatorio?: boolean;
 };
 
@@ -74,16 +78,6 @@ type Resposta = {
     conteudo?: string;
     tipo_campo?: string;
   }>;
-};
-
-const diasPorFrequencia = (f: string): number => {
-  switch (f) {
-    case "semanal": return 7;
-    case "quinzenal": return 15;
-    case "mensal": return 30;
-    case "bimestral": return 60;
-    default: return 30;
-  }
 };
 
 const initialFormState: FormularioForm = {
@@ -147,13 +141,13 @@ export default function FormulariosSecretariaCelulasAdmin() {
   >("formulario");
 
   const fieldOptions = [
-    { label: "Texto (linha única)", tipo: "texto", component: TextField },
-    { label: "Área de texto (multilinhas)", tipo: "textarea", component: TextareaField },
-    { label: "Número", tipo: "numero", component: NumberField },
-    { label: "Data", tipo: "data", component: DateField },
-    { label: "Link", tipo: "link", component: LinkField },
-    { label: "Upload", tipo: "upload", component: UploadField },
-    { label: "Vídeo", tipo: "video", component: VideoField },
+    { label: "Texto (linha única)", tipo: "texto", component: TextField as CampoDinamico },
+    { label: "Área de texto (multilinhas)", tipo: "textarea", component: TextareaField as CampoDinamico },
+    { label: "Número", tipo: "numero", component: NumberField as CampoDinamico },
+    { label: "Data", tipo: "data", component: DateField as CampoDinamico },
+    { label: "Link", tipo: "link", component: LinkField as CampoDinamico },
+    { label: "Upload", tipo: "upload", component: UploadField as CampoDinamico },
+    { label: "Vídeo", tipo: "video", component: VideoField as CampoDinamico },
   ];
 
   useEffect(() => {
@@ -326,83 +320,34 @@ export default function FormulariosSecretariaCelulasAdmin() {
     }
   };
 
-  /* Respostas filtradas por célula, respondente e intervalo de data */
-  const filteredRespostas = respostas.filter((r) => {
-    if (filtroCelula !== "" && r.id_celula !== filtroCelula) return false;
-    if (filtroRespondente) {
-      if (filtroRespondente === "-") {
-        if (r.nome_lider) return false;
-      } else if (
-        (r.nome_lider || "").toLowerCase() !== filtroRespondente.toLowerCase()
-      ) {
-        return false;
-      }
-    }
-    if (filtroDataInicio || filtroDataFim) {
-      try {
-        const dr = new Date(r.data_resposta).setHours(0, 0, 0, 0);
-        if (filtroDataInicio) {
-          const di = new Date(filtroDataInicio).setHours(0, 0, 0, 0);
-          if (dr < di) return false;
-        }
-        if (filtroDataFim) {
-          const df = new Date(filtroDataFim).setHours(23, 59, 59, 999);
-          if (dr > df) return false;
-        }
-      } catch {
-        /* ignora data inválida */
-      }
-    }
-    return true;
+  /* Respostas filtradas por célula, respondente e intervalo de data (regras em statusCelulas.ts) */
+  const filteredRespostas = filtrarRespostas(respostas, {
+    celula: filtroCelula,
+    respondente: filtroRespondente,
+    dataInicio: filtroDataInicio,
+    dataFim: filtroDataFim,
   });
 
-  const respondentesUnicos = [...new Set(respostas.map((r) => r.nome_lider || "-").filter(Boolean))].sort();
+  const respondentesUnicosLista = respondentesUnicos(respostas);
 
-  /* Cálculo em dia / atrasada baseado no período selecionado e frequência */
+  /* Em dia / atrasada no período escolhido (regras em statusCelulas.ts) */
   const frequenciaFormulario = selectedFormulario?.frequencia ?? "";
-  const temFrequencia = !!frequenciaFormulario;
-
-  const dataInicioPeriodo = filtroDataDashboardInicio
-    ? new Date(filtroDataDashboardInicio + "T00:00:00.000")
-    : null;
-  const dataFimPeriodo = filtroDataDashboardFim
-    ? new Date(filtroDataDashboardFim + "T23:59:59.999")
-    : null;
-
-  const periodoValido = dataInicioPeriodo && dataFimPeriodo &&
-    !isNaN(dataInicioPeriodo.getTime()) && !isNaN(dataFimPeriodo.getTime()) &&
-    dataInicioPeriodo <= dataFimPeriodo;
-
-  const respostasNoPeriodo = periodoValido
-    ? respostas.filter((r) => {
-        const dt = new Date(r.data_resposta);
-        return dt >= dataInicioPeriodo! && dt <= dataFimPeriodo!;
-      })
-    : respostas;
-
-  const celulasEmDia: Array<{ id_celula: number; nome: string; count: number }> = [];
-  const celulasAtrasadas: Array<{ id_celula: number; nome: string }> = [];
-
-  if (temFrequencia) {
-    celulas.forEach((c) => {
-      const respostasDestaCelula = respostasNoPeriodo.filter((r) => r.id_celula === c.id_celula);
-      const count = respostasDestaCelula.length;
-
-      const emDia = periodoValido ? count >= 1 : false;
-
-      if (emDia) {
-        celulasEmDia.push({ id_celula: c.id_celula, nome: c.nome, count });
-      } else {
-        celulasAtrasadas.push({ id_celula: c.id_celula, nome: c.nome });
-      }
-    });
-  }
-
-  const totalCelulas = celulas.length;
-  const emDiaCount = celulasEmDia.length;
-  const pendentesCount = celulasAtrasadas.length;
-  const percentualEmDia =
-    totalCelulas > 0 ? Math.round((emDiaCount / totalCelulas) * 100) : 0;
+  const {
+    temFrequencia,
+    periodoValido,
+    celulasEmDia,
+    celulasAtrasadas,
+    totalCelulas,
+    emDiaCount,
+    pendentesCount,
+    percentualEmDia,
+  } = calcularStatusCelulas({
+    celulas,
+    respostas,
+    frequencia: frequenciaFormulario,
+    inicio: filtroDataDashboardInicio,
+    fim: filtroDataDashboardFim,
+  });
 
   const buildUploadUrl = (path: string) => {
     if (!path || !path.startsWith("/")) return "";
@@ -457,78 +402,11 @@ export default function FormulariosSecretariaCelulasAdmin() {
     return <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>;
   };
 
-  const renderVideoPreview = (url: string): React.ReactNode => {
-    const convertToEmbedUrl = (videoUrl: string): string | null => {
-      try {
-        // YouTube
-        const youtubeRegex =
-          /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
-        const youtubeMatch = videoUrl.match(youtubeRegex);
-        if (youtubeMatch && youtubeMatch[1]) {
-          return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
-        }
-
-        // Vimeo
-        const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
-        const vimeoMatch = videoUrl.match(vimeoRegex);
-        if (vimeoMatch && vimeoMatch[1]) {
-          return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-        }
-
-        // Link direto de vídeo
-        if (videoUrl.match(/\.(mp4|webm|ogg)$/i)) {
-          return videoUrl;
-        }
-
-        return null;
-      } catch {
-        return null;
-      }
-    };
-
-    const embedUrl = convertToEmbedUrl(url);
-    if (!embedUrl) {
-      return (
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          {url}
-        </a>
-      );
-    }
-
-    const isDirectVideo = embedUrl.match(/\.(mp4|webm|ogg)$/i);
-
-    return (
-      <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
-        {isDirectVideo ? (
-          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
-            <source src={embedUrl} type="video/mp4" />
-            <track kind="captions" srcLang="pt-BR" label="Legendas" />
-            Seu navegador não suporta o elemento de vídeo.
-          </video>
-        ) : (
-          <iframe
-            src={embedUrl}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "225px",
-              border: "none",
-              borderRadius: "8px",
-            }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="Video preview"
-          />
-        )}
-      </div>
-    );
-  };
-
   const createLocalField = (
     id_campo: number,
     tipo: string,
     label = "",
-    conteudo: any = "",
+    conteudo: ValorCampo = "",
     obrigatorio = false
   ): LocalField => {
     return {
@@ -563,7 +441,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
       return;
     }
 
-    let conteudoInicial: any = "";
+    let conteudoInicial: ValorCampo = "";
     if (tipo === "numero") {
       conteudoInicial = 0;
     } else if (tipo === "data") {
@@ -600,7 +478,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
         frequencia: f.frequencia ?? "",
       });
 
-      const incomingFields = (f.campos ?? []).map((c: any, idx: number) => {
+      const incomingFields = (f.campos ?? []).map((c: FormularioCampo, idx: number) => {
         const tipo =
           availableFields.find((field) => field.id_campo === c.id_campo)
             ?.tipo_campo ?? "texto";
@@ -616,7 +494,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
         } else if (tipo === "data") {
           // Valida formato de data (yyyy-MM-dd)
           const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-          if (!dateRegex.test(conteudoLimpo)) {
+          if (!dateRegex.test(String(conteudoLimpo))) {
             conteudoLimpo = "";
           }
         }
@@ -940,7 +818,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                             >
                               <option value="">Todos</option>
                               <option value="-">Sem respondente</option>
-                              {respondentesUnicos
+                              {respondentesUnicosLista
                                 .filter((n) => n !== "-")
                                 .map((nome) => (
                                   <option key={nome} value={nome}>
@@ -1027,7 +905,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                                   respostaDetalhe.campos.length > 0 ? (
                                     <div className="campos-grid">
                                       {respostaDetalhe.campos.map(
-                                        (c: any, idx: number) => (
+                                        (c, idx: number) => (
                                           <div
                                             key={idx}
                                             className="campo-card"
@@ -1060,116 +938,21 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 )}
 
                 {abaAtiva === "dashboard" && (
-                  <div className="dashboard-section">
-                    <div className="dashboard-header">
-                      <p className="dashboard-subtitle">
-                        {temFrequencia
-                          ? `Status por célula — formulário ${FREQUENCIA_OPCOES.find((o) => o.value === frequenciaFormulario)?.label?.toLowerCase() ?? frequenciaFormulario}`
-                          : "Defina a frequência do formulário (na edição) para ver quais células estão em dia"}
-                      </p>
-                      {temFrequencia && (
-                        <div className="dashboard-filtro-data">
-                          <label htmlFor="filtro-data-inicio">Período:</label>
-                          <input
-                            id="filtro-data-inicio"
-                            type="date"
-                            value={filtroDataDashboardInicio}
-                            onChange={(e) => setFiltroDataDashboardInicio(e.target.value)}
-                            aria-label="Data inicial do período"
-                          />
-                          <span className="dashboard-filtro-ate">até</span>
-                          <input
-                            id="filtro-data-fim"
-                            type="date"
-                            value={filtroDataDashboardFim}
-                            onChange={(e) => setFiltroDataDashboardFim(e.target.value)}
-                            aria-label="Data final do período"
-                          />
-                          <span className="dashboard-filtro-info">
-                            Frequência: {FREQUENCIA_OPCOES.find((o) => o.value === frequenciaFormulario)?.label?.toLowerCase() ?? frequenciaFormulario}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {!temFrequencia && (
-                      <p className="dashboard-sem-frequencia muted">
-                        Edite o formulário e selecione a frequência esperada de envio (semanal, quinzenal, mensal ou bimestral) para que o dashboard calcule automaticamente quais células estão em dia.
-                      </p>
-                    )}
-
-                    {temFrequencia && (
-                    <>
-                    {!periodoValido && (
-                      <p className="dashboard-periodo-invalido muted">
-                        Selecione um período válido (data inicial antes da final).
-                      </p>
-                    )}
-                    {periodoValido && (
-                    <>
-                    <div className="dashboard-metrics">
-                      <div className="metric-card metric-total">
-                        <span className="metric-value">{totalCelulas}</span>
-                        <span className="metric-label">Células</span>
-                      </div>
-                      <div className="metric-card metric-ok">
-                        <span className="metric-value">{emDiaCount}</span>
-                        <span className="metric-label">Em dia</span>
-                      </div>
-                      <div className="metric-card metric-pending">
-                        <span className="metric-value">{pendentesCount}</span>
-                        <span className="metric-label">Atrasadas</span>
-                      </div>
-                      <div className="metric-card metric-pct">
-                        <span className="metric-value">{percentualEmDia}%</span>
-                        <span className="metric-label">Em dia</span>
-                      </div>
-                    </div>
-
-                    <div className="dashboard-progress">
-                      <div
-                        className="dashboard-progress-bar"
-                        style={{
-                          width: `${percentualEmDia}%`,
-                        }}
-                      />
-                    </div>
-
-                    <div className="dashboard-cards">
-                      {celulasEmDia.map((c) => (
-                        <div
-                          key={c.id_celula}
-                          className="dashboard-cell-card card-ok"
-                        >
-                          <span className="cell-card-icon">✓</span>
-                          <span className="cell-card-nome">{c.nome}</span>
-                          <span className="cell-card-count">
-                            {c.count} resposta{c.count !== 1 ? "s" : ""}
-                          </span>
-                        </div>
-                      ))}
-                      {celulasAtrasadas.map((c) => (
-                        <div
-                          key={c.id_celula}
-                          className="dashboard-cell-card card-pending"
-                        >
-                          <span className="cell-card-icon">⏳</span>
-                          <span className="cell-card-nome">{c.nome}</span>
-                          <span className="cell-card-count">Atrasada</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {temFrequencia && totalCelulas === 0 && (
-                      <p className="dashboard-empty muted">
-                        Nenhuma célula cadastrada.
-                      </p>
-                    )}
-                    </>
-                    )}
-                    </>
-                    )}
-                  </div>
+                  <PainelStatusCelulas
+                    temFrequencia={temFrequencia}
+                    periodoValido={periodoValido}
+                    celulasEmDia={celulasEmDia}
+                    celulasAtrasadas={celulasAtrasadas}
+                    totalCelulas={totalCelulas}
+                    emDiaCount={emDiaCount}
+                    pendentesCount={pendentesCount}
+                    percentualEmDia={percentualEmDia}
+                    frequenciaFormulario={frequenciaFormulario}
+                    filtroDataDashboardInicio={filtroDataDashboardInicio}
+                    setFiltroDataDashboardInicio={setFiltroDataDashboardInicio}
+                    filtroDataDashboardFim={filtroDataDashboardFim}
+                    setFiltroDataDashboardFim={setFiltroDataDashboardFim}
+                  />
                 )}
               </div>
             ) : (
@@ -1285,13 +1068,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     <div key={f.uid} className="field-wrapper">
                       <div className="dynamic-field-row">
                         <div className="field-input-container">
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                           <Component
                             id={String(f.uid)}
                             name={`campo_${f.uid}`}
                             label={f.label}
-                            value={f.conteudo as any}
-                            onChange={(v: any) =>
+                            value={f.conteudo}
+                            onChange={(v: ValorCampo) =>
                               setFields((prev) =>
                                 prev.map((fld) => (fld.uid === f.uid ? { ...fld, conteudo: v } : fld))
                               )

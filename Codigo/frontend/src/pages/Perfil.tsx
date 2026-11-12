@@ -231,7 +231,7 @@ export default function Perfil() {
     try {
       setSalvando(true);
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         nome: nome.trim(),
         email: email.trim(),
         telefone: telefoneNorm,

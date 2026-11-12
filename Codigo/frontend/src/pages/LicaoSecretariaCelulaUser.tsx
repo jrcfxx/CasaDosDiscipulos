@@ -6,6 +6,7 @@ import Footer from "../components/layout/Footer";
 
 import licaoService, { type Licao } from "../services/licaoService";
 import { ASSETS_BASE } from "../config/api";
+import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 
 const LicaoSecretariaCelulaUser: React.FC = () => {
   const [licoes, setLicoes] = useState<Licao[]>([]);
@@ -39,7 +40,7 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
     setSelectedLicao(licao);
   };
 
-  const formatarConteudoCampo = (conteudo: any): React.ReactNode => {
+  const formatarConteudoCampo = (conteudo: unknown): React.ReactNode => {
     if (!conteudo) return "Sem conteúdo";
 
     // Se for uma string, tenta parsear como JSON
@@ -115,73 +116,6 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
     // Para outros tipos de objetos JSON, exibe formatado
     return (
       <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>
-    );
-  };
-
-  const renderVideoPreview = (url: string): React.ReactNode => {
-    const convertToEmbedUrl = (videoUrl: string): string | null => {
-      try {
-        // YouTube
-        const youtubeRegex =
-          /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
-        const youtubeMatch = videoUrl.match(youtubeRegex);
-        if (youtubeMatch && youtubeMatch[1]) {
-          return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
-        }
-
-        // Vimeo
-        const vimeoRegex = /(?:vimeo\.com\/)(\d+)/;
-        const vimeoMatch = videoUrl.match(vimeoRegex);
-        if (vimeoMatch && vimeoMatch[1]) {
-          return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-        }
-
-        // Link direto de vídeo
-        if (videoUrl.match(/\.(mp4|webm|ogg)$/i)) {
-          return videoUrl;
-        }
-
-        return null;
-      } catch {
-        return null;
-      }
-    };
-
-    const embedUrl = convertToEmbedUrl(url);
-    if (!embedUrl) {
-      return (
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          {url}
-        </a>
-      );
-    }
-
-    const isDirectVideo = embedUrl.match(/\.(mp4|webm|ogg)$/i);
-
-    return (
-      <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
-        {isDirectVideo ? (
-          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
-            <source src={embedUrl} type="video/mp4" />
-            <track kind="captions" srcLang="pt-BR" label="Legendas" />
-            Seu navegador não suporta o elemento de vídeo.
-          </video>
-        ) : (
-          <iframe
-            src={embedUrl}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              height: "225px",
-              border: "none",
-              borderRadius: "8px",
-            }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="Video preview"
-          />
-        )}
-      </div>
     );
   };
 

@@ -8,11 +8,12 @@ import UploadField from "./UploadField";
 import MultipleChoiceField from "./MultipleChoiceField";
 import TrueFalseField from "./TrueFalseField";
 import EssayField from "./EssayField";
+import { valorUpload, type ValorCampo } from "../../types/campoConteudo";
 
 interface FieldRendererProps {
   campo: Campo;
-  value: any;
-  onChange: (value: any) => void;
+  value: ValorCampo;
+  onChange: (value: ValorCampo) => void;
   error?: string;
   disabled?: boolean;
 }
@@ -70,6 +71,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       return (
         <UploadField
           {...commonProps}
+          value={valorUpload(value)}
           accept={campo.tipos_aceitos}
           maxSize={campo.tamanho_maximo}
         />

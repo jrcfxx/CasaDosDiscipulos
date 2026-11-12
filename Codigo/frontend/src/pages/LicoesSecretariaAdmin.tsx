@@ -22,6 +22,7 @@ import DateField from "../components/fields/DateField";
 import LinkField from "../components/fields/LinkField";
 import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
+import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
 
 /* TYPES */
 type LicaoForm = {
@@ -42,7 +43,7 @@ type LocalField = {
   id_campo: number;
   tipo: string;
   label: string;
-  conteudo: unknown;
+  conteudo: ValorCampo;
 };
 
 const initialFormState: LicaoForm = {
@@ -54,12 +55,12 @@ const initialFormState: LicaoForm = {
 };
 
 const fieldOptions = [
-  { label: "Texto", tipo: "texto", component: TextField },
-  { label: "Número", tipo: "numero", component: NumberField },
-  { label: "Data", tipo: "data", component: DateField },
-  { label: "Link", tipo: "link", component: LinkField },
-  { label: "Upload", tipo: "upload", component: UploadField },
-  { label: "Vídeo", tipo: "video", component: VideoField },
+  { label: "Texto", tipo: "texto", component: TextField as CampoDinamico },
+  { label: "Número", tipo: "numero", component: NumberField as CampoDinamico },
+  { label: "Data", tipo: "data", component: DateField as CampoDinamico },
+  { label: "Link", tipo: "link", component: LinkField as CampoDinamico },
+  { label: "Upload", tipo: "upload", component: UploadField as CampoDinamico },
+  { label: "Vídeo", tipo: "video", component: VideoField as CampoDinamico },
 ];
 
 const LicoesSecretariaAdmin: React.FC = () => {
@@ -301,7 +302,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
     id_campo: number,
     tipo: string,
     label = "",
-    conteudo: unknown = ""
+    conteudo: ValorCampo = ""
   ): LocalField => ({
     uid: generateUid(),
     id_campo,
@@ -332,7 +333,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
       return;
     }
 
-    let conteudoInicial: unknown = "";
+    let conteudoInicial: ValorCampo = "";
     if (tipo === "numero") conteudoInicial = 0;
     else if (tipo === "data") conteudoInicial = "";
 
@@ -642,13 +643,12 @@ const LicoesSecretariaAdmin: React.FC = () => {
                   return (
                     <div key={f.uid} className="field-wrapper">
                       <div className="dynamic-field-row">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <Component
                           id={String(f.uid)}
                           name={`campo_${f.uid}`}
                           label={f.label}
-                          value={f.conteudo as any}
-                          onChange={(v: any) =>
+                          value={f.conteudo}
+                          onChange={(v: ValorCampo) =>
                             setFields((prev) =>
                               prev.map((fld) =>
                                 fld.uid === f.uid ? { ...fld, conteudo: v } : fld

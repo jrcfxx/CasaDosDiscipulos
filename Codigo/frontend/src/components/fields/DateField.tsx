@@ -2,6 +2,7 @@ import React from "react";
 import { DateFieldProps } from "../../types";
 import "../../style/tokens.css";
 import "../../style/form.css";
+import { valorDeInput } from "../../types/campoConteudo";
 
 /**
  * DateField Component
@@ -43,7 +44,7 @@ const DateField: React.FC<DateFieldProps> = ({
         id={fieldId}
         name={name}
         type="date"
-        value={value || ""}
+        value={valorDeInput(value)}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         required={required}

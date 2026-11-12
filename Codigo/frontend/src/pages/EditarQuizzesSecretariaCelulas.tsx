@@ -10,7 +10,7 @@ import ConfirmModal from "../components/ui/ConfirmModal";
 type Campo = { id: number; rotulo: string };
 
 export default function EditarQuizzesSecretariaCelulas() {
-  const location = useLocation() as { state?: { titulo?: string; data?: any } };
+  const location = useLocation() as { state?: { titulo?: string; data?: { descricao?: string; campos?: Campo[]; liberado_para_alunos?: boolean } } };
   const params = useParams<{ titulo?: string }>();
 
   // 🔹 Título da página

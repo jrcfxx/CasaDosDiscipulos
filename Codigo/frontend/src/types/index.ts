@@ -1,3 +1,4 @@
+import type { ValorCampo } from "./campoConteudo";
 /**
  * Tipos centralizados do frontend
  * Sincronizados com o backend (utils/constants.js)
@@ -57,6 +58,8 @@ export interface AuthResponse {
 // ==================== CAMPO ====================
 
 export interface Campo {
+  /** ID do vínculo (modulo_campo, quiz_campo...), quando o campo vem de uma entidade */
+  id?: number;
   id_campo: number;
   tipo_campo: FieldType | string;
   label?: string;
@@ -194,8 +197,8 @@ export interface BaseFieldProps {
   id?: string;
   name: string;
   label: string;
-  value: any;
-  onChange: (value: any) => void;
+  value: ValorCampo;
+  onChange: (value: ValorCampo) => void;
   error?: string;
   required?: boolean;
   disabled?: boolean;
@@ -226,7 +229,7 @@ export interface TextareaFieldProps extends BaseFieldProps {
   maxLength?: number;
 }
 
-export interface CheckboxFieldProps extends Omit<BaseFieldProps, "value"> {
+export interface CheckboxFieldProps extends Omit<BaseFieldProps, "value" | "onChange"> {
   checked: boolean;
   onChange: (checked: boolean) => void;
 }

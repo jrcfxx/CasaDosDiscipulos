@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { TextFieldProps } from "../../types";
 import "../../style/tokens.css";
 import "../../style/form.css";
+import { valorDeInput } from "../../types/campoConteudo";
 
 /**
  * VideoField Component
@@ -90,7 +91,7 @@ const VideoField: React.FC<TextFieldProps> = ({
         type="url"
         id={fieldId}
         name={name}
-        value={value || ""}
+        value={valorDeInput(value)}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
