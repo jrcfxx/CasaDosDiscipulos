@@ -26,6 +26,17 @@ import { seed as seedFalaAi } from "./seed_fala_ai.js";
  * Respeita as dependências entre tabelas (FK constraints)
  */
 async function run() {
+  // Os seeds APAGAM todas as tabelas e criam usuários de demonstração (senha 123456).
+  // Em produção use: npm run admin:setup
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_DEMO_SEED !== "1") {
+    console.error(
+      "Bloqueado: os seeds apagam o banco e criam usuários de teste.\n" +
+        "Em produção, crie o administrador com: npm run admin:setup\n" +
+        "(para forçar mesmo assim: ALLOW_DEMO_SEED=1 npm run seed)"
+    );
+    process.exit(1);
+  }
+
   console.log("Iniciando seeders...\n");
 
   // 0. Limpa todas as tabelas (ordem reversa de FK)

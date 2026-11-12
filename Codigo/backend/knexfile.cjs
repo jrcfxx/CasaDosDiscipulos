@@ -15,7 +15,15 @@ const shared = {
   seeds: {
     directory: "./src/seeds",
   },
-  pool: { min: 2, max: 10 },
+  pool: {
+    min: 2,
+    max: 10,
+    // Sessão MySQL no horário de Brasília (sem horário de verão desde 2019):
+    // NOW() e colunas TIMESTAMP ficam coerentes com o TZ do processo Node.
+    afterCreate(conn, done) {
+      conn.query("SET time_zone = '-03:00'", (err) => done(err, conn));
+    },
+  },
 };
 
 module.exports = {

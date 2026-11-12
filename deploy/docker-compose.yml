@@ -11,7 +11,8 @@ services:
       dockerfile: Dockerfile
       args:
         REACT_APP_API_URL: ${REACT_APP_API_URL:-/api}
-    image: casadiscipulos-web:latest
+    # No deploy automático, WEB_IMAGE aponta para a imagem pronta no GHCR
+    image: ${WEB_IMAGE:-casadiscipulos-web:latest}
     container_name: casadiscipulos_web
     restart: unless-stopped
     ports:
@@ -33,7 +34,8 @@ services:
     build:
       context: ../Codigo/backend
       dockerfile: Dockerfile
-    image: casadiscipulos-backend:latest
+    # No deploy automático, BACKEND_IMAGE aponta para a imagem pronta no GHCR
+    image: ${BACKEND_IMAGE:-casadiscipulos-backend:latest}
     container_name: casadiscipulos_backend
     restart: unless-stopped
     environment:

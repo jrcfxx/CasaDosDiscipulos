@@ -39,6 +39,8 @@ const errorHandler = (err, req, res, next) => {
     if (err.conflitos?.length) {
       response.sucesso = false;
       response.conflitos = err.conflitos;
+      // true = o usuário pode confirmar e prosseguir mesmo assim (exceção consciente)
+      response.confirmavel = Boolean(err.confirmavel);
     }
 
     return res.status(err.statusCode).json(response);

@@ -231,6 +231,14 @@ const EscalaRepository = {
     return trx("escala_atribuicao").whereIn("id_escala_area", areaIds).del();
   },
 
+  async idsEventosDoUsuario(idUsuario) {
+    const rows = await knex("escala_atribuicao as a")
+      .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
+      .where("a.id_usuario", idUsuario)
+      .distinct("ar.id_escala_evento");
+    return rows.map((r) => r.id_escala_evento);
+  },
+
   async idsUsuariosEscaladosNoEvento(idEvento) {
     const areas = await knex("escala_area")
       .select("id_escala_area")
@@ -259,6 +267,7 @@ const EscalaRepository = {
       .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
       .join("escala_evento as e", "ar.id_escala_evento", "e.id_escala_evento")
       .where("a.id_usuario", idUsuario)
+      .where("e.ativo", true)
       .whereRaw(
         `? < COALESCE(e.data_hora_fim, DATE_ADD(e.data_hora, INTERVAL 2 HOUR))
          AND COALESCE(?, DATE_ADD(?, INTERVAL 2 HOUR)) > e.data_hora`,
@@ -310,10 +319,10 @@ const EscalaRepository = {
     return q;
   },
 
-  async contarPorFuncaoNaArea(idArea, chaveDetalhe, valor) {
-    const rows = await knex("escala_atribuicao")
-      .where("id_escala_area", idArea)
-      .select("detalhes");
+  async contarPorFuncaoNaArea(idArea, chaveDetalhe, valor, idAtribuicaoExcluir = null) {
+    let q = knex("escala_atribuicao").where("id_escala_area", idArea).select("detalhes");
+    if (idAtribuicaoExcluir) q = q.whereNot("id_escala_atribuicao", idAtribuicaoExcluir);
+    const rows = await q;
     let count = 0;
     for (const r of rows) {
       let d = r.detalhes;
@@ -436,6 +445,44 @@ const EscalaRepository = {
       });
     } catch (err) {
       if (err?.code === "ER_NO_SUCH_TABLE") return [];
+      throw err;
+    }
+  },
+
+  /** Última alteração que ainda não foi desfeita (ignora registros de "desfazer") */
+  async ultimoHistoricoDesfazivel(idEvento) {
+    try {
+      const desfeitos = await knex("escala_historico")
+        .where({ id_escala_evento: idEvento, acao: "desfazer" })
+        .select("dados_depois");
+      const idsDesfeitos = new Set();
+      for (const d of desfeitos) {
+        try {
+          const id = JSON.parse(d.dados_depois || "{}")?.desfeito_id;
+          if (id) idsDesfeitos.add(Number(id));
+        } catch {
+          /* ignora */
+        }
+      }
+      const rows = await knex("escala_historico")
+        .where("id_escala_evento", idEvento)
+        .whereNot("acao", "desfazer")
+        .orderBy("id_escala_historico", "desc")
+        .limit(50);
+      const row = rows.find((r) => !idsDesfeitos.has(Number(r.id_escala_historico)));
+      if (!row) return null;
+      for (const k of ["dados_antes", "dados_depois"]) {
+        if (row[k] && typeof row[k] === "string") {
+          try {
+            row[k] = JSON.parse(row[k]);
+          } catch {
+            /* keep */
+          }
+        }
+      }
+      return row;
+    } catch (err) {
+      if (err?.code === "ER_NO_SUCH_TABLE") return null;
       throw err;
     }
   },

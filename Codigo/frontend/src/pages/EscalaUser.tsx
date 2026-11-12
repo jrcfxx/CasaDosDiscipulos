@@ -21,6 +21,7 @@ import escalaService, {
   VisualizacaoMes,
   SlotInstrumento,
   MoverMembroPayload,
+  UsuarioParaEscalar,
 } from "../services/escalaService";
 import ministerioService from "../services/ministerioService";
 import usuarioService from "../services/usuarioService";
@@ -91,7 +92,7 @@ const EscalaUser: React.FC = () => {
   const [showBuscaPessoa, setShowBuscaPessoa] = useState(false);
   const [usuariosBusca, setUsuariosBusca] = useState<{ id_usuario: number; nome: string }[]>([]);
   const [eventoSelecionado, setEventoSelecionado] = useState<EscalaEventoCompleto | null>(null);
-  const [usuarios, setUsuarios] = useState<{ id_usuario: number; nome: string }[]>([]);
+  const [usuarios, setUsuarios] = useState<UsuarioParaEscalar[]>([]);
   const [ano, setAno] = useState(() => new Date().getFullYear());
   const [mes, setMes] = useState(() => new Date().getMonth() + 1);
   const [dataDia, setDataDia] = useState(() => toIsoDate(new Date()));
@@ -124,7 +125,8 @@ const EscalaUser: React.FC = () => {
   const [formDetalhes, setFormDetalhes] = useState<Record<string, string>>({});
   const [atribuicaoEditando, setAtribuicaoEditando] = useState<EscalaAtribuicao | null>(null);
   const [conflitos, setConflitos] = useState<EscalaConflito[] | null>(null);
-  const [moverPendente, setMoverPendente] = useState<MoverMembroPayload | null>(null);
+  // Ação a repetir quando o líder confirma uma exceção ("adicionar/mover mesmo assim")
+  const [acaoConfirmar, setAcaoConfirmar] = useState<(() => Promise<void>) | null>(null);
   const [templates, setTemplates] = useState<EscalaTemplate[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showHistorico, setShowHistorico] = useState(false);
@@ -275,8 +277,16 @@ const EscalaUser: React.FC = () => {
         id_ministerios: formEvento.id_ministerios,
       };
       if (editandoEventoId) {
-        await escalaService.updateEvento(editandoEventoId, payload);
-        showToast("Evento atualizado", "success");
+        const atualizado = await escalaService.updateEvento(editandoEventoId, payload);
+        const avisos = (atualizado as { avisos?: { mensagem: string }[] }).avisos || [];
+        if (avisos.length) {
+          showToast(
+            `Evento atualizado. Atenção: ${avisos.map((a) => a.mensagem).join(" ")}`,
+            "info"
+          );
+        } else {
+          showToast("Evento atualizado", "success");
+        }
       } else {
         await escalaService.createEvento(payload);
         showToast("Evento criado", "success");
@@ -364,28 +374,51 @@ const EscalaUser: React.FC = () => {
     setAreaParaAtribuir(null);
   };
 
-  const handleAdicionarAtribuicao = async () => {
+  /** Mostra os conflitos; se forem confirmáveis, guarda a ação para "continuar mesmo assim" */
+  const abrirConflitos = (
+    lista: EscalaConflito[],
+    repetirConfirmando: (() => Promise<void>) | null
+  ) => {
+    setConflitos(lista);
+    setAcaoConfirmar(() => repetirConfirmando);
+  };
+
+  const fecharConflitos = () => {
+    setConflitos(null);
+    setAcaoConfirmar(null);
+  };
+
+  const dadosDoErro = (err: unknown) =>
+    (err as { response?: { data?: { conflitos?: EscalaConflito[]; confirmavel?: boolean } } })
+      ?.response?.data;
+
+  const adicionarAtribuicao = async (confirmar: boolean) => {
     const idEvento = areaParaAtribuir?.id_escala_evento || eventoSelecionado?.id_escala_evento;
     if (!areaParaAtribuir || !usuarioSelecionado || !idEvento) return;
     const detalhesObj: Record<string, string | null> = {};
     Object.entries(formDetalhes).forEach(([k, v]) => {
       detalhesObj[k] = v?.trim() || null;
     });
+    const repetir = () => adicionarAtribuicao(true);
     try {
-      const validacao = await escalaService.validarAtribuicao(idEvento, {
-        id_escala_area: areaParaAtribuir.id_escala_area,
-        id_usuario: usuarioSelecionado,
-        detalhes: detalhesObj,
-      });
-      if (!validacao.sucesso) {
-        setConflitos(validacao.conflitos);
-        return;
+      if (!confirmar) {
+        const validacao = await escalaService.validarAtribuicao(idEvento, {
+          id_escala_area: areaParaAtribuir.id_escala_area,
+          id_usuario: usuarioSelecionado,
+          detalhes: detalhesObj,
+        });
+        if (!validacao.sucesso) {
+          abrirConflitos(validacao.conflitos, validacao.confirmavel ? repetir : null);
+          return;
+        }
       }
       await escalaService.addAtribuicao(
         areaParaAtribuir.id_escala_area,
         usuarioSelecionado,
-        detalhesObj
+        detalhesObj,
+        confirmar
       );
+      fecharConflitos();
       showToast("Pessoa escalada com sucesso", "success");
       marcarAlteracao();
       fecharModalAtribuicao();
@@ -395,10 +428,9 @@ const EscalaUser: React.FC = () => {
         setEventoSelecionado(ev);
       }
     } catch (err) {
-      const data = (err as { response?: { data?: { conflitos?: EscalaConflito[] } } })?.response
-        ?.data;
+      const data = dadosDoErro(err);
       if (data?.conflitos?.length) {
-        setConflitos(data.conflitos);
+        abrirConflitos(data.conflitos, data.confirmavel && !confirmar ? repetir : null);
         return;
       }
       showToast(
@@ -407,6 +439,8 @@ const EscalaUser: React.FC = () => {
       );
     }
   };
+
+  const handleAdicionarAtribuicao = () => adicionarAtribuicao(false);
 
   const handleRemoverAtribuicao = async (a: EscalaAtribuicao) => {
     try {
@@ -423,14 +457,19 @@ const EscalaUser: React.FC = () => {
     }
   };
 
-  const handleSalvarDetalhes = async () => {
+  const salvarDetalhes = async (confirmar: boolean) => {
     if (!atribuicaoEditando) return;
     try {
       const detalhesObj: Record<string, string | null> = {};
       Object.entries(formDetalhes).forEach(([k, v]) => {
         detalhesObj[k] = v?.trim() || null;
       });
-      await escalaService.updateAtribuicao(atribuicaoEditando.id_escala_atribuicao, detalhesObj);
+      await escalaService.updateAtribuicao(
+        atribuicaoEditando.id_escala_atribuicao,
+        detalhesObj,
+        confirmar
+      );
+      fecharConflitos();
       showToast("Informações atualizadas", "success");
       marcarAlteracao();
       fecharModalEditarDetalhes();
@@ -439,17 +478,26 @@ const EscalaUser: React.FC = () => {
         const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
         setEventoSelecionado(ev);
       }
-    } catch {
-      showToast("Erro ao atualizar", "error");
+    } catch (err) {
+      const data = dadosDoErro(err);
+      if (data?.conflitos?.length) {
+        abrirConflitos(
+          data.conflitos,
+          data.confirmavel && !confirmar ? () => salvarDetalhes(true) : null
+        );
+        return;
+      }
+      showToast(getErrorMessage(err, "Erro ao atualizar"), "error");
     }
   };
+
+  const handleSalvarDetalhes = () => salvarDetalhes(false);
 
   const executarMoverUnificado = async (payload: MoverMembroPayload) => {
     const result = await escalaService.moverMembro(payload);
     showToast(result.mensagem || "Pessoa movida", "success");
     marcarAlteracao();
-    setConflitos(null);
-    setMoverPendente(null);
+    fecharConflitos();
     fetchEventos();
     if (eventoSelecionado) {
       const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
@@ -475,35 +523,28 @@ const EscalaUser: React.FC = () => {
   };
 
   const handleMoverUnificado = async (payload: MoverMembroPayload) => {
+    const forcar = async () => {
+      try {
+        await executarMoverUnificado({ ...payload, forcarMovimento: true });
+      } catch (err) {
+        fecharConflitos();
+        showToast(getErrorMessage(err, "Não foi possível mover"), "error");
+      }
+    };
     try {
       const validacao = await escalaService.validarMoverMembro(payload);
       if (!validacao.podeProsseguir) {
-        setMoverPendente(payload);
-        setConflitos(validacao.conflitos);
+        abrirConflitos(validacao.conflitos, validacao.confirmavel ? forcar : null);
         return;
       }
       await executarMoverUnificado(payload);
     } catch (err) {
-      const data = (err as { response?: { data?: { conflitos?: EscalaConflito[] } } })?.response
-        ?.data;
+      const data = dadosDoErro(err);
       if (data?.conflitos?.length) {
-        setMoverPendente(payload);
-        setConflitos(data.conflitos);
+        abrirConflitos(data.conflitos, data.confirmavel ? forcar : null);
         return;
       }
       showToast(getErrorMessage(err, "Não foi possível mover — conflito na escala"), "error");
-    }
-  };
-
-  const handleForcarMovimento = async () => {
-    if (!moverPendente) {
-      setConflitos(null);
-      return;
-    }
-    try {
-      await executarMoverUnificado({ ...moverPendente, forcarMovimento: true });
-    } catch (err) {
-      showToast(getErrorMessage(err, "Não foi possível forçar o movimento"), "error");
     }
   };
 
@@ -1164,6 +1205,11 @@ const EscalaUser: React.FC = () => {
                 {usuarios.map((u) => (
                   <option key={u.id_usuario} value={u.id_usuario}>
                     {u.nome}
+                    {u.ja_escalado
+                      ? ` — já escalado(a)${
+                          u.areas_no_evento?.length ? ` em ${u.areas_no_evento.join(", ")}` : ""
+                        }`
+                      : ""}
                   </option>
                 ))}
               </select>
@@ -1265,12 +1311,11 @@ const EscalaUser: React.FC = () => {
       {conflitos && (
         <ModalConflitos
           conflitos={conflitos}
-          onClose={() => {
-            setConflitos(null);
-            setMoverPendente(null);
+          onClose={fecharConflitos}
+          permitirForcar={podeEditar && !!acaoConfirmar}
+          onConfirmarMesmoAssim={() => {
+            acaoConfirmar?.();
           }}
-          permitirForcar={podeEditar && !!moverPendente}
-          onConfirmarMesmoAssim={handleForcarMovimento}
         />
       )}
 

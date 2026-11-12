@@ -59,10 +59,13 @@ export const createAtribuicaoSchema = Joi.object({
   id_escala_area: Joi.number().integer().positive().required(),
   id_usuario: Joi.number().integer().positive().required(),
   detalhes: Joi.object().pattern(Joi.string(), Joi.any()).optional(),
+  // true = líder confirmou a exceção ("adicionar mesmo assim")
+  confirmarConflitos: Joi.boolean().optional(),
 });
 
 export const updateAtribuicaoSchema = Joi.object({
   detalhes: Joi.object().pattern(Joi.string(), Joi.any()).required(),
+  confirmarConflitos: Joi.boolean().optional(),
 });
 
 export const moverAtribuicaoSchema = Joi.object({

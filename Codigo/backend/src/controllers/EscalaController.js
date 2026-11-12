@@ -25,7 +25,7 @@ class EscalaController {
 
   async getEventoById(req, res, next) {
     try {
-      res.json(await EscalaService.getEventoById(req.params.id));
+      res.json(await EscalaService.getEventoById(req.params.id, req.usuario?.tipo));
     } catch (err) {
       next(err);
     }
@@ -87,13 +87,14 @@ class EscalaController {
 
   async addAtribuicao(req, res, next) {
     try {
-      const { id_escala_area, id_usuario, detalhes } = req.body;
+      const { id_escala_area, id_usuario, detalhes, confirmarConflitos } = req.body;
       const atrib = await EscalaService.addAtribuicao(
         id_escala_area,
         id_usuario,
         req.usuario?.id_usuario,
         req.usuario?.tipo,
-        detalhes
+        detalhes,
+        { confirmarConflitos: !!confirmarConflitos }
       );
       res.status(201).json(atrib);
     } catch (err) {
@@ -107,7 +108,8 @@ class EscalaController {
         req.params.id,
         req.body.detalhes,
         req.usuario?.id_usuario,
-        req.usuario?.tipo
+        req.usuario?.tipo,
+        { confirmarConflitos: !!req.body.confirmarConflitos }
       );
       res.json(atrib);
     } catch (err) {
@@ -220,7 +222,7 @@ class EscalaController {
 
   async getVisualizacaoAno(req, res, next) {
     try {
-      res.json(await EscalaService.getVisualizacaoAno(req.params.ano));
+      res.json(await EscalaService.getVisualizacaoAno(req.params.ano, req.usuario?.tipo));
     } catch (err) {
       next(err);
     }
@@ -270,7 +272,8 @@ class EscalaController {
         await EscalaService.getEscalasDaPessoa(
           req.params.usuarioId,
           req.query.dataInicio,
-          req.query.dataFim
+          req.query.dataFim,
+          req.usuario
         )
       );
     } catch (err) {

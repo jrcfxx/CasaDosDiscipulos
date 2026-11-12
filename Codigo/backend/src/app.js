@@ -1,3 +1,4 @@
+import "./config/timezone.js";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -32,6 +33,10 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
+
+// Atrás do Nginx: usa o IP real do visitante (X-Forwarded-For) no rate limit.
+// Sem isso, todos compartilham o IP do proxy e o limite vale para a igreja inteira.
+app.set("trust proxy", Number(process.env.TRUST_PROXY ?? 1));
 
 app.use(helmet({ contentSecurityPolicy: false }));
 

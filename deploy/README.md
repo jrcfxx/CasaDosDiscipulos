@@ -45,8 +45,9 @@ O deploy é automático: **o que entra na `main` vai para produção** (https://
 2. **Abra um Pull Request para `main`** no GitHub. O CI só compila as imagens (sem deploy) e mostra ✅ ou ❌.
 3. **Faça o merge do PR** (ou `git push` direto na `main` para mudanças pequenas).
 4. **Acompanhe** em **Actions → Build & Deploy**:
-   - `build` compila backend e frontend;
-   - `deploy` entra no servidor, faz `git pull`, roda `./deploy.sh` (build, `up -d`, migrations e smoke `GET /api/health`).
+   - `build` compila backend e frontend **no GitHub** e publica as imagens em `ghcr.io` (marcadas com o SHA do commit);
+   - `deploy` entra no servidor, alinha o código ao commit (`git reset --hard`), baixa as imagens prontas e roda `./deploy.sh` (`up -d`, migrations e smoke `GET /api/health`).
+     O servidor não compila nada: ele tem pouca RAM e o build do React o travaria.
 5. **Confira o site** em https://casadosdiscipulos.com.br e o health em `/api/health`.
 
 O deploy só dispara quando o push altera `Codigo/backend/`, `Codigo/frontend/`, `deploy/` ou o workflow.
@@ -69,7 +70,7 @@ git push origin main
 | Onde falhou | O que fazer |
 |-------------|-------------|
 | job `build` | Erro de compilação: veja o log, corrija e faça novo push. Nada mudou no servidor. |
-| job `deploy`, no `git pull` | Alguém alterou arquivos direto no servidor. No servidor: `cd /opt/CasaDosDiscipulos && git status`, depois `git stash` e rode o workflow de novo. |
+| job `deploy`, no `docker login`/`pull` | Falha de acesso ao `ghcr.io`: rode o workflow de novo (Run workflow). |
 | job `deploy`, "health ainda não respondeu" | No servidor: `cd /opt/CasaDosDiscipulos/deploy && docker compose logs --tail=100 backend`. |
 
 > Migrations do banco rodam sozinhas ao subir o backend. **Nunca edite arquivos versionados direto no servidor** — altere no repositório e faça push.
@@ -107,6 +108,24 @@ Já feita em produção; só repita se trocar de servidor.
    | `SSH_KEY` | chave privada `~/.ssh/github_deploy` |
 
 No servidor, `.env`, `nginx/ssl/*.pem` e `nginx/active.conf` não são versionados e são preservados entre deploys.
+
+---
+
+## Administrador e dados
+
+Em produção **não use `npm run seed`**: ele apaga o banco e cria usuários de teste com senha `123456`
+(o comando é bloqueado quando `NODE_ENV=production`). Para criar ou redefinir o administrador:
+
+```bash
+cd /opt/CasaDosDiscipulos/deploy
+docker compose exec -e ADMIN_EMAIL=seu-email@exemplo.com -e ADMIN_NOME="Seu Nome" backend npm run admin:setup
+```
+
+Uma senha aleatória é exibida **uma única vez**; troque-a no Perfil após entrar.
+Acrescente `-- --desativar-outros` ao final para desativar todos os outros usuários
+(não apaga nada; é reversível marcando `ativo = 1`).
+
+Horários: todo o sistema usa **horário de Brasília** (`TZ=America/Sao_Paulo` no backend e sessão MySQL em `-03:00`).
 
 ---
 

@@ -1,8 +1,9 @@
-# CI/CD: valida que as imagens Docker compilam e, em push na main,
-# faz deploy automático no servidor via SSH.
+# CI/CD: compila as imagens Docker no GitHub e, em push na main, publica no
+# GitHub Container Registry (ghcr.io) e faz deploy no servidor via SSH.
+# O servidor só baixa as imagens prontas (ele tem pouca RAM para compilar o React).
 #
 # Secrets necessários (GitHub → Settings → Secrets and variables → Actions):
-#   SSH_HOST  IP do servidor (ex.: 147.182.211.209)
+#   SSH_HOST  IP do servidor
 #   SSH_USER  usuário SSH (ex.: root)
 #   SSH_KEY   chave privada SSH autorizada no servidor
 name: Build & Deploy
@@ -26,23 +27,46 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      backend_image: ${{ steps.names.outputs.backend }}
+      web_image: ${{ steps.names.outputs.web }}
     steps:
       - uses: actions/checkout@v4
 
+      - name: Image names
+        id: names
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "backend=ghcr.io/${owner}/casadiscipulos-backend:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "web=ghcr.io/${owner}/casadiscipulos-web:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
       - name: Build backend image
-        run: docker build -t casadiscipulos-backend:ci ./Codigo/backend
+        run: docker build -t "${{ steps.names.outputs.backend }}" ./Codigo/backend
 
       - name: Build frontend image
         run: |
           docker build \
             --build-arg REACT_APP_API_URL=/api \
-            -t casadiscipulos-web:ci \
+            -t "${{ steps.names.outputs.web }}" \
             ./Codigo/frontend
+
+      - name: Push images to GHCR
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker push "${{ steps.names.outputs.backend }}"
+          docker push "${{ steps.names.outputs.web }}"
 
   deploy:
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     # Um deploy por vez; um novo push espera o anterior terminar
     concurrency:
       group: production
@@ -53,17 +77,27 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          BACKEND_IMAGE: ${{ needs.build.outputs.backend_image }}
+          WEB_IMAGE: ${{ needs.build.outputs.web_image }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          command_timeout: 20m
+          envs: BACKEND_IMAGE,WEB_IMAGE,GHCR_USER,GHCR_TOKEN,DEPLOY_SHA
+          command_timeout: 15m
           script: |
             set -e
             cd /opt/CasaDosDiscipulos
             git fetch origin main
             git checkout main
-            git pull --ff-only origin main
+            git reset --hard "$DEPLOY_SHA"
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             cd deploy
-            bash ./deploy.sh
-            docker image prune -f
+            export BACKEND_IMAGE WEB_IMAGE
+            bash ./deploy.sh || { docker logout ghcr.io; exit 1; }
+            docker logout ghcr.io
+            docker image prune -af --filter "until=72h"

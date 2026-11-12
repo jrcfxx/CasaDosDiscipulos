@@ -11,6 +11,8 @@
     "migrate:rollback": "knex --knexfile knexfile.cjs migrate:rollback",
     "db:reset": "node scripts/dbReset.cjs",
     "seed": "node ./src/seeds/runSeeds.js",
+    "admin:setup": "node scripts/setupAdmin.js",
+    "test:escala": "node scripts/testEscalaValidacao.js && node scripts/testEscalaRegras.js",
     "test:whatsapp-modulos": "node scripts/testWhatsAppModulos.js"
   },
   "keywords": [],

@@ -39,6 +39,14 @@ export interface EscalaEventoCompleto extends EscalaEvento {
   ministerios?: { id_ministerio: number; nome: string }[];
 }
 
+export interface UsuarioParaEscalar {
+  id_usuario: number;
+  nome: string;
+  /** Já tem alguma função neste evento (o líder decide se é exceção) */
+  ja_escalado?: boolean;
+  areas_no_evento?: string[];
+}
+
 export interface EscalaConflito {
   tipo: string;
   valido?: boolean;
@@ -230,6 +238,8 @@ export interface ValidacaoMover {
   sucesso: boolean;
   valido: boolean;
   podeProsseguir: boolean;
+  /** true = conflitos podem ser aceitos pelo líder ("continuar mesmo assim") */
+  confirmavel?: boolean;
   conflitos: EscalaConflito[];
   avisos: EscalaConflito[];
 }
@@ -299,7 +309,7 @@ const escalaService = {
   async getUsuariosParaEscalar(
     idEvento: number,
     nomeArea?: string
-  ): Promise<{ id_usuario: number; nome: string }[]> {
+  ): Promise<UsuarioParaEscalar[]> {
     const params = nomeArea ? `?area=${encodeURIComponent(nomeArea)}` : "";
     const response = await apiClient.get(
       `/escala/eventos/${idEvento}/usuarios-para-escalar${params}`
@@ -345,21 +355,27 @@ const escalaService = {
   async addAtribuicao(
     id_escala_area: number,
     id_usuario: number,
-    detalhes?: Record<string, string | number | null>
+    detalhes?: Record<string, string | number | null>,
+    confirmarConflitos = false
   ): Promise<EscalaAtribuicao> {
     const response = await apiClient.post("/escala/atribuicoes", {
       id_escala_area,
       id_usuario,
       detalhes: detalhes || {},
+      confirmarConflitos: confirmarConflitos || undefined,
     });
     return response.data;
   },
 
   async updateAtribuicao(
     id: number,
-    detalhes: Record<string, string | number | null>
+    detalhes: Record<string, string | number | null>,
+    confirmarConflitos = false
   ): Promise<EscalaAtribuicao> {
-    const response = await apiClient.put(`/escala/atribuicoes/${id}`, { detalhes });
+    const response = await apiClient.put(`/escala/atribuicoes/${id}`, {
+      detalhes,
+      confirmarConflitos: confirmarConflitos || undefined,
+    });
     return response.data;
   },
 
@@ -374,7 +390,7 @@ const escalaService = {
       id_usuario: number;
       detalhes?: Record<string, string | number | null>;
     }
-  ): Promise<{ sucesso: boolean; conflitos: EscalaConflito[] }> {
+  ): Promise<{ sucesso: boolean; conflitos: EscalaConflito[]; confirmavel?: boolean }> {
     const response = await apiClient.post(`/escala/eventos/${idEvento}/validar`, data);
     return response.data;
   },

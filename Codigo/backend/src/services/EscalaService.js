@@ -18,6 +18,7 @@ import {
 } from "../utils/constants.js";
 import {
   toMysqlDatetime,
+  formatarDatetimeLocal,
   formatarDataHoraPtBr,
   inicioDoDia,
   fimDoDia,
@@ -37,6 +38,13 @@ import {
 } from "../utils/escalaUnificada.js";
 import { getLimitesPorArea } from "../config/ministerioCampos.js";
 
+/**
+ * Conflitos que o líder/admin pode aceitar conscientemente ("adicionar mesmo assim"):
+ * a pessoa já está em outra função do mesmo evento, em outro evento no mesmo horário,
+ * ou a função já atingiu o limite de vagas. Valor inválido de função nunca é confirmável.
+ */
+const CONFLITOS_CONFIRMAVEIS = new Set(["duplo_evento", "duplo_instrumento", "limite"]);
+
 class EscalaService {
   // ---------- Eventos ----------
   async getEventos(filters = {}, idUsuario = null, tipoUsuario = null) {
@@ -50,10 +58,14 @@ class EscalaService {
     if (tipoUsuario === USER_TYPES.LEADER && idUsuario) {
       const meusMinisterios = await MinisterioModel.getMinisteriosByUsuario(idUsuario);
       const idsMeus = new Set(meusMinisterios.map((m) => m.id_ministerio));
-      if (idsMeus.size === 0) return [];
+      // Líder vê os eventos dos ministérios que lidera + os eventos em que está escalado
+      const idsEscalado = new Set(await EscalaRepository.idsEventosDoUsuario(idUsuario));
       const idsEventos = eventos.map((e) => e.id_escala_evento);
       const mapa = await EscalaRepository.mapearMinisteriosPorEventos(idsEventos);
       eventos = eventos.filter((e) => {
+        if (idsEscalado.has(e.id_escala_evento) && e.status !== ESCALA_STATUS.RASCUNHO) {
+          return true;
+        }
         const ids = mapa.get(e.id_escala_evento) || [];
         return ids.some((id) => idsMeus.has(id));
       });
@@ -61,10 +73,18 @@ class EscalaService {
     return eventos;
   }
 
-  async getEventoById(id) {
+  /** Admin e líderes gerenciam rascunhos; membros só enxergam escalas publicadas/concluídas */
+  _podeVerRascunho(tipoUsuario) {
+    return tipoUsuario === USER_TYPES.ADMIN || tipoUsuario === USER_TYPES.LEADER;
+  }
+
+  async getEventoById(id, tipoUsuario = USER_TYPES.ADMIN) {
     const parsed = this._parseId(id);
     const evento = await EscalaRepository.buscarEventoPorId(parsed);
     if (!evento) throw new NotFoundError("Evento não encontrado");
+    if (evento.status === ESCALA_STATUS.RASCUNHO && !this._podeVerRascunho(tipoUsuario)) {
+      throw new NotFoundError("Evento não encontrado");
+    }
     return evento;
   }
 
@@ -120,7 +140,8 @@ class EscalaService {
 
       await trx.commit();
 
-      if (idMins.length) {
+      // Rascunho não notifica ninguém: as notificações saem na publicação
+      if (idMins.length && evento.status === ESCALA_STATUS.PUBLICADA) {
         await this._notificarEventoCriado(evento, idMins);
       }
       return this._enrichEvento(evento);
@@ -216,21 +237,50 @@ class EscalaService {
 
       await trx.commit();
 
-      const houveAlteracaoRelevante =
-        dados.titulo !== undefined ||
-        dados.data_hora !== undefined ||
-        dados.data_hora_fim !== undefined ||
-        dados.descricao !== undefined ||
-        areasForamSubstituidas;
-      if (houveAlteracaoRelevante && atribuicoesAntes.length > 0) {
-        await this._notificarEventoAtualizadoParaEscalados(
-          atribuicoesAntes,
-          eventoAtualizado,
-          areasForamSubstituidas
-        );
+      const estavaPublicado = eventoAntes.status === ESCALA_STATUS.PUBLICADA;
+      const ficouPublicado = eventoAtualizado.status === ESCALA_STATUS.PUBLICADA;
+
+      if (!estavaPublicado && ficouPublicado) {
+        // Publicação via edição: mesmo efeito do botão "Publicar"
+        await this._notificarPublicacao(eventoAtualizado);
+      } else if (estavaPublicado && ficouPublicado) {
+        const houveAlteracaoRelevante =
+          dados.titulo !== undefined ||
+          dados.data_hora !== undefined ||
+          dados.data_hora_fim !== undefined ||
+          dados.descricao !== undefined ||
+          areasForamSubstituidas;
+        if (houveAlteracaoRelevante && atribuicoesAntes.length > 0) {
+          await this._notificarEventoAtualizadoParaEscalados(
+            atribuicoesAntes,
+            eventoAtualizado,
+            areasForamSubstituidas
+          );
+        }
       }
 
-      return this._enrichEvento(eventoAtualizado);
+      // Mudou o horário: avisa quem ficou com choque de horário em outro evento
+      const avisos = [];
+      if (dados.data_hora !== undefined || dados.data_hora_fim !== undefined) {
+        const atuais = await EscalaRepository.listarAtribuicoesPorEvento(parsed);
+        for (const attr of atuais) {
+          const conflito = await EscalaRepository.buscarConflitoHorario(
+            attr.id_usuario,
+            eventoAtualizado.data_hora,
+            eventoAtualizado.data_hora_fim,
+            { idEventoExcluir: parsed }
+          );
+          if (conflito) {
+            avisos.push({
+              tipo: "duplo_evento",
+              id_usuario: attr.id_usuario,
+              mensagem: `${attr.usuario_nome} também está escalado(a) em ${conflito.evento_titulo} (${conflito.area_nome}) no novo horário.`,
+            });
+          }
+        }
+      }
+
+      return { ...(await this._enrichEvento(eventoAtualizado)), avisos };
     } catch (err) {
       await trx.rollback();
       throw err;
@@ -252,7 +302,8 @@ class EscalaService {
     });
     await EscalaRepository.excluirEvento(parsed);
 
-    if (atribuicoes.length > 0) {
+    // Só avisa cancelamento de escala que as pessoas já conheciam (publicada)
+    if (atribuicoes.length > 0 && evento.status === ESCALA_STATUS.PUBLICADA) {
       await this._notificarEventoCanceladoParaEscalados(atribuicoes, evento);
     }
   }
@@ -269,7 +320,14 @@ class EscalaService {
     return EscalaRepository.listarAtribuicoesPorEvento(parsed);
   }
 
-  async addAtribuicao(idArea, idUsuario, idUsuarioLogado, tipoUsuario, detalhes = null) {
+  async addAtribuicao(
+    idArea,
+    idUsuario,
+    idUsuarioLogado,
+    tipoUsuario,
+    detalhes = null,
+    { confirmarConflitos = false } = {}
+  ) {
     const parsedArea = this._parseId(idArea);
     const parsedUsuario = this._parseId(idUsuario);
     const area = await EscalaRepository.buscarAreaPorId(parsedArea);
@@ -281,8 +339,13 @@ class EscalaService {
       await this._assertUsuarioNoMinisterioDoLider(parsedUsuario, idUsuarioLogado, area);
     }
 
+    const jaNaArea = await knex("escala_atribuicao")
+      .where({ id_escala_area: parsedArea, id_usuario: parsedUsuario })
+      .first();
+    if (jaNaArea) throw new ConflictError("Esta pessoa já está escalada nesta área");
+
     const evento = await EscalaRepository.buscarEventoPorId(area.id_escala_evento);
-    const { valido, conflitos } = await ValidadorEscala.validarTodosConflitos({
+    const { conflitos } = await ValidadorEscala.validarTodosConflitos({
       idUsuario: parsedUsuario,
       idArea: parsedArea,
       areaNome: area.nome,
@@ -290,20 +353,11 @@ class EscalaService {
       dataHora: evento?.data_hora,
       dataHoraFim: evento?.data_hora_fim,
       detalhes,
-      excluirMesmoEventoDoOverlap: false,
+      // O mesmo evento é tratado por "duplo_instrumento" (respeita paralelismo)
+      excluirMesmoEventoDoOverlap: true,
       idMinisterioDestino: area.id_ministerio ?? null,
     });
-    if (!valido) {
-      const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
-      const msg = bloqueios[0]?.mensagem || "Conflito na escala";
-      const err = new ConflictError(msg);
-      err.conflitos = bloqueios.map((c) => ({
-        tipo: c.tipo,
-        mensagem: c.mensagem,
-        sugestao: c.sugestao || null,
-      }));
-      throw err;
-    }
+    const aceitos = this._avaliarConflitos(conflitos, confirmarConflitos);
 
     try {
       const atrib = await EscalaRepository.criarAtribuicao({
@@ -315,9 +369,13 @@ class EscalaService {
         id_escala_evento: area.id_escala_evento,
         id_usuario: idUsuarioLogado,
         acao: ESCALA_HISTORICO_ACAO.ATRIBUICAO,
-        dados_depois: atrib,
+        dados_depois: aceitos.length
+          ? { ...atrib, conflitos_confirmados: aceitos.map((c) => c.mensagem) }
+          : atrib,
       });
-      await this._notificarEscalado(parsedUsuario, area.id_escala_evento, area.nome, atrib?.detalhes);
+      if (evento?.status === ESCALA_STATUS.PUBLICADA) {
+        await this._notificarEscalado(parsedUsuario, area.id_escala_evento, area.nome, atrib?.detalhes);
+      }
       return atrib;
     } catch (err) {
       if (err?.code === "ER_DUP_ENTRY") {
@@ -327,7 +385,13 @@ class EscalaService {
     }
   }
 
-  async updateAtribuicao(idAtribuicao, detalhes, idUsuarioLogado, tipoUsuario) {
+  async updateAtribuicao(
+    idAtribuicao,
+    detalhes,
+    idUsuarioLogado,
+    tipoUsuario,
+    { confirmarConflitos = false } = {}
+  ) {
     const parsed = this._parseId(idAtribuicao);
     const atribuicao = await EscalaRepository.buscarAtribuicaoCompleta(parsed);
     if (!atribuicao) throw new NotFoundError("Atribuição não encontrada");
@@ -339,34 +403,17 @@ class EscalaService {
     const habilidade = ValidadorEscala.validarHabilidadeUsuario(atribuicao.area_nome, detalhesObj);
     if (!habilidade.valido) throw new ValidationError(habilidade.mensagem);
 
-    const evento = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
-    const { valido, conflitos } = await ValidadorEscala.validarTodosConflitos({
-      idUsuario: atribuicao.id_usuario,
-      idArea: atribuicao.id_escala_area,
-      areaNome: atribuicao.area_nome,
-      idEvento: atribuicao.id_escala_evento,
-      dataHora: evento?.data_hora,
-      dataHoraFim: evento?.data_hora_fim,
-      detalhes: detalhesObj,
-      idAtribuicaoExcluir: parsed,
-      excluirMesmoEventoDoOverlap: true,
-      idMinisterioDestino: area?.id_ministerio ?? null,
-    });
-    if (!valido) {
-      const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
-      // Troca de instrumento na mesma área: ignora "duplo_instrumento" se for o próprio registro
-      const filtrados = bloqueios.filter((c) => c.tipo !== "duplo_instrumento");
-      if (filtrados.length) {
-        const err = new ConflictError(filtrados[0]?.mensagem || "Conflito na escala");
-        err.conflitos = filtrados.map((c) => ({
-          tipo: c.tipo,
-          mensagem: c.mensagem,
-          sugestao: c.sugestao || null,
-        }));
-        throw err;
-      }
-    }
+    // Mesma pessoa, mesmo evento: só o limite de vagas da nova função importa
+    // (a própria atribuição não conta para o limite)
+    const limite = await ValidadorEscala.validarLimiteInstrumento(
+      atribuicao.id_escala_area,
+      atribuicao.area_nome,
+      detalhesObj,
+      parsed
+    );
+    this._avaliarConflitos([limite], confirmarConflitos);
 
+    const evento = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
     const row = await EscalaRepository.atualizarAtribuicao(parsed, { detalhes: detalhesObj });
     await EscalaRepository.registrarHistorico({
       id_escala_evento: atribuicao.id_escala_evento,
@@ -376,12 +423,14 @@ class EscalaService {
       dados_depois: row,
     });
 
-    await this._notificarAtribuicaoAtualizada(
-      atribuicao.id_usuario,
-      evento,
-      atribuicao.area_nome,
-      detalhesObj
-    );
+    if (evento?.status === ESCALA_STATUS.PUBLICADA) {
+      await this._notificarAtribuicaoAtualizada(
+        atribuicao.id_usuario,
+        evento,
+        atribuicao.area_nome,
+        detalhesObj
+      );
+    }
     return row;
   }
 
@@ -394,7 +443,6 @@ class EscalaService {
     await this._assertPodeGerenciarArea(area, idUsuarioLogado, tipoUsuario);
 
     const evento = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
-    await this._notificarAtribuicaoRemovida(atribuicao.id_usuario, evento, atribuicao.area_nome);
 
     await EscalaRepository.registrarHistorico({
       id_escala_evento: atribuicao.id_escala_evento,
@@ -403,10 +451,14 @@ class EscalaService {
       dados_antes: atribuicao,
     });
     await EscalaRepository.excluirAtribuicao(parsed);
+
+    if (evento?.status === ESCALA_STATUS.PUBLICADA) {
+      await this._notificarAtribuicaoRemovida(atribuicao.id_usuario, evento, atribuicao.area_nome);
+    }
   }
 
   async getEventoCompleto(id, idUsuario = null, tipoUsuario = null) {
-    const evento = await this.getEventoById(id);
+    const evento = await this.getEventoById(id, tipoUsuario || USER_TYPES.ADMIN);
     const areas = await EscalaRepository.listarAreasPorEvento(evento.id_escala_evento);
     const atribuicoes = await EscalaRepository.listarAtribuicoesPorEvento(evento.id_escala_evento);
     const ministerios = await EscalaRepository.listarMinisteriosPorEvento(evento.id_escala_evento);
@@ -432,11 +484,27 @@ class EscalaService {
     return { ...evento, areas: areasComAtribuicoes, ministerios };
   }
 
+  /**
+   * Candidatos para escalar. Quem já está no evento NÃO some da lista:
+   * vem marcado (ja_escalado + areas_no_evento) para o líder decidir se é exceção.
+   */
   async getUsuariosParaEscalar(idEvento, idUsuarioLogado, tipoUsuario, nomeArea = null) {
     const parsed = this._parseId(idEvento);
     await this.getEventoById(parsed);
 
-    const idsJaEscalados = await EscalaRepository.idsUsuariosEscaladosNoEvento(parsed);
+    const atribuicoesEvento = await EscalaRepository.listarAtribuicoesPorEvento(parsed);
+    const areasPorUsuario = new Map();
+    for (const a of atribuicoesEvento) {
+      if (!areasPorUsuario.has(a.id_usuario)) areasPorUsuario.set(a.id_usuario, []);
+      areasPorUsuario.get(a.id_usuario).push(a.area_nome);
+    }
+    const marcar = (rows) =>
+      rows.map((u) => ({
+        ...u,
+        ja_escalado: areasPorUsuario.has(u.id_usuario),
+        areas_no_evento: areasPorUsuario.get(u.id_usuario) || [],
+      }));
+
     const ministeriosEvento = await EscalaRepository.listarMinisteriosPorEvento(parsed);
 
     let idMinisterioFiltro = null;
@@ -445,15 +513,10 @@ class EscalaService {
       if (ministerio) idMinisterioFiltro = ministerio.id_ministerio;
     }
 
-    const excluirEscalados = (q) =>
-      idsJaEscalados.length > 0 ? q.whereNotIn("u.id_usuario", idsJaEscalados) : q;
-    const excluirEscaladosUsuario = (q) =>
-      idsJaEscalados.length > 0 ? q.whereNotIn("id_usuario", idsJaEscalados) : q;
-
     if (tipoUsuario === USER_TYPES.ADMIN) {
       if (idMinisterioFiltro) {
-        return excluirEscalados(
-          knex("usuario_ministerio as um")
+        return marcar(
+          await knex("usuario_ministerio as um")
             .join("usuario as u", "um.id_usuario", "u.id_usuario")
             .select("u.id_usuario", "u.nome")
             .where("um.id_ministerio", idMinisterioFiltro)
@@ -461,8 +524,8 @@ class EscalaService {
             .orderBy("u.nome")
         );
       }
-      return excluirEscaladosUsuario(
-        knex("usuario").select("id_usuario", "nome").where("ativo", true).orderBy("nome")
+      return marcar(
+        await knex("usuario").select("id_usuario", "nome").where("ativo", true).orderBy("nome")
       );
     }
 
@@ -479,9 +542,10 @@ class EscalaService {
         : idMinisterioFiltro
           ? []
           : idsRelevantes;
+    if (idsFiltro.length === 0) return [];
 
-    return excluirEscalados(
-      knex("usuario_ministerio as um")
+    return marcar(
+      await knex("usuario_ministerio as um")
         .join("usuario as u", "um.id_usuario", "u.id_usuario")
         .select("u.id_usuario", "u.nome")
         .whereIn("um.id_ministerio", idsFiltro)
@@ -550,8 +614,8 @@ class EscalaService {
     return { ano: y, meses: porMes };
   }
 
-  async getVisualizacaoAno(ano) {
-    const visao = await this.getVisaoAno(ano);
+  async getVisualizacaoAno(ano, tipoUsuario = null) {
+    const visao = await this.getVisaoAno(ano, tipoUsuario);
     return {
       sucesso: true,
       dados: {
@@ -584,7 +648,7 @@ class EscalaService {
   }
 
   async getVisualizacaoDia(data, idUsuario = null, tipoUsuario = null) {
-    const eventos = await this.getVisaoDia(data);
+    const eventos = await this.getVisaoDia(data, tipoUsuario);
     const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);
     const unificados = this._formatarEventosComPermissao(eventos, idsLider, tipoUsuario);
     return {
@@ -599,7 +663,7 @@ class EscalaService {
   }
 
   async getVisualizacaoSemana(dataInicio, idUsuario = null, tipoUsuario = null) {
-    const eventos = await this.getVisaoSemana(dataInicio);
+    const eventos = await this.getVisaoSemana(dataInicio, tipoUsuario);
     const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);
     const unificados = this._formatarEventosComPermissao(eventos, idsLider, tipoUsuario);
     const dataFim = adicionarDias(dataInicio, 6);
@@ -631,7 +695,7 @@ class EscalaService {
   }
 
   async getVisualizacaoMes(ano, mes, modo = "compacto", idUsuario = null, tipoUsuario = null) {
-    const eventos = await this.getVisaoMes(ano, mes);
+    const eventos = await this.getVisaoMes(ano, mes, tipoUsuario);
     const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);
     const unificados = this._formatarEventosComPermissao(eventos, idsLider, tipoUsuario);
     const y = Number(ano);
@@ -789,6 +853,8 @@ class EscalaService {
       sucesso: true,
       valido: filtrados.length === 0,
       podeProsseguir: filtrados.length === 0,
+      confirmavel:
+        filtrados.length > 0 && filtrados.every((c) => CONFLITOS_CONFIRMAVEIS.has(c.tipo)),
       conflitos: filtrados.map((c) => ({
         tipo: c.tipo,
         gravidade: "alta",
@@ -808,9 +874,10 @@ class EscalaService {
 
   async moverMembroUnificado(body, idUsuarioLogado, tipoUsuario) {
     const validacao = await this.validarMoverMembro(body);
-    if (!validacao.podeProsseguir && !body.forcarMovimento) {
+    if (!validacao.podeProsseguir && !(body.forcarMovimento && validacao.confirmavel)) {
       const err = new ConflictError(validacao.conflitos[0]?.mensagem || "Conflito ao mover");
       err.conflitos = validacao.conflitos;
+      err.confirmavel = validacao.confirmavel;
       throw err;
     }
 
@@ -834,6 +901,15 @@ class EscalaService {
         dados_antes: atribuicao,
         dados_depois: nova,
       });
+      const evento = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
+      if (evento?.status === ESCALA_STATUS.PUBLICADA) {
+        await this._notificarAtribuicaoAtualizada(
+          atribuicao.id_usuario,
+          evento,
+          areaDestino.nome,
+          detalhes
+        );
+      }
       return {
         sucesso: true,
         mensagem: `${atribuicao.usuario_nome || "Pessoa"} movido(a) para ${validacao.dadosDestino.instrumento}`,
@@ -856,16 +932,25 @@ class EscalaService {
     };
   }
 
-  async getEscalasDaPessoa(idUsuario, dataInicio, dataFim) {
+  async getEscalasDaPessoa(idUsuario, dataInicio, dataFim, solicitante = null) {
     if (!dataInicio || !dataFim) {
       throw new ValidationError("Informe dataInicio e dataFim (YYYY-MM-DD)");
     }
     const parsed = this._parseId(idUsuario);
+    const tipo = solicitante?.tipo;
+    const ehProprio = solicitante?.id_usuario === parsed;
+    // Membro só consulta a própria escala; admin e líderes consultam qualquer pessoa
+    if (tipo === USER_TYPES.MEMBER && !ehProprio) {
+      throw new ForbiddenError("Você só pode consultar a sua própria escala");
+    }
     const usuario = await UsuarioModel.getById(parsed);
     if (!usuario) throw new NotFoundError("Usuário não encontrado");
     const ini = inicioDoDia(dataInicio);
     const fim = fimDoDia(dataFim);
-    const rows = await EscalaRepository.listarEscalasDaPessoa(parsed, ini, fim);
+    let rows = await EscalaRepository.listarEscalasDaPessoa(parsed, ini, fim);
+    if (!this._podeVerRascunho(tipo)) {
+      rows = rows.filter((r) => r.status !== ESCALA_STATUS.RASCUNHO);
+    }
     const escalas = rows.map((r) => ({
       id: r.id_escala_atribuicao,
       escalaId: r.id_escala_evento,
@@ -892,7 +977,8 @@ class EscalaService {
         usuario: {
           id: usuario.id_usuario,
           nome: usuario.nome,
-          email: usuario.email,
+          // E-mail só para o próprio usuário e administradores
+          email: ehProprio || tipo === USER_TYPES.ADMIN ? usuario.email : undefined,
         },
         periodo: { dataInicio, dataFim },
         escalas,
@@ -915,8 +1001,10 @@ class EscalaService {
     const criados = [];
     const warnings = [];
     for (const ev of eventos) {
-      const hora = String(ev.data_hora).slice(11, 19) || "19:00:00";
-      const horaFim = ev.data_hora_fim ? String(ev.data_hora_fim).slice(11, 19) : null;
+      const hora = (formatarDatetimeLocal(ev.data_hora) || "").slice(11, 19) || "19:00:00";
+      const horaFim = ev.data_hora_fim
+        ? (formatarDatetimeLocal(ev.data_hora_fim) || "").slice(11, 19)
+        : null;
       const result = await this.copiarEvento(
         ev.id_escala_evento,
         {
@@ -949,11 +1037,14 @@ class EscalaService {
       dataHora: evento.data_hora,
       dataHoraFim: evento.data_hora_fim,
       detalhes: body.detalhes || null,
+      excluirMesmoEventoDoOverlap: true,
       idMinisterioDestino: area.id_ministerio ?? null,
     });
+    const conflitos = resultado.conflitos.filter((c) => !c.valido && !c.skip);
     return {
       sucesso: resultado.valido,
-      conflitos: resultado.conflitos.filter((c) => !c.valido && !c.skip),
+      conflitos,
+      confirmavel: conflitos.length > 0 && conflitos.every((c) => CONFLITOS_CONFIRMAVEIS.has(c.tipo)),
     };
   }
 
@@ -993,23 +1084,20 @@ class EscalaService {
       excluirMesmoEventoDoOverlap: areaDestino.id_escala_evento === atribuicao.id_escala_evento,
       idMinisterioDestino: areaDestino.id_ministerio ?? null,
     });
-    if (!valido && !forcarMovimento) {
-      const bloqueios = conflitos.filter((c) => !c.valido && !c.skip);
-      const err = new ConflictError(
-        bloqueios[0]?.mensagem || "Conflito ao mover"
-      );
-      err.conflitos = bloqueios.map((c) => ({
-        tipo: c.tipo,
-        mensagem: c.mensagem,
-        sugestao: c.sugestao || null,
-      }));
-      throw err;
+    if (!valido) {
+      // Mesma área: trocar de função não é "duplo instrumento"
+      const relevantes =
+        areaDestino.id_escala_area === atribuicao.id_escala_area
+          ? conflitos.filter((c) => c.tipo !== "duplo_instrumento")
+          : conflitos;
+      this._avaliarConflitos(relevantes, forcarMovimento);
     }
 
+    let nova;
     const trx = await knex.transaction();
     try {
       await EscalaRepository.excluirAtribuicao(parsed, trx);
-      const nova = await EscalaRepository.criarAtribuicao(
+      nova = await EscalaRepository.criarAtribuicao(
         {
           id_escala_area: areaDestino.id_escala_area,
           id_usuario: atribuicao.id_usuario,
@@ -1028,7 +1116,6 @@ class EscalaService {
         trx
       );
       await trx.commit();
-      return nova;
     } catch (err) {
       await trx.rollback();
       if (err?.code === "ER_DUP_ENTRY") {
@@ -1036,12 +1123,47 @@ class EscalaService {
       }
       throw err;
     }
+
+    // Avisa a pessoa (só sobre escalas publicadas, que ela conhece)
+    const mesmoEvento = areaDestino.id_escala_evento === atribuicao.id_escala_evento;
+    if (mesmoEvento) {
+      if (eventoDestino?.status === ESCALA_STATUS.PUBLICADA) {
+        await this._notificarAtribuicaoAtualizada(
+          atribuicao.id_usuario,
+          eventoDestino,
+          areaDestino.nome,
+          detalhesFinais
+        );
+      }
+    } else {
+      const eventoOrigem = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
+      if (eventoOrigem?.status === ESCALA_STATUS.PUBLICADA) {
+        await this._notificarAtribuicaoRemovida(
+          atribuicao.id_usuario,
+          eventoOrigem,
+          atribuicao.area_nome
+        );
+      }
+      if (eventoDestino?.status === ESCALA_STATUS.PUBLICADA) {
+        await this._notificarEscalado(
+          atribuicao.id_usuario,
+          eventoDestino.id_escala_evento,
+          areaDestino.nome,
+          detalhesFinais
+        );
+      }
+    }
+    return nova;
   }
 
   async publicarEvento(id, idUsuarioLogado, tipoUsuario) {
     this._assertAdmin(tipoUsuario);
     const parsed = this._parseId(id);
     const evento = await this.getEventoById(parsed);
+    if (evento.status === ESCALA_STATUS.PUBLICADA) {
+      // Já publicada: não reenvia notificações
+      return this._enrichEvento(evento);
+    }
     const atualizado = await EscalaRepository.atualizarEvento(parsed, {
       status: ESCALA_STATUS.PUBLICADA,
       ativo: true,
@@ -1053,29 +1175,7 @@ class EscalaService {
       dados_antes: evento,
       dados_depois: atualizado,
     });
-
-    const atribuicoes = await EscalaRepository.listarAtribuicoesPorEvento(parsed);
-    for (const attr of atribuicoes) {
-      await NotificacaoModel.create({
-        id_usuario: attr.id_usuario,
-        tipo: "escala_publicada",
-        id_escala_evento: parsed,
-        titulo: `Escala publicada: ${atualizado.titulo}`,
-        mensagem: `Sua participação em ${attr.area_nome} foi confirmada.`,
-        area_nome: attr.area_nome,
-      });
-      if (WhatsAppService.estaConfigurado()) {
-        const usuario = await UsuarioModel.getById(attr.id_usuario);
-        if (usuario?.telefone) {
-          WhatsAppService.notificarEscalacao(
-            { nome: usuario.nome, telefone: usuario.telefone },
-            atualizado,
-            attr.area_nome,
-            attr.detalhes
-          ).catch((err) => console.error("[WhatsApp] publicar:", err?.message || err));
-        }
-      }
-    }
+    await this._notificarPublicacao(atualizado);
     return this._enrichEvento(atualizado);
   }
 
@@ -1330,65 +1430,115 @@ class EscalaService {
     this._assertAdmin(tipoUsuario);
     const parsed = this._parseId(idEvento);
     await this.getEventoById(parsed);
-    const ultimo = await EscalaRepository.ultimoHistorico(parsed);
-    if (!ultimo?.dados_antes) {
+    const ultimo = await EscalaRepository.ultimoHistoricoDesfazivel(parsed);
+    if (!ultimo) {
       throw new ValidationError("Não há alteração para desfazer");
     }
 
-    // Snapshot de atribuições no dados_antes (quando disponível)
-    if (
-      ultimo.acao === ESCALA_HISTORICO_ACAO.ATRIBUICAO &&
-      ultimo.dados_depois?.id_escala_atribuicao
-    ) {
-      await EscalaRepository.excluirAtribuicao(ultimo.dados_depois.id_escala_atribuicao);
-    } else if (
-      ultimo.acao === ESCALA_HISTORICO_ACAO.REMOCAO_ATRIBUICAO &&
-      ultimo.dados_antes
-    ) {
-      const a = ultimo.dados_antes;
-      await EscalaRepository.criarAtribuicao({
-        id_escala_area: a.id_escala_area,
-        id_usuario: a.id_usuario,
-        detalhes: a.detalhes,
-      });
-    } else if (ultimo.acao === ESCALA_HISTORICO_ACAO.EDICAO && ultimo.dados_antes?.titulo) {
-      await EscalaRepository.atualizarEvento(parsed, {
-        titulo: ultimo.dados_antes.titulo,
-        data_hora: ultimo.dados_antes.data_hora,
-        data_hora_fim: ultimo.dados_antes.data_hora_fim,
-        descricao: ultimo.dados_antes.descricao,
-        ativo: ultimo.dados_antes.ativo,
-        status: ultimo.dados_antes.status,
-      });
-    } else if (
-      ultimo.acao === ESCALA_HISTORICO_ACAO.MOVIMENTACAO &&
-      ultimo.dados_antes &&
-      ultimo.dados_depois
-    ) {
-      if (ultimo.dados_depois.id_escala_atribuicao) {
-        await EscalaRepository.excluirAtribuicao(ultimo.dados_depois.id_escala_atribuicao);
+    // Datas do snapshot JSON vêm como ISO (UTC); converte de volta para o horário local
+    const dataDoSnapshot = (v) => (v ? toMysqlDatetime(new Date(v)) : null);
+    const recriar = async (a) => {
+      try {
+        await EscalaRepository.criarAtribuicao({
+          id_escala_area: a.id_escala_area,
+          id_usuario: a.id_usuario,
+          detalhes: a.detalhes,
+        });
+      } catch (err) {
+        if (err?.code === "ER_DUP_ENTRY") return; // já existe: nada a restaurar
+        if (err?.code === "ER_NO_REFERENCED_ROW_2") {
+          throw new ValidationError("A área original não existe mais; não é possível desfazer");
+        }
+        throw err;
       }
-      await EscalaRepository.criarAtribuicao({
-        id_escala_area: ultimo.dados_antes.id_escala_area,
-        id_usuario: ultimo.dados_antes.id_usuario,
-        detalhes: ultimo.dados_antes.detalhes,
-      });
-    } else {
-      throw new ValidationError("Este tipo de alteração não pode ser desfeito automaticamente");
+    };
+
+    switch (ultimo.acao) {
+      case ESCALA_HISTORICO_ACAO.ATRIBUICAO:
+        if (!ultimo.dados_depois?.id_escala_atribuicao) {
+          throw new ValidationError("Não foi possível identificar a atribuição a desfazer");
+        }
+        await EscalaRepository.excluirAtribuicao(ultimo.dados_depois.id_escala_atribuicao);
+        break;
+      case ESCALA_HISTORICO_ACAO.REMOCAO_ATRIBUICAO:
+        await recriar(ultimo.dados_antes);
+        break;
+      case ESCALA_HISTORICO_ACAO.EDICAO:
+        if (ultimo.dados_antes?.id_escala_atribuicao) {
+          // Edição de função/detalhes de uma pessoa
+          await EscalaRepository.atualizarAtribuicao(ultimo.dados_antes.id_escala_atribuicao, {
+            detalhes: ultimo.dados_antes.detalhes || {},
+          });
+        } else if (ultimo.dados_antes?.titulo) {
+          await EscalaRepository.atualizarEvento(parsed, {
+            titulo: ultimo.dados_antes.titulo,
+            data_hora: dataDoSnapshot(ultimo.dados_antes.data_hora),
+            data_hora_fim: dataDoSnapshot(ultimo.dados_antes.data_hora_fim),
+            descricao: ultimo.dados_antes.descricao,
+            ativo: ultimo.dados_antes.ativo,
+            status: ultimo.dados_antes.status,
+          });
+        } else {
+          throw new ValidationError("Esta edição não pode ser desfeita automaticamente");
+        }
+        break;
+      case ESCALA_HISTORICO_ACAO.MOVIMENTACAO:
+        if (ultimo.dados_depois?.id_escala_atribuicao) {
+          await EscalaRepository.excluirAtribuicao(ultimo.dados_depois.id_escala_atribuicao);
+        }
+        await recriar(ultimo.dados_antes);
+        break;
+      default:
+        throw new ValidationError("Este tipo de alteração não pode ser desfeito automaticamente");
     }
 
     await EscalaRepository.registrarHistorico({
       id_escala_evento: parsed,
       id_usuario: idUsuarioLogado,
       acao: ESCALA_HISTORICO_ACAO.DESFAZER,
-      dados_antes: ultimo,
-      dados_depois: { desfeito_id: ultimo.id_escala_historico || ultimo.id },
+      dados_antes: { acao_desfeita: ultimo.acao },
+      dados_depois: { desfeito_id: ultimo.id_escala_historico },
     });
 
     return this.getEventoCompleto(parsed);
   }
 
   // ---------- Helpers ----------
+  /**
+   * Bloqueia se houver conflito. Conflitos "confirmáveis" passam quando o usuário
+   * confirmou a exceção (confirmar = true); retorna os conflitos aceitos.
+   */
+  _avaliarConflitos(conflitos, confirmar = false) {
+    const bloqueios = (conflitos || []).filter((c) => c && !c.valido && !c.skip);
+    if (!bloqueios.length) return [];
+    const confirmavel = bloqueios.every((c) => CONFLITOS_CONFIRMAVEIS.has(c.tipo));
+    if (confirmavel && confirmar) return bloqueios;
+    const err = new ConflictError(bloqueios[0]?.mensagem || "Conflito na escala");
+    err.conflitos = bloqueios.map((c) => ({
+      tipo: c.tipo,
+      mensagem: c.mensagem,
+      sugestao: c.sugestao || null,
+    }));
+    err.confirmavel = confirmavel;
+    throw err;
+  }
+
+  /** Notificações da publicação: escalados recebem a escala; demais membros, o evento */
+  async _notificarPublicacao(evento) {
+    const idEvento = evento.id_escala_evento;
+    const atribuicoes = await EscalaRepository.listarAtribuicoesPorEvento(idEvento);
+    const escalados = new Set();
+    for (const attr of atribuicoes) {
+      escalados.add(attr.id_usuario);
+      await this._notificarEscalado(attr.id_usuario, idEvento, attr.area_nome, attr.detalhes);
+    }
+    const ministerios = await EscalaRepository.listarMinisteriosPorEvento(idEvento);
+    const idsMin = ministerios.map((m) => m.id_ministerio);
+    if (idsMin.length) {
+      await this._notificarEventoCriado(evento, idsMin, escalados);
+    }
+  }
+
   _assertAdmin(tipoUsuario) {
     if (tipoUsuario !== USER_TYPES.ADMIN) {
       throw new ForbiddenError("Apenas administradores podem realizar esta ação");
@@ -1454,7 +1604,7 @@ class EscalaService {
     return { ...evento, areas, ministerios };
   }
 
-  async _notificarEventoCriado(evento, idMinisterios) {
+  async _notificarEventoCriado(evento, idMinisterios, ignorarIds = new Set()) {
     const rows = await knex("usuario_ministerio")
       .whereIn("id_ministerio", idMinisterios)
       .distinct("id_usuario")
@@ -1466,6 +1616,7 @@ class EscalaService {
       .select("id_usuario");
     const dataFmt = formatarDataHoraPtBr(evento.data_hora);
     for (const { id_usuario: idU } of usuariosAtivosRows) {
+      if (ignorarIds.has(idU)) continue;
       await NotificacaoModel.create({
         id_usuario: idU,
         tipo: "evento_criado",

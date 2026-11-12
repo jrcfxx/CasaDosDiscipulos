@@ -45,7 +45,12 @@ class ValidadorEscala {
       const habilidade = this.validarHabilidadeUsuario(areaNome, detalhes);
       if (!habilidade.valido) conflitos.push(habilidade);
 
-      const limite = await this.validarLimiteInstrumento(idArea, areaNome, detalhes);
+      const limite = await this.validarLimiteInstrumento(
+        idArea,
+        areaNome,
+        detalhes,
+        idAtribuicaoExcluir
+      );
       if (!limite.valido) conflitos.push(limite);
     }
 
@@ -170,7 +175,7 @@ class ValidadorEscala {
     return { tipo: "habilidade", valido: true, mensagem: "Função válida" };
   }
 
-  async validarLimiteInstrumento(idArea, areaNome, detalhes) {
+  async validarLimiteInstrumento(idArea, areaNome, detalhes, idAtribuicaoExcluir = null) {
     const limites = getLimitesPorArea(areaNome);
     if (!limites) {
       return { tipo: "limite", valido: true, mensagem: "Sem limite configurado", skip: true };
@@ -184,12 +189,17 @@ class ValidadorEscala {
     if (limite == null) {
       return { tipo: "limite", valido: true, mensagem: "Função sem limite", skip: true };
     }
-    const atual = await EscalaRepository.contarPorFuncaoNaArea(idArea, chave, valor);
+    const atual = await EscalaRepository.contarPorFuncaoNaArea(
+      idArea,
+      chave,
+      valor,
+      idAtribuicaoExcluir
+    );
     if (atual >= limite) {
       return {
         tipo: "limite",
         valido: false,
-        mensagem: `Limite atingido para ${valor}: ${atual}/${limite}`,
+        mensagem: `${valor} já está com as vagas preenchidas (${atual}/${limite}).`,
         sugestao: "Escolha outra função ou remova alguém da escala.",
         limite,
         atual,

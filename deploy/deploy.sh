@@ -4,6 +4,8 @@
 #   ./deploy.sh              # build + up + smoke
 #   ./deploy.sh --enable-ssl # exige HTTPS (falha se não houver certificados em nginx/ssl/)
 # O HTTPS é ativado automaticamente quando nginx/ssl/*.pem e DOMAIN existem.
+# Com BACKEND_IMAGE e WEB_IMAGE definidos (deploy automático), baixa as imagens
+# prontas em vez de compilar no servidor.
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -86,11 +88,20 @@ else
   cp nginx/nginx-http.conf nginx/active.conf
 fi
 
-echo "Construindo imagens..."
-$COMPOSE build
-
-echo "Subindo containers..."
-$COMPOSE up -d
+if [ -n "${BACKEND_IMAGE:-}" ] && [ -n "${WEB_IMAGE:-}" ]; then
+  # Deploy automático: imagens já compiladas no GitHub Actions (servidor tem pouca RAM)
+  echo "Baixando imagens prontas..."
+  echo "  backend: ${BACKEND_IMAGE}"
+  echo "  web:     ${WEB_IMAGE}"
+  $COMPOSE pull backend web
+  echo "Subindo containers..."
+  $COMPOSE up -d --no-build
+else
+  echo "Construindo imagens no servidor..."
+  $COMPOSE build
+  echo "Subindo containers..."
+  $COMPOSE up -d
+fi
 
 echo "Aguardando health do backend..."
 READY=0

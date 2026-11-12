@@ -1,3 +1,4 @@
+import "../config/timezone.js";
 import dotenv from "dotenv";
 import knexLib from "knex";
 import { createRequire } from "node:module";
