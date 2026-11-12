@@ -105,8 +105,13 @@ async function testeC4() {
   const b = vinculos.find((v) => v.id_celula !== a.id_celula && v.id_usuario !== a.id_usuario);
   if (!b) return ok(false, "C4: precisa de líderes distintos em células distintas");
 
+  // Data fixa e distante: a tabela é única por (formulário, célula, data_resposta) e o seed
+  // cria respostas com "agora" — usar new Date() colidia no CI quando caía no mesmo segundo.
+  let seq = 0;
   const criarResposta = async (v) => {
-    const [id] = await knex("formulario_resposta").insert({ id_formulario: formulario.id_formulario, id_usuario: v.id_usuario, id_celula: v.id_celula, data_resposta: new Date() });
+    seq += 1;
+    const data_resposta = `2001-01-01 00:00:${String(seq).padStart(2, "0")}`;
+    const [id] = await knex("formulario_resposta").insert({ id_formulario: formulario.id_formulario, id_usuario: v.id_usuario, id_celula: v.id_celula, data_resposta });
     limpeza.push(() => knex("formulario_resposta").where({ id_resposta: id }).del());
     return id;
   };
