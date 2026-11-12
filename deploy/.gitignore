@@ -1,0 +1,4 @@
+# Segredos e arquivos gerados no servidor (nunca versionar)
+.env
+nginx/active.conf
+nginx/ssl/*.pem

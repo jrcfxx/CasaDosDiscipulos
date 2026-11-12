@@ -6,9 +6,6 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import Toast from "../components/ui/Toast";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FocusTrapComponent = FocusTrap as any;
 import { ASSETS_BASE } from "../config/api";
 import {
   type Evento,
@@ -19,6 +16,9 @@ import {
   uploadImagemEvento,
 } from "../services/eventoService";
 import { getErrorMessage } from "../utils/errorUtils";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FocusTrapComponent = FocusTrap as any;
 
 const EventosAdmin: React.FC = () => {
   const [eventos, setEventos] = useState<Evento[]>([]);

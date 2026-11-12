@@ -2,7 +2,8 @@
 # Deploy — Casa dos Discípulos
 # Uso:
 #   ./deploy.sh              # build + up + smoke
-#   ./deploy.sh --enable-ssl # ativa nginx-ssl.conf (requer certificados em nginx/ssl/)
+#   ./deploy.sh --enable-ssl # exige HTTPS (falha se não houver certificados em nginx/ssl/)
+# O HTTPS é ativado automaticamente quando nginx/ssl/*.pem e DOMAIN existem.
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -63,20 +64,27 @@ if [ "${#JWT_SECRET}" -lt 32 ]; then
   exit 1
 fi
 
-if [ "$ENABLE_SSL" -eq 1 ]; then
-  if [ ! -f nginx/ssl/fullchain.pem ] || [ ! -f nginx/ssl/privkey.pem ]; then
-    echo "Erro: --enable-ssl requer nginx/ssl/fullchain.pem e nginx/ssl/privkey.pem"
-    exit 1
-  fi
-  if [ -z "${DOMAIN:-}" ]; then
-    echo "Erro: defina DOMAIN=app.seudominio.com no .env para ativar SSL."
-    exit 1
-  fi
-  echo "Ativando Nginx HTTPS para ${DOMAIN}..."
-  sed "s/SEU_DOMINIO/${DOMAIN}/g" nginx/nginx-ssl.conf > nginx/nginx.conf
+mkdir -p nginx/ssl
+
+# Nginx ativo (nginx/active.conf, não versionado): HTTPS automaticamente quando
+# há certificados + DOMAIN; senão HTTP. --enable-ssl torna o HTTPS obrigatório.
+HAS_CERTS=0
+if [ -f nginx/ssl/fullchain.pem ] && [ -f nginx/ssl/privkey.pem ] && [ -n "${DOMAIN:-}" ]; then
+  HAS_CERTS=1
 fi
 
-mkdir -p nginx/ssl
+if [ "$ENABLE_SSL" -eq 1 ] && [ "$HAS_CERTS" -eq 0 ]; then
+  echo "Erro: --enable-ssl requer nginx/ssl/fullchain.pem, nginx/ssl/privkey.pem e DOMAIN no .env"
+  exit 1
+fi
+
+if [ "$HAS_CERTS" -eq 1 ]; then
+  echo "Nginx: HTTPS para ${DOMAIN}"
+  sed "s/SEU_DOMINIO/${DOMAIN}/g" nginx/nginx-ssl.conf > nginx/active.conf
+else
+  echo "Nginx: HTTP (sem certificados em nginx/ssl/)"
+  cp nginx/nginx-http.conf nginx/active.conf
+fi
 
 echo "Construindo imagens..."
 $COMPOSE build

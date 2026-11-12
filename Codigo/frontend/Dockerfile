@@ -12,6 +12,9 @@ COPY . .
 # URL da API em produção (será sobrescrita no build)
 ARG REACT_APP_API_URL=/api
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
+# Lint fica no CI/dev; o build de produção não deve falhar por import/order
+ENV DISABLE_ESLINT_PLUGIN=true
+ENV CI=false
 
 RUN npm run build
 

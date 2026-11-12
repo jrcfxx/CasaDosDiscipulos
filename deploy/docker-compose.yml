@@ -18,7 +18,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Gerado pelo deploy.sh a partir de nginx-http.conf ou nginx-ssl.conf
+      - ./nginx/active.conf:/etc/nginx/conf.d/default.conf:ro
       # Certificados Let's Encrypt (copie fullchain.pem e privkey.pem para cá)
       - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
@@ -103,10 +104,23 @@ services:
     environment:
       SERVER_URL: ${EVOLUTION_SERVER_URL:-http://127.0.0.1:8080}
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
-      DATABASE_ENABLED: "false"
+      # Evolution v2 exige provider (mysql|postgresql); reutiliza o MySQL do stack
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: mysql
+      DATABASE_CONNECTION_URI: mysql://${DB_USER}:${DB_PASSWORD}@mysql:3306/evolution
+      DATABASE_CONNECTION_CLIENT_NAME: evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
       CACHE_LOCAL_ENABLED: "true"
+      CACHE_REDIS_ENABLED: "false"
       CORS_ORIGIN: "*"
       LOG_LEVEL: INFO
+    depends_on:
+      mysql:
+        condition: service_healthy
     volumes:
       - evolution_instances:/evolution/instances
     networks:

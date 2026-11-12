@@ -1,6 +1,11 @@
-# CI: valida que as imagens Docker de produção compilam.
-# Não faz push nem deploy remoto (requer VPS + secrets SSH).
-name: Docker build
+# CI/CD: valida que as imagens Docker compilam e, em push na main,
+# faz deploy automático no servidor via SSH.
+#
+# Secrets necessários (GitHub → Settings → Secrets and variables → Actions):
+#   SSH_HOST  IP do servidor (ex.: 147.182.211.209)
+#   SSH_USER  usuário SSH (ex.: root)
+#   SSH_KEY   chave privada SSH autorizada no servidor
+name: Build & Deploy
 
 on:
   push:
@@ -15,6 +20,8 @@ on:
       - "Codigo/backend/**"
       - "Codigo/frontend/**"
       - "deploy/**"
+  # Permite rodar o deploy manualmente pela aba Actions
+  workflow_dispatch:
 
 jobs:
   build:
@@ -31,3 +38,32 @@ jobs:
             --build-arg REACT_APP_API_URL=/api \
             -t casadiscipulos-web:ci \
             ./Codigo/frontend
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # Um deploy por vez; um novo push espera o anterior terminar
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: https://casadosdiscipulos.com.br
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            cd /opt/CasaDosDiscipulos
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+            cd deploy
+            ./deploy.sh
+            docker image prune -f

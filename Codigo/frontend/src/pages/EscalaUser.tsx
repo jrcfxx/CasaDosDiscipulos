@@ -779,12 +779,14 @@ const EscalaUser: React.FC = () => {
                   }}
                   onAbrirEvento={abrirEvento}
                 />
-                <EscalaRelatorio
-                  titulo={`Relatório — ${MESES[mes - 1]} ${ano}`}
-                  subtitulo="Visão geral para liderança e secretaria"
-                  estatisticas={visaoMesUnificada.estatisticas}
-                  onAbrirEvento={abrirEvento}
-                />
+                {podeEditar && (
+                  <EscalaRelatorio
+                    titulo={`Relatório — ${MESES[mes - 1]} ${ano}`}
+                    subtitulo="Visão geral para liderança e secretaria"
+                    estatisticas={visaoMesUnificada.estatisticas}
+                    onAbrirEvento={abrirEvento}
+                  />
+                )}
               </>
             )}
 
@@ -802,12 +804,14 @@ const EscalaUser: React.FC = () => {
                   onMover={handleMoverUnificado}
                   onEscalar={abrirSlotParaEscalar}
                 />
-                <EscalaRelatorio
-                  titulo={`Relatório detalhado — ${MESES[mes - 1]} ${ano}`}
-                  subtitulo="Indicadores, equilíbrio da equipe e pendências"
-                  estatisticas={visaoMesUnificada.estatisticas}
-                  onAbrirEvento={abrirEvento}
-                />
+                {podeEditar && (
+                  <EscalaRelatorio
+                    titulo={`Relatório detalhado — ${MESES[mes - 1]} ${ano}`}
+                    subtitulo="Indicadores, equilíbrio da equipe e pendências"
+                    estatisticas={visaoMesUnificada.estatisticas}
+                    onAbrirEvento={abrirEvento}
+                  />
+                )}
               </>
             )}
 
@@ -842,16 +846,18 @@ const EscalaUser: React.FC = () => {
                   })
                 }
               />
-              <EscalaRelatorio
-                titulo={`Relatório do dia`}
-                subtitulo={new Date(`${dataDia}T12:00:00`).toLocaleDateString("pt-BR", {
-                  weekday: "long",
-                  day: "2-digit",
-                  month: "long",
-                })}
-                estatisticas={visaoDiaUnificada.estatisticas}
-                onAbrirEvento={abrirEvento}
-              />
+              {podeEditar && (
+                <EscalaRelatorio
+                  titulo={`Relatório do dia`}
+                  subtitulo={new Date(`${dataDia}T12:00:00`).toLocaleDateString("pt-BR", {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "long",
+                  })}
+                  estatisticas={visaoDiaUnificada.estatisticas}
+                  onAbrirEvento={abrirEvento}
+                />
+              )}
               </>
             )}
             {visao === "semana" && visaoSemanaUnificada && (
@@ -869,12 +875,14 @@ const EscalaUser: React.FC = () => {
                 onEscalar={abrirSlotParaEscalar}
                 onCopiarSemana={isAdmin ? handleCopiarSemana : undefined}
               />
-              <EscalaRelatorio
-                titulo="Relatório da semana"
-                subtitulo={`De ${new Date(`${visaoSemanaUnificada.dataInicio}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${visaoSemanaUnificada.dataFim}T12:00:00`).toLocaleDateString("pt-BR")}`}
-                estatisticas={visaoSemanaUnificada.estatisticas}
-                onAbrirEvento={abrirEvento}
-              />
+              {podeEditar && (
+                <EscalaRelatorio
+                  titulo="Relatório da semana"
+                  subtitulo={`De ${new Date(`${visaoSemanaUnificada.dataInicio}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${visaoSemanaUnificada.dataFim}T12:00:00`).toLocaleDateString("pt-BR")}`}
+                  estatisticas={visaoSemanaUnificada.estatisticas}
+                  onAbrirEvento={abrirEvento}
+                />
+              )}
               </>
             )}
             {visao === "ano" && visaoAno && (
