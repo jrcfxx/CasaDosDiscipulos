@@ -56,8 +56,8 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 | # | Ponto | Detalhe |
 |---|---|---|
 | Q1 | ✅ CI roda `test:escala` + `test:seguranca` (MySQL descartável) e, no frontend, checagem de tipos + Vitest (`npm test`: utilitários e modal de conflitos), antes de cada build/deploy. | Ampliar a cobertura do frontend aos poucos. |
-| Q2 | **Componentes gigantes**: `GerirUser.tsx` (1.619 linhas), `FormulariosSecretariaCelulasAdmin.tsx` (1.361), `EscalaUser.tsx` (1.3k), `QuizzesSecretariaCelulasAdmin.tsx` (1.021); `EscalaService.js` (1.7k). | Dividir por responsabilidade. |
-| Q3 | 🟨 `any` 78 → 53 e `eslint-disable` 31 → 25: erros de API tipados (`ErroApi`), `FocusTrap` tipado num só lugar, casts desnecessários removidos. Os restantes estão no sistema de campos dinâmicos (JSON de formato variável). | Tipar `conteudo` dos campos por tipo. |
+| Q2 | ✅ Telas divididas sem mudar comportamento: `GerirUser` 1.629 → 1.043 (modais de usuário/nível/ministério e linha arrastável em `components/gerirUser/`), `FormulariosSecretariaCelulasAdmin` 1.361 → 1.143 (regras de “em dia/atrasada” e filtros em `components/formularios/statusCelulas.ts`, com testes, + painel), `QuizzesSecretariaCelulasAdmin` 1.023 → 877, `EscalaUser` 1.369 → 1.240 (modal de evento). Cópias removidas: pré-visualização de vídeo (3 telas) e ícone de medalha. | Continuar extraindo ao mexer em cada tela. |
+| Q3 | ✅ `any` 78 → **0** no frontend. Conteúdo dos campos tipado (`types/campoConteudo.ts`: `ValorCampo`, alternativas, select, upload) com leitura única e testada; contrato `CampoDinamicoProps` para campos escolhidos por tipo; tipos de API (`CampoVinculado`, `QuizVinculado`). `eslint-disable` 31 → 23 (restantes são intencionais). | |
 | Q4 | ✅ Migrado para **Vite 6** (build de ~1 min para ~2 s); frontend com **0 vulnerabilidades**; `@axe-core` fora do bundle de produção; CI valida o nginx antes do deploy. | |
 | Q5 | ✅ Removidas `@types/react`, `@types/react-dom` e `typescript` do backend. | |
 | Q6 | ✅ Evento, Lição e Fala Aí passam a usar o tratador central (`next(err)`): erro de banco não vaza mais a mensagem SQL como 400. Papéis sempre via `USER_TYPES`. | |
@@ -69,6 +69,7 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 
 ## Próximos passos
 
-1. Q2: dividir as telas gigantes, uma por vez, junto com mudanças nelas (agora há testes e checagem de tipos no CI para dar segurança).
-2. Q3: tipar o conteúdo dos campos dinâmicos.
-3. Decidir sobre as fotos sem uso em `src/assets/`.
+1. Decidir sobre as fotos sem uso em `src/assets/`.
+2. Voltar a ter lint no frontend (o ESLint vinha do Create React App e saiu com a migração para o Vite).
+
+**Bug encontrado durante a divisão (corrigido):** na aba Respostas dos formulários, o filtro de datas lia “yyyy-mm-dd” como UTC — a resposta do último dia ficava de fora e a da véspera entrava. Coberto por teste.
