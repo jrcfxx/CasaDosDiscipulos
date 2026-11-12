@@ -1,0 +1,57 @@
+# Monitoramento de disponibilidade (gratuito, sem serviço externo).
+# A cada 10 minutos verifica o site e a API. Se algo cair, a execução falha e o
+# GitHub envia e-mail para o dono do repositório (Settings → Notifications → Actions).
+#
+# Observação: o GitHub pausa workflows agendados após 60 dias sem commits no repositório;
+# nesse caso, reative em Actions → Monitor → "Enable workflow".
+name: Monitor
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monitor
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: API (/api/health)
+        run: |
+          # 3 tentativas para não alarmar por uma oscilação de rede
+          for i in 1 2 3; do
+            if curl -fsS --max-time 20 https://casadosdiscipulos.com.br/api/health | grep -q '"status":"ok"'; then
+              echo "API ok"; exit 0
+            fi
+            echo "Tentativa $i falhou"; sleep 20
+          done
+          echo "::error::A API não respondeu em https://casadosdiscipulos.com.br/api/health"
+          exit 1
+
+      - name: Site (página inicial)
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 https://casadosdiscipulos.com.br/ || true)
+            if [ "$code" = "200" ]; then echo "Site ok"; exit 0; fi
+            echo "Tentativa $i: HTTP $code"; sleep 20
+          done
+          echo "::error::O site não respondeu com 200"
+          exit 1
+
+      - name: Certificado HTTPS (vence em mais de 14 dias)
+        run: |
+          fim=$(echo | openssl s_client -servername casadosdiscipulos.com.br -connect casadosdiscipulos.com.br:443 2>/dev/null \
+                | openssl x509 -noout -enddate | cut -d= -f2)
+          dias=$(( ( $(date -d "$fim" +%s) - $(date +%s) ) / 86400 ))
+          echo "Certificado vence em $dias dias ($fim)"
+          if [ "$dias" -lt 14 ]; then
+            echo "::error::Certificado HTTPS vence em $dias dias — a renovação automática pode ter falhado"
+            exit 1
+          fi

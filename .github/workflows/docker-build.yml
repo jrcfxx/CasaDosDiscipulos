@@ -99,6 +99,22 @@ jobs:
             -t "${{ steps.names.outputs.web }}" \
             ./Codigo/frontend
 
+      # Um nginx.conf inválido derrubaria o site no deploy: testa as duas configs antes
+      - name: Validate nginx configs
+        run: |
+          mkdir -p /tmp/ssl
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 -subj "/CN=ci" \
+            -keyout /tmp/ssl/privkey.pem -out /tmp/ssl/fullchain.pem 2>/dev/null
+          cp deploy/nginx/nginx-http.conf /tmp/http.conf
+          sed "s/SEU_DOMINIO/casadosdiscipulos.com.br/g" deploy/nginx/nginx-ssl.conf > /tmp/ssl.conf
+          for conf in /tmp/http.conf /tmp/ssl.conf; do
+            echo "== $conf"
+            docker run --rm --add-host backend:127.0.0.1 \
+              -v "$conf:/etc/nginx/conf.d/default.conf:ro" \
+              -v "/tmp/ssl:/etc/nginx/ssl:ro" \
+              "${{ steps.names.outputs.web }}" nginx -t
+          done
+
       - name: Push images to GHCR
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: |

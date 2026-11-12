@@ -29,7 +29,7 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 | # | Problema | Onde | Status |
 |---|---|---|---|
 | R1 | Escala: paralelismo/exceções bloqueados; notificações em rascunho; membros viam rascunhos; consulta de escala de terceiros; limite contando a própria pessoa; "copiar dia" quebrado; "desfazer" quebrado; mudança de horário sem aviso; movimentação sem aviso à pessoa. | `services/EscalaService.js` | ✅ |
-| R2 | Ao mudar o quiz de um módulo já concluído, o progresso/nota antigos não são recalculados (depende de C1). | `QuizService`/`ModuloService` | 🔲 |
+| R2 | Ao mudar o quiz de um módulo já concluído, o progresso/nota antigos não são recalculados. **Regra definida:** quem já concluiu mantém a conclusão e a nota (ninguém perde progresso por mudança do admin); respostas só somem se o admin remover a própria pergunta. | `QuizService`/`ModuloService` | ✅ |
 | R3 | `toggleActive` permite o admin desativar a si mesmo ou o último admin → ninguém mais administra o sistema. | `services/UsuarioService.js` | ✅ |
 | R4 | `lider_celula` e `lider_ministerio` (flags em `usuario`) convivem com as tabelas `celula_lider` e `ministerio_lider`: duas fontes da verdade para liderança. Rotas de formulário usam só `tipo=lider`, ignorando `lider_celula`. | `middlewares/checkRole.js`, `routes/formularioRespostaRoutes.js` | ✅ |
 | R5 | Status `concluida` da escala nunca é aplicado automaticamente após o evento. | Escala | ✅ |
@@ -45,8 +45,8 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 | O2 | Job semanal dispara **todas** as mensagens ao mesmo tempo (`Promise.all`) — risco de bloqueio do número pelo WhatsApp. Precisa de fila/intervalo. | `jobs/whatsappModulosJob.js:19` | ✅ |
 | O3 | Publicar escala envia notificação + WhatsApp **um por um aguardando** (N consultas + N chamadas HTTP) — lento com muitas pessoas. | `EscalaService._notificarEscalado` | ✅ |
 | O4 | Logs gravam telefones (dado pessoal). | `WhatsAppService.js` | ✅ |
-| O5 | Sem backup automático do MySQL. `deploy/backup.sh` criado (banco + uploads, 14 dias); falta ativar no servidor e ligar os Backups do droplet. | `deploy/backup.sh` | 🟨 |
-| O6 | Sem monitoramento/alerta de queda (o incidente de memória só foi visto manualmente). | — | 🔲 |
+| O5 | Backup diário ativo no servidor desde 12/11/2026 (`deploy/backup.sh`: banco + uploads, 03:00 UTC, 14 dias). Recomendado também ligar os Backups do droplet (cópia fora do servidor). | `deploy/backup.sh` | ✅ |
+| O6 | Monitor a cada 10 min (API, site e validade do certificado) via GitHub Actions; falha gera e-mail do GitHub. | `.github/workflows/monitor.yml` | ✅ |
 | O7 | `npm audit`: backend agora com **0 vulnerabilidades** (incl. `sharp` 0.35.5); frontend: `react-router` 7.18.5 (open redirect corrigido). Restam alertas só em ferramentas de build do `react-scripts`, que não vão para o navegador (resolve com Q4). | `package.json` | ✅ |
 | O8 | Evolution API em `:latest`. Compose aceita `EVOLUTION_IMAGE`; falta fixar o digest no `.env` do servidor. | `deploy/docker-compose.yml` | 🟨 |
 | O9 | `add_header` dentro de `location /static` e `/uploads` duplicava `Cache-Control` **e descartava HSTS / X-Frame-Options / nosniff** nessas respostas. | `deploy/nginx/*.conf` | ✅ |
@@ -58,7 +58,7 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 | Q1 | ✅ CI roda `test:escala` + `test:seguranca` num MySQL descartável antes de cada build/deploy. Frontend ainda sem testes. | Próximo: testes do frontend. |
 | Q2 | **Componentes gigantes**: `GerirUser.tsx` (1.619 linhas), `FormulariosSecretariaCelulasAdmin.tsx` (1.361), `EscalaUser.tsx` (1.3k), `QuizzesSecretariaCelulasAdmin.tsx` (1.021); `EscalaService.js` (1.7k). | Dividir por responsabilidade. |
 | Q3 | Tipagem fraca no frontend: 78 ocorrências de `any` e 31 `eslint-disable`. | |
-| Q4 | `react-scripts` (Create React App) está descontinuado — fonte da maioria das vulnerabilidades do frontend. | Migrar para Vite. |
+| Q4 | ✅ Migrado para **Vite 6** (build de ~1 min para ~2 s); frontend com **0 vulnerabilidades**; `@axe-core` fora do bundle de produção; CI valida o nginx antes do deploy. | |
 | Q5 | ✅ Removidas `@types/react`, `@types/react-dom` e `typescript` do backend. | |
 | Q6 | Padrões inconsistentes: alguns controllers respondem erro direto (`res.status(...)`), outros usam `next(err)`; checagem de admin por string `"administrador"` em vez de `USER_TYPES`. | |
 | Q7 | Leituras com efeito colateral (C1) e N+1 queries (ranking, publicação da escala, notificações). | |
@@ -69,7 +69,5 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 
 ## Próximos passos
 
-1. No servidor: ativar o backup (O5) e fixar a versão da Evolution (O8) — ver `deploy/README.md`.
-2. R2 (recalcular notas quando o quiz de um módulo concluído muda) — precisa de decisão de regra.
-3. O6 monitoramento de queda (ex.: UptimeRobot gratuito em `/api/health`).
-4. Qualidade: migrar Create React App → Vite (Q4), dividir componentes gigantes (Q2), tipagem (Q3), padronizar erros (Q6–Q8).
+1. No servidor: fixar a versão da Evolution (O8) — ver `deploy/README.md`. Ligar os Backups do droplet na DigitalOcean.
+2. Qualidade: dividir componentes gigantes (Q2), tipagem (Q3), padronizar erros (Q6–Q8), testes do frontend.

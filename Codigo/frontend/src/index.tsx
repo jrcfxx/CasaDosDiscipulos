@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter } from "react-router-dom";
-import axe from "@axe-core/react";
 import "./index.css";
 import "./style/accessibility.css";
 import App from "./App";
@@ -16,8 +15,9 @@ import MiniJesus from "./components/MiniJesus";
 const container = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(container);
 
-if (process.env.NODE_ENV === "development") {
-  axe(React, ReactDOM, 1000);
+// Auditoria de acessibilidade só em desenvolvimento (import dinâmico: fora do bundle de produção)
+if (import.meta.env.DEV) {
+  import("@axe-core/react").then(({ default: axe }) => axe(React, ReactDOM, 1000));
 }
 
 root.render(

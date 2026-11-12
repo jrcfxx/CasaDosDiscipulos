@@ -1,5 +1,5 @@
 # Frontend - Casa dos Discípulos
-# Estágio 1: Build do React
+# Estágio 1: build com Vite
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -9,13 +9,11 @@ RUN npm ci
 
 COPY . .
 
-# URL da API em produção (será sobrescrita no build)
+# URL da API em produção (lida no build como import.meta.env.REACT_APP_API_URL)
 ARG REACT_APP_API_URL=/api
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
-# Lint fica no CI/dev; o build de produção não deve falhar por import/order
-ENV DISABLE_ESLINT_PLUGIN=true
-ENV CI=false
 
+# tsc --noEmit + vite build (saída em build/)
 RUN npm run build
 
 # Estágio 2: Nginx servindo os arquivos estáticos

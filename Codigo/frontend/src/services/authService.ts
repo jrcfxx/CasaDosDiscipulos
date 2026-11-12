@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+const API_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
 export interface LoginCredentials {
   email: string;

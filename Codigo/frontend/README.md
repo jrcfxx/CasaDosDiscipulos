@@ -33,10 +33,14 @@ React · TypeScript · marca da Casa
 
 ## Scripts
 
+Build com **Vite** (substituiu o Create React App em 11/2026).
+
 | Comando | Descrição |
 |---------|-----------|
-| `npm start` | `http://localhost:3000` |
-| `npm run build` | Build de produção |
+| `npm run dev` (ou `npm start`) | `http://localhost:3000` |
+| `npm run build` | Checagem de tipos + build de produção em `build/` |
+| `npm run preview` | Serve o build localmente |
+| `npm run typecheck` | Só a checagem de tipos |
 | `npm run test:e2e` | Crawl E2E |
 
 ```env
