@@ -3,7 +3,7 @@
  *
  * O que faz (tudo numa transação: se algo falhar, nada muda):
  *   1. APAGA os dados de todas as tabelas, exceto a estrutura que guarda imagens ou foi
- *      cadastrada à mão: células, eventos (carrossel), Staff, ministérios e site_config.
+ *      cadastrada à mão: células, eventos (carrossel), Staff, ministérios, site_config e tipos de campo.
  *      Os arquivos de imagem em uploads/ não são tocados.
  *   2. Recria os níveis da Escola de Discipulado (Discipulado 1 a 9, Liderança Cristã, + de Deus).
  *   3. Importa os membros do arquivo JSON (senha inicial = telefone, só números).
@@ -30,6 +30,7 @@ import { normalizarTelefone } from "../src/utils/formatUtils.js";
 const MANTER = new Set([
   "knex_migrations",
   "knex_migrations_lock",
+  "campo_personalizado", // tipos de campo: configuração do sistema
   "celula",
   "evento",
   "staff_item",
