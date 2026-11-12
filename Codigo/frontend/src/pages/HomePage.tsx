@@ -53,7 +53,7 @@ const HomePage: React.FC = () => {
           />
           <div className="home-hero__overlay" />
           <div className="home-hero__content">
-            <p className="home-hero__sub">— Comunidade Cristã</p>
+            <p className="home-hero__sub">— Comunidade Cristã Casa dos Discípulos</p>
             <h1 className="home-hero__title">
               Aqui é a nossa Casa.
             </h1>
@@ -96,7 +96,7 @@ const HomePage: React.FC = () => {
             <div className="home-culto-card">
               <span className="home-culto-card__dia">Sexta-feira</span>
               <span className="home-culto-card__hora">20h</span>
-              <span className="home-culto-card__tipo">Vigília</span>
+              <span className="home-culto-card__tipo">Sala de Oração</span>
             </div>
           </div>
           <p className="home-cultos__endereco">

@@ -39,7 +39,6 @@ export async function seed() {
   add("arlem.cleizer@casadosdiscipulos.org", "Resgate");
   add("ana.paula@casadosdiscipulos.org", "Reino");
   add("simone@casadosdiscipulos.org", "Videira");
-  add("luana@casadosdiscipulos.org", "Farol");
 
   // Membros demo distribuídos
   add("membro@test.com", "Reino");
@@ -48,7 +47,6 @@ export async function seed() {
   add("fernanda@test.com", "Visão");
   add("pedro@test.com", "Morada");
   add("juliana@test.com", "Videira");
-  add("amanda@test.com", "Farol");
   add("beatriz@test.com", "Reino");
   add("lucas@test.com", "Reino");
   add("carla@test.com", "Pérolas");

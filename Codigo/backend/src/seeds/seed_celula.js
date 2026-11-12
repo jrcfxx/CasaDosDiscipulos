@@ -101,18 +101,6 @@ export async function seed() {
       ativa: true,
       liderEmail: "simone",
     },
-    {
-      nome: "Farol",
-      categoria: "Célula de Família",
-      endereco: "Belo Horizonte/MG",
-      dia_reuniao: "quarta",
-      horario_reuniao: "20:00:00",
-      modalidade: "presencial",
-      imagem_url: "/uploads/celulas/hero-celulas.jpg",
-      gd_mae: "FLECHA",
-      ativa: true,
-      liderEmail: "luana",
-    },
   ];
 
   for (const c of celulasData) {
