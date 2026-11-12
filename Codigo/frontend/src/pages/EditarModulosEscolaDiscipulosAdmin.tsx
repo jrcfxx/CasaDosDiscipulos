@@ -21,6 +21,7 @@ import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import QuizField from "../components/fields/QuizField";
 import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
+import BotaoCarregando from "../components/ui/BotaoCarregando";
 
 /** Campo em edição na tela (o quiz vinculado entra como tipo "QUIZ") */
 type CampoEditor = { id: string; tipo: string; label: string; conteudo?: ValorCampo; campo?: Campo };
@@ -47,6 +48,8 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  /** Salvamento separado do carregamento inicial: o formulário continua na tela */
+  const [salvando, setSalvando] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [obrigatorio, setObrigatorio] = useState(true);
   const [idNivel, setIdNivel] = useState<number | "">("");
@@ -264,7 +267,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
     try {
       setError(false);
-      setLoading(true);
+      setSalvando(true);
 
       const camposProcessados = await Promise.all(
         fields
@@ -343,15 +346,13 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
       showToast("Módulo atualizado com sucesso!");
 
-      // Recarregar dados do módulo após salvar
-      await loadModulo();
-
+      // Volta para a lista em seguida; o botão segue em "Salvando…" até lá
+      // (recarregar o módulo aqui só fazia o formulário piscar antes de sair)
       setTimeout(() => navigate("/admin/modulos"), 1000);
     } catch (err) {
       console.error(err);
       showToast("Erro ao atualizar módulo.");
-    } finally {
-      setLoading(false);
+      setSalvando(false);
     }
   };
 
@@ -575,15 +576,17 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
               </div>
 
               <div className="editar-modulo-actions">
-                <button
+                <BotaoCarregando
                   className="editar-modulo-btn editar-modulo-btn-primary"
                   onClick={onSave}
+                  carregando={salvando}
                 >
                   Salvar
-                </button>
+                </BotaoCarregando>
                 <button
                   className="editar-modulo-btn editar-modulo-btn-secondary"
                   onClick={() => navigate("/admin/modulos")}
+                  disabled={salvando}
                 >
                   Cancelar
                 </button>

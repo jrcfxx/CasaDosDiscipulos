@@ -1,0 +1,39 @@
+/*
+ * Feedback de ações demoradas (salvar, enviar, excluir...)
+ * Usado por BotaoCarregando, ConfirmModal, InputModal e telas que mostram progresso.
+ */
+
+.btn-spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.5em;
+  vertical-align: -0.15em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-spinner-gira 0.7s linear infinite;
+}
+
+@keyframes btn-spinner-gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-spinner {
+    animation-duration: 2s;
+  }
+}
+
+/* Botão ocupado: continua legível, mas deixa claro que está trabalhando */
+button[aria-busy="true"] {
+  cursor: wait !important;
+  opacity: 0.85;
+}
+
+button:disabled[aria-busy="true"] {
+  opacity: 0.85;
+}

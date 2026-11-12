@@ -260,8 +260,8 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
               type="submit"
               className="dar-pontos-modal-btn dar-pontos-modal-btn-confirm"
               disabled={loading}
-            >
-              {loading ? "Salvando..." : "Atribuir pontos"}
+             aria-busy={loading}>
+              {loading ? <><span className="btn-spinner" aria-hidden />Salvando…</> : "Atribuir pontos"}
             </button>
           </div>
         </form>

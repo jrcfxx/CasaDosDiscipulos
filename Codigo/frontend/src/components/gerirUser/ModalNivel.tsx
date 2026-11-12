@@ -1,15 +1,17 @@
 import React from "react";
 import type { NivelModal } from "./tipos";
+import BotaoCarregando from "../ui/BotaoCarregando";
 
 interface Props {
   nivelModal: NivelModal;
   setNivelModal: React.Dispatch<React.SetStateAction<NivelModal>>;
   onFechar: () => void;
   onSalvar: () => void;
+  salvando?: boolean;
 }
 
 /** Modal de cadastro/edição de nível */
-const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSalvar }) => (
+const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSalvar, salvando = false }) => (
     <div className="modal-fundo" role="dialog" aria-modal="true">
       <div className="modal">
         <div className="cd-modal-header">
@@ -30,6 +32,7 @@ const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSa
             type="button"
             className="cd-modal-close"
             onClick={onFechar}
+            disabled={salvando}
             title="Fechar"
             aria-label="Fechar"
           >
@@ -70,10 +73,10 @@ const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSa
         </div>
 
         <div className="modal-buttons">
-          <button onClick={onFechar}>Cancelar</button>
-          <button onClick={onSalvar}>
+          <button onClick={onFechar} disabled={salvando}>Cancelar</button>
+          <BotaoCarregando onClick={onSalvar} carregando={salvando} textoCarregando="Salvando…">
             {nivelModal.id_nivel ? "Salvar Alterações" : "Criar Nível"}
-          </button>
+          </BotaoCarregando>
         </div>
       </div>
     </div>

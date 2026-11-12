@@ -341,8 +341,8 @@ export default function FormulariosSecretariaCelulasLeader() {
                       })}
                     </div>
                     <div className="formulario-actions">
-                      <button type="submit" className="save-btn" disabled={sending}>
-                        {sending ? "Enviando..." : "Enviar"}
+                      <button type="submit" className="save-btn" disabled={sending} aria-busy={sending}>
+                        {sending ? <><span className="btn-spinner" aria-hidden />Enviando…</> : "Enviar"}
                       </button>
                       {success && <span className="success-message">Formulário enviado!</span>}
                     </div>

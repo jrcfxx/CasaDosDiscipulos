@@ -40,6 +40,8 @@ import { getErrorMessage } from "../utils/errorUtils";
 import { mapaParalelismoDeMinisterios } from "../utils/ministerioParalelismo";
 import type { Ministerio } from "../services/ministerioService";
 import ModalEvento, { type FormEvento } from "../components/escala/ModalEvento";
+import { useAcao } from "../hooks/useAcao";
+import BotaoCarregando from "../components/ui/BotaoCarregando";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -80,6 +82,11 @@ function formatarDataHora(s: string, fim?: string | null) {
 }
 
 const EscalaUser: React.FC = () => {
+  // Progresso das ações (spinner + sem envio duplo)
+  const acaoEvento = useAcao();
+  const acaoPublicar = useAcao();
+  const acaoCopiar = useAcao();
+  const acaoAtribuicao = useAcao();
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, isLiderMinisterio } = useAuth();
@@ -1002,12 +1009,12 @@ const EscalaUser: React.FC = () => {
                   </button>
                   {isAdmin && (
                     <>
-                      <button type="button" className="btn-editar-evento" onClick={handlePublicar}>
+                      <BotaoCarregando type="button" className="btn-editar-evento" onClick={() => acaoPublicar.executar(handlePublicar)} carregando={acaoPublicar.executando} textoCarregando="Publicando…">
                         Publicar
-                      </button>
-                      <button type="button" className="btn-editar-evento" onClick={handleCopiarEvento}>
+                      </BotaoCarregando>
+                      <BotaoCarregando type="button" className="btn-editar-evento" onClick={() => acaoCopiar.executar(handleCopiarEvento)} carregando={acaoCopiar.executando} textoCarregando="Copiando…">
                         Copiar (+7 dias)
-                      </button>
+                      </BotaoCarregando>
                       <button type="button" className="btn-editar-evento" onClick={() => abrirTemplates(true)}>
                         Salvar como template
                       </button>
@@ -1057,7 +1064,11 @@ const EscalaUser: React.FC = () => {
           ministerios={ministerios}
           editandoEventoId={editandoEventoId}
           onFechar={fecharModalEvento}
-          onSalvar={handleSalvarEvento}
+          onSalvar={(e) => {
+            e.preventDefault();
+            acaoEvento.executar(() => handleSalvarEvento(e));
+          }}
+          salvando={acaoEvento.executando}
         />
       )}
 
@@ -1097,14 +1108,16 @@ const EscalaUser: React.FC = () => {
               <button type="button" className="btn-cancelar" onClick={fecharModalAtribuicao}>
                 Cancelar
               </button>
-              <button
+              <BotaoCarregando
                 type="button"
                 className="btn-salvar"
-                onClick={handleAdicionarAtribuicao}
+                onClick={() => acaoAtribuicao.executar(handleAdicionarAtribuicao)}
                 disabled={!usuarioSelecionado}
+                carregando={acaoAtribuicao.executando}
+                textoCarregando="Adicionando…"
               >
                 Adicionar
-              </button>
+              </BotaoCarregando>
             </div>
           </div>
         </div>
@@ -1124,9 +1137,9 @@ const EscalaUser: React.FC = () => {
               <button type="button" className="btn-cancelar" onClick={fecharModalEditarDetalhes}>
                 Cancelar
               </button>
-              <button type="button" className="btn-salvar" onClick={handleSalvarDetalhes}>
+              <BotaoCarregando type="button" className="btn-salvar" onClick={() => acaoAtribuicao.executar(handleSalvarDetalhes)} carregando={acaoAtribuicao.executando}>
                 Salvar
-              </button>
+              </BotaoCarregando>
             </div>
           </div>
         </div>
@@ -1185,8 +1198,9 @@ const EscalaUser: React.FC = () => {
           onClose={fecharConflitos}
           permitirForcar={podeEditar && !!acaoConfirmar}
           onConfirmarMesmoAssim={() => {
-            acaoConfirmar?.();
+            if (acaoConfirmar) acaoAtribuicao.executar(acaoConfirmar);
           }}
+          processando={acaoAtribuicao.executando}
         />
       )}
 
@@ -1198,6 +1212,7 @@ const EscalaUser: React.FC = () => {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={handleExcluirEvento}
+        textoCarregando="Excluindo…"
         onCancel={() => {
           setShowConfirmExcluir(false);
           setEventoToExcluir(null);
@@ -1212,7 +1227,8 @@ const EscalaUser: React.FC = () => {
         defaultValue={inputDialog?.kind === "copiar-dia" ? inputDialog.defaultValue : ""}
         hint="Os eventos deste dia serão copiados para a data escolhida."
         confirmLabel="Copiar"
-        onConfirm={(v) => void executarCopiarDia(v)}
+        onConfirm={(v) => executarCopiarDia(v)}
+        textoCarregando="Copiando…"
         onCancel={() => setInputDialog(null)}
       />
 
@@ -1224,7 +1240,8 @@ const EscalaUser: React.FC = () => {
         defaultValue={inputDialog?.kind === "copiar-semana" ? inputDialog.defaultValue : ""}
         hint="Informe o primeiro dia (domingo ou início) da semana destino."
         confirmLabel="Copiar"
-        onConfirm={(v) => void executarCopiarSemana(v)}
+        onConfirm={(v) => executarCopiarSemana(v)}
+        textoCarregando="Copiando…"
         onCancel={() => setInputDialog(null)}
       />
 

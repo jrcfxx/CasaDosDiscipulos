@@ -182,9 +182,9 @@ const HomePage: React.FC = () => {
                   "noopener,noreferrer"
                 )
               }
-              aria-label="Fazer parte da comunidade"
+              aria-label="Fazer parte da Escola de Discípulos"
             >
-              Faça Parte da Nossa Comunidade
+              Faça Parte da Escola de Discípulos
             </button>
           </div>
         </section>

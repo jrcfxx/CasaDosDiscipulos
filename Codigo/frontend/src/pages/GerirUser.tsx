@@ -35,6 +35,7 @@ import {
   reordenarNiveis,
 } from "../services/nivel";
 import ministerioService from "../services/ministerioService";
+import { useAcao } from "../hooks/useAcao";
 import SortableNivelRow from "../components/gerirUser/SortableNivelRow";
 import ModalUsuario from "../components/gerirUser/ModalUsuario";
 import ModalNivel from "../components/gerirUser/ModalNivel";
@@ -43,6 +44,10 @@ import type { Nivel, Usuario, UsuarioModal, NivelModal, MinisterioModal } from "
 
 
 export default function GerenciarUsuarios() {
+  // Progresso dos salvamentos (mostra spinner e evita envio duplo)
+  const acaoUsuario = useAcao();
+  const acaoNivel = useAcao();
+  const acaoMinisterio = useAcao();
   const [abaAtiva, setAbaAtiva] = useState<"usuarios" | "niveis" | "ministerios">("usuarios");
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [niveis, setNiveis] = useState<Nivel[]>([]);
@@ -531,8 +536,6 @@ export default function GerenciarUsuarios() {
   const excluirNivelConfirm = async () => {
     if (nivelToInativar === null) return;
     const id = nivelToInativar;
-    setShowConfirmInativarNivel(false);
-    setNivelToInativar(null);
     try {
       await deleteNivel(id);
       showToast("Nível inativado com sucesso!", "success");
@@ -542,6 +545,10 @@ export default function GerenciarUsuarios() {
       console.error("Erro ao inativar nível:", err);
       const msg = err?.response?.data?.error || "Erro ao inativar nível";
       showToast(msg, "error");
+    } finally {
+      // fecha só depois de terminar: o modal mostra o andamento
+      setShowConfirmInativarNivel(false);
+      setNivelToInativar(null);
     }
   };
 
@@ -553,8 +560,6 @@ export default function GerenciarUsuarios() {
   const excluirNivelPermanenteConfirm = async () => {
     if (nivelToExcluir === null) return;
     const id = nivelToExcluir;
-    setShowConfirmExcluirNivel(false);
-    setNivelToExcluir(null);
     try {
       const res = await excluirNivel(id);
       if (Array.isArray(res?.niveis)) {
@@ -568,6 +573,10 @@ export default function GerenciarUsuarios() {
       console.error("Erro ao excluir nível:", err);
       const msg = err?.response?.data?.error || "Erro ao excluir nível";
       showToast(msg, "error");
+    } finally {
+      // fecha só depois de terminar: o modal mostra o andamento
+      setShowConfirmExcluirNivel(false);
+      setNivelToExcluir(null);
     }
   };
 
@@ -579,8 +588,6 @@ export default function GerenciarUsuarios() {
   const reativarNivelConfirm = async () => {
     if (nivelToReativar === null) return;
     const id = nivelToReativar;
-    setShowConfirmReativarNivel(false);
-    setNivelToReativar(null);
     try {
       await reativarNivel(id);
       showToast("Nível reativado com sucesso!", "success");
@@ -590,6 +597,10 @@ export default function GerenciarUsuarios() {
       console.error("Erro ao reativar nível:", err);
       const msg = err?.response?.data?.error || "Erro ao reativar nível";
       showToast(msg, "error");
+    } finally {
+      // fecha só depois de terminar: o modal mostra o andamento
+      setShowConfirmReativarNivel(false);
+      setNivelToReativar(null);
     }
   };
 
@@ -926,7 +937,8 @@ export default function GerenciarUsuarios() {
           showConfirmarSenha={showConfirmarSenha}
           setShowConfirmarSenha={setShowConfirmarSenha}
           onFechar={fecharModal}
-          onSalvar={salvarUsuario}
+          onSalvar={() => acaoUsuario.executar(salvarUsuario)}
+          salvando={acaoUsuario.executando}
         />
       )}
 
@@ -942,6 +954,7 @@ export default function GerenciarUsuarios() {
         cancelLabel="Cancelar"
         variant={usuarioInativar?.ativo ? "danger" : "default"}
         onConfirm={confirmarInativar}
+        textoCarregando="Aguarde…"
         onCancel={() => {
           setModalInativarAberto(false);
           setUsuarioInativar(null);
@@ -954,7 +967,8 @@ export default function GerenciarUsuarios() {
           nivelModal={nivelModal}
           setNivelModal={setNivelModal}
           onFechar={fecharModalNivel}
-          onSalvar={salvarNivel}
+          onSalvar={() => acaoNivel.executar(salvarNivel)}
+          salvando={acaoNivel.executando}
         />
       )}
 
@@ -966,6 +980,7 @@ export default function GerenciarUsuarios() {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={excluirNivelConfirm}
+        textoCarregando="Inativando…"
         onCancel={() => {
           setShowConfirmInativarNivel(false);
           setNivelToInativar(null);
@@ -980,6 +995,7 @@ export default function GerenciarUsuarios() {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={excluirNivelPermanenteConfirm}
+        textoCarregando="Excluindo…"
         onCancel={() => {
           setShowConfirmExcluirNivel(false);
           setNivelToExcluir(null);
@@ -994,6 +1010,7 @@ export default function GerenciarUsuarios() {
         cancelLabel="Cancelar"
         variant="default"
         onConfirm={reativarNivelConfirm}
+        textoCarregando="Reativando…"
         onCancel={() => {
           setShowConfirmReativarNivel(false);
           setNivelToReativar(null);
@@ -1010,7 +1027,8 @@ export default function GerenciarUsuarios() {
           showParalelismoInfo={showParalelismoInfo}
           setShowParalelismoInfo={setShowParalelismoInfo}
           onFechar={() => setModalMinisterioAberto(false)}
-          onSalvar={salvarMinisterio}
+          onSalvar={() => acaoMinisterio.executar(salvarMinisterio)}
+          salvando={acaoMinisterio.executando}
         />
       )}
 
@@ -1022,6 +1040,7 @@ export default function GerenciarUsuarios() {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={excluirMinisterioConfirm}
+        textoCarregando="Excluindo…"
         onCancel={() => {
           setShowConfirmExcluirMinisterio(false);
           setMinisterioToExcluir(null);

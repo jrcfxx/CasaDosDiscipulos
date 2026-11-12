@@ -500,8 +500,8 @@ export default function Perfil() {
                 className="btn-save"
                 onClick={handleSave}
                 disabled={salvando}
-              >
-                {salvando ? "Salvando..." : "Salvar Alterações"}
+               aria-busy={salvando}>
+                {salvando ? <><span className="btn-spinner" aria-hidden />Salvando…</> : "Salvar Alterações"}
               </button>
             </div>
           </div>

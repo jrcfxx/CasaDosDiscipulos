@@ -653,8 +653,8 @@ const EscalaTemplatesModal: React.FC<Props> = ({
                   className="btn-tpl-salvar"
                   onClick={() => void salvar()}
                   disabled={saving}
-                >
-                  {saving ? "Salvando…" : editandoId ? "Salvar alterações" : "Criar template"}
+                 aria-busy={saving}>
+                  {saving ? <><span className="btn-spinner" aria-hidden />Salvando…</> : editandoId ? "Salvar alterações" : "Criar template"}
                 </button>
               </>
             )}
@@ -676,8 +676,8 @@ const EscalaTemplatesModal: React.FC<Props> = ({
                   className="btn-tpl-salvar"
                   onClick={() => void confirmarAplicar()}
                   disabled={saving}
-                >
-                  {saving ? "Aplicando…" : "Criar evento"}
+                 aria-busy={saving}>
+                  {saving ? <><span className="btn-spinner" aria-hidden />Aplicando…</> : "Criar evento"}
                 </button>
               </>
             )}
@@ -696,7 +696,8 @@ const EscalaTemplatesModal: React.FC<Props> = ({
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         variant="danger"
-        onConfirm={() => void confirmarExcluir()}
+        onConfirm={confirmarExcluir}
+        textoCarregando="Excluindo…"
         onCancel={() => setExcluirTarget(null)}
       />
     </>

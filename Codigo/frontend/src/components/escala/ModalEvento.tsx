@@ -1,5 +1,6 @@
 import React from "react";
 import type { Ministerio } from "../../services/ministerioService";
+import BotaoCarregando from "../ui/BotaoCarregando";
 
 /** Dados do formulário de evento da escala (criar/editar) */
 export interface FormEvento {
@@ -18,6 +19,7 @@ interface Props {
   editandoEventoId: number | null;
   onFechar: () => void;
   onSalvar: (e: React.FormEvent) => void;
+  salvando?: boolean;
 }
 
 /** Modal de criar/editar evento da escala (título, horário, descrição, ministérios, ativo) */
@@ -28,6 +30,7 @@ const ModalEvento: React.FC<Props> = ({
   editandoEventoId,
   onFechar,
   onSalvar,
+  salvando = false,
 }) => (
     <div className="modal-evento-overlay" role="presentation" onClick={onFechar}>
       <div
@@ -157,12 +160,12 @@ const ModalEvento: React.FC<Props> = ({
           </label>
 
           <div className="modal-evento-actions">
-            <button type="button" className="btn-evento-cancelar" onClick={onFechar}>
+            <button type="button" className="btn-evento-cancelar" onClick={onFechar} disabled={salvando}>
               Cancelar
             </button>
-            <button type="submit" className="btn-evento-salvar">
+            <BotaoCarregando type="submit" className="btn-evento-salvar" carregando={salvando}>
               {editandoEventoId ? "Salvar alterações" : "Criar evento"}
-            </button>
+            </BotaoCarregando>
           </div>
         </form>
       </div>

@@ -95,7 +95,6 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
 
   const executarExclusao = async () => {
     if (!selectedModulo) return;
-    setShowConfirmExcluir(false);
     setExcluindo(true);
     try {
       await moduloService.deletePermanente(selectedModulo.id_modulo);
@@ -112,6 +111,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
       console.error("Erro ao excluir módulo:", error);
       setToast("Erro ao excluir módulo. Tente novamente.");
     } finally {
+      setShowConfirmExcluir(false);
       setExcluindo(false);
     }
   };
@@ -215,8 +215,8 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                       onClick={() => setShowConfirmExcluir(true)}
                       disabled={excluindo}
                       title="Excluir módulo permanentemente"
-                    >
-                      {excluindo ? "Excluindo..." : "Excluir"}
+                     aria-busy={excluindo}>
+                      {excluindo ? <><span className="btn-spinner" aria-hidden />Excluindo…</> : "Excluir"}
                     </button>
                   </div>
                 </div>
@@ -346,6 +346,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={executarExclusao}
+        textoCarregando="Excluindo…"
         onCancel={() => setShowConfirmExcluir(false)}
       />
       {toast && (

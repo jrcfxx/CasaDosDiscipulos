@@ -32,6 +32,8 @@ import DarPontosModal from "../components/ui/DarPontosModal";
 import { isRecord, type Alternativa, type CampoDinamico, type CampoVinculado, type ValorCampo } from "../types/campoConteudo";
 import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 import { getMedalIcon } from "../utils/moduloConteudoUtils";
+import { useAcao } from "../hooks/useAcao";
+import BotaoCarregando from "../components/ui/BotaoCarregando";
 
 /* TYPES */
 type Quiz = {
@@ -80,6 +82,7 @@ const initialFormState: QuizForm = {
 };
 
 export default function QuizzesSecretariaCelulasAdmin() {
+  const acaoSalvar = useAcao();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [availableFields, setAvailableFields] = useState<AvailableField[]>([]);
@@ -749,7 +752,12 @@ export default function QuizzesSecretariaCelulasAdmin() {
           <div className="modal modal-large">
             <h2>{quizToEdit ? "Editar Quiz" : "Criar Novo Quiz"}</h2>
 
-            <form onSubmit={saveForm}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                acaoSalvar.executar(() => saveForm());
+              }}
+            >
               <label htmlFor="quizModalTitulo">Título</label>
               <input
                 id="quizModalTitulo"
@@ -856,9 +864,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
               </div>
 
               <div className="modal-actions">
-                <button type="submit" className="save-btn">
+                <BotaoCarregando type="submit" className="save-btn" carregando={acaoSalvar.executando}>
                   Salvar
-                </button>
+                </BotaoCarregando>
 
                 <button
                   type="button"

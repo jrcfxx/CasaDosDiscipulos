@@ -630,8 +630,8 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
                 ))}
 
                 <div className="pfu-actions">
-                  <button type="submit" className="pfu-save pfu-btn-enviar" disabled={enviando}>
-                    {enviando ? "Verificando..." : "Enviar e ver resultado"}
+                  <button type="submit" className="pfu-save pfu-btn-enviar" disabled={enviando} aria-busy={enviando}>
+                    {enviando ? <><span className="btn-spinner" aria-hidden />Verificando…</> : "Enviar e ver resultado"}
                   </button>
                 </div>
               </form>
@@ -643,8 +643,8 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
                 className="pfu-save pfu-concluir"
                 onClick={handleConcluirSemQuiz}
                 disabled={concluindo}
-              >
-                {concluindo ? "Concluindo..." : "Concluir módulo"}
+               aria-busy={concluindo}>
+                {concluindo ? <><span className="btn-spinner" aria-hidden />Concluindo…</> : "Concluir módulo"}
               </button>
               <button
                 type="button"

@@ -455,8 +455,8 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
                 className="criar-modulo-btn criar-modulo-btn-primary"
                 onClick={onSave}
                 disabled={loading}
-              >
-                {loading ? "Salvando..." : "Salvar"}
+               aria-busy={loading}>
+                {loading ? <><span className="btn-spinner" aria-hidden />Salvando…</> : "Salvar"}
               </button>
               <button
                 className="criar-modulo-btn criar-modulo-btn-secondary"

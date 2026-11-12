@@ -178,8 +178,8 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
               className="fala-ai-admin-btn-upload"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-            >
-              {uploading ? "Enviando..." : "Selecionar imagem"}
+             aria-busy={uploading}>
+              {uploading ? <><span className="btn-spinner" aria-hidden />Enviando…</> : "Selecionar imagem"}
             </button>
             {imagemUrl && (
               <div className="fala-ai-admin-preview">
@@ -213,8 +213,8 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
               type="submit"
               className="fala-ai-admin-btn-submit"
               disabled={enviando}
-            >
-              {enviando ? "Publicando..." : "Publicar"}
+             aria-busy={enviando}>
+              {enviando ? <><span className="btn-spinner" aria-hidden />Publicando…</> : "Publicar"}
             </button>
           </div>
         </form>

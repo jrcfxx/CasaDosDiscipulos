@@ -14,8 +14,10 @@ export interface InputModalProps {
   hint?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  onConfirm: (value: string) => void;
+  /** Se devolver uma Promise, mostra `textoCarregando` com spinner até terminar */
+  onConfirm: (value: string) => void | Promise<unknown>;
   onCancel: () => void;
+  textoCarregando?: string;
 }
 
 const InputModal: React.FC<InputModalProps> = ({
@@ -30,8 +32,10 @@ const InputModal: React.FC<InputModalProps> = ({
   cancelLabel = "Cancelar",
   onConfirm,
   onCancel,
+  textoCarregando = "Processando…",
 }) => {
   const [value, setValue] = useState(defaultValue);
+  const [executando, setExecutando] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,16 +51,35 @@ const InputModal: React.FC<InputModalProps> = ({
     }
   }, [open]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") onCancel();
-    if (e.key === "Enter") {
-      e.preventDefault();
-      onConfirm(value.trim());
+  useEffect(() => {
+    if (!open) setExecutando(false);
+  }, [open]);
+
+  const cancelar = () => {
+    if (!executando) onCancel();
+  };
+
+  const handleConfirm = async () => {
+    if (executando) return;
+    const resultado = onConfirm(value.trim());
+    if (resultado && typeof (resultado as Promise<unknown>).then === "function") {
+      setExecutando(true);
+      try {
+        await resultado;
+      } catch {
+        /* quem chamou já trata e mostra o erro */
+      } finally {
+        setExecutando(false);
+      }
     }
   };
 
-  const handleConfirm = () => {
-    onConfirm(value.trim());
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") cancelar();
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleConfirm();
+    }
   };
 
   if (!open) return null;
@@ -76,8 +99,9 @@ const InputModal: React.FC<InputModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="input-modal-title"
+        aria-busy={executando}
         onKeyDown={handleKeyDown}
-        onClick={onCancel}
+        onClick={cancelar}
       >
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div className="input-modal" onClick={(e) => e.stopPropagation()}>
@@ -109,7 +133,8 @@ const InputModal: React.FC<InputModalProps> = ({
           <button
             type="button"
             className="input-modal-btn input-modal-btn-cancel"
-            onClick={onCancel}
+            onClick={cancelar}
+            disabled={executando}
           >
             {cancelLabel}
           </button>
@@ -117,8 +142,17 @@ const InputModal: React.FC<InputModalProps> = ({
             type="button"
             className="input-modal-btn input-modal-btn-confirm"
             onClick={handleConfirm}
+            disabled={executando}
+            aria-busy={executando}
           >
-            {confirmLabel}
+            {executando ? (
+              <>
+                <span className="btn-spinner" aria-hidden />
+                {textoCarregando}
+              </>
+            ) : (
+              confirmLabel
+            )}
           </button>
         </div>
       </div>

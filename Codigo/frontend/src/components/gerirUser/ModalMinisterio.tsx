@@ -1,6 +1,7 @@
 import React from "react";
 import type { Ministerio } from "../../services/ministerioService";
 import type { MinisterioModal, Usuario } from "./tipos";
+import BotaoCarregando from "../ui/BotaoCarregando";
 
 interface Props {
   ministerioModal: MinisterioModal;
@@ -11,6 +12,7 @@ interface Props {
   setShowParalelismoInfo: React.Dispatch<React.SetStateAction<boolean>>;
   onFechar: () => void;
   onSalvar: () => void;
+  salvando?: boolean;
 }
 
 /** Modal de cadastro/edição de ministério (líderes e paralelismo na escala) */
@@ -23,6 +25,7 @@ const ModalMinisterio: React.FC<Props> = ({
   setShowParalelismoInfo,
   onFechar,
   onSalvar,
+  salvando = false,
 }) => (
     <div className="modal-ministerio-overlay">
       <div className="modal-ministerio">
@@ -44,6 +47,7 @@ const ModalMinisterio: React.FC<Props> = ({
             type="button"
             className="modal-ministerio-close cd-modal-close"
             onClick={onFechar}
+            disabled={salvando}
             title="Fechar"
             aria-label="Fechar"
           >
@@ -183,12 +187,12 @@ const ModalMinisterio: React.FC<Props> = ({
           </div>
         </div>
         <div className="modal-ministerio-footer">
-          <button type="button" className="modal-ministerio-btn-cancel" onClick={onFechar}>
+          <button type="button" className="modal-ministerio-btn-cancel" onClick={onFechar} disabled={salvando}>
             Cancelar
           </button>
-          <button type="button" className="modal-ministerio-btn-save" onClick={onSalvar}>
+          <BotaoCarregando type="button" className="modal-ministerio-btn-save" onClick={onSalvar} carregando={salvando} textoCarregando="Salvando…">
             {ministerioModal.id_ministerio ? "Salvar alterações" : "Criar ministério"}
-          </button>
+          </BotaoCarregando>
         </div>
       </div>
     </div>

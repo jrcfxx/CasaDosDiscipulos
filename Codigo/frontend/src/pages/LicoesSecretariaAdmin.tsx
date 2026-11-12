@@ -23,6 +23,8 @@ import LinkField from "../components/fields/LinkField";
 import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
+import { useAcao } from "../hooks/useAcao";
+import BotaoCarregando from "../components/ui/BotaoCarregando";
 
 /* TYPES */
 type LicaoForm = {
@@ -64,6 +66,7 @@ const fieldOptions = [
 ];
 
 const LicoesSecretariaAdmin: React.FC = () => {
+  const acaoSalvar = useAcao();
   const [licoes, setLicoes] = useState<Licao[]>([]);
   const [selectedLicao, setSelectedLicao] = useState<Licao | null>(null);
   const [availableFields, setAvailableFields] = useState<AvailableField[]>([]);
@@ -172,8 +175,6 @@ const LicoesSecretariaAdmin: React.FC = () => {
   const handleConfirmDelete = async () => {
     if (!licaoToDelete) return;
     const id = licaoToDelete;
-    setShowConfirmDelete(false);
-    setLicaoToDelete(null);
     try {
       await licaoService.delete(id);
       if (selectedLicao?.id_licao === id) {
@@ -184,6 +185,10 @@ const LicoesSecretariaAdmin: React.FC = () => {
     } catch (err) {
       console.error("Erro ao excluir lição:", err);
       showToast("Erro ao excluir lição", "error");
+    } finally {
+      // fecha só depois de terminar: o modal mostra o andamento
+      setShowConfirmDelete(false);
+      setLicaoToDelete(null);
     }
   };
 
@@ -596,6 +601,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={handleConfirmDelete}
+        textoCarregando="Excluindo…"
         onCancel={() => { setShowConfirmDelete(false); setLicaoToDelete(null); }}
       />
 
@@ -604,7 +610,12 @@ const LicoesSecretariaAdmin: React.FC = () => {
           <div className="modal modal-large">
             <h2>{licaoToEdit ? "Editar lição" : "Criar nova lição"}</h2>
 
-            <form onSubmit={saveForm}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                acaoSalvar.executar(() => saveForm());
+              }}
+            >
               <label htmlFor="licaoModalTitulo">Título</label>
               <input
                 id="licaoModalTitulo"
@@ -679,7 +690,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
               </div>
 
               <div className="modal-actions">
-                <button type="submit" className="save-btn">Salvar</button>
+                <BotaoCarregando type="submit" className="save-btn" carregando={acaoSalvar.executando}>Salvar</BotaoCarregando>
                 <button type="button" className="cancel-btn" onClick={closeFormModal}>
                   Cancelar
                 </button>

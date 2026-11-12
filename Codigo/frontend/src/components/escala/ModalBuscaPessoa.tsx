@@ -211,8 +211,8 @@ const ModalBuscaPessoa: React.FC<Props> = ({
             className="btn-busca-salvar"
             onClick={() => void buscar()}
             disabled={loading}
-          >
-            {loading ? "Buscando…" : "Buscar"}
+           aria-busy={loading}>
+            {loading ? <><span className="btn-spinner" aria-hidden />Buscando…</> : "Buscar"}
           </button>
         </div>
       </div>

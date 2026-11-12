@@ -30,6 +30,8 @@ import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
 import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 import { calcularStatusCelulas, filtrarRespostas, respondentesUnicos } from "../components/formularios/statusCelulas";
 import PainelStatusCelulas from "../components/formularios/PainelStatusCelulas";
+import { useAcao } from "../hooks/useAcao";
+import BotaoCarregando from "../components/ui/BotaoCarregando";
 
 /* TYPES */
 type Formulario = {
@@ -89,6 +91,7 @@ const initialFormState: FormularioForm = {
 };
 
 export default function FormulariosSecretariaCelulasAdmin() {
+  const acaoSalvar = useAcao();
   const [formularios, setFormularios] = useState<Formulario[]>([]);
   const [selectedFormulario, setSelectedFormulario] =
     useState<Formulario | null>(null);
@@ -272,8 +275,6 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const handleConfirmDelete = async () => {
     if (!formularioToDelete) return;
     const id = formularioToDelete;
-    setShowConfirmDelete(false);
-    setFormularioToDelete(null);
     try {
       await formularioService.delete(id);
       if (selectedFormulario?.id === id) setSelectedFormulario(null);
@@ -282,6 +283,10 @@ export default function FormulariosSecretariaCelulasAdmin() {
     } catch (err) {
       console.error("Erro ao excluir formulário:", err);
       showToast("Erro ao excluir formulário", "error");
+    } finally {
+      // fecha só depois de terminar: o modal mostra o andamento
+      setShowConfirmDelete(false);
+      setFormularioToDelete(null);
     }
   };
 
@@ -976,6 +981,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={handleConfirmDelete}
+        textoCarregando="Excluindo…"
         onCancel={() => { setShowConfirmDelete(false); setFormularioToDelete(null); }}
       />
 
@@ -999,7 +1005,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
               {formularioToEdit ? "Editar Formulário" : "Criar Novo Formulário"}
             </h2>
 
-            <form onSubmit={saveForm}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                acaoSalvar.executar(() => saveForm());
+              }}
+            >
               <label htmlFor="formModalTitulo">Título</label>
               <input
                 id="formModalTitulo"
@@ -1122,9 +1133,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
               </div>
 
               <div className="modal-actions">
-                <button type="submit" className="save-btn">
+                <BotaoCarregando type="submit" className="save-btn" carregando={acaoSalvar.executando}>
                   Salvar
-                </button>
+                </BotaoCarregando>
 
                 <button
                   type="button"

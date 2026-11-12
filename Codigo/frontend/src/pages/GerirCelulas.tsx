@@ -8,6 +8,8 @@ import Toast from "../components/ui/Toast";
 
 import celulaService, { Celula, CelulaCreateUpdate } from "../services/celulaService";
 import { showAllUsers } from "../services/usuario";
+import { useAcao } from "../hooks/useAcao";
+import BotaoCarregando from "../components/ui/BotaoCarregando";
 
 interface CelulaModal extends CelulaCreateUpdate {
   id_celula?: number;
@@ -25,6 +27,7 @@ const DIAS_SEMANA = [
 ];
 
 export default function GerirCelulas() {
+  const acaoSalvar = useAcao();
   const [celulas, setCelulas] = useState<Celula[]>([]);
   const [lideres, setLideres] = useState<Array<{ id_usuario: number; nome: string }>>([]);
   const [filtro, setFiltro] = useState("");
@@ -199,8 +202,6 @@ export default function GerirCelulas() {
   const confirmarExcluir = async () => {
     if (celulaToExcluir === null) return;
     const id = celulaToExcluir;
-    setShowConfirmExcluir(false);
-    setCelulaToExcluir(null);
     try {
       await celulaService.delete(id);
       showToast("Célula removida com sucesso!", "success");
@@ -208,6 +209,10 @@ export default function GerirCelulas() {
     } catch (err) {
       console.error("Erro ao excluir célula:", err);
       showToast("Erro ao excluir célula", "error");
+    } finally {
+      // fecha só depois de terminar: o modal mostra o andamento
+      setShowConfirmExcluir(false);
+      setCelulaToExcluir(null);
     }
   };
 
@@ -477,10 +482,10 @@ export default function GerirCelulas() {
             </div>
 
             <div className="modal-buttons">
-              <button onClick={fecharModal}>Cancelar</button>
-              <button onClick={salvarCelula}>
+              <button onClick={fecharModal} disabled={acaoSalvar.executando}>Cancelar</button>
+              <BotaoCarregando onClick={() => acaoSalvar.executar(salvarCelula)} carregando={acaoSalvar.executando}>
                 {celulaModal.id_celula ? "Salvar Alterações" : "Criar Célula"}
-              </button>
+              </BotaoCarregando>
             </div>
           </div>
         </div>
@@ -494,6 +499,7 @@ export default function GerirCelulas() {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={confirmarExcluir}
+        textoCarregando="Excluindo…"
         onCancel={() => {
           setShowConfirmExcluir(false);
           setCelulaToExcluir(null);

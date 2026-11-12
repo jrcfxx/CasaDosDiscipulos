@@ -31,6 +31,8 @@ const EventosAdmin: React.FC = () => {
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  /** Etapa do salvamento, para mostrar progresso e evitar envio duplo */
+  const [salvando, setSalvando] = useState<null | "imagem" | "dados">(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [eventoToDelete, setEventoToDelete] = useState<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -67,11 +69,13 @@ const EventosAdmin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (salvando) return;
 
     try {
       let imagem_url = editingEvento?.imagem_url;
 
       if (selectedFile) {
+        setSalvando("imagem");
         const uploadedUrl = await uploadImage();
         if (uploadedUrl) {
           imagem_url = uploadedUrl;
@@ -88,6 +92,7 @@ const EventosAdmin: React.FC = () => {
         imagem_url: imagem_url!,
       };
 
+      setSalvando("dados");
       if (editingEvento) {
         await atualizarEvento(editingEvento.id_evento, eventoData);
       } else {
@@ -96,8 +101,11 @@ const EventosAdmin: React.FC = () => {
 
       await fetchEventos();
       closeModal();
+      setToast(editingEvento ? "Evento salvo." : "Evento criado.");
     } catch (error) {
       setToast(getErrorMessage(error, "Erro ao salvar evento"));
+    } finally {
+      setSalvando(null);
     }
   };
 
@@ -108,15 +116,17 @@ const EventosAdmin: React.FC = () => {
 
   const handleDeleteConfirm = async () => {
     if (eventoToDelete === null) return;
-    setShowConfirmDelete(false);
     const id = eventoToDelete;
-    setEventoToDelete(null);
     try {
       await excluirEvento(id);
       await fetchEventos();
       setToast("Evento excluído com sucesso.");
     } catch {
       setToast("Erro ao deletar evento");
+    } finally {
+      // fecha só depois de terminar: o modal mostra o andamento
+      setShowConfirmDelete(false);
+      setEventoToDelete(null);
     }
   };
 
@@ -252,9 +262,11 @@ const EventosAdmin: React.FC = () => {
           aria-modal="true"
           aria-labelledby="evento-modal-title"
           onKeyDown={(e) => {
-            if (e.key === "Escape") closeModal();
+            if (e.key === "Escape" && !salvando) closeModal();
           }}
-          onClick={closeModal}
+          onClick={() => {
+            if (!salvando) closeModal();
+          }}
         >
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -336,11 +348,21 @@ const EventosAdmin: React.FC = () => {
                   type="button"
                   className="btn-cancelar"
                   onClick={closeModal}
+                  disabled={!!salvando}
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="btn-salvar">
-                  {editingEvento ? "Salvar Alterações" : "Criar Evento"}
+                <button type="submit" className="btn-salvar" disabled={!!salvando} aria-busy={!!salvando}>
+                  {salvando ? (
+                    <>
+                      <span className="btn-spinner" aria-hidden />
+                      {salvando === "imagem" ? "Enviando imagem…" : "Salvando…"}
+                    </>
+                  ) : editingEvento ? (
+                    "Salvar Alterações"
+                  ) : (
+                    "Criar Evento"
+                  )}
                 </button>
               </div>
             </form>
@@ -357,6 +379,7 @@ const EventosAdmin: React.FC = () => {
         cancelLabel="Cancelar"
         variant="danger"
         onConfirm={handleDeleteConfirm}
+        textoCarregando="Excluindo…"
         onCancel={() => {
           setShowConfirmDelete(false);
           setEventoToDelete(null);

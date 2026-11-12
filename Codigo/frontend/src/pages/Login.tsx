@@ -89,7 +89,7 @@ const Login: React.FC = () => {
             />
           </div>
           <button type="submit" disabled={loading} aria-busy={loading}>
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? <><span className="btn-spinner" aria-hidden />Entrando…</> : "Entrar"}
           </button>
         </form>
       </main>

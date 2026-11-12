@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { formatarTelefoneInput } from "../../utils/telefoneUtils";
 import type { Ministerio } from "../../services/ministerioService";
 import type { Nivel, UsuarioModal } from "./tipos";
+import BotaoCarregando from "../ui/BotaoCarregando";
 
 /** Ícone de mostrar/ocultar senha */
 const IconeOlho: React.FC<{ visivel: boolean }> = ({ visivel }) =>
@@ -32,6 +33,8 @@ interface Props {
   setShowConfirmarSenha: React.Dispatch<React.SetStateAction<boolean>>;
   onFechar: () => void;
   onSalvar: () => void;
+  /** true enquanto salva: mostra progresso e bloqueia fechar/salvar de novo */
+  salvando?: boolean;
 }
 
 /** Modal de cadastro/edição de usuário (renderizado no body para não herdar estilos do container) */
@@ -46,6 +49,7 @@ const ModalUsuario: React.FC<Props> = ({
   setShowConfirmarSenha,
   onFechar,
   onSalvar,
+  salvando = false,
 }) =>
   createPortal(
     <div className="modal-fundo" role="dialog" aria-modal="true">
@@ -68,6 +72,7 @@ const ModalUsuario: React.FC<Props> = ({
             type="button"
             className="cd-modal-close"
             onClick={onFechar}
+            disabled={salvando}
             title="Fechar"
             aria-label="Fechar"
           >
@@ -266,12 +271,12 @@ const ModalUsuario: React.FC<Props> = ({
         </div>
 
         <div className="modal-buttons">
-          <button onClick={onFechar}>Cancelar</button>
-          <button onClick={onSalvar}>
+          <button onClick={onFechar} disabled={salvando}>Cancelar</button>
+          <BotaoCarregando onClick={onSalvar} carregando={salvando} textoCarregando="Salvando…">
             {usuarioModal.id_usuario
               ? "Salvar Alterações"
               : "Criar Usuário"}
-          </button>
+          </BotaoCarregando>
         </div>
       </div>
     </div>,

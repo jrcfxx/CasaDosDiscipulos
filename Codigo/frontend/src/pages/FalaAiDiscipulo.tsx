@@ -208,8 +208,8 @@ const FalaAiDiscipulo: React.FC = () => {
                             disabled={
                               !(textoComentario[post.id_post]?.trim()) || enviando
                             }
-                          >
-                            {enviando ? "Enviando..." : "Comentar"}
+                           aria-busy={enviando}>
+                            {enviando ? <><span className="btn-spinner" aria-hidden />Enviando…</> : "Comentar"}
                           </button>
                         </div>
                       </div>

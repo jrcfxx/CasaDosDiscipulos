@@ -395,11 +395,12 @@ const StaffAdmin: React.FC = () => {
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         variant="danger"
-        onConfirm={() => {
+        onConfirm={async () => {
           const alvo = aExcluir;
+          if (alvo) await executar(() => excluirItem(alvo.id_staff_item), "Excluído").catch(() => {});
           setAExcluir(null);
-          if (alvo) executar(() => excluirItem(alvo.id_staff_item), "Excluído").catch(() => {});
         }}
+        textoCarregando="Excluindo…"
         onCancel={() => setAExcluir(null)}
       />
 

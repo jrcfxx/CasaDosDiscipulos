@@ -9,6 +9,8 @@ interface ModalConflitosProps {
   onClose: () => void;
   onConfirmarMesmoAssim?: () => void;
   permitirForcar?: boolean;
+  /** true enquanto a escalação confirmada é gravada */
+  processando?: boolean;
 }
 
 const ModalConflitos: React.FC<ModalConflitosProps> = ({
@@ -16,6 +18,7 @@ const ModalConflitos: React.FC<ModalConflitosProps> = ({
   onClose,
   onConfirmarMesmoAssim,
   permitirForcar = false,
+  processando = false,
 }) => {
   const closeRef = useRef<HTMLButtonElement>(null);
   const reais = conflitos.filter((c) => c.valido === false || (!c.skip && c.mensagem));
@@ -26,7 +29,7 @@ const ModalConflitos: React.FC<ModalConflitosProps> = ({
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") onClose();
+    if (e.key === "Escape" && !processando) onClose();
   };
 
   return (
@@ -45,7 +48,9 @@ const ModalConflitos: React.FC<ModalConflitosProps> = ({
         aria-modal="true"
         aria-labelledby="conflitos-titulo"
         onKeyDown={handleKeyDown}
-        onClick={onClose}
+        onClick={() => {
+          if (!processando) onClose();
+        }}
       >
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div className="escala-dialog" onClick={(e) => e.stopPropagation()}>
@@ -72,6 +77,7 @@ const ModalConflitos: React.FC<ModalConflitosProps> = ({
               type="button"
               className="escala-dialog-btn escala-dialog-btn-secondary"
               onClick={onClose}
+              disabled={processando}
             >
               {podeConfirmar ? "Cancelar" : "Fechar"}
             </button>
@@ -80,8 +86,17 @@ const ModalConflitos: React.FC<ModalConflitosProps> = ({
                 type="button"
                 className="escala-dialog-btn escala-dialog-btn-primary"
                 onClick={onConfirmarMesmoAssim}
+                disabled={processando}
+                aria-busy={processando}
               >
-                Continuar mesmo assim
+                {processando ? (
+                  <>
+                    <span className="btn-spinner" aria-hidden />
+                    Salvando…
+                  </>
+                ) : (
+                  "Continuar mesmo assim"
+                )}
               </button>
             )}
           </div>
