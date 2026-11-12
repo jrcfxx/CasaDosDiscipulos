@@ -12,6 +12,7 @@
     "db:reset": "node scripts/dbReset.cjs",
     "seed": "node ./src/seeds/runSeeds.js",
     "admin:setup": "node scripts/setupAdmin.js",
+    "membresia:importar": "node scripts/importarMembresia.js",
     "uploads:otimizar": "node scripts/otimizarUploads.js",
     "test:escala": "node scripts/testEscalaValidacao.js && node scripts/testEscalaRegras.js",
     "test:seguranca": "node scripts/testSeguranca.js",

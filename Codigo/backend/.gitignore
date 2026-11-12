@@ -56,3 +56,5 @@ uploads/*
 
 # Misc
 .DS_Store
+# Dados pessoais da membresia (repositório público): nunca versionar
+dados/

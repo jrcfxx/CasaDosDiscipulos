@@ -1,0 +1,5 @@
+[
+  { "nome": "Fulana de Tal", "email": "fulana@exemplo.com", "telefone": "31999990000", "tipo": "membro", "discipulado": 2 },
+  { "nome": "Ciclano Souza", "email": "ciclano@exemplo.com", "telefone": "31988880000", "tipo": "lider", "lider_celula": true, "ministerios_lider": ["Louvor"], "discipulado": 5, "obs": "campo livre, ignorado" },
+  { "nome": "Beltrano", "email": "beltrano@casadosdiscipulos.com.br", "email_provisorio": true, "telefone": "31977770000", "tipo": "membro", "discipulado": 1 }
+]
