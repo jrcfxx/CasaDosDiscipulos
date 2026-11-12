@@ -164,10 +164,9 @@ class QuizRespostaService {
       );
     }
 
-    // Discursivas não entram no máximo (correção automática)
-    const pontuacao_maxima = questoes
-      .filter((q) => q.tipo_questao !== "discursiva")
-      .reduce((s, q) => s + (q.pontos || 0), 0);
+    // Todas as questões contam no máximo (discursiva respondida vale os seus pontos),
+    // igual à lista de módulos e à tela do quiz.
+    const pontuacao_maxima = questoes.reduce((s, q) => s + (q.pontos || 0), 0);
 
     const moduloUsuario = await knex("usuario_modulo")
       .where({ id_usuario, id_modulo: id_modulo_efetivo })
@@ -229,10 +228,12 @@ class QuizRespostaService {
       let pontos_obtidos = 0;
 
       if (questao.tipo_questao === "discursiva") {
-        // Discursiva não pontua automaticamente (evita passar nos 50% sem acertar objetivas)
+        // Discursiva não tem gabarito: respondida, vale os seus pontos; em branco, zero.
+        // (correta = null indica "sem correção automática")
         const texto = String(r.resposta || "").trim();
         correta = texto.length > 0 ? null : false;
-        pontos_obtidos = 0;
+        pontos_obtidos = texto.length > 0 ? questao.pontos || 0 : 0;
+        pontuacao_total += pontos_obtidos;
       } else if (questao.tipo_questao === "checkbox" && questao.resposta_correta) {
         const norm = (s) =>
           String(s || "")
