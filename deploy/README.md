@@ -125,6 +125,13 @@ Uma senha aleatória é exibida **uma única vez**; troque-a no Perfil após ent
 Acrescente `-- --desativar-outros` ao final para desativar todos os outros usuários
 (não apaga nada; é reversível marcando `ativo = 1`).
 
+Imagens: todo upload (perfil, eventos, Fala Aí, campos) é redimensionado e recomprimido
+automaticamente no backend. Para otimizar imagens enviadas antes disso (mantém nomes e links):
+
+```bash
+docker compose exec backend npm run uploads:otimizar
+```
+
 Horários: todo o sistema usa **horário de Brasília** (`TZ=America/Sao_Paulo` no backend e sessão MySQL em `-03:00`).
 
 ---

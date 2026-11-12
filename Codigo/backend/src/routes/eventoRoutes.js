@@ -1,6 +1,7 @@
 import { Router } from "express";
 import EventoController from "../controllers/EventoController.js";
 import multer from "multer";
+import otimizarImagem from "../middlewares/otimizarImagem.js";
 import verificarToken from "../middlewares/authMiddleware.js";
 import { adminOnly } from "../middlewares/checkRole.js";
 import path from "path";
@@ -70,7 +71,7 @@ router.post("/upload", verificarToken, adminOnly, (req, res, next) => {
     }
     next();
   });
-}, async (req, res) => {
+}, otimizarImagem(), async (req, res) => {
   try {
     await EventoController.uploadImagem(req, res);
   } catch (err) {

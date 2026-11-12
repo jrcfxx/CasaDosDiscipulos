@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import { otimizarArquivoDeImagem } from "../middlewares/otimizarImagem.js";
 import verificarToken from "../middlewares/authMiddleware.js";
 import path from "path";
 import fs from "fs";
@@ -107,7 +108,7 @@ const upload = multer({
  * Upload de arquivo para campo personalizado - requer autenticação
  */
 router.post("/campo", verificarToken, (req, res) => {
-  upload.single("file")(req, res, (err) => {
+  upload.single("file")(req, res, async (err) => {
     if (err) {
       console.error("Erro ao fazer upload:", err);
 
@@ -136,6 +137,8 @@ router.post("/campo", verificarToken, (req, res) => {
         }
         return res.status(400).json({ error: "Nenhum arquivo enviado" });
       }
+
+      await otimizarArquivoDeImagem(req.file);
 
       // Retorna o caminho relativo do arquivo
       const filePath = `/uploads/campos/${req.file.filename}`;

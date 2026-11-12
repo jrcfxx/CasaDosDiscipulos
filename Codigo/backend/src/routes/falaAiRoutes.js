@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import multer from "multer";
+import { otimizarArquivoDeImagem } from "../middlewares/otimizarImagem.js";
 import FalaAiController from "../controllers/FalaAiController.js";
 import verificarToken from "../middlewares/authMiddleware.js";
 import { adminAndLeader, authenticatedOnly } from "../middlewares/checkRole.js";
@@ -49,7 +50,7 @@ router.post("/posts", adminAndLeader, FalaAiController.criarPost);
 
 // Upload de imagem para post (admin e líder)
 router.post("/upload", adminAndLeader, (req, res) => {
-  upload.single("imagem")(req, res, (err) => {
+  upload.single("imagem")(req, res, async (err) => {
     if (err) {
       if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
         return res.status(400).json({ error: "Imagem muito grande. Máximo: 5MB" });
@@ -57,6 +58,7 @@ router.post("/upload", adminAndLeader, (req, res) => {
       return res.status(400).json({ error: err.message || "Erro no upload" });
     }
     if (!req.file) return res.status(400).json({ error: "Nenhuma imagem enviada" });
+    await otimizarArquivoDeImagem(req.file);
     res.json({ imagem_url: `/uploads/fala-ai/${req.file.filename}` });
   });
 });

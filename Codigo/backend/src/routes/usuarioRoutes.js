@@ -3,6 +3,7 @@ import UsuarioController from "../controllers/UsuarioController.js";
 import validate from "../middlewares/validate.js";
 import verificarToken from "../middlewares/authMiddleware.js";
 import upload from "../config/upload.js";
+import otimizarImagem from "../middlewares/otimizarImagem.js";
 import {
   createUsuarioSchema,
   updateUsuarioSchema,
@@ -25,6 +26,7 @@ router.put("/perfil", UsuarioController.updatePerfil);
 router.post(
   "/perfil/foto",
   upload.single("foto"),
+  otimizarImagem({ largura: 600 }),
   UsuarioController.uploadFoto
 );
 
