@@ -1,3 +1,4 @@
+import type { ErroApi } from "../utils/errorUtils";
 import React, { useEffect, useState, useRef } from "react";
 import "../style/Perfil.css";
 import Header from "../components/layout/Header";
@@ -284,7 +285,8 @@ export default function Perfil() {
 
       // Recarregar perfil
       await fetchPerfilAtualizado();
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao salvar perfil:", err);
       const msg = err?.response?.data?.error || "Erro ao salvar perfil";
       showToast(msg, "error");

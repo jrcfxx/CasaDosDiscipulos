@@ -1,5 +1,14 @@
 import { AxiosError } from "axios";
 
+/** Formato do erro retornado pela API (via axios), para uso em blocos catch */
+export type ErroApi = {
+  response?: {
+    status?: number;
+    data?: { error?: string; errors?: string[]; message?: string; conflitos?: unknown[] };
+  };
+  message?: string;
+};
+
 /**
  * Extrai mensagem de erro de forma consistente (API ou Error genérico).
  */

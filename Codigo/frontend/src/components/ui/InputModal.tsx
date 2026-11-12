@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FocusTrap } from "focus-trap-react";
+import FocusTrapComponent from "./FocusTrap";
 import "./InputModal.css";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FocusTrapComponent = FocusTrap as any;
 
 export interface InputModalProps {
   open: boolean;

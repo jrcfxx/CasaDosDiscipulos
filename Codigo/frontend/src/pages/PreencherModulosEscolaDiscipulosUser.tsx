@@ -70,7 +70,8 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       ]);
       setModulo(moduloData);
 
-      if ((moduloData as any).ativo === false || (moduloData as any).ativo === 0) {
+      // O banco pode devolver 0/1 em vez de true/false
+      if (moduloData.ativo === false || Number(moduloData.ativo) === 0) {
         setErroAcesso("Este módulo está inativo e não pode ser realizado.");
         return;
       }

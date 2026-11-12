@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FocusTrap } from "focus-trap-react";
+import FocusTrapComponent from "../components/ui/FocusTrap";
 import "../style/EventosAdmin.css";
 
 import Header from "../components/layout/Header";
@@ -17,8 +17,6 @@ import {
 } from "../services/eventoService";
 import { getErrorMessage } from "../utils/errorUtils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FocusTrapComponent = FocusTrap as any;
 
 const EventosAdmin: React.FC = () => {
   const [eventos, setEventos] = useState<Evento[]>([]);

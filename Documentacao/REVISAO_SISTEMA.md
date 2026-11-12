@@ -45,29 +45,30 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 | O2 | Job semanal dispara **todas** as mensagens ao mesmo tempo (`Promise.all`) — risco de bloqueio do número pelo WhatsApp. Precisa de fila/intervalo. | `jobs/whatsappModulosJob.js:19` | ✅ |
 | O3 | Publicar escala envia notificação + WhatsApp **um por um aguardando** (N consultas + N chamadas HTTP) — lento com muitas pessoas. | `EscalaService._notificarEscalado` | ✅ |
 | O4 | Logs gravam telefones (dado pessoal). | `WhatsAppService.js` | ✅ |
-| O5 | Backup diário ativo no servidor desde 12/11/2026 (`deploy/backup.sh`: banco + uploads, 03:00 UTC, 14 dias). Recomendado também ligar os Backups do droplet (cópia fora do servidor). | `deploy/backup.sh` | ✅ |
+| O5 | Backup diário ativo no servidor desde 12/11/2026 (`deploy/backup.sh`: banco + uploads, 03:00 UTC, 14 dias). Backups semanais do droplet ativos na DigitalOcean (domingo, 04–08 UTC) + snapshot manual de 12/11/2026. | `deploy/backup.sh` | ✅ |
 | O6 | Monitor a cada 10 min (API, site e validade do certificado) via GitHub Actions; falha gera e-mail do GitHub. | `.github/workflows/monitor.yml` | ✅ |
 | O7 | `npm audit`: backend agora com **0 vulnerabilidades** (incl. `sharp` 0.35.5); frontend: `react-router` 7.18.5 (open redirect corrigido). Restam alertas só em ferramentas de build do `react-scripts`, que não vão para o navegador (resolve com Q4). | `package.json` | ✅ |
-| O8 | Evolution API em `:latest`. Compose aceita `EVOLUTION_IMAGE`; falta fixar o digest no `.env` do servidor. | `deploy/docker-compose.yml` | 🟨 |
+| O8 | Evolution fixada por digest no `.env` do servidor (`EVOLUTION_IMAGE=...@sha256:9666…7252`, 12/11/2026); só muda de versão se a linha for trocada. | `deploy/docker-compose.yml` | ✅ |
 | O9 | `add_header` dentro de `location /static` e `/uploads` duplicava `Cache-Control` **e descartava HSTS / X-Frame-Options / nosniff** nessas respostas. | `deploy/nginx/*.conf` | ✅ |
 
 ## 🔵 Qualidade de código
 
 | # | Ponto | Detalhe |
 |---|---|---|
-| Q1 | ✅ CI roda `test:escala` + `test:seguranca` num MySQL descartável antes de cada build/deploy. Frontend ainda sem testes. | Próximo: testes do frontend. |
+| Q1 | ✅ CI roda `test:escala` + `test:seguranca` (MySQL descartável) e, no frontend, checagem de tipos + Vitest (`npm test`: utilitários e modal de conflitos), antes de cada build/deploy. | Ampliar a cobertura do frontend aos poucos. |
 | Q2 | **Componentes gigantes**: `GerirUser.tsx` (1.619 linhas), `FormulariosSecretariaCelulasAdmin.tsx` (1.361), `EscalaUser.tsx` (1.3k), `QuizzesSecretariaCelulasAdmin.tsx` (1.021); `EscalaService.js` (1.7k). | Dividir por responsabilidade. |
-| Q3 | Tipagem fraca no frontend: 78 ocorrências de `any` e 31 `eslint-disable`. | |
+| Q3 | 🟨 `any` 78 → 53 e `eslint-disable` 31 → 25: erros de API tipados (`ErroApi`), `FocusTrap` tipado num só lugar, casts desnecessários removidos. Os restantes estão no sistema de campos dinâmicos (JSON de formato variável). | Tipar `conteudo` dos campos por tipo. |
 | Q4 | ✅ Migrado para **Vite 6** (build de ~1 min para ~2 s); frontend com **0 vulnerabilidades**; `@axe-core` fora do bundle de produção; CI valida o nginx antes do deploy. | |
 | Q5 | ✅ Removidas `@types/react`, `@types/react-dom` e `typescript` do backend. | |
-| Q6 | Padrões inconsistentes: alguns controllers respondem erro direto (`res.status(...)`), outros usam `next(err)`; checagem de admin por string `"administrador"` em vez de `USER_TYPES`. | |
-| Q7 | Leituras com efeito colateral (C1) e N+1 queries (ranking, publicação da escala, notificações). | |
-| Q8 | Registros de histórico/notificação fora de transação junto com a operação principal. | |
-| Q9 | 11 `TODO/FIXME` pendentes no código. | |
+| Q6 | ✅ Evento, Lição e Fala Aí passam a usar o tratador central (`next(err)`): erro de banco não vaza mais a mensagem SQL como 400. Papéis sempre via `USER_TYPES`. | |
+| Q7 | ✅ Leitura com efeito colateral removida (C1). Notificações em massa da escala (publicar, evento criado/atualizado/cancelado) com 1 inserção em lote + 1 consulta de contatos, em vez de 2–3 consultas por pessoa. Ranking mantido (≤ 50 pessoas, consultas em paralelo). | |
+| Q8 | ✅ Escalar, editar, remover, publicar e excluir evento gravam a operação e o histórico na mesma transação; notificações saem só depois de gravado. | |
+| Q9 | ✅ Falso positivo: os 11 casos eram bytes dentro de imagens; não há TODO/FIXME no código. Achado relacionado: ~80 MB de fotos em `src/assets/` sem uso no código (não entram no site, só pesam no repositório). | Decidir se essas fotos devem ficar no repositório. |
 
 ---
 
 ## Próximos passos
 
-1. No servidor: fixar a versão da Evolution (O8) — ver `deploy/README.md`. Ligar os Backups do droplet na DigitalOcean.
-2. Qualidade: dividir componentes gigantes (Q2), tipagem (Q3), padronizar erros (Q6–Q8), testes do frontend.
+1. Q2: dividir as telas gigantes, uma por vez, junto com mudanças nelas (agora há testes e checagem de tipos no CI para dar segurança).
+2. Q3: tipar o conteúdo dos campos dinâmicos.
+3. Decidir sobre as fotos sem uso em `src/assets/`.

@@ -6,6 +6,13 @@ const NotificacaoModel = {
     return knex("notificacao").where("id_notificacao", id).first();
   },
 
+  /** Insere várias notificações em uma única consulta (envios em massa) */
+  async createMany(notifs, trx = knex) {
+    if (!notifs?.length) return 0;
+    await trx("notificacao").insert(notifs);
+    return notifs.length;
+  },
+
   async getByUsuario(idUsuario, opts = {}) {
     let q = knex("notificacao")
       .select("*")

@@ -4,55 +4,55 @@ import EventoService from "../services/EventoService.js";
  * Controller para operações relacionadas a eventos
  */
 class EventoController {
-  async getAll(req, res) {
+  async getAll(req, res, next) {
     try {
       res.json(await EventoService.getAll());
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      next(err);
     }
   }
 
-  async getAtivos(req, res) {
+  async getAtivos(req, res, next) {
     try {
       res.json(await EventoService.getAtivos());
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      next(err);
     }
   }
 
-  async getById(req, res) {
+  async getById(req, res, next) {
     try {
       const evento = await EventoService.getById(req.params.id);
       res.json(evento);
     } catch (err) {
-      res.status(404).json({ error: err.message });
+      next(err);
     }
   }
 
-  async create(req, res) {
+  async create(req, res, next) {
     try {
       const evento = await EventoService.create(req.body);
       res.status(201).json(evento);
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      next(err);
     }
   }
 
-  async update(req, res) {
+  async update(req, res, next) {
     try {
       const evento = await EventoService.update(req.params.id, req.body);
       res.json(evento);
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      next(err);
     }
   }
 
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       await EventoService.delete(req.params.id);
       res.json({ message: "Evento removido" });
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      next(err);
     }
   }
 
@@ -65,7 +65,8 @@ class EventoController {
       const imagemUrl = `/uploads/${req.file.filename}`;
       res.json({ imagem_url: imagemUrl });
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      console.error("[Evento] Erro no upload de imagem:", err?.message || err);
+      res.status(500).json({ error: "Erro ao processar a imagem" });
     }
   }
 }

@@ -1,3 +1,4 @@
+import type { ErroApi } from "../utils/errorUtils";
 import React, { useEffect, useRef, useState } from "react";
 import "../style/QuizzesSecretariaCelulasAdmin.css";
 
@@ -416,7 +417,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
         showToast("Quiz criado com sucesso!");
       }
       closeFormModal();
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao salvar quiz:", err);
 
       let msg = "Erro ao salvar quiz";

@@ -1,3 +1,4 @@
+import type { ErroApi } from "../utils/errorUtils";
 /**
  * Serviço centralizado de upload de arquivos
  * Usado por Módulos, Lições, Formulários e Quizzes
@@ -53,7 +54,8 @@ export async function uploadCampo(file: File): Promise<string> {
     }
 
     return path;
-  } catch (err: any) {
+  } catch (erro) {
+    const err = erro as ErroApi;
     const msg =
       err?.response?.data?.error ||
       err?.message ||

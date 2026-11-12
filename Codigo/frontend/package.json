@@ -24,7 +24,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "node scripts/e2eFrontendCrawl.mjs"
+    "test:e2e": "node scripts/e2eFrontendCrawl.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -32,8 +34,10 @@
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
     "@vitejs/plugin-react": "^4.7.0",
+    "jsdom": "^26.1.0",
     "playwright": "^1.49.1",
     "typescript": "^5.6.3",
-    "vite": "^6.4.6"
+    "vite": "^6.4.6",
+    "vitest": "^3.2.7"
   }
 }

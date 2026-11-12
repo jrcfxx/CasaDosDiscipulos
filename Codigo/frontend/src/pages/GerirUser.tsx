@@ -1,3 +1,4 @@
+import type { ErroApi } from "../utils/errorUtils";
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -334,7 +335,8 @@ export default function GerenciarUsuarios() {
       if (Array.isArray(atualizados)) {
         setNiveis(atualizados);
       }
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao reordenar níveis:", err);
       showToast(err?.response?.data?.error || "Erro ao reordenar níveis", "error");
       await fetchNiveis(true);
@@ -548,7 +550,8 @@ export default function GerenciarUsuarios() {
       }
       await fetchUsuarios();
       fecharModal();
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao salvar usuário:", err);
       const msg = err?.response?.data?.error || "Erro ao salvar usuário";
       showToast(msg, "error");
@@ -640,7 +643,8 @@ export default function GerenciarUsuarios() {
       }
       await fetchNiveis(abaAtiva === "niveis");
       fecharModalNivel();
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao salvar nível:", err);
       const msg =
         err?.response?.data?.error ||
@@ -664,7 +668,8 @@ export default function GerenciarUsuarios() {
       await deleteNivel(id);
       showToast("Nível inativado com sucesso!", "success");
       await fetchNiveis(true);
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao inativar nível:", err);
       const msg = err?.response?.data?.error || "Erro ao inativar nível";
       showToast(msg, "error");
@@ -689,7 +694,8 @@ export default function GerenciarUsuarios() {
         await fetchNiveis(true);
       }
       showToast("Nível excluído e ordem atualizada!", "success");
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao excluir nível:", err);
       const msg = err?.response?.data?.error || "Erro ao excluir nível";
       showToast(msg, "error");
@@ -710,7 +716,8 @@ export default function GerenciarUsuarios() {
       await reativarNivel(id);
       showToast("Nível reativado com sucesso!", "success");
       await fetchNiveis(true);
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao reativar nível:", err);
       const msg = err?.response?.data?.error || "Erro ao reativar nível";
       showToast(msg, "error");
@@ -742,7 +749,8 @@ export default function GerenciarUsuarios() {
       }
       await fetchMinisterios(abaAtiva === "ministerios");
       setModalMinisterioAberto(false);
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       const msg = err?.response?.data?.error || "Erro ao salvar ministério";
       showToast(msg, "error");
     }
@@ -754,7 +762,8 @@ export default function GerenciarUsuarios() {
       await ministerioService.delete(ministerioToExcluir);
       showToast("Ministério excluído!", "success");
       await fetchMinisterios(true);
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       const msg = err?.response?.data?.error || "Erro ao excluir ministério";
       showToast(msg, "error");
     }

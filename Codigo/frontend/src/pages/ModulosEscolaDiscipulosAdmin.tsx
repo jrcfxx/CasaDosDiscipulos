@@ -241,12 +241,12 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                       <span className="meta-value">{selectedModulo.nivel_nome ?? `#${selectedModulo.id_nivel}`}</span>
                     </div>
                   )}
-                  {(selectedModulo as any).pre_requisitos?.length > 0 && (
+                  {(selectedModulo.pre_requisitos?.length ?? 0) > 0 && (
                     <div className="meta-item meta-item-block">
                       <span className="meta-label">Pré-requisitos:</span>
                       <span className="meta-value">
                         {modulos
-                          .filter((m) => (selectedModulo as any).pre_requisitos?.includes(m.id_modulo))
+                          .filter((m) => selectedModulo.pre_requisitos?.includes(m.id_modulo))
                           .map((m) => m.titulo)
                           .join(", ")}
                       </span>

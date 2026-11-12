@@ -1,5 +1,5 @@
 import QuizRespostaService from "../services/QuizRespostaService.js";
-import { HTTP_STATUS } from "../utils/constants.js";
+import { HTTP_STATUS, USER_TYPES } from "../utils/constants.js";
 
 /**
  * Controller para respostas de quiz
@@ -114,7 +114,7 @@ class QuizRespostaController {
     try {
       const { usuarioId } = req.query;
       const solicitante = req.usuario?.id_usuario;
-      const isAdmin = req.usuario?.tipo === "administrador";
+      const isAdmin = req.usuario?.tipo === USER_TYPES.ADMIN;
 
       const idAlvo = usuarioId ? parseInt(usuarioId, 10) : solicitante;
 

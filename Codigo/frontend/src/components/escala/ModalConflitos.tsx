@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { FocusTrap } from "focus-trap-react";
+import FocusTrapComponent from "../ui/FocusTrap";
 import { EscalaConflito } from "../../services/escalaService";
 import "./ModalEscalaDialog.css";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FocusTrapComponent = FocusTrap as any;
 
 interface ModalConflitosProps {
   conflitos: EscalaConflito[];

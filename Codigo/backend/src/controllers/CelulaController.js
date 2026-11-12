@@ -1,5 +1,5 @@
 import CelulaService from "../services/CelulaService.js";
-import { HTTP_STATUS } from "../utils/constants.js";
+import { HTTP_STATUS, USER_TYPES } from "../utils/constants.js";
 
 /**
  * Controller para operações relacionadas a células
@@ -52,7 +52,7 @@ const CelulaController = {
   async byLider(req, res, next) {
     try {
       const idLider = Number(req.params.idLider);
-      const isAdmin = req.usuario?.tipo === "administrador";
+      const isAdmin = req.usuario?.tipo === USER_TYPES.ADMIN;
       if (!isAdmin && idLider !== req.usuario?.id_usuario) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           error: "Você só pode consultar as células das quais é líder",

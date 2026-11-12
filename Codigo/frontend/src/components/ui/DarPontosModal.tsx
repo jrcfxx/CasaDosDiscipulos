@@ -1,14 +1,13 @@
+import type { ErroApi } from "../../utils/errorUtils";
 /**
  * Modal para admin atribuir pontuação manual a um usuário.
  * Permite pesquisar por nome, selecionar a pessoa, informar pontos e motivo.
  */
 import React, { useEffect, useState, useRef } from "react";
-import { FocusTrap } from "focus-trap-react";
+import FocusTrapComponent from "./FocusTrap";
 import usuarioService from "../../services/usuarioService";
 import "./DarPontosModal.css";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FocusTrapComponent = FocusTrap as any;
 
 export interface DarPontosModalProps {
   open: boolean;
@@ -120,7 +119,8 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
     try {
       await onConfirm(usuarioSelecionado.id_usuario, pts, motivoTrim);
       onCancel();
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       setErro(err?.response?.data?.error || "Erro ao atribuir pontos. Tente novamente.");
     } finally {
       setLoading(false);

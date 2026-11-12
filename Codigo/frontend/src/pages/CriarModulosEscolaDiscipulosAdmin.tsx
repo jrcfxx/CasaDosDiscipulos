@@ -1,3 +1,4 @@
+import type { ErroApi } from "../utils/errorUtils";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../style/CriarModulosEscolaDiscipulosAdmin.css";
@@ -183,7 +184,8 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
             if (conteudo instanceof File) {
               try {
                 conteudo = await uploadCampo(conteudo);
-              } catch (err: any) {
+              } catch (erro) {
+                const err = erro as ErroApi;
                 const msg =
                   err?.response?.data?.error ||
                   err?.message ||
@@ -237,7 +239,8 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
       setTimeout(() => {
         navigate("/admin/modulos");
       }, 1000);
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       console.error("Erro ao criar módulo:", err);
 
       // Exibir mensagem de erro específica do backend

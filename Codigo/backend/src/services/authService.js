@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import UsuarioModel from "../models/UsuarioModel.js";
 import { UnauthorizedError, ValidationError } from "../utils/AppError.js";
+import { USER_TYPES } from "../utils/constants.js";
 
 /**
  * Service para operações de autenticação
@@ -19,7 +20,7 @@ const AuthService = {
    * @throws {ValidationError} Se dados forem inválidos
    * @throws {ConflictError} Se email já estiver em uso
    */
-  async register({ nome, email, senha, tipo = "membro" }) {
+  async register({ nome, email, senha, tipo = USER_TYPES.MEMBER }) {
     // Validações
     if (!nome || !email || !senha) {
       throw new ValidationError("Nome, email e senha são obrigatórios");
@@ -36,7 +37,7 @@ const AuthService = {
     }
 
     // Valida tipo de usuário
-    const tiposValidos = ["administrador", "lider", "membro"];
+    const tiposValidos = Object.values(USER_TYPES);
     if (!tiposValidos.includes(tipo)) {
       throw new ValidationError(
         `Tipo de usuário inválido. Use: ${tiposValidos.join(", ")}`

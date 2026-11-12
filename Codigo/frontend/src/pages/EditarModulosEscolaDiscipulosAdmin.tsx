@@ -1,3 +1,4 @@
+import type { ErroApi } from "../utils/errorUtils";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../style/EditarModulosEscolaDiscipulosAdmin.css";
@@ -101,8 +102,8 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       setIsActive(modulo.ativo !== false);
       const obs = modulo.obrigatorio as boolean | number | undefined;
       setObrigatorio(obs !== false && obs !== 0);
-      setIdNivel((modulo as any).id_nivel ?? "");
-      setPreRequisitos((modulo as any).pre_requisitos || []);
+      setIdNivel(modulo.id_nivel ?? "");
+      setPreRequisitos(modulo.pre_requisitos || []);
 
       // Buscar quiz vinculado primeiro
       let quizVinculado = null;
@@ -276,7 +277,8 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
             if (conteudo instanceof File) {
               try {
                 conteudo = await uploadCampo(conteudo);
-              } catch (err: any) {
+              } catch (erro) {
+                const err = erro as ErroApi;
                 const msg =
                   err?.response?.data?.error ||
                   err?.message ||

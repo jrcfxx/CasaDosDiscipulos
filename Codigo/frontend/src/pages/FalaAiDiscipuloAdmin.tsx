@@ -1,3 +1,4 @@
+import type { ErroApi } from "../utils/errorUtils";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../components/layout/Header";
@@ -53,7 +54,8 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
     try {
       const { imagem_url } = await falaAiService.uploadImagem(file);
       setImagemUrl(imagem_url);
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       setErro(err?.response?.data?.error || "Erro no upload");
     } finally {
       setUploading(false);
@@ -80,7 +82,8 @@ const FalaAiDiscipuloAdmin: React.FC = () => {
       };
       await falaAiService.criarPost(payload);
       navigate("/usuario/fala-ai");
-    } catch (err: any) {
+    } catch (erro) {
+      const err = erro as ErroApi;
       setErro(err?.response?.data?.error || "Erro ao publicar");
     } finally {
       setEnviando(false);
