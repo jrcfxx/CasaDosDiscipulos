@@ -69,6 +69,8 @@ jobs:
         run: npm run test:escala
       - name: Testes de segurança
         run: npm run test:seguranca
+      - name: Testes do organograma (staff)
+        run: npm run test:staff
 
   # Testes e checagem de tipos do frontend (Vitest)
   test-frontend:

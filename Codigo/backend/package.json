@@ -15,7 +15,8 @@
     "uploads:otimizar": "node scripts/otimizarUploads.js",
     "test:escala": "node scripts/testEscalaValidacao.js && node scripts/testEscalaRegras.js",
     "test:seguranca": "node scripts/testSeguranca.js",
-    "test:whatsapp-modulos": "node scripts/testWhatsAppModulos.js"
+    "test:whatsapp-modulos": "node scripts/testWhatsAppModulos.js",
+    "test:staff": "node scripts/testStaff.js"
   },
   "keywords": [],
   "author": "",

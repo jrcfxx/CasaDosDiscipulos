@@ -1,0 +1,133 @@
+/* Organograma da Casa — identidade: teal #02869b, dourado #f4b002, fundo escuro */
+
+.staff-org {
+  --staff-teal: #02869b;
+  --staff-teal-escuro: #015f6e;
+  --staff-cartao: #162326;
+  --staff-borda: rgba(2, 134, 155, 0.35);
+  --staff-texto: #f5f5f5;
+  --staff-suave: #94a3b8;
+  font-family: var(--font-primary, "Montserrat", sans-serif);
+  color: var(--staff-texto);
+}
+
+.staff-org__topo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.staff-org__titulo {
+  display: inline-block;
+  margin: 0;
+  padding: 0.75rem 2rem;
+  background: var(--staff-teal);
+  color: #fff;
+  font-size: clamp(1.35rem, 3.5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-radius: 6px;
+}
+
+.staff-org__subtitulo {
+  margin: 0.85rem auto 0;
+  max-width: 560px;
+  color: var(--staff-suave);
+  line-height: 1.6;
+}
+
+/* Grupos do topo em colunas */
+.staff-org__grupos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.staff-org__grupo {
+  min-width: 0;
+}
+
+.staff-org__grupo-titulo {
+  margin: 0 0 0.85rem;
+  padding: 0.7rem 1rem;
+  background: var(--staff-teal);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  border-radius: 6px;
+}
+
+.staff-org__grupo-pessoas {
+  margin: -0.4rem 0 0.85rem;
+  text-align: center;
+}
+
+/* Lista de funções com linha guia à esquerda */
+.staff-org__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 0.9rem;
+  border-left: 2px solid var(--staff-borda);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.staff-org__no {
+  position: relative;
+}
+
+/* Traço horizontal ligando o cartão à linha guia */
+.staff-org__no::before {
+  content: "";
+  position: absolute;
+  left: -0.9rem;
+  top: 1.15rem;
+  width: 0.9rem;
+  border-top: 2px solid var(--staff-borda);
+}
+
+.staff-org__cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--staff-cartao);
+  border: 1px solid var(--staff-borda);
+  border-radius: 8px;
+}
+
+.staff-org__no--subgrupo > .staff-org__cartao {
+  background: var(--staff-teal-escuro);
+  border-color: var(--staff-teal);
+}
+
+.staff-org__funcao {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.staff-org__pessoas {
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  overflow-wrap: anywhere;
+}
+
+.staff-org__pessoas--vago {
+  color: var(--staff-suave);
+  font-style: italic;
+}
+
+.staff-org__lista--aninhada {
+  margin-top: 0.6rem;
+}
+
+.staff-org__vazio {
+  text-align: center;
+  color: var(--staff-suave);
+  padding: 2rem 0;
+}

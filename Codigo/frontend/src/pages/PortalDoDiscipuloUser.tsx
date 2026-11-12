@@ -8,6 +8,7 @@ import imgFalaAi from "../assets/oracao-cabeca-baixa.jpg";
 import imgLicoes from "../assets/IMG_5684.jpg";
 import imgFormularios from "../assets/DSC00438.jpg";
 import imgModulos from "../assets/IMG_6568.jpg";
+import imgStaff from "../assets/tres_mulheres.jpeg";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -28,13 +29,13 @@ const PortalDoDiscipuloUser: React.FC = () => {
           </p>
         </header>
 
-        {/* Na Casa - Escala + Fala Aí */}
+        {/* Na Casa - Escala + Fala Aí + Staff */}
         <section className="portal-section">
           <h2 className="portal-section__title">
             <span className="portal-section__line" aria-hidden />
             Na Casa
           </h2>
-          <div className="portal-grid portal-grid--3">
+          <div className="portal-grid portal-grid--2">
             <NavLink
               to="/usuario/escala"
               className="portal-card"
@@ -64,6 +65,16 @@ const PortalDoDiscipuloUser: React.FC = () => {
               <span className="portal-card__overlay" />
               <span className="portal-card__title">Fala Aí, Discípulo</span>
               <span className="portal-card__desc">Devocional e palavra do dia</span>
+            </NavLink>
+            <NavLink
+              to="/usuario/staff"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgStaff})` }}
+              aria-label="Acessar Staff e Estrutura"
+            >
+              <span className="portal-card__overlay" />
+              <span className="portal-card__title">Staff e Estrutura</span>
+              <span className="portal-card__desc">Quem serve em cada área</span>
             </NavLink>
           </div>
         </section>

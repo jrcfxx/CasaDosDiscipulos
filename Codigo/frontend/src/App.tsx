@@ -25,6 +25,8 @@ import QuizzesSecretariaCelulasAdmin from "./pages/QuizzesSecretariaCelulasAdmin
 import CriarQuizzesSecretariaCelulasAdmin from "./pages/CriarQuizzesSecretariaCelulasAdmin";
 import EditarQuizzesSecretariaCelulas from "./pages/EditarQuizzesSecretariaCelulas";
 import EventosAdmin from "./pages/EventosAdmin";
+import StaffAdmin from "./pages/StaffAdmin";
+import StaffUser from "./pages/StaffUser";
 
 // Páginas Autenticadas - Usuário
 import PortalDoDiscipuloUser from "./pages/PortalDoDiscipuloUser";
@@ -214,6 +216,16 @@ export default function App() {
         }
       />
 
+      {/* Staff e Estrutura - Admin (edição) */}
+      <Route
+        path="/admin/staff"
+        element={
+          <ProtectedRoute requireAdmin>
+            <StaffAdmin />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Eventos - Admin */}
       <Route
         path="/admin/eventos"
@@ -275,6 +287,15 @@ export default function App() {
       />
 
       {/* Escala - Todos os usuários (visualização); admin/líder podem editar */}
+      {/* Staff e Estrutura - visualização (qualquer usuário logado) */}
+      <Route
+        path="/usuario/staff"
+        element={
+          <ProtectedRoute>
+            <StaffUser />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/usuario/escala"
         element={

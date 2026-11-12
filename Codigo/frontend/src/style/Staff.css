@@ -1,0 +1,217 @@
+/* Staff e Estrutura — páginas do portal (visualização e edição) */
+
+.staff-admin {
+  min-height: 100vh;
+  background: var(--portal-bg, #020202);
+  color: var(--portal-text, #f5f5f5);
+  font-family: var(--font-primary);
+}
+
+.staff-pagina__aviso,
+.staff-pagina__carregando,
+.staff-pagina__erro {
+  text-align: center;
+  color: var(--portal-text-muted, #a3a3a3);
+  margin: 0 0 1.5rem;
+}
+
+.staff-pagina__erro {
+  color: #fca5a5;
+}
+
+.staff-pagina__aviso a,
+.staff-pagina__voltar a {
+  color: var(--portal-gold, #f4b002);
+  font-weight: 600;
+}
+
+.staff-pagina__voltar {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+/* Painéis do editor */
+.staff-painel {
+  background: #0f1a1c;
+  border: 1px solid rgba(2, 134, 155, 0.3);
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.staff-painel__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.staff-painel__titulo {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.staff-painel__dica {
+  margin: 0 0 1rem;
+  color: var(--portal-text-muted, #a3a3a3);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.staff-painel--previa {
+  background: #0b1416;
+}
+
+/* Campos */
+.staff-editor__config {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.staff-editor__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--portal-text-muted, #a3a3a3);
+}
+
+.staff-editor__input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  background: #111;
+  color: #f5f5f5;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.92rem;
+}
+
+.staff-editor__input:focus {
+  outline: 2px solid var(--portal-teal, #02869b);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.staff-editor__input--titulo {
+  font-weight: 700;
+}
+
+/* Árvore */
+.staff-editor__lista {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0 0 0 1.1rem;
+  border-left: 2px solid rgba(2, 134, 155, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.staff-editor__lista--raiz {
+  padding-left: 0;
+  border-left: none;
+  gap: 1rem;
+}
+
+.staff-editor__item--nivel1 > .staff-editor__linha {
+  background: rgba(2, 134, 155, 0.18);
+  border-color: rgba(2, 134, 155, 0.55);
+}
+
+.staff-editor__linha {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(140px, 1.3fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  background: #141414;
+}
+
+.staff-editor__linha--alterada {
+  border-color: var(--portal-gold, #f4b002);
+}
+
+.staff-editor__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.staff-editor__novo {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(140px, 1.3fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  border: 1px dashed var(--portal-gold, #f4b002);
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+
+/* Botões */
+.staff-btn {
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #3a3a3a;
+  background: transparent;
+  color: #e5e5e5;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.staff-btn:hover:not(:disabled) {
+  border-color: var(--portal-teal, #02869b);
+}
+
+.staff-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.staff-btn--primario {
+  background: var(--portal-gold, #f4b002);
+  border-color: var(--portal-gold, #f4b002);
+  color: #111;
+}
+
+.staff-btn--primario:hover:not(:disabled) {
+  background: #ffc933;
+}
+
+.staff-btn--perigo {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
+.staff-btn--perigo:hover:not(:disabled) {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.staff-btn--icone {
+  padding: 0.45rem 0.6rem;
+}
+
+@media (max-width: 760px) {
+  .staff-editor__config,
+  .staff-editor__linha,
+  .staff-editor__novo {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-editor__acoes {
+    justify-content: flex-start;
+  }
+}

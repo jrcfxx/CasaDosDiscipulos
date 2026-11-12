@@ -11,6 +11,7 @@ import imgFormularios from "../assets/DSC00438.jpg";
 import imgModulos from "../assets/IMG_6568.jpg";
 import imgQuiz from "../assets/IMG_6936.jpg";
 import imgEventos from "../assets/DSC00719.jpg";
+import imgStaff from "../assets/tres_mulheres.jpeg";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -38,7 +39,7 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
             <span className="portal-section__line" aria-hidden />
             Na Casa
           </h2>
-          <div className="portal-grid portal-grid--3">
+          <div className="portal-grid portal-grid--2">
             <Link
               to="/usuario/escala"
               className="portal-card"
@@ -68,6 +69,16 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
               <div className="portal-card__overlay" />
               <span className="portal-card__title">Fala Aí, Discípulo</span>
               <span className="portal-card__desc">Devocional e palavra do dia</span>
+            </Link>
+            <Link
+              to="/admin/staff"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgStaff})` }}
+              aria-label="Staff e Estrutura"
+            >
+              <div className="portal-card__overlay" />
+              <span className="portal-card__title">Staff e Estrutura</span>
+              <span className="portal-card__desc">Editar o organograma da Casa</span>
             </Link>
           </div>
         </section>

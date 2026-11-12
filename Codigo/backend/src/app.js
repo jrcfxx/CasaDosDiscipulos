@@ -20,6 +20,7 @@ import celulaRoutes from "./routes/celulaRoutes.js";
 import eventoRoutes from "./routes/eventoRoutes.js";
 import escalaRoutes from "./routes/escalaRoutes.js";
 import nivelRoutes from "./routes/nivelRoutes.js";
+import staffRoutes from "./routes/staffRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import usuarioCelulaRoutes from "./routes/usuarioCelulaRoutes.js";
 import ministerioRoutes from "./routes/ministerioRoutes.js";
@@ -122,6 +123,9 @@ app.use("/api/escala", escalaRoutes);
 
 // Rotas de Níveis
 app.use("/api/nivel", nivelRoutes);
+
+// Staff / estrutura da Casa (organograma)
+app.use("/api/staff", staffRoutes);
 
 // Rotas de Upload
 app.use("/api/upload", uploadRoutes);
