@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // Gera nome único: userId-timestamp.extensão
     const userId = req.usuario?.id_usuario || "temp";
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase();
     const filename = `${userId}-${Date.now()}${ext}`;
     cb(null, filename);
   },
@@ -31,8 +31,11 @@ const storage = multer.diskStorage({
 // Filtro de arquivos - aceita apenas imagens
 const fileFilter = (req, file, cb) => {
   const allowedMimes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
+  const allowedExts = [".jpg", ".jpeg", ".png", ".gif"];
+  const ext = path.extname(file.originalname || "").toLowerCase();
 
-  if (allowedMimes.includes(file.mimetype)) {
+  // Extensão obrigatória: ela define como o arquivo é servido (mime é falsificável)
+  if (allowedMimes.includes(file.mimetype) && allowedExts.includes(ext)) {
     cb(null, true);
   } else {
     cb(

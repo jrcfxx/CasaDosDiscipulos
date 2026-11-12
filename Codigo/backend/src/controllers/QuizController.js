@@ -4,11 +4,38 @@ import { HTTP_STATUS, USER_TYPES } from "../utils/constants.js";
 /**
  * Remove gabarito das questões para não-admin
  */
+/** Remove a marcação de resposta certa do conteúdo de um campo-pergunta da Secretaria */
+function semGabaritoNoCampo(campo) {
+  const tipo = String(campo?.tipo_campo || "").toLowerCase();
+  if (tipo === "verdadeiro_falso") {
+    // O conteúdo É a resposta ("true"/"false")
+    return { ...campo, conteudo: null };
+  }
+  if (!["multipla_escolha", "checkbox", "select"].includes(tipo)) return campo;
+  try {
+    const parsed =
+      typeof campo.conteudo === "string" ? JSON.parse(campo.conteudo || "{}") : campo.conteudo;
+    if (!parsed || typeof parsed !== "object") return campo;
+    const { correta: _c, ...resto } = parsed;
+    if (Array.isArray(resto.alternativas)) {
+      resto.alternativas = resto.alternativas.map(({ correta: _a, ...alt }) => alt);
+    }
+    return {
+      ...campo,
+      conteudo: typeof campo.conteudo === "string" ? JSON.stringify(resto) : resto,
+    };
+  } catch {
+    return { ...campo, conteudo: null };
+  }
+}
+
+/** Versão do quiz para quem vai responder: sem gabarito em questões nem em campos */
 function stripGabarito(quiz) {
-  if (!quiz?.questoes) return quiz;
+  if (!quiz) return quiz;
   return {
     ...quiz,
-    questoes: quiz.questoes.map(({ resposta_correta, ...q }) => q),
+    questoes: (quiz.questoes || []).map(({ resposta_correta: _r, ...q }) => q),
+    campos: (quiz.campos || []).map(semGabaritoNoCampo),
   };
 }
 

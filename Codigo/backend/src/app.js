@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import dotenv from "dotenv";
 import path from "path";
+import { protegerUploads } from "./config/uploadSeguro.js";
 import { fileURLToPath } from "url";
 import usuarioRoutes from "./routes/usuarioRoutes.js";
 import ModuloRoutes from "./routes/ModuloRoutes.js";
@@ -70,10 +71,7 @@ app.use("/api/auth/register", authLimiter);
 // Servir arquivos estáticos da pasta uploads (permite carregamento cross-origin para imagens no frontend)
 app.use(
   "/uploads",
-  (req, res, next) => {
-    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    next();
-  },
+  protegerUploads, // só extensões seguras + cabeçalhos anti-script (ver config/uploadSeguro.js)
   express.static(path.join(__dirname, "../uploads"))
 );
 

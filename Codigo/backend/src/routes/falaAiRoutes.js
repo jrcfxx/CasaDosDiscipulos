@@ -29,7 +29,9 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-    if (allowed.includes(file.mimetype)) return cb(null, true);
+    const exts = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    const ext = (path.extname(file.originalname || "") || "").toLowerCase();
+    if (allowed.includes(file.mimetype) && exts.includes(ext)) return cb(null, true);
     cb(new Error("Apenas imagens (JPEG, PNG, GIF, WebP)"));
   },
 });

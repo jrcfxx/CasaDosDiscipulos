@@ -39,7 +39,8 @@ const upload = multer({
     const mimeOk = allowedMimes.includes(file.mimetype);
     const extOk = allowedExts.includes(ext);
 
-    if (mimeOk || extOk) {
+    // Extensão obrigatória: ela define como o arquivo é servido
+    if (mimeOk && extOk) {
       cb(null, true);
     } else {
       cb(new Error("Apenas imagens são permitidas (jpeg, jpg, png, gif, webp)"));

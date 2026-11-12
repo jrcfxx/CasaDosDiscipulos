@@ -35,8 +35,10 @@ class QuizService {
     );
     if (questionCampos.length === 0) return;
 
-    await QuizQuestaoModel.deleteByQuiz(id_quiz);
-
+    // ATENÇÃO: nunca apagar e recriar as questões. quiz_resposta tem ON DELETE CASCADE
+    // para quiz_questao — recriar apagaria as respostas e notas de todos os usuários.
+    // Monta a lista desejada e reconcilia por posição, mantendo os ids existentes.
+    const desejadas = [];
     for (let i = 0; i < questionCampos.length; i++) {
       const c = questionCampos[i];
       const tipoCampo = String(c.tipo_campo).toLowerCase();
@@ -94,7 +96,7 @@ class QuizService {
       }
       // discursiva: opcoes e resposta_correta permanecem null
 
-      await QuizQuestaoModel.create({
+      desejadas.push({
         id_quiz,
         tipo_questao: tipoQuestao,
         enunciado,
@@ -103,6 +105,27 @@ class QuizService {
         opcoes,
         resposta_correta,
       });
+    }
+
+    const existentes = await QuizQuestaoModel.getByQuiz(id_quiz);
+    const mudou = (atual, nova) =>
+      ["tipo_questao", "enunciado", "ordem", "opcoes", "resposta_correta"].some(
+        (k) => String(atual[k] ?? "") !== String(nova[k] ?? "")
+      );
+
+    for (let i = 0; i < desejadas.length; i++) {
+      const atual = existentes[i];
+      if (!atual) {
+        await QuizQuestaoModel.create(desejadas[i]);
+      } else if (mudou(atual, desejadas[i])) {
+        // Atualiza no lugar: o id (e as respostas ligadas a ele) é preservado
+        const { id_quiz: _ignorado, pontos: _p, ...patch } = desejadas[i];
+        await QuizQuestaoModel.update(atual.id_questao, patch);
+      }
+    }
+    // Perguntas removidas pelo admin na Secretaria
+    for (const sobra of existentes.slice(desejadas.length)) {
+      await QuizQuestaoModel.delete(sobra.id_questao);
     }
   }
   /**

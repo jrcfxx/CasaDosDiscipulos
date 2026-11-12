@@ -11,7 +11,7 @@ const FormularioRespostaController = {
    */
   async index(req, res, next) {
     try {
-      const respostas = await FormularioRespostaService.getAll();
+      const respostas = await FormularioRespostaService.getAll(req.usuario);
       res.status(HTTP_STATUS.OK).json(respostas);
     } catch (error) {
       next(error);
@@ -24,7 +24,7 @@ const FormularioRespostaController = {
    */
   async show(req, res, next) {
     try {
-      const resposta = await FormularioRespostaService.getById(req.params.id);
+      const resposta = await FormularioRespostaService.getById(req.params.id, req.usuario);
       res.status(HTTP_STATUS.OK).json(resposta);
     } catch (error) {
       next(error);
@@ -38,7 +38,8 @@ const FormularioRespostaController = {
   async byFormulario(req, res, next) {
     try {
       const respostas = await FormularioRespostaService.getByFormulario(
-        req.params.idFormulario
+        req.params.idFormulario,
+        req.usuario
       );
       res.status(HTTP_STATUS.OK).json(respostas);
     } catch (error) {
@@ -53,7 +54,8 @@ const FormularioRespostaController = {
   async byCelula(req, res, next) {
     try {
       const respostas = await FormularioRespostaService.getByCelula(
-        req.params.idCelula
+        req.params.idCelula,
+        req.usuario
       );
       res.status(HTTP_STATUS.OK).json(respostas);
     } catch (error) {
@@ -87,7 +89,8 @@ const FormularioRespostaController = {
     try {
       const resposta = await FormularioRespostaService.update(
         req.params.id,
-        req.body
+        req.body,
+        req.usuario
       );
       res.status(HTTP_STATUS.OK).json(resposta);
     } catch (error) {
@@ -101,7 +104,7 @@ const FormularioRespostaController = {
    */
   async destroy(req, res, next) {
     try {
-      await FormularioRespostaService.delete(req.params.id);
+      await FormularioRespostaService.delete(req.params.id, req.usuario);
       res.status(HTTP_STATUS.NO_CONTENT).send();
     } catch (error) {
       next(error);

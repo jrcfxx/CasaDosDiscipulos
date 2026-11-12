@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import { extensaoPermitida } from "../config/uploadSeguro.js";
 import { otimizarArquivoDeImagem } from "../middlewares/otimizarImagem.js";
 import verificarToken from "../middlewares/authMiddleware.js";
 import path from "path";
@@ -61,7 +62,6 @@ const upload = multer({
       "image/png",
       "image/gif",
       "image/webp",
-      "image/svg+xml",
       "image/bmp",
       "audio/mpeg",
       "audio/wav",
@@ -82,15 +82,17 @@ const upload = multer({
     const allowedExts = [
       ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
       ".txt", ".csv", ".rtf", ".odt", ".ods", ".odp",
-      ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp",
+      ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp",
       ".mp3", ".wav", ".ogg", ".m4a", ".mp4", ".webm",
       ".zip", ".rar", ".7z",
     ];
 
-    const mimeOk = allowedMimes.includes(file.mimetype);
-    const extOk = allowedExts.includes(ext);
+    // A extensão decide como o arquivo é servido: precisa estar na lista.
+    // O MIME vem do navegador (falsificável e às vezes incorreto), então não é usado para liberar.
+    void allowedMimes;
+    const extOk = allowedExts.includes(ext) && extensaoPermitida(file.originalname);
 
-    if (mimeOk || extOk) {
+    if (extOk) {
       cb(null, true);
     } else {
       cb(

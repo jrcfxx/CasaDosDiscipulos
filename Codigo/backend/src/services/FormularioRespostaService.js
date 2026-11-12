@@ -8,11 +8,38 @@ import { USER_TYPES } from "../utils/constants.js";
  */
 const FormularioRespostaService = {
   /**
-   * Lista todas as respostas de formulário
+   * Células que o usuário pode ver/alterar. null = todas (administrador).
+   * Líder enxerga apenas as células em que está em celula_lider.
+   */
+  async _celulasPermitidas(usuario) {
+    if (usuario?.tipo === USER_TYPES.ADMIN) return null;
+    if (!usuario?.id_usuario) return new Set();
+    const rows = await knex("celula_lider")
+      .where({ id_usuario: usuario.id_usuario })
+      .select("id_celula");
+    return new Set(rows.map((r) => Number(r.id_celula)));
+  },
+
+  _filtrar(rows, permitidas) {
+    if (!permitidas) return rows;
+    return rows.filter((r) => permitidas.has(Number(r.id_celula)));
+  },
+
+  async _assertAcesso(resposta, usuario) {
+    const permitidas = await this._celulasPermitidas(usuario);
+    if (permitidas && !permitidas.has(Number(resposta.id_celula))) {
+      // 404 em vez de 403: não revela que o relatório de outra célula existe
+      throw new NotFoundError("Resposta de formulário não encontrada");
+    }
+  },
+
+  /**
+   * Lista as respostas de formulário visíveis para o usuário
    * @returns {Promise<Array>} Lista de respostas
    */
-  async getAll() {
-    return FormularioRespostaModel.getAll();
+  async getAll(usuario = null) {
+    const rows = await FormularioRespostaModel.getAll();
+    return this._filtrar(rows, await this._celulasPermitidas(usuario));
   },
 
   /**
@@ -21,11 +48,12 @@ const FormularioRespostaService = {
    * @returns {Promise<Object>} Resposta encontrada
    * @throws {NotFoundError} Se resposta não encontrada
    */
-  async getById(id) {
+  async getById(id, usuario = null) {
     const resposta = await FormularioRespostaModel.getById(id);
     if (!resposta) {
       throw new NotFoundError("Resposta de formulário não encontrada");
     }
+    if (usuario) await this._assertAcesso(resposta, usuario);
 
     // Buscar campos preenchidos
     const campos = await FormularioRespostaModel.getCampos(id);
@@ -37,8 +65,9 @@ const FormularioRespostaService = {
    * @param {number} idFormulario - ID do formulário
    * @returns {Promise<Array>} Lista de respostas
    */
-  async getByFormulario(idFormulario) {
-    return FormularioRespostaModel.getByFormulario(idFormulario);
+  async getByFormulario(idFormulario, usuario = null) {
+    const rows = await FormularioRespostaModel.getByFormulario(idFormulario);
+    return this._filtrar(rows, await this._celulasPermitidas(usuario));
   },
 
   /**
@@ -46,7 +75,9 @@ const FormularioRespostaService = {
    * @param {number} idCelula - ID da célula
    * @returns {Promise<Array>} Lista de respostas
    */
-  async getByCelula(idCelula) {
+  async getByCelula(idCelula, usuario = null) {
+    const permitidas = await this._celulasPermitidas(usuario);
+    if (permitidas && !permitidas.has(Number(idCelula))) return [];
     return FormularioRespostaModel.getByCelula(idCelula);
   },
 
@@ -125,11 +156,12 @@ const FormularioRespostaService = {
    * @returns {Promise<Object>} Resposta atualizada
    * @throws {NotFoundError} Se resposta não encontrada
    */
-  async update(id, data) {
+  async update(id, data, usuario = null) {
     const exists = await FormularioRespostaModel.getById(id);
     if (!exists) {
       throw new NotFoundError("Resposta de formulário não encontrada");
     }
+    await this._assertAcesso(exists, usuario);
 
     // Permitir atualização apenas de data_resposta
     const updateData = {};
@@ -147,11 +179,12 @@ const FormularioRespostaService = {
    * @returns {Promise<void>}
    * @throws {NotFoundError} Se resposta não encontrada
    */
-  async delete(id) {
+  async delete(id, usuario = null) {
     const exists = await FormularioRespostaModel.getById(id);
     if (!exists) {
       throw new NotFoundError("Resposta de formulário não encontrada");
     }
+    await this._assertAcesso(exists, usuario);
 
     await FormularioRespostaModel.delete(id);
   },
