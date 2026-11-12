@@ -65,5 +65,5 @@ jobs:
             git checkout main
             git pull --ff-only origin main
             cd deploy
-            ./deploy.sh
+            bash ./deploy.sh
             docker image prune -f
