@@ -1,7 +1,7 @@
 # Revisão do sistema — Casa dos Discípulos
 
 Revisão ponta a ponta de backend, frontend, deploy e qualidade de código (12/11/2026).
-Legenda de status: ✅ corrigido · 🔲 aberto. C1–C4 corrigidos em 12/11/2026 (testes: `npm run test:seguranca`).
+Legenda de status: ✅ corrigido · 🟨 pronto no código, falta um passo no servidor · 🔲 aberto. C1–C4 corrigidos em 12/11/2026 (testes: `npm run test:seguranca`).
 
 **Cobertura:** backend inteiro lido por rotas → controllers → services/models nos pontos de regra
 de negócio e permissão; Escala lida linha a linha; frontend revisado em rotas, autenticação, datas,
@@ -30,36 +30,36 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 |---|---|---|---|
 | R1 | Escala: paralelismo/exceções bloqueados; notificações em rascunho; membros viam rascunhos; consulta de escala de terceiros; limite contando a própria pessoa; "copiar dia" quebrado; "desfazer" quebrado; mudança de horário sem aviso; movimentação sem aviso à pessoa. | `services/EscalaService.js` | ✅ |
 | R2 | Ao mudar o quiz de um módulo já concluído, o progresso/nota antigos não são recalculados (depende de C1). | `QuizService`/`ModuloService` | 🔲 |
-| R3 | `toggleActive` permite o admin desativar a si mesmo ou o último admin → ninguém mais administra o sistema. | `services/UsuarioService.js` | 🔲 |
-| R4 | `lider_celula` e `lider_ministerio` (flags em `usuario`) convivem com as tabelas `celula_lider` e `ministerio_lider`: duas fontes da verdade para liderança. Rotas de formulário usam só `tipo=lider`, ignorando `lider_celula`. | `middlewares/checkRole.js`, `routes/formularioRespostaRoutes.js` | 🔲 |
-| R5 | Status `concluida` da escala nunca é aplicado automaticamente após o evento. | Escala | 🔲 |
-| R6 | Área da escala vinculada ao ministério pelo **nome**: renomear um ministério quebra o vínculo em eventos antigos. | `EscalaService.createEvento/updateEvento` | 🔲 |
-| R7 | Copiar evento/aplicar template não verifica se a pessoa continua ativa ou no ministério. | `EscalaService.copiarEvento/aplicarTemplate` | 🔲 |
-| R8 | Ranking público (`/api/modulo/ranking`, sem login) expõe nome, foto e pontuação de membros — avaliar LGPD/consentimento. | `routes/ModuloRoutes.js:14` | 🔲 |
+| R3 | `toggleActive` permite o admin desativar a si mesmo ou o último admin → ninguém mais administra o sistema. | `services/UsuarioService.js` | ✅ |
+| R4 | `lider_celula` e `lider_ministerio` (flags em `usuario`) convivem com as tabelas `celula_lider` e `ministerio_lider`: duas fontes da verdade para liderança. Rotas de formulário usam só `tipo=lider`, ignorando `lider_celula`. | `middlewares/checkRole.js`, `routes/formularioRespostaRoutes.js` | ✅ |
+| R5 | Status `concluida` da escala nunca é aplicado automaticamente após o evento. | Escala | ✅ |
+| R6 | Área da escala vinculada ao ministério pelo **nome**: renomear um ministério quebra o vínculo em eventos antigos. | `EscalaService.createEvento/updateEvento` | ✅ |
+| R7 | Copiar evento/aplicar template não verifica se a pessoa continua ativa ou no ministério. | `EscalaService.copiarEvento/aplicarTemplate` | ✅ |
+| R8 | Ranking público (`/api/modulo/ranking`, sem login) expõe nome, foto e pontuação de membros — avaliar LGPD/consentimento. | `routes/ModuloRoutes.js:14` | ✅ |
 
 ## 🟡 Operação / infraestrutura
 
 | # | Problema | Onde | Status |
 |---|---|---|---|
-| O1 | WhatsApp: `fetch` sem timeout — se a Evolution travar, a requisição (ex.: publicar escala) fica pendurada. | `services/WhatsAppService.js:65` | 🔲 |
-| O2 | Job semanal dispara **todas** as mensagens ao mesmo tempo (`Promise.all`) — risco de bloqueio do número pelo WhatsApp. Precisa de fila/intervalo. | `jobs/whatsappModulosJob.js:19` | 🔲 |
-| O3 | Publicar escala envia notificação + WhatsApp **um por um aguardando** (N consultas + N chamadas HTTP) — lento com muitas pessoas. | `EscalaService._notificarEscalado` | 🔲 |
-| O4 | Logs gravam telefones (dado pessoal). | `WhatsAppService.js` | 🔲 |
-| O5 | Sem backup automático do MySQL (volume Docker único no droplet). | `deploy/` | 🔲 |
+| O1 | WhatsApp: `fetch` sem timeout — se a Evolution travar, a requisição (ex.: publicar escala) fica pendurada. | `services/WhatsAppService.js:65` | ✅ |
+| O2 | Job semanal dispara **todas** as mensagens ao mesmo tempo (`Promise.all`) — risco de bloqueio do número pelo WhatsApp. Precisa de fila/intervalo. | `jobs/whatsappModulosJob.js:19` | ✅ |
+| O3 | Publicar escala envia notificação + WhatsApp **um por um aguardando** (N consultas + N chamadas HTTP) — lento com muitas pessoas. | `EscalaService._notificarEscalado` | ✅ |
+| O4 | Logs gravam telefones (dado pessoal). | `WhatsAppService.js` | ✅ |
+| O5 | Sem backup automático do MySQL. `deploy/backup.sh` criado (banco + uploads, 14 dias); falta ativar no servidor e ligar os Backups do droplet. | `deploy/backup.sh` | 🟨 |
 | O6 | Sem monitoramento/alerta de queda (o incidente de memória só foi visto manualmente). | — | 🔲 |
-| O7 | `npm audit`: vulnerabilidades **altas** no backend (`body-parser`, `express-rate-limit`, `joi`, `jws`, `lodash`, `ip-address`) e no frontend (dependências do `react-scripts`). | `package.json` | 🔲 |
-| O8 | Evolution API em `:latest` — uma atualização upstream pode quebrar o WhatsApp sem aviso. Fixar versão. | `deploy/docker-compose.yml` | 🔲 |
-| O9 | Cabeçalho `Cache-Control` duplicado em `/static` (nginx `expires` + `add_header`). | `deploy/nginx/nginx-ssl.conf` | 🔲 |
+| O7 | `npm audit`: backend agora com **0 vulnerabilidades** (incl. `sharp` 0.35.5); frontend: `react-router` 7.18.5 (open redirect corrigido). Restam alertas só em ferramentas de build do `react-scripts`, que não vão para o navegador (resolve com Q4). | `package.json` | ✅ |
+| O8 | Evolution API em `:latest`. Compose aceita `EVOLUTION_IMAGE`; falta fixar o digest no `.env` do servidor. | `deploy/docker-compose.yml` | 🟨 |
+| O9 | `add_header` dentro de `location /static` e `/uploads` duplicava `Cache-Control` **e descartava HSTS / X-Frame-Options / nosniff** nessas respostas. | `deploy/nginx/*.conf` | ✅ |
 
 ## 🔵 Qualidade de código
 
 | # | Ponto | Detalhe |
 |---|---|---|
-| Q1 | **Sem testes automatizados no CI.** `npm test` do backend não existe; só os scripts `test:escala` (criados nesta revisão). Frontend sem testes. | Rodar `test:escala` num MySQL de CI. |
+| Q1 | ✅ CI roda `test:escala` + `test:seguranca` num MySQL descartável antes de cada build/deploy. Frontend ainda sem testes. | Próximo: testes do frontend. |
 | Q2 | **Componentes gigantes**: `GerirUser.tsx` (1.619 linhas), `FormulariosSecretariaCelulasAdmin.tsx` (1.361), `EscalaUser.tsx` (1.3k), `QuizzesSecretariaCelulasAdmin.tsx` (1.021); `EscalaService.js` (1.7k). | Dividir por responsabilidade. |
 | Q3 | Tipagem fraca no frontend: 78 ocorrências de `any` e 31 `eslint-disable`. | |
 | Q4 | `react-scripts` (Create React App) está descontinuado — fonte da maioria das vulnerabilidades do frontend. | Migrar para Vite. |
-| Q5 | Dependências erradas no backend: `@types/react`, `@types/react-dom` e `typescript` em `dependencies` (vão para a imagem de produção). | Remover. |
+| Q5 | ✅ Removidas `@types/react`, `@types/react-dom` e `typescript` do backend. | |
 | Q6 | Padrões inconsistentes: alguns controllers respondem erro direto (`res.status(...)`), outros usam `next(err)`; checagem de admin por string `"administrador"` em vez de `USER_TYPES`. | |
 | Q7 | Leituras com efeito colateral (C1) e N+1 queries (ranking, publicação da escala, notificações). | |
 | Q8 | Registros de histórico/notificação fora de transação junto com a operação principal. | |
@@ -67,9 +67,9 @@ fluxos da Escala e métricas de qualidade. Telas grandes (`GerirUser`, `Formular
 
 ---
 
-## Ordem sugerida
+## Próximos passos
 
-1. **C1, C2, C3, C4** (perda de dados e segurança) — mesmo deploy.
-2. **O1, O2, O5** (WhatsApp e backup) — antes de ativar o WhatsApp.
-3. **R3, R4, O7** (lockout de admin, liderança única, vulnerabilidades).
-4. Qualidade (Q1–Q5) de forma contínua.
+1. No servidor: ativar o backup (O5) e fixar a versão da Evolution (O8) — ver `deploy/README.md`.
+2. R2 (recalcular notas quando o quiz de um módulo concluído muda) — precisa de decisão de regra.
+3. O6 monitoramento de queda (ex.: UptimeRobot gratuito em `/api/health`).
+4. Qualidade: migrar Create React App → Vite (Q4), dividir componentes gigantes (Q2), tipagem (Q3), padronizar erros (Q6–Q8).

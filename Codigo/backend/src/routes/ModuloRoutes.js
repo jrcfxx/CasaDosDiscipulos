@@ -10,11 +10,10 @@ import {
 
 const router = Router();
 
-// Leituras autenticadas; ranking público permanece aberto
-router.get("/ranking", ModuloController.ranking);
-
 router.use(verificarToken);
 
+// Ranking expõe nome, foto e pontuação dos membros: só para quem está logado (LGPD)
+router.get("/ranking", ModuloController.ranking);
 router.get("/", ModuloController.index);
 router.get("/active", ModuloController.active);
 router.get("/ativos-com-progresso", ModuloController.activeWithProgress);

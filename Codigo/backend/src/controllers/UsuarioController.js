@@ -51,7 +51,7 @@ const UsuarioController = {
    */
   async update(req, res, next) {
     try {
-      const usuario = await UsuarioService.update(req.params.id, req.body);
+      const usuario = await UsuarioService.update(req.params.id, req.body, req.usuario?.id_usuario);
       res.status(HTTP_STATUS.OK).json(usuario);
     } catch (err) {
       next(err);
@@ -64,7 +64,7 @@ const UsuarioController = {
    */
   async toggleActive(req, res, next) {
     try {
-      const usuario = await UsuarioService.toggleActive(req.params.id);
+      const usuario = await UsuarioService.toggleActive(req.params.id, req.usuario?.id_usuario);
       res.status(HTTP_STATUS.OK).json({
         message: `Usuário ${
           usuario.ativo ? "ativado" : "desativado"
@@ -82,7 +82,7 @@ const UsuarioController = {
    */
   async destroy(req, res, next) {
     try {
-      await UsuarioService.softDelete(req.params.id);
+      await UsuarioService.softDelete(req.params.id, req.usuario?.id_usuario);
       res.status(HTTP_STATUS.OK).json({
         message: "Usuário desativado com sucesso",
       });

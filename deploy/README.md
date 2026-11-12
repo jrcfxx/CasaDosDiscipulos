@@ -132,6 +132,39 @@ automaticamente no backend. Para otimizar imagens enviadas antes disso (mantém 
 docker compose exec backend npm run uploads:otimizar
 ```
 
+## Backup e restauração
+
+`backup.sh` salva o banco inteiro (app + WhatsApp) e os uploads em `/opt/backups/casadosdiscipulos`,
+mantendo 14 dias. Ative uma vez no servidor:
+
+```bash
+cd /opt/CasaDosDiscipulos/deploy
+./backup.sh                  # primeiro backup (confira a saída "OK")
+./backup.sh --instalar-cron  # todo dia às 03:00
+```
+
+Os arquivos ficam no próprio servidor: ative também os **Backups do droplet** na DigitalOcean
+(Droplet → Backups) para se proteger da perda do servidor.
+
+Restaurar (substitui os dados atuais — use com cuidado):
+
+```bash
+cd /opt/CasaDosDiscipulos/deploy && set -a && . ./.env && set +a
+gunzip -c /opt/backups/casadosdiscipulos/banco_AAAA-MM-DD_HHMM.sql.gz | docker compose exec -T -e MYSQL_PWD="$DB_PASSWORD" mysql mysql -uroot
+docker compose exec -T backend tar -C /app -xzf - < /opt/backups/casadosdiscipulos/uploads_AAAA-MM-DD_HHMM.tar.gz
+```
+
+## WhatsApp (Evolution)
+
+Mensagens saem por uma fila: uma de cada vez, com 3 s de intervalo (`WHATSAPP_INTERVALO_MS`) e
+timeout de 15 s (`WHATSAPP_TIMEOUT_MS`), para não bloquear o número nem travar a API.
+Fixe a versão da Evolution no `.env` para que uma atualização não quebre o WhatsApp:
+
+```bash
+docker inspect --format '{{index .RepoDigests 0}}' evoapicloud/evolution-api:latest
+# copie o resultado para o .env:  EVOLUTION_IMAGE=evoapicloud/evolution-api@sha256:...
+```
+
 Horários: todo o sistema usa **horário de Brasília** (`TZ=America/Sao_Paulo` no backend e sessão MySQL em `-03:00`).
 
 ---

@@ -256,7 +256,8 @@ const UsuarioService = {
     // Permissões de líder (apenas quando tipo=lider)
     if (data.tipo === USER_TYPES.LEADER) {
       novoUsuarioData.lider_celula = data.lider_celula ?? true;
-      novoUsuarioData.lider_ministerio = data.lider_ministerio ?? false;
+      // lider_ministerio é derivado de ministerio_lider (definido logo abaixo)
+      novoUsuarioData.lider_ministerio = false;
     }
 
     // Ministérios que o usuário participa
@@ -318,8 +319,33 @@ const UsuarioService = {
    * @throws {ValidationError} Se dados forem inválidos
    * @throws {ConflictError} Se email já estiver cadastrado para outro usuário
    */
-  async update(id_usuario, data) {
+  /**
+   * Impede que o sistema fique sem administrador: ninguém desativa, exclui ou rebaixa
+   * a própria conta de admin, nem o último administrador ativo.
+   */
+  async _assertMantemAdmin(usuario, solicitanteId = null) {
+    const ehAdminAtivo =
+      usuario?.tipo === USER_TYPES.ADMIN && (usuario.ativo === true || usuario.ativo === 1);
+    if (!ehAdminAtivo) return;
+    if (solicitanteId != null && Number(solicitanteId) === Number(usuario.id_usuario)) {
+      throw new ValidationError(
+        "Você não pode desativar, excluir ou remover o acesso de administrador da sua própria conta"
+      );
+    }
+    const [{ n }] = await knex("usuario")
+      .where({ tipo: USER_TYPES.ADMIN, ativo: true })
+      .count({ n: "*" });
+    if (Number(n) <= 1) {
+      throw new ValidationError("É preciso manter pelo menos um administrador ativo");
+    }
+  },
+
+  async update(id_usuario, data, solicitanteId = null) {
     const usuarioAntigo = await this.getById(id_usuario);
+    const perdeAdmin =
+      (data.tipo !== undefined && data.tipo !== USER_TYPES.ADMIN) ||
+      (data.ativo !== undefined && !data.ativo);
+    if (perdeAdmin) await this._assertMantemAdmin(usuarioAntigo, solicitanteId);
 
     const dadosAtualizacao = {};
 
@@ -403,7 +429,8 @@ const UsuarioService = {
 
     // Permissões de líder (lider_celula = Secretaria, lider_ministerio = Escala)
     if (data.lider_celula !== undefined) dadosAtualizacao.lider_celula = !!data.lider_celula;
-    if (data.lider_ministerio !== undefined) dadosAtualizacao.lider_ministerio = !!data.lider_ministerio;
+    // lider_ministerio NÃO é editável direto: reflete se há ministérios em ministerio_lider
+    // (atualizado abaixo junto com id_ministerios_lider)
 
     if (data.id_nivel !== undefined) {
       const nivelAntigo = usuarioAntigo.id_nivel
@@ -455,8 +482,9 @@ const UsuarioService = {
    * @param {number} id - ID do usuário
    * @returns {Promise<Object>} Usuário atualizado
    */
-  async toggleActive(id) {
+  async toggleActive(id, solicitanteId = null) {
     const usuario = await this.getById(id);
+    if (usuario.ativo) await this._assertMantemAdmin(usuario, solicitanteId);
     await UsuarioModel.update(id, { ativo: !usuario.ativo });
     return this.getById(id);
   },
@@ -466,8 +494,9 @@ const UsuarioService = {
    * @param {number} id - ID do usuário
    * @returns {Promise<void>}
    */
-  async softDelete(id) {
-    await this.getById(id); // Verifica se existe
+  async softDelete(id, solicitanteId = null) {
+    const usuario = await this.getById(id); // Verifica se existe
+    await this._assertMantemAdmin(usuario, solicitanteId);
     await UsuarioModel.softDelete(id);
   },
 
@@ -476,8 +505,9 @@ const UsuarioService = {
    * @param {number} id - ID do usuário
    * @returns {Promise<void>}
    */
-  async delete(id) {
-    await this.getById(id); // Verifica se existe
+  async delete(id, solicitanteId = null) {
+    const usuario = await this.getById(id); // Verifica se existe
+    await this._assertMantemAdmin(usuario, solicitanteId);
     await UsuarioModel.delete(id);
   },
 

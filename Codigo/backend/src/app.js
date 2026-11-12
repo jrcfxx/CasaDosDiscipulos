@@ -27,6 +27,7 @@ import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 import falaAiRoutes from "./routes/falaAiRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import { iniciarJobModulosWhatsApp } from "./jobs/whatsappModulosJob.js";
+import { iniciarJobConcluirEscalas } from "./jobs/escalaConcluirJob.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -144,4 +145,5 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   iniciarJobModulosWhatsApp();
+  iniciarJobConcluirEscalas();
 });

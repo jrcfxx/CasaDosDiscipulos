@@ -128,10 +128,47 @@ async function testeC4() {
   ok(admin.some((r) => r.id_resposta === idB), "C4: admin continua vendo tudo");
 }
 
+async function testeR3() {
+  const { default: UsuarioService } = await import("../src/services/UsuarioService.js");
+  const admins = await knex("usuario").where({ tipo: USER_TYPES.ADMIN, ativo: true }).select("id_usuario");
+  const eu = admins[0].id_usuario;
+  const erroProprio = await UsuarioService.toggleActive(eu, eu).catch((e) => e);
+  ok(erroProprio?.statusCode === 400, "R3: admin não desativa a própria conta");
+  const erroRebaixar = await UsuarioService.update(eu, { tipo: USER_TYPES.MEMBER }, eu).catch((e) => e);
+  ok(erroRebaixar?.statusCode === 400, "R3: admin não remove o próprio acesso de admin");
+
+  // Com um único admin ativo, nem outro usuário consegue desativá-lo
+  const outros = admins.slice(1).map((a) => a.id_usuario);
+  if (outros.length) await knex("usuario").whereIn("id_usuario", outros).update({ ativo: false });
+  limpeza.push(() => (outros.length ? knex("usuario").whereIn("id_usuario", outros).update({ ativo: true }) : null));
+  const erroUltimo = await UsuarioService.softDelete(eu, null).catch((e) => e);
+  const aindaAtivo = await knex("usuario").where({ id_usuario: eu }).first();
+  ok(erroUltimo?.statusCode === 400 && aindaAtivo.ativo, "R3: último administrador ativo não pode ser desativado");
+}
+
+async function testeR5() {
+  const { concluirEventosPassados } = await import("../src/jobs/escalaConcluirJob.js");
+  const inserir = async (titulo, status, dataHora) => {
+    const [id] = await knex("escala_evento").insert({ titulo, status, ativo: true, data_hora: dataHora });
+    limpeza.push(() => knex("escala_evento").where({ id_escala_evento: id }).del());
+    return id;
+  };
+  const passado = await inserir("TESTE passado", "publicada", "2020-01-05 19:00:00");
+  const futuro = await inserir("TESTE futuro", "publicada", "2099-01-05 19:00:00");
+  const rascunho = await inserir("TESTE rascunho antigo", "rascunho", "2020-01-05 19:00:00");
+  await concluirEventosPassados();
+  const status = async (id) => (await knex("escala_evento").where({ id_escala_evento: id }).first()).status;
+  ok((await status(passado)) === "concluida", "R5: escala publicada que já passou vira concluída");
+  ok((await status(futuro)) === "publicada", "R5: escala futura continua publicada");
+  ok((await status(rascunho)) === "rascunho", "R5: rascunho não é alterado");
+}
+
 try {
   await testeC1eC2();
   testeC3();
   await testeC4();
+  await testeR3();
+  await testeR5();
 } catch (e) {
   console.error("ERRO:", e);
   falhas += 1;

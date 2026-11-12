@@ -98,7 +98,8 @@ services:
   # Depois acesse http://localhost:8080 no seu computador.
   # Após conectar o WhatsApp, pode remover a publicação da porta.
   evolution:
-    image: evoapicloud/evolution-api:latest
+    # Fixe a versão em EVOLUTION_IMAGE no .env (uma atualização automática pode quebrar o WhatsApp)
+    image: ${EVOLUTION_IMAGE:-evoapicloud/evolution-api:latest}
     container_name: casadiscipulos_evolution
     restart: unless-stopped
     ports:

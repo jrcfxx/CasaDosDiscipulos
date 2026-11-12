@@ -35,22 +35,20 @@ function estaConfigurado() {
   return Boolean(WHATSAPP_ENABLED && EVOLUTION_API_URL && EVOLUTION_API_KEY);
 }
 
-/**
- * Envia mensagem de texto via Evolution API
- * @param {string} numero - Número do destinatário (E.164 ou formato BR)
- * @param {string} mensagem - Texto a enviar
- * @returns {Promise<{ ok: boolean, error?: string }>}
- */
-async function enviarMensagem(numero, mensagem) {
-  if (!estaConfigurado()) {
-    return { ok: false, error: "WhatsApp não configurado (EVOLUTION_API_URL)" };
-  }
+/** Mostra só o começo e o fim do número nos logs (dado pessoal) */
+function mascararTelefone(e164) {
+  const s = String(e164 || "");
+  return s.length > 6 ? `${s.slice(0, 4)}*****${s.slice(-2)}` : "***";
+}
 
-  const numeroE164 = normalizarTelefone(numero);
-  if (!numeroE164) {
-    return { ok: false, error: "Número de telefone inválido" };
-  }
+const TIMEOUT_MS = Number(process.env.WHATSAPP_TIMEOUT_MS) || 15000;
+// Intervalo entre mensagens: disparos em rajada podem bloquear o número no WhatsApp
+const INTERVALO_MS = Number(process.env.WHATSAPP_INTERVALO_MS ?? 3000);
+const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+let fila = Promise.resolve();
 
+/** Envio imediato (uso interno da fila) */
+async function enviarAgora(numeroE164, mensagem) {
   const url = `${EVOLUTION_API_URL.replace(/\/$/, "")}/message/sendText/${EVOLUTION_INSTANCE}`;
   const headers = {
     "Content-Type": "application/json",
@@ -60,28 +58,56 @@ async function enviarMensagem(numero, mensagem) {
     number: numeroE164,
     text: String(mensagem).slice(0, 4096),
   };
+  const destino = mascararTelefone(numeroE164);
 
   try {
     const res = await fetch(url, {
       method: "POST",
       headers,
       body: JSON.stringify(body),
+      // Se a Evolution travar, não prende a fila nem a requisição de quem chamou
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
     const data = await res.json().catch(() => ({}));
 
     if (res.ok) {
-      console.log("[WhatsApp] Mensagem enviada com sucesso para", numeroE164);
+      console.log("[WhatsApp] Mensagem enviada para", destino);
       return { ok: true };
     }
 
     const errMsg = data?.message || data?.error || res.statusText || `HTTP ${res.status}`;
-    console.error("[WhatsApp] Erro ao enviar:", errMsg, "| Resposta:", JSON.stringify(data));
-    return { ok: false, error: errMsg };
+    console.error("[WhatsApp] Erro ao enviar para", destino, "-", errMsg);
+    return { ok: false, error: String(errMsg) };
   } catch (err) {
-    console.error("[WhatsApp] Exceção ao conectar:", err.message);
-    return { ok: false, error: err.message || "Erro ao conectar com Evolution API" };
+    const msg = err?.name === "TimeoutError" ? `sem resposta em ${TIMEOUT_MS} ms` : err?.message;
+    console.error("[WhatsApp] Falha ao conectar (", destino, "):", msg);
+    return { ok: false, error: msg || "Erro ao conectar com Evolution API" };
   }
+}
+
+/**
+ * Envia mensagem de texto via Evolution API.
+ * Todas as mensagens passam por uma fila única, uma de cada vez, com intervalo
+ * entre elas. Quem chama não precisa (e não deve) aguardar em fluxos de tela.
+ * @param {string} numero - Número do destinatário (E.164 ou formato BR)
+ * @param {string} mensagem - Texto a enviar
+ * @returns {Promise<{ ok: boolean, error?: string }>}
+ */
+function enviarMensagem(numero, mensagem) {
+  if (!estaConfigurado()) {
+    return Promise.resolve({ ok: false, error: "WhatsApp não configurado (EVOLUTION_API_URL)" });
+  }
+  const numeroE164 = normalizarTelefone(numero);
+  if (!numeroE164) {
+    return Promise.resolve({ ok: false, error: "Número de telefone inválido" });
+  }
+  const tarefa = fila.then(() => enviarAgora(numeroE164, mensagem));
+  fila = tarefa.then(
+    () => esperar(INTERVALO_MS),
+    () => esperar(INTERVALO_MS)
+  );
+  return tarefa;
 }
 
 /** Labels amigáveis para campos de detalhes da atribuição */

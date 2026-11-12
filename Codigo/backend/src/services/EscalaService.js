@@ -109,20 +109,42 @@ class EscalaService {
       const idMins = dados.id_ministerios || [];
       await EscalaRepository.definirMinisterios(evento.id_escala_evento, idMins, trx);
 
-      const nomesAreas =
-        dados.areas?.length > 0
-          ? dados.areas.map((a) => (typeof a === "string" ? a.trim() : a)).filter(Boolean)
-          : await this._nomesMinisterios(idMins, trx);
+      // Áreas: vínculo com o ministério pelo ID (nomes podem repetir ou mudar)
+      let areasNovas;
+      if (dados.areas?.length > 0) {
+        const nomes = dados.areas
+          .map((a) => (typeof a === "string" ? a.trim() : a))
+          .filter(Boolean);
+        const ministeriosDoEvento = idMins.length
+          ? await trx("ministerio").whereIn("id_ministerio", idMins).select("id_ministerio", "nome")
+          : [];
+        areasNovas = [];
+        for (const nome of nomes) {
+          const doEvento = ministeriosDoEvento.find(
+            (m) => String(m.nome).toLowerCase().trim() === nome.toLowerCase()
+          );
+          const min =
+            doEvento ||
+            (await trx("ministerio").where("nome", nome).where("ativo", true).first());
+          areasNovas.push({ nome, id_ministerio: min?.id_ministerio || null });
+        }
+      } else {
+        const rows = idMins.length
+          ? await trx("ministerio").whereIn("id_ministerio", idMins).select("id_ministerio", "nome")
+          : [];
+        areasNovas = idMins
+          .map((id) => rows.find((m) => m.id_ministerio === Number(id)))
+          .filter(Boolean)
+          .map((m) => ({ nome: m.nome, id_ministerio: m.id_ministerio }));
+      }
 
-      for (let i = 0; i < nomesAreas.length; i++) {
-        const nome = nomesAreas[i];
-        const min = await trx("ministerio").where("nome", nome).where("ativo", true).first();
+      for (let i = 0; i < areasNovas.length; i++) {
         await EscalaRepository.criarArea(
           {
             id_escala_evento: evento.id_escala_evento,
-            nome,
+            nome: areasNovas[i].nome,
             ordem: i,
-            id_ministerio: min?.id_ministerio || null,
+            id_ministerio: areasNovas[i].id_ministerio,
           },
           trx
         );
@@ -1220,6 +1242,13 @@ class EscalaService {
           trx
         );
         for (const attr of area.atribuicoes || []) {
+          if (!(await this._usuarioAtivo(attr.id_usuario))) {
+            warnings.push({
+              usuario: attr.usuario_nome,
+              mensagem: "Não copiado: usuário desativado",
+            });
+            continue;
+          }
           const conflito = await EscalaRepository.buscarConflitoHorario(
             attr.id_usuario,
             novo.data_hora,
@@ -1355,6 +1384,13 @@ class EscalaService {
           trx
         );
         for (const slot of area.slots || []) {
+          if (!(await this._usuarioAtivo(slot.id_usuario))) {
+            warnings.push({
+              id_usuario: slot.id_usuario,
+              mensagem: "Não incluído: usuário desativado ou removido",
+            });
+            continue;
+          }
           const conflito = await EscalaRepository.buscarConflitoHorario(
             slot.id_usuario,
             evento.data_hora,
@@ -1586,10 +1622,9 @@ class EscalaService {
     }
   }
 
-  async _nomesMinisterios(ids, trx = knex) {
-    if (!ids?.length) return [];
-    const rows = await trx("ministerio").whereIn("id_ministerio", ids).select("nome");
-    return rows.map((r) => r.nome);
+  async _usuarioAtivo(idUsuario) {
+    const u = await knex("usuario").where({ id_usuario: idUsuario }).select("ativo").first();
+    return Boolean(u?.ativo);
   }
 
   _parseId(id) {
@@ -1643,7 +1678,8 @@ class EscalaService {
     if (WhatsAppService.estaConfigurado()) {
       const usuario = await UsuarioModel.getById(idUsuario);
       if (usuario?.telefone) {
-        const resultado = await WhatsAppService.notificarEscalacao(
+        // Não aguarda: a mensagem entra na fila do WhatsApp e a tela responde na hora
+        WhatsAppService.notificarEscalacao(
           { nome: usuario.nome, telefone: usuario.telefone },
           {
             titulo: evento.titulo,
@@ -1653,13 +1689,11 @@ class EscalaService {
           },
           areaNome,
           detalhesAtribuicao
-        ).catch((err) => {
-          console.error("[WhatsApp] Erro ao notificar escalação:", err?.message || err);
-          return { ok: false, error: err?.message };
-        });
-        if (!resultado?.ok) {
-          console.error("[WhatsApp] Escalação não enviada:", resultado?.error);
-        }
+        )
+          .then((r) => {
+            if (!r?.ok) console.error("[WhatsApp] Escalação não enviada:", r?.error);
+          })
+          .catch((err) => console.error("[WhatsApp] Erro ao notificar escalação:", err?.message || err));
       }
     }
   }

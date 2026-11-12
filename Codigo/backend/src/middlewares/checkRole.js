@@ -36,8 +36,8 @@ export const adminOnly = checkRole([USER_TYPES.ADMIN]);
 export const adminAndLeader = checkRole([USER_TYPES.ADMIN, USER_TYPES.LEADER]);
 
 /**
- * Admin ou líder com flag lider_ministerio (acesso à Escala).
- * Busca a flag no banco porque o JWT não a inclui.
+ * Admin ou líder que lidera ao menos um ministério (tabela ministerio_lider).
+ * Consulta o banco a cada requisição: o JWT não carrega essa informação.
  */
 export const adminAndLiderMinisterio = async (req, res, next) => {
   try {
@@ -59,12 +59,12 @@ export const adminAndLiderMinisterio = async (req, res, next) => {
       );
     }
 
-    const row = await knex("usuario")
-      .select("lider_ministerio")
+    // Fonte da verdade: a tabela ministerio_lider (a flag em usuario é só um espelho)
+    const row = await knex("ministerio_lider")
       .where("id_usuario", req.usuario.id_usuario)
       .first();
 
-    if (!row?.lider_ministerio) {
+    if (!row) {
       return next(
         new ForbiddenError(
           "Acesso negado. Apenas líderes de ministério podem gerenciar a escala."
