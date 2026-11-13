@@ -78,17 +78,19 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       );
 
     // Campos específicos para quiz
-    case FieldType.MULTIPLE_CHOICE:
+    case FieldType.MULTIPLE_CHOICE: {
       const options =
         campo.opcoes?.map((opt) => ({ value: opt, label: opt })) || [];
       return <MultipleChoiceField {...commonProps} options={options} />;
+    }
 
-    case FieldType.TRUE_FALSE:
+    case FieldType.TRUE_FALSE: {
       const trueFalseOptions = [
         { value: "true", label: "Verdadeiro" },
         { value: "false", label: "Falso" },
       ];
       return <TrueFalseField {...commonProps} options={trueFalseOptions} />;
+    }
 
     case FieldType.ESSAY:
       return (

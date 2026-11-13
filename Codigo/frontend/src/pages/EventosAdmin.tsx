@@ -268,7 +268,7 @@ const EventosAdmin: React.FC = () => {
             if (!salvando) closeModal();
           }}
         >
-          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2 id="evento-modal-title">{editingEvento ? "Editar Evento" : "Novo Evento"}</h2>
             <form onSubmit={handleSubmit}>

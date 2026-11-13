@@ -26,17 +26,24 @@
     "typecheck": "tsc --noEmit",
     "test:e2e": "node scripts/e2eFrontendCrawl.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint src"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.4.0",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
     "@vitejs/plugin-react": "^4.7.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^15.15.0",
     "jsdom": "^26.1.0",
     "playwright": "^1.49.1",
     "typescript": "^5.6.3",
+    "typescript-eslint": "^8.72.2",
     "vite": "^6.4.6",
     "vitest": "^3.2.7"
   }

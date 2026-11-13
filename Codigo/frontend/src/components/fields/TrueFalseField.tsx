@@ -46,7 +46,7 @@ const TrueFalseField: React.FC<SelectFieldProps> = ({
       <select
         id={fieldId}
         name={name}
-        value={String(value) ?? ""}
+        value={value == null ? "" : String(value)}
         onChange={(e) => onChange(e.target.value === "true")}
         disabled={disabled}
         required={required}

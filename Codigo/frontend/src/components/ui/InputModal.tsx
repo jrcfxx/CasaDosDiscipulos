@@ -103,7 +103,7 @@ const InputModal: React.FC<InputModalProps> = ({
         onKeyDown={handleKeyDown}
         onClick={cancelar}
       >
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div className="input-modal" onClick={(e) => e.stopPropagation()}>
         <h2 id="input-modal-title" className="input-modal-title">
           {title}

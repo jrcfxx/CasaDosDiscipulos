@@ -92,6 +92,8 @@ jobs:
       - run: npm ci
       - name: Checagem de tipos
         run: npm run typecheck
+      - name: Lint (erros travam; avisos são melhorias graduais)
+        run: npm run lint
       - name: Testes
         run: npm test
 

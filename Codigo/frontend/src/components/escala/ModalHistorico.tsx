@@ -68,7 +68,7 @@ const ModalHistorico: React.FC<Props> = ({
         onKeyDown={handleKeyDown}
         onClick={onClose}
       >
-        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div className="escala-dialog" onClick={(e) => e.stopPropagation()}>
           <h2 id="historico-titulo" className="escala-dialog-title">
             Histórico — {titulo}

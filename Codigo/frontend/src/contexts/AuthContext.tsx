@@ -30,24 +30,26 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<Usuario | null>(() =>
-    authService.getToken() ? authService.getUser() : null
-  );
+  const [user, setUser] = useState<Usuario | null>(() => authService.getUser());
   const [loading, setLoading] = useState(false);
+  // Quem entrou antes do cookie HttpOnly tem token antigo: converte antes de o app fazer chamadas
+  const [pronto, setPronto] = useState(() => !temTokenAntigo());
 
   const refreshUser = useCallback(() => {
-    if (!authService.getToken()) {
-      setUser(null);
-      return;
-    }
     setUser(authService.getUser());
   }, []);
 
-  // Revalida perfil no boot (usuário desativado / flags atualizadas)
+  // Revalida perfil no boot (usuário desativado / flags atualizadas / sessão expirada)
   useEffect(() => {
-    if (!authService.getToken()) return;
     let cancelled = false;
     (async () => {
+      await authService.migrarSessaoAntiga();
+      if (cancelled) return;
+      setPronto(true);
+      if (!authService.getUser()) {
+        setUser(null);
+        return;
+      }
       try {
         const perfil = await getUserProfile();
         if (cancelled) return;
@@ -94,7 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextValue = {
     user,
-    isAuthenticated: !!user && !!authService.getToken(),
+    // A validade real da sessão (cookie HttpOnly) é conferida pelo servidor a cada chamada
+    isAuthenticated: !!user,
     isAdmin: user?.tipo === "administrador",
     isLider: user?.tipo === "lider",
     isLiderCelula: user?.tipo === "lider" && !!user?.lider_celula,
@@ -109,7 +112,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser,
   };
 
+  // Só durante a conversão do token antigo (uma requisição): evita chamadas sem sessão
+  if (!pronto) return null;
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function temTokenAntigo(): boolean {
+  try {
+    return !!localStorage.getItem("token");
+  } catch {
+    return false;
+  }
 }
 
 export function useAuth(): AuthContextValue {

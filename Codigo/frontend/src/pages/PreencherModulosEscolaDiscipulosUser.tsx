@@ -262,7 +262,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
           </a>
         );
       }
-      case "upload":
+      case "upload": {
         const url =
           String(valor).startsWith("http")
             ? String(valor)
@@ -280,6 +280,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
             )}
           </div>
         );
+      }
       default:
         return <p className="modulo-texto">{String(valor)}</p>;
     }

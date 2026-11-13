@@ -2,6 +2,18 @@ import axios, { AxiosError } from "axios";
 
 const API_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
+/**
+ * A sessão fica num cookie HttpOnly gravado pelo servidor: o JavaScript da página não lê o token.
+ * withCredentials envia o cookie; X-Requested-With é exigido pelo servidor (proteção CSRF).
+ */
+export const OPCOES_SESSAO = {
+  withCredentials: true,
+  headers: { "X-Requested-With": "XMLHttpRequest" },
+} as const;
+
+/** Chave do token antigo (antes do cookie): só lida para converter a sessão e apagar */
+const TOKEN_ANTIGO_KEY = "token";
+
 export interface LoginCredentials {
   email: string;
   senha: string;
@@ -25,7 +37,6 @@ export interface Usuario {
 export interface LoginResponse {
   message: string;
   usuario: Usuario;
-  token: string;
 }
 
 const AVISO_KEY = "auth_aviso";
@@ -40,10 +51,10 @@ export interface AuthError {
 
 /**
  * Serviço de Autenticação
- * Gerencia login, registro, logout e armazenamento de token
+ * Login, troca de senha e logout. O token fica só no cookie HttpOnly (servidor);
+ * aqui guardamos apenas os dados de exibição do usuário.
  */
 class AuthService {
-  private readonly TOKEN_KEY = "token";
   private readonly USER_KEY = "usuario";
   /** Senha digitada no login quando é provisória (só em memória, nunca em armazenamento) */
   private senhaDoLogin: string | null = null;
@@ -58,12 +69,9 @@ class AuthService {
    */
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     try {
-      const response = await axios.post<LoginResponse>(
-        `${API_URL}/auth/login`,
-        credentials
-      );
+      const response = await axios.post<LoginResponse>(`${API_URL}/auth/login`, credentials, OPCOES_SESSAO);
 
-      this.setSession(response.data.token, response.data.usuario);
+      this.setUser(response.data.usuario);
       // Senha provisória: guarda só em memória para a tela "Crie sua senha" não pedir de novo
       this.senhaDoLogin = response.data.usuario.trocar_senha ? credentials.senha : null;
       return response.data;
@@ -74,16 +82,16 @@ class AuthService {
 
   /**
    * Troca a própria senha (primeiro acesso ou Perfil).
-   * O servidor encerra as outras sessões e devolve um token novo, que passa a ser usado aqui.
+   * O servidor encerra as outras sessões e grava a sessão nova no cookie.
    */
   async trocarSenha(senhaAtual: string, novaSenha: string): Promise<Usuario> {
     try {
       const response = await axios.post<LoginResponse>(
         `${API_URL}/auth/senha`,
         { senhaAtual, novaSenha },
-        { headers: { Authorization: `Bearer ${this.getToken()}` } }
+        OPCOES_SESSAO
       );
-      this.setSession(response.data.token, response.data.usuario);
+      this.setUser(response.data.usuario);
       this.senhaDoLogin = null;
       return response.data.usuario;
     } catch (error) {
@@ -91,15 +99,29 @@ class AuthService {
     }
   }
 
-  /** Grava token e usuário juntos (login, troca de senha) */
-  setSession(token: string, usuario: Usuario): void {
-    this.setToken(token);
-    this.setUser(usuario);
-  }
-
-  /** Atualiza só o token (ex.: Perfil devolve token novo após trocar a senha) */
-  updateToken(token: string): void {
-    this.setToken(token);
+  /**
+   * Transição: quem entrou antes do cookie tem o token no localStorage. Troca por cookie
+   * (sem novo login) e apaga o token do navegador. Sem token antigo, não faz nada.
+   */
+  async migrarSessaoAntiga(): Promise<void> {
+    let antigo: string | null = null;
+    try {
+      antigo = localStorage.getItem(TOKEN_ANTIGO_KEY);
+    } catch {
+      return;
+    }
+    if (!antigo) return;
+    try {
+      await axios.post(`${API_URL}/auth/sessao`, null, {
+        ...OPCOES_SESSAO,
+        headers: { ...OPCOES_SESSAO.headers, Authorization: `Bearer ${antigo}` },
+      });
+    } catch {
+      // Token antigo inválido: a pessoa só precisa entrar de novo
+      localStorage.removeItem(this.USER_KEY);
+    } finally {
+      localStorage.removeItem(TOKEN_ANTIGO_KEY);
+    }
   }
 
   /** Mensagem para mostrar na tela de login (ex.: sessão expirada). Lida uma única vez. */
@@ -161,29 +183,27 @@ class AuthService {
    */
   logout(): void {
     this.senhaDoLogin = null;
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
+    this.limparDadosLocais();
+    // Apaga o cookie no servidor (o JavaScript não consegue apagar um cookie HttpOnly)
+    axios.post(`${API_URL}/auth/logout`, null, OPCOES_SESSAO).catch(() => {});
+  }
+
+  /** Remove os dados locais (sem chamar o servidor), ex.: quando a sessão já expirou */
+  limparDadosLocais(): void {
+    try {
+      localStorage.removeItem(this.USER_KEY);
+      localStorage.removeItem(TOKEN_ANTIGO_KEY);
+    } catch {
+      /* ignore */
+    }
   }
 
   /**
-   * Verifica se o usuário está autenticado
+   * Há uma sessão neste navegador (os dados do usuário estão guardados).
+   * A validade real é conferida pelo servidor a cada requisição.
    */
   isAuthenticated(): boolean {
-    return !!this.getToken();
-  }
-
-  /**
-   * Obtém o token armazenado
-   */
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
-  /**
-   * Armazena o token
-   */
-  private setToken(token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
+    return !!this.getUser();
   }
 
   /**

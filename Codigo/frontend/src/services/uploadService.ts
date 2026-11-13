@@ -6,6 +6,7 @@ import type { ErroApi } from "../utils/errorUtils";
 
 import axios from "axios";
 import { ASSETS_BASE, API_BASE } from "../config/api";
+import { OPCOES_SESSAO } from "./authService";
 
 const UPLOAD_CAMPO_ENDPOINT = `${API_BASE}/upload/campo`;
 
@@ -30,17 +31,14 @@ export async function uploadCampo(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const token = localStorage.getItem("token");
-  const headers: Record<string, string> = {};
-  if (token) headers.Authorization = `Bearer ${token}`;
-
   try {
     const response = await axios.post<{
       path?: string;
       url?: string;
       filePath?: string;
     }>(UPLOAD_CAMPO_ENDPOINT, formData, {
-      headers,
+      // Sessão no cookie HttpOnly + cabeçalho anti-CSRF
+      ...OPCOES_SESSAO,
       timeout: 60000,
       maxContentLength: 15 * 1024 * 1024,
       maxBodyLength: 15 * 1024 * 1024,

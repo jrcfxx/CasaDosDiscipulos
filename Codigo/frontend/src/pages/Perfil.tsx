@@ -17,7 +17,6 @@ import { ASSETS_BASE } from "../config/api";
 import { formatarTelefoneInput, normalizarTelefoneParaEnvio } from "../utils/telefoneUtils";
 import CampoSenha from "../components/ui/CampoSenha";
 import { avaliarSenha } from "../utils/regrasSenha";
-import authService from "../services/authService";
 
 function buildFotoUrl(foto: string | undefined): string | null {
   if (!foto) return null;
@@ -127,7 +126,7 @@ export default function Perfil() {
     fetchPerfil();
     fetchNiveis();
     fetchCelulas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
@@ -268,11 +267,8 @@ export default function Perfil() {
       }
 
       // Atualizar outros dados do perfil
-      const atualizado = await updateUserProfile(updateData);
-      // Trocar a senha encerra as outras sessões: o servidor devolve um token novo para esta
-      if (atualizado && typeof atualizado === "object" && "token" in atualizado && typeof atualizado.token === "string") {
-        authService.updateToken(atualizado.token);
-      }
+      // Se a senha mudou, o servidor encerra as outras sessões e grava a sessão nova no cookie
+      await updateUserProfile(updateData);
 
       // Célula principal (membros e líderes)
       if (perfil.tipo === "membro" || perfil.tipo === "lider") {

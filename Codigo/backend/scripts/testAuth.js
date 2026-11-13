@@ -61,13 +61,21 @@ async function testeApi() {
   app.use(errorHandler);
   const server = app.listen(0);
   const base = `http://127.0.0.1:${server.address().port}/api`;
-  const chamar = async (metodo, caminho, tk, corpo) => {
+  // Token da sessão vem no cookie HttpOnly "cd_sessao" (Set-Cookie); aqui é reenviado como Bearer
+  const lerSetCookie = (r) => (r.headers.getSetCookie?.() ?? []).find((c) => c.startsWith("cd_sessao=")) ?? null;
+  const chamar = async (metodo, caminho, tk, corpo, extras = {}) => {
     const r = await fetch(base + caminho, {
       method: metodo,
-      headers: { "Content-Type": "application/json", ...(tk ? { Authorization: `Bearer ${tk}` } : {}) },
+      headers: {
+        "Content-Type": "application/json",
+        ...(tk ? { Authorization: `Bearer ${tk}` } : {}),
+        ...extras,
+      },
       body: corpo ? JSON.stringify(corpo) : undefined,
     });
-    return { status: r.status, corpo: await r.json().catch(() => ({})) };
+    const setCookie = lerSetCookie(r);
+    const token = setCookie ? decodeURIComponent(setCookie.split(";")[0].split("=").slice(1).join("=")) : null;
+    return { status: r.status, corpo: await r.json().catch(() => ({})), token, setCookie };
   };
 
   try {
@@ -79,7 +87,10 @@ async function testeApi() {
     const novo = await criarUsuario({ senha: "31988887777", telefone: "31988887777", trocar_senha: true });
     const login = await chamar("POST", "/auth/login", null, { email: novo.email, senha: "31988887777" });
     ok(login.status === 200 && login.corpo.usuario?.trocar_senha === true, "login informa que precisa criar senha");
-    const tk1 = login.corpo.token;
+    ok(!login.corpo.token, "o token NÃO vem no corpo da resposta (JavaScript da página não o vê)");
+    ok(/HttpOnly/i.test(login.setCookie || "") && /SameSite=Strict/i.test(login.setCookie || "") && /Path=\/api/i.test(login.setCookie || ""),
+      "sessão em cookie HttpOnly, SameSite=Strict, só para /api");
+    const tk1 = login.token;
 
     const bloqueado = await chamar("GET", "/modulo/active", tk1);
     ok(bloqueado.status === 403 && bloqueado.corpo.codigo === "TROCAR_SENHA", "com senha provisória, o resto do sistema fica bloqueado (403 TROCAR_SENHA)");
@@ -92,8 +103,8 @@ async function testeApi() {
     ok(atualErrada.status === 400, "exige a senha atual correta");
 
     const troca = await chamar("POST", "/auth/senha", tk1, { senhaAtual: "31988887777", novaSenha: "Nova senha forte 1" });
-    ok(troca.status === 200 && troca.corpo.token && troca.corpo.usuario?.trocar_senha === false, "troca a senha e recebe token novo");
-    const tk2 = troca.corpo.token;
+    ok(troca.status === 200 && troca.token && troca.corpo.usuario?.trocar_senha === false, "troca a senha e recebe sessão nova");
+    const tk2 = troca.token;
 
     const antigo = await chamar("GET", "/usuarios/perfil", tk1);
     ok(antigo.status === 401, "token anterior à troca deixa de valer (401)");
@@ -122,13 +133,30 @@ async function testeApi() {
     ok(comTemp.status === 200 && comTemp.corpo.usuario?.trocar_senha === true, "entrar com a temporária obriga criar nova senha");
 
     // Perfil: e-mail só muda com a senha atual; foto só do próprio servidor
-    const tk3 = (await chamar("POST", "/auth/senha", comTemp.corpo.token, { senhaAtual: red.corpo.senha_temporaria, novaSenha: "Outra senha forte 2" })).corpo.token;
+    const tk3 = (await chamar("POST", "/auth/senha", comTemp.token, { senhaAtual: red.corpo.senha_temporaria, novaSenha: "Outra senha forte 2" })).token;
     const semSenha = await chamar("PUT", "/usuarios/perfil", tk3, { email: `trocado.${sufixo}@exemplo.com` });
     ok(semSenha.status === 400, "trocar o e-mail sem a senha atual é recusado");
     const comSenha = await chamar("PUT", "/usuarios/perfil", tk3, { email: `trocado.${sufixo}@exemplo.com`, senhaAtual: "Outra senha forte 2" });
     ok(comSenha.status === 200 && comSenha.corpo.email === `trocado.${sufixo}@exemplo.com`, "trocar o e-mail com a senha atual funciona");
     const fotoExterna = await chamar("PUT", "/usuarios/perfil", tk3, { foto: "https://rastreador.exemplo/pixel.gif" });
     ok(fotoExterna.status === 400, "foto de perfil com URL externa é recusada");
+
+    // Sessão por cookie (como o navegador usa) e proteção CSRF
+    const cookie = { Cookie: `cd_sessao=${encodeURIComponent(tk3)}` };
+    const leituraCookie = await chamar("GET", "/usuarios/perfil", null, null, cookie);
+    ok(leituraCookie.status === 200, "o cookie de sessão autentica as leituras");
+    const csrf = await chamar("PUT", "/usuarios/perfil", null, { nome: "Teste Auth CSRF" }, cookie);
+    ok(csrf.status === 403, "alteração via cookie SEM o cabeçalho X-Requested-With é bloqueada (CSRF)");
+    const comCabecalho = await chamar("PUT", "/usuarios/perfil", null, { nome: "Teste Auth Cookie" }, { ...cookie, "X-Requested-With": "XMLHttpRequest" });
+    ok(comCabecalho.status === 200 && comCabecalho.corpo.nome === "Teste Auth Cookie", "alteração via cookie COM o cabeçalho funciona");
+
+    const sair = await chamar("POST", "/auth/logout", null, null, cookie);
+    ok(sair.status === 200 && /cd_sessao=;/.test(sair.setCookie || "") , "logout apaga o cookie de sessão");
+
+    const convertido = await chamar("POST", "/auth/sessao", tk3, null);
+    ok(convertido.status === 200 && convertido.token === tk3, "token antigo (Bearer) é convertido em cookie sem novo login");
+    const semBearer = await chamar("POST", "/auth/sessao", null, null, { ...cookie, "X-Requested-With": "XMLHttpRequest" });
+    ok(semBearer.status === 400, "conversão exige o token antigo no cabeçalho");
   } finally {
     server.close();
   }

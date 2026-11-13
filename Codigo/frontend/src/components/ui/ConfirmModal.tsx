@@ -86,7 +86,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         onKeyDown={handleKeyDown}
         onClick={cancelar}
       >
-      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div
         className="confirm-modal"
         onClick={(e) => e.stopPropagation()}
