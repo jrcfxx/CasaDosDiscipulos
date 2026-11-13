@@ -19,6 +19,7 @@ import {
 } from "../../services/escalaService";
 import { SlotDrop, payloadDeDrop, MoverUnificadoPayload } from "./EscalaQuadroUnificado";
 import { ParalelismoMapa } from "../../utils/ministerioParalelismo";
+import { faixaHorario, plural, rotuloStatus, toIsoDate } from "../../utils/escalaDatas";
 
 function formatarHora(s: string) {
   return s || "";
@@ -65,7 +66,7 @@ function SemanaEventoCard({
   return (
     <article
       ref={setNodeRef}
-      className={`semana-evento tipo-${ev.tipo} ${isOver ? "drop-over" : ""} ${
+      className={`semana-evento tipo-${ev.tipo} status-${ev.status} ${isOver ? "drop-over" : ""} ${
         expandido ? "expandido" : "recolhido"
       }`}
     >
@@ -76,9 +77,10 @@ function SemanaEventoCard({
           onClick={() => onAbrirEvento(ev.id)}
         >
           <span>
-            {ev.horaInicio} · {ev.totais.totalPessoas}p
+            {faixaHorario(ev.horaInicio, ev.horaFim)} · {plural(ev.totais.totalPessoas, "pessoa")}
           </span>
           <strong>{ev.nome}</strong>
+          {ev.status === "rascunho" && <em className="evento-rascunho-tag">Rascunho</em>}
         </button>
         <button
           type="button"
@@ -178,6 +180,7 @@ export const EscalaVisaoSemana: React.FC<
   const [active, setActive] = useState<SlotMembro | null>(null);
   const [expandidos, setExpandidos] = useState<Set<number>>(() => new Set());
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  const hoje = toIsoDate(new Date());
 
   const todosIdsEventos = useMemo(
     () => (visao.dias || []).flatMap((d) => d.eventos.map((e) => e.id)),
@@ -231,8 +234,8 @@ export const EscalaVisaoSemana: React.FC<
     <section className="escala-visao-semana">
       <div className="quadro-toolbar">
         <p className="quadro-stats">
-          {visao.estatisticas?.totalEventos ?? 0} eventos · {visao.estatisticas?.pessoasUnicas ?? 0} pessoas
-          únicas
+          {plural(visao.estatisticas?.totalEventos ?? 0, "evento")} ·{" "}
+          {plural(visao.estatisticas?.pessoasUnicas ?? 0, "pessoa única", "pessoas únicas")}
         </p>
         <div className="quadro-toolbar-actions">
           {todosIdsEventos.length > 0 && (
@@ -255,14 +258,19 @@ export const EscalaVisaoSemana: React.FC<
       >
         <div className="semana-grade">
           {(visao.dias || []).map((dia) => (
-            <div key={dia.data} className="semana-coluna">
+            <div
+              key={dia.data}
+              className={`semana-coluna${dia.data === hoje ? " hoje" : ""}${dia.data < hoje ? " passado" : ""}`}
+            >
               <header className="semana-dia-header">
                 <button
                   type="button"
                   className="link-evento"
                   onClick={() => onAbrirDia?.(dia.data)}
+                  aria-label={`Abrir ${dia.diaDaSemana} ${dia.diaNumero}${dia.data === hoje ? " (hoje)" : ""}`}
                 >
-                  {dia.diaDaSemana.slice(0, 3)} {String(dia.diaNumero).padStart(2, "0")}
+                  <span className="semana-dia-nome">{dia.diaDaSemana.slice(0, 3)}</span>
+                  <span className="semana-dia-numero">{dia.diaNumero}</span>
                 </button>
               </header>
               <div className="semana-dia-body">
@@ -300,7 +308,7 @@ export const EscalaVisaoMesCalendario: React.FC<{
   onAbrirDia: (data: string) => void;
   onAbrirEvento: (id: number) => void;
 }> = ({ visao, onAbrirDia, onAbrirEvento }) => {
-  const hoje = toIsoDateLocal(new Date());
+  const hoje = toIsoDate(new Date());
   const offset = useMemo(() => {
     const primeiro = visao.dias?.[0]?.data;
     if (!primeiro) return 0;
@@ -336,12 +344,13 @@ export const EscalaVisaoMesCalendario: React.FC<{
           const visiveis = eventos.slice(0, MAX_EVENTOS_CELULA);
           const resto = eventos.length - visiveis.length;
           const ehHoje = dia.data === hoje;
+          const passado = dia.data < hoje;
           return (
             <div
               key={cel.key}
               className={`calendario-celula ${dia.temEventos ? "tem-evento clicavel" : "clicavel"}${
                 ehHoje ? " hoje" : ""
-              }`}
+              }${passado ? " passado" : ""}`}
               onClick={() => onAbrirDia(dia.data)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -351,19 +360,27 @@ export const EscalaVisaoMesCalendario: React.FC<{
               }}
               role="button"
               tabIndex={0}
-              aria-label={`${dia.diaDaSemana} ${dia.diaNumero}${
-                dia.temEventos ? `, ${dia.totalEventos} evento(s)` : ""
+              aria-label={`${dia.diaDaSemana} ${dia.diaNumero}${ehHoje ? " (hoje)" : ""}${
+                dia.temEventos ? `, ${plural(dia.totalEventos, "evento")}` : ""
               }`}
             >
               <span className="dia-numero">{dia.diaNumero}</span>
+              {/* No celular os nomes não cabem: mostra só a quantidade */}
+              {dia.temEventos && (
+                <span className="dia-contagem" aria-hidden>
+                  {dia.totalEventos}
+                </span>
+              )}
               {visiveis.length > 0 && (
                 <div className="dia-eventos">
                   {visiveis.map((ev) => (
                     <button
                       key={ev.id}
                       type="button"
-                      className={`dia-evento-nome tipo-${ev.tipo || "outro"}`}
-                      title={ev.nome}
+                      className={`dia-evento-nome tipo-${ev.tipo || "outro"} status-${ev.status || "publicada"}`}
+                      title={`${ev.horaInicio ? `${ev.horaInicio.slice(0, 5)} · ` : ""}${ev.nome}${
+                        ev.status === "rascunho" ? " (rascunho)" : ""
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         onAbrirEvento(ev.id);
@@ -384,18 +401,14 @@ export const EscalaVisaoMesCalendario: React.FC<{
       </div>
       {visao.estatisticas && (
         <p className="calendario-resumo">
-          {visao.estatisticas.totalEventos} eventos · {visao.estatisticas.pessoasUnicas} pessoas
-          únicas · veja o relatório abaixo
+          {plural(visao.estatisticas.totalEventos, "evento")} ·{" "}
+          {plural(visao.estatisticas.pessoasUnicas, "pessoa única", "pessoas únicas")}
         </p>
       )}
     </section>
   );
 };
 
-function toIsoDateLocal(d: Date) {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
 
 /** Lista accordion por dia (mês detalhado) */
 export const EscalaVisaoMesUnificada: React.FC<{
@@ -419,6 +432,7 @@ export const EscalaVisaoMesUnificada: React.FC<{
   const [expandidos, setExpandidos] = useState<Set<string>>(() => new Set());
   const [soComEventos, setSoComEventos] = useState(true);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  const hoje = toIsoDate(new Date());
 
   const diasFiltrados = useMemo(
     () => (visao.dias || []).filter((d) => (soComEventos ? d.temEventos : true)),
@@ -472,8 +486,8 @@ export const EscalaVisaoMesUnificada: React.FC<{
     <section className="escala-visao-mes-accordion">
       <div className="quadro-toolbar">
         <p className="quadro-stats">
-          {visao.estatisticas?.totalEventos ?? 0} eventos ·{" "}
-          {visao.estatisticas?.pessoasUnicas ?? 0} pessoas únicas
+          {plural(visao.estatisticas?.totalEventos ?? 0, "evento")} ·{" "}
+          {plural(visao.estatisticas?.pessoasUnicas ?? 0, "pessoa única", "pessoas únicas")}
         </p>
         <div className="quadro-toolbar-actions">
           <label className="mes-filtro-check">
@@ -506,7 +520,7 @@ export const EscalaVisaoMesUnificada: React.FC<{
                 key={dia.data}
                 className={`mes-dia-card ${aberto ? "expandido" : "recolhido"} ${
                   dia.temEventos ? "tem-eventos" : ""
-                }`}
+                }${dia.data === hoje ? " hoje" : ""}${dia.data < hoje ? " passado" : ""}`}
               >
                 <header className="mes-dia-header">
                   <button
@@ -518,14 +532,14 @@ export const EscalaVisaoMesUnificada: React.FC<{
                   >
                     <span className="mes-dia-chevron">{aberto ? "▼" : "▶"}</span>
                     <span className="mes-dia-titulo">
-                      {dia.diaDaSemana} {String(dia.diaNumero).padStart(2, "0")}
+                      {dia.diaDaSemana.charAt(0).toUpperCase() + dia.diaDaSemana.slice(1)}, {dia.diaNumero}
+                      {dia.data === hoje && <em className="mes-dia-hoje">hoje</em>}
                     </span>
                   </button>
                   <div className="mes-dia-resumo">
                     {dia.temEventos ? (
                       <span>
-                        {dia.totalEventos} evento{dia.totalEventos !== 1 ? "s" : ""} ·{" "}
-                        {dia.totalPessoas}p
+                        {plural(dia.totalEventos, "evento")} · {plural(dia.totalPessoas, "escalação", "escalações")}
                       </span>
                     ) : (
                       <span className="semana-vazio">Sem eventos</span>
@@ -549,7 +563,9 @@ export const EscalaVisaoMesUnificada: React.FC<{
                           className={`mes-preview-evento tipo-${ev.tipo}`}
                           onClick={() => onAbrirEvento(ev.id)}
                         >
-                          {ev.horaInicio} {ev.nome} · {ev.totais?.totalPessoas ?? 0}p · {ev.status}
+                          {faixaHorario(ev.horaInicio, ev.horaFim)} · {ev.nome} ·{" "}
+                          {plural(ev.totais?.totalPessoas ?? 0, "pessoa")}
+                          {ev.status !== "publicada" ? ` · ${rotuloStatus(ev.status)}` : ""}
                         </button>
                       </li>
                     ))}
@@ -575,11 +591,8 @@ export const EscalaVisaoMesUnificada: React.FC<{
                             >
                               {ev.nome}
                             </button>
-                            <span className="quadro-horario">
-                              {ev.horaInicio}
-                              {ev.horaFim ? ` – ${ev.horaFim}` : ""}
-                            </span>
-                            <span className={`status-badge status-${ev.status}`}>{ev.status}</span>
+                            <span className="quadro-horario">{faixaHorario(ev.horaInicio, ev.horaFim)}</span>
+                            <span className={`status-badge status-${ev.status}`}>{rotuloStatus(ev.status)}</span>
                           </header>
                           <div className="mes-evento-slots">
                             {slots.map(([key, slot]) => (
@@ -620,38 +633,52 @@ export const EscalaVisaoAnoPainel: React.FC<
   }
 > = ({ visao, onSelecionarMes, onAbrirEvento }) => {
   const MESES = [
-    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-    "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
   ];
+  const agora = new Date();
+  const mesAtual = agora.getMonth() + 1;
+  const anoAtual = agora.getFullYear();
   return (
     <section className="escala-visao-ano">
       <div className="ano-grade">
-        {visao.meses.map((m) => (
-          <button
-            key={m.mes}
-            type="button"
-            className={`ano-mes-card ${m.total_eventos > 0 ? "tem-eventos" : ""}`}
-            onClick={() => onSelecionarMes(m.mes)}
-          >
-            <span className="ano-mes-nome">{MESES[m.mes - 1]}</span>
-            <span className="ano-mes-total">{m.total_eventos} eventos</span>
-            <ul className="ano-mes-lista">
-              {m.eventos.slice(0, 3).map((ev: EscalaEvento) => (
-                <li key={ev.id_escala_evento}>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAbrirEvento(ev.id_escala_evento);
-                    }}
-                  >
-                    {formatarDataHora(ev.data_hora)} — {ev.titulo}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </button>
-        ))}
+        {visao.meses.map((m) => {
+          const atual = m.mes === mesAtual && visao.ano === anoAtual;
+          return (
+            // Card é um contêiner: o botão do mês e os botões dos eventos ficam lado a lado
+            // (botão dentro de botão é HTML inválido e confunde clique e leitor de tela)
+            <div
+              key={m.mes}
+              className={`ano-mes-card ${m.total_eventos > 0 ? "tem-eventos" : ""}${atual ? " atual" : ""}`}
+            >
+              <button type="button" className="ano-mes-abrir" onClick={() => onSelecionarMes(m.mes)}>
+                <span className="ano-mes-nome">{MESES[m.mes - 1]}</span>
+                <span className="ano-mes-total">
+                  {m.total_eventos > 0 ? plural(m.total_eventos, "evento") : "Sem eventos"}
+                </span>
+              </button>
+              {m.eventos.length > 0 && (
+                <ul className="ano-mes-lista">
+                  {m.eventos.slice(0, 3).map((ev: EscalaEvento) => (
+                    <li key={ev.id_escala_evento}>
+                      <button type="button" onClick={() => onAbrirEvento(ev.id_escala_evento)}>
+                        {formatarDataHora(ev.data_hora)} — {ev.titulo}
+                        {ev.status === "rascunho" ? " (rascunho)" : ""}
+                      </button>
+                    </li>
+                  ))}
+                  {m.eventos.length > 3 && (
+                    <li>
+                      <button type="button" className="ano-mes-mais" onClick={() => onSelecionarMes(m.mes)}>
+                        + {m.eventos.length - 3} no mês
+                      </button>
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

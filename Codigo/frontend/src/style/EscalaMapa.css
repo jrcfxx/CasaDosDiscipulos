@@ -32,10 +32,7 @@
   color: var(--primary-light, #ebebeb);
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--primary-teal, #02869b), var(--secondary-gold, #f4b002));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* Mesmo padrão dos outros títulos (o degradê teal→amarelo saía esverdeado e fora da marca) */
 }
 
 .escala-mapa-subtitulo {
@@ -249,7 +246,11 @@
   font-size: 1rem;
   color: var(--secondary-gold, #f4b002);
   margin: 0 0 0.5rem 0;
-  text-transform: capitalize;
+}
+
+/* Só a primeira letra em maiúscula ("Domingo, 22 de novembro"), não cada palavra ("De Novembro De") */
+.evento-hero-data::first-letter {
+  text-transform: uppercase;
 }
 
 .evento-hero-desc {

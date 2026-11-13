@@ -1816,16 +1816,18 @@
   font-weight: 700;
 }
 
-.status-rascunho {
-  background: rgba(255, 255, 255, 0.15);
+/* Só o SELO recebe cor de status (antes a regra pintava também os cards inteiros dos eventos) */
+.status-badge.status-rascunho {
+  background: rgba(244, 176, 2, 0.16);
+  color: var(--gold-500, #f4b002);
 }
 
-.status-publicada {
+.status-badge.status-publicada {
   background: rgba(2, 134, 155, 0.35);
 }
 
-.status-concluida {
-  background: rgba(80, 160, 80, 0.35);
+.status-badge.status-concluida {
+  background: rgba(155, 161, 162, 0.25);
 }
 
 .modal-conflitos .lista-conflitos {
@@ -2371,4 +2373,200 @@
 
 .mes-evento-slots .quadro-slot {
   margin-top: 0;
+}
+
+/* ==================== Refino das visões (dia, semana, mês, ano) ==================== */
+
+/* Eventos no calendário: alinhados à esquerda (antes centralizados, desalinhavam nomes curtos) */
+.dia-evento-nome {
+  text-align: left;
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+/* Rascunho: borda tracejada e itálico, para diferenciar do publicado */
+.dia-evento-nome.status-rascunho {
+  font-style: italic;
+  opacity: 0.8;
+  outline: 1px dashed rgba(244, 176, 2, 0.55);
+  outline-offset: -1px;
+}
+
+/* Dias passados mais discretos; hoje continua em destaque */
+.calendario-celula.passado:not(.hoje) {
+  opacity: 0.55;
+}
+.calendario-celula.passado:not(.hoje):hover {
+  opacity: 0.85;
+}
+
+/* Contagem de eventos: só aparece no celular, onde os nomes não cabem */
+.dia-contagem {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .calendario-celula .dia-eventos,
+  .calendario-celula .dia-evento-mais {
+    display: none;
+  }
+
+  .calendario-celula .dia-contagem {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    margin-top: 0.3rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--teal-500, #02869b);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  /* Botões do topo lado a lado (antes empilhavam e ocupavam meia tela) */
+  .escala-header-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* Semana: cabeçalho do dia em duas linhas, hoje destacado, passado discreto */
+.semana-dia-header .link-evento {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  text-transform: capitalize;
+}
+.semana-dia-nome {
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.semana-dia-numero {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.semana-coluna.hoje {
+  border-color: rgba(244, 176, 2, 0.6);
+}
+.semana-coluna.hoje .semana-dia-numero {
+  color: var(--gold-500, #f4b002);
+}
+.semana-coluna.passado {
+  opacity: 0.6;
+}
+.semana-coluna.passado:hover {
+  opacity: 0.9;
+}
+
+/* Selo de rascunho nos cards (semana) */
+.evento-rascunho-tag {
+  display: inline-block;
+  margin-top: 0.2rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--gold-500, #f4b002);
+  border: 1px dashed rgba(244, 176, 2, 0.6);
+}
+.semana-evento.status-rascunho {
+  border: 1px dashed rgba(244, 176, 2, 0.55);
+}
+
+/* Mês detalhado: hoje e passado */
+.mes-dia-card.hoje {
+  border-color: rgba(244, 176, 2, 0.6);
+}
+.mes-dia-card.passado:not(.hoje) {
+  opacity: 0.65;
+}
+.mes-dia-hoje {
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 700;
+  color: #111;
+  background: var(--gold-500, #f4b002);
+}
+
+/* Ano: o card virou contêiner (sem botão dentro de botão) */
+.ano-mes-card {
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+}
+.ano-mes-card.atual {
+  border-color: rgba(244, 176, 2, 0.6);
+}
+.ano-mes-abrir {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ano-mes-abrir:hover .ano-mes-nome {
+  color: var(--teal-200, #99d0d8);
+}
+.ano-mes-lista li + li {
+  margin-top: 0.2rem;
+}
+.ano-mes-lista button {
+  font-family: inherit;
+  line-height: 1.35;
+}
+.ano-mes-lista .ano-mes-mais {
+  color: var(--gold-500, #f4b002);
+  font-weight: 600;
+}
+
+/* Semana: número do dia neutro; o amarelo fica só para hoje */
+.semana-dia-header .link-evento {
+  color: var(--primary-light, #ebebeb);
+}
+.semana-coluna.hoje .semana-dia-header .link-evento {
+  color: var(--gold-500, #f4b002);
+}
+
+@media (max-width: 900px) {
+  /* Dias sem evento ficam numa linha só, em vez de uma caixa alta com "—" */
+  .semana-coluna:not(:has(.semana-evento)) {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+  }
+  .semana-coluna:not(:has(.semana-evento)) .semana-dia-header {
+    border-bottom: none;
+    padding: 0.35rem 0.75rem;
+  }
+  .semana-coluna:not(:has(.semana-evento)) .semana-dia-header .link-evento {
+    flex-direction: row;
+    gap: 0.4rem;
+  }
+  .semana-coluna:not(:has(.semana-evento)) .semana-dia-body {
+    padding: 0.35rem 0.75rem;
+  }
+  .semana-coluna:not(:has(.semana-evento)) .semana-vazio::after {
+    content: " sem eventos";
+  }
+  .semana-coluna:not(:has(.semana-evento)) .semana-vazio {
+    font-size: 0.75rem;
+  }
 }

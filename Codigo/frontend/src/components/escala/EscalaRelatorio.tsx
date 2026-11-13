@@ -187,7 +187,7 @@ const EscalaRelatorio: React.FC<Props> = ({ titulo, subtitulo, estatisticas, onA
                         <strong>{p.nome}</strong>
                         <span>
                           {p.totalEscalas}x
-                          {p.diasEscalado != null ? ` · ${p.diasEscalado} dia(s)` : ""}
+                          {p.diasEscalado != null ? ` · ${p.diasEscalado} ${p.diasEscalado === 1 ? "dia" : "dias"}` : ""}
                           {p.funcoesPrincipais?.[0]
                             ? ` · ${p.funcoesPrincipais.map((f) => f.nome).join(", ")}`
                             : ""}
@@ -342,7 +342,7 @@ const EscalaRelatorio: React.FC<Props> = ({ titulo, subtitulo, estatisticas, onA
                           >
                             {formatarDataCurta(ev.data)}
                             {ev.horaInicio ? ` · ${String(ev.horaInicio).slice(0, 5)}` : ""} — {ev.nome}
-                            {ev.vagasDisponiveis != null ? ` (${ev.vagasDisponiveis} vaga(s))` : ""}
+                            {ev.vagasDisponiveis != null ? ` (${ev.vagasDisponiveis} ${ev.vagasDisponiveis === 1 ? "vaga" : "vagas"})` : ""}
                           </button>
                           {ev.slotsVazios && ev.slotsVazios.length > 0 && (
                             <span className="escala-relatorio__slots-faltando">

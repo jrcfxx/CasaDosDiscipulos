@@ -555,7 +555,7 @@ class EscalaService {
       return { ...ar, atribuicoes: attrs, podeGerenciar: !!podeGerenciarArea };
     });
 
-    return { ...evento, areas: areasComAtribuicoes, ministerios };
+    return { ...evento, areas: this._ocultarTelefonesSeMembro(areasComAtribuicoes, tipoUsuario), ministerios };
   }
 
   /**
@@ -720,8 +720,20 @@ class EscalaService {
         }
         return { ...ar, podeGerenciar: !!podeGerenciar };
       });
-      return formatarEventoUnificado({ ...ev, areas });
+      return formatarEventoUnificado({ ...ev, areas: this._ocultarTelefonesSeMembro(areas, tipoUsuario) });
     });
+  }
+
+  /**
+   * Telefone é dado pessoal: membros veem a escala, mas não o celular de todo mundo.
+   * Admin e líderes continuam vendo (precisam contatar a equipe).
+   */
+  _ocultarTelefonesSeMembro(areas, tipoUsuario) {
+    if (tipoUsuario === USER_TYPES.ADMIN || tipoUsuario === USER_TYPES.LEADER) return areas;
+    return (areas || []).map((ar) => ({
+      ...ar,
+      atribuicoes: (ar.atribuicoes || []).map(({ usuario_telefone: _t, ...resto }) => resto),
+    }));
   }
 
   async _idsMinisteriosLider(idUsuario, tipoUsuario) {

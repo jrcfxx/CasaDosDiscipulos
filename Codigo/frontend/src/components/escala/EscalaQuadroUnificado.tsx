@@ -20,6 +20,7 @@ import {
   ParalelismoMapa,
   permiteParalelismoMinisterios,
 } from "../../utils/ministerioParalelismo";
+import { faixaHorario, formatarTelefone, plural, rotuloStatus } from "../../utils/escalaDatas";
 
 export interface MoverUnificadoPayload {
   membroEscalaOrigemId: number;
@@ -108,7 +109,7 @@ export function ChipPessoa({
           {compacto ? membro.usuario.nome.split(" ")[0] : membro.usuario.nome}
         </span>
         {!compacto && membro.usuario.telefone && (
-          <span className="quadro-chip-tel">{membro.usuario.telefone}</span>
+          <span className="quadro-chip-tel">{formatarTelefone(membro.usuario.telefone)}</span>
         )}
       </span>
       {!compacto && (onEditar || onRemover) && (
@@ -300,7 +301,8 @@ const EscalaQuadroUnificado: React.FC<Props> = ({
       <div className="quadro-toolbar">
         {visao.estatisticas && (
           <p className="quadro-stats">
-            {visao.estatisticas.totalEventos} eventos · {visao.estatisticas.pessoasUnicas} pessoas
+            {plural(visao.estatisticas.totalEventos, "evento")} ·{" "}
+            {plural(visao.estatisticas.pessoasUnicas, "pessoa")}
           </p>
         )}
         <div className="quadro-toolbar-actions">
@@ -335,17 +337,14 @@ const EscalaQuadroUnificado: React.FC<Props> = ({
                         {ev.nome}
                       </button>
                     </h3>
-                    <span className="quadro-horario">
-                      {ev.horaInicio}
-                      {ev.horaFim ? ` – ${ev.horaFim}` : ""}
-                    </span>
+                    <span className="quadro-horario">{faixaHorario(ev.horaInicio, ev.horaFim)}</span>
                     {ev.totais && (
                       <span className="quadro-totais">
-                        {ev.totais.vagasPreenchidas}/{ev.totais.vagasTotal} vagas
+                        {ev.totais.vagasPreenchidas}/{ev.totais.vagasTotal} vagas preenchidas
                       </span>
                     )}
                   </div>
-                  <span className={`status-badge status-${ev.status}`}>{ev.status}</span>
+                  <span className={`status-badge status-${ev.status}`}>{rotuloStatus(ev.status)}</span>
                 </header>
                 {(slotsOrdenados.get(ev.id) || []).map(([key, slot]) => (
                   <SlotDrop

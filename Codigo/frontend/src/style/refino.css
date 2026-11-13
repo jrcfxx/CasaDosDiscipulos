@@ -214,19 +214,19 @@ body:not(#_) :is(.badge, .badge-status, .status-badge, .btn-status, .evento-stat
   letter-spacing: 0.02em;
 }
 
-body:not(#_) :is(.badge-active, .btn-status.active, .status-publicada) {
+body:not(#_) :is(.badge-active, .btn-status.active, .status-badge.status-publicada) {
   background: var(--teal-50);
   color: var(--teal-700);
   border-color: var(--teal-100);
 }
 
-body:not(#_) :is(.badge-inactive, .badge-inativo, .btn-status.inactive, .status-concluida) {
+body:not(#_) :is(.badge-inactive, .badge-inativo, .btn-status.inactive, .status-badge.status-concluida) {
   background: var(--n-100);
   color: var(--n-600);
   border-color: var(--n-200);
 }
 
-body:not(#_) .status-rascunho {
+body:not(#_) .status-badge.status-rascunho {
   background: var(--gold-50);
   color: var(--gold-700);
   border-color: var(--gold-100);

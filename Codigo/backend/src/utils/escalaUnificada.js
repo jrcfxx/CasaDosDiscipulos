@@ -206,6 +206,9 @@ export function formatarEventoUnificado(evento, { incluirSlotsVazios = true } = 
   };
 }
 
+/** "1 evento" / "3 eventos" */
+const qtd = (n, singular, plural) => `${n} ${n === 1 ? singular : plural}`;
+
 export function estatisticasEventos(eventosUnificados) {
   const hoje = new Date();
   hoje.setHours(12, 0, 0, 0);
@@ -377,13 +380,13 @@ export function estatisticasEventos(eventosUnificados) {
     totalEventosIncompletos: eventosIncompletos.length,
     alertas: [
       eventosSemPessoas.length > 0
-        ? `${eventosSemPessoas.length} evento(s) sem ninguém escalado`
+        ? `${qtd(eventosSemPessoas.length, "evento", "eventos")} sem ninguém escalado`
         : null,
       eventosIncompletos.length > 0
-        ? `${eventosIncompletos.length} evento(s) com vagas em aberto`
+        ? `${qtd(eventosIncompletos.length, "evento", "eventos")} com vagas em aberto`
         : null,
       (porStatus.get("rascunho") || 0) > 0
-        ? `${porStatus.get("rascunho")} evento(s) ainda em rascunho`
+        ? `${qtd(porStatus.get("rascunho"), "evento", "eventos")} ainda em rascunho`
         : null,
     ].filter(Boolean),
   };

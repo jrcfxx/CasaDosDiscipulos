@@ -38,6 +38,16 @@ import EscalaTemplatesModal from "../components/escala/EscalaTemplatesModal";
 import { useEscalaUndo } from "../hooks/useEscalaUndo";
 import { getErrorMessage } from "../utils/errorUtils";
 import { resumirAvisosCopia } from "../utils/avisosEscala";
+import {
+  toIsoDate,
+  inicioSemana,
+  referenciaDe,
+  dataDoMes,
+  somarDias,
+  tituloSemana,
+  tituloDia,
+  rotuloStatus,
+} from "../utils/escalaDatas";
 import { mapaParalelismoDeMinisterios } from "../utils/ministerioParalelismo";
 import type { Ministerio } from "../services/ministerioService";
 import ModalEvento, { type FormEvento } from "../components/escala/ModalEvento";
@@ -53,15 +63,6 @@ function pad(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function toIsoDate(d: Date) {
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function inicioSemana(d: Date) {
-  const x = new Date(d);
-  x.setDate(x.getDate() - x.getDay());
-  return toIsoDate(x);
-}
 
 function formatarDataHora(s: string, fim?: string | null) {
   const d = new Date(s);
@@ -712,53 +713,44 @@ const EscalaUser: React.FC = () => {
 
   const navLabel =
     visao === "dia"
-      ? new Date(`${dataDia}T12:00:00`).toLocaleDateString("pt-BR", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        })
+      ? tituloDia(dataDia)
       : visao === "semana"
-        ? `Semana de ${new Date(`${dataSemana}T12:00:00`).toLocaleDateString("pt-BR")}`
+        ? tituloSemana(dataSemana)
         : visao === "ano"
           ? String(ano)
           : `${MESES[mes - 1]} ${ano}`;
 
-  const navegarAnterior = () => {
+  /**
+   * Vai para uma data e mantém TODAS as visões no mesmo período
+   * (antes cada visão guardava a sua data: avançar a semana e trocar para Mês voltava ao mês antigo).
+   */
+  const irPara = useCallback((data: string) => {
+    const ref = referenciaDe(data);
+    setAno(ref.ano);
+    setMes(ref.mes);
+    setDataDia(ref.dataDia);
+    setDataSemana(ref.dataSemana);
+  }, []);
+
+  const navegar = (passo: 1 | -1) => {
     if (visao === "mes" || visao === "mes_detalhado") {
-      if (mes === 1) {
-        setMes(12);
-        setAno((a) => a - 1);
-      } else setMes((m) => m - 1);
+      const alvo = new Date(ano, mes - 1 + passo, 1);
+      irPara(dataDoMes(alvo.getFullYear(), alvo.getMonth() + 1));
     } else if (visao === "dia") {
-      const d = new Date(`${dataDia}T12:00:00`);
-      d.setDate(d.getDate() - 1);
-      setDataDia(toIsoDate(d));
+      irPara(somarDias(dataDia, passo));
     } else if (visao === "semana") {
-      const d = new Date(`${dataSemana}T12:00:00`);
-      d.setDate(d.getDate() - 7);
-      setDataSemana(toIsoDate(d));
+      irPara(somarDias(dataSemana, 7 * passo));
     } else {
-      setAno((a) => a - 1);
+      irPara(dataDoMes(ano + passo, mes));
     }
   };
+  const navegarAnterior = () => navegar(-1);
+  const navegarProximo = () => navegar(1);
 
-  const navegarProximo = () => {
-    if (visao === "mes" || visao === "mes_detalhado") {
-      if (mes === 12) {
-        setMes(1);
-        setAno((a) => a + 1);
-      } else setMes((m) => m + 1);
-    } else if (visao === "dia") {
-      const d = new Date(`${dataDia}T12:00:00`);
-      d.setDate(d.getDate() + 1);
-      setDataDia(toIsoDate(d));
-    } else if (visao === "semana") {
-      const d = new Date(`${dataSemana}T12:00:00`);
-      d.setDate(d.getDate() + 7);
-      setDataSemana(toIsoDate(d));
-    } else {
-      setAno((a) => a + 1);
-    }
+  /** Abre um dia específico na visão Dia (a partir do mês ou da semana) */
+  const abrirDia = (data: string) => {
+    irPara(data);
+    setVisao("dia");
   };
 
   return (
@@ -812,13 +804,7 @@ const EscalaUser: React.FC = () => {
           <button
             type="button"
             className="btn-mapa"
-            onClick={() => {
-              const hoje = new Date();
-              setAno(hoje.getFullYear());
-              setMes(hoje.getMonth() + 1);
-              setDataDia(toIsoDate(hoje));
-              setDataSemana(inicioSemana(hoje));
-            }}
+            onClick={() => irPara(toIsoDate(new Date()))}
           >
             Hoje
           </button>
@@ -832,10 +818,7 @@ const EscalaUser: React.FC = () => {
               <>
                 <EscalaVisaoMesCalendario
                   visao={visaoMesUnificada}
-                  onAbrirDia={(data) => {
-                    setDataDia(data);
-                    setVisao("dia");
-                  }}
+                  onAbrirDia={abrirDia}
                   onAbrirEvento={abrirEvento}
                 />
                 {podeEditar && (
@@ -853,10 +836,7 @@ const EscalaUser: React.FC = () => {
               <>
                 <EscalaVisaoMesUnificada
                   visao={visaoMesUnificada}
-                  onAbrirDia={(data) => {
-                    setDataDia(data);
-                    setVisao("dia");
-                  }}
+                  onAbrirDia={abrirDia}
                   onAbrirEvento={abrirEvento}
                   podeEditar={podeEditar}
                   paralelismoMapa={paralelismoMapa}
@@ -911,11 +891,7 @@ const EscalaUser: React.FC = () => {
               {podeEditar && (
                 <EscalaRelatorio
                   titulo={`Relatório do dia`}
-                  subtitulo={new Date(`${dataDia}T12:00:00`).toLocaleDateString("pt-BR", {
-                    weekday: "long",
-                    day: "2-digit",
-                    month: "long",
-                  })}
+                  subtitulo={tituloDia(dataDia)}
                   estatisticas={visaoDiaUnificada.estatisticas}
                   onAbrirEvento={abrirEvento}
                 />
@@ -927,10 +903,7 @@ const EscalaUser: React.FC = () => {
               <EscalaVisaoSemana
                 visao={visaoSemanaUnificada}
                 onAbrirEvento={abrirEvento}
-                onAbrirDia={(data) => {
-                  setDataDia(data);
-                  setVisao("dia");
-                }}
+                onAbrirDia={abrirDia}
                 podeEditar={podeEditar}
                 paralelismoMapa={paralelismoMapa}
                 onMover={handleMoverUnificado}
@@ -940,7 +913,7 @@ const EscalaUser: React.FC = () => {
               {podeEditar && (
                 <EscalaRelatorio
                   titulo="Relatório da semana"
-                  subtitulo={`De ${new Date(`${visaoSemanaUnificada.dataInicio}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${visaoSemanaUnificada.dataFim}T12:00:00`).toLocaleDateString("pt-BR")}`}
+                  subtitulo={tituloSemana(visaoSemanaUnificada.dataInicio)}
                   estatisticas={visaoSemanaUnificada.estatisticas}
                   onAbrirEvento={abrirEvento}
                 />
@@ -951,7 +924,7 @@ const EscalaUser: React.FC = () => {
               <EscalaVisaoAnoPainel
                 visao={visaoAno}
                 onSelecionarMes={(m) => {
-                  setMes(m);
+                  irPara(dataDoMes(ano, m));
                   setVisao("mes");
                 }}
                 onAbrirEvento={abrirEvento}
@@ -972,7 +945,7 @@ const EscalaUser: React.FC = () => {
                 </span>
                 {eventoSelecionado.status && (
                   <span className={`status-badge status-${eventoSelecionado.status}`}>
-                    {eventoSelecionado.status}
+                    {rotuloStatus(eventoSelecionado.status)}
                   </span>
                 )}
               </div>

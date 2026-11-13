@@ -207,7 +207,18 @@ async function main() {
   const pessoasTpl = (aplicado.dados.areas || []).flatMap((a) => a.atribuicoes.map((x) => x.id_usuario));
   ok(!pessoasTpl.includes(caio), "aplicar modelo NÃO leva quem saiu do ministério da área");
 
-  // ---------- 12. Desfazer ----------
+  // ---------- 12. Privacidade: telefone só para admin/líder ----------
+  await knex("usuario").where({ id_usuario: bia }).update({ telefone: "31988887777" });
+  const temTelefone = (obj) => JSON.stringify(obj).includes("31988887777");
+  const diaMembro = await EscalaService.getVisualizacaoDia("2032-03-07", ana, USER_TYPES.MEMBER);
+  const diaAdmin = await EscalaService.getVisualizacaoDia("2032-03-07", admin, ADMIN);
+  ok(!temTelefone(diaMembro) && temTelefone(diaAdmin), "visão do dia: membro NÃO recebe telefones; admin recebe");
+  const evMembro = await EscalaService.getEventoCompleto(domingo.id, ana, USER_TYPES.MEMBER).catch(() => null);
+  ok(evMembro === null || !temTelefone(evMembro), "detalhe do evento: membro NÃO recebe telefones");
+  const mesMembro = await EscalaService.getVisualizacaoMes(2032, 3, "completo", ana, USER_TYPES.MEMBER);
+  ok(!temTelefone(mesMembro), "mês detalhado: membro NÃO recebe telefones");
+
+  // ---------- 13. Desfazer ----------
   const biaAttr = await knex("escala_atribuicao").where({ id_escala_area: aLouvor.id_escala_area, id_usuario: bia }).first();
   await EscalaService.removeAtribuicao(biaAttr.id_escala_atribuicao, admin, ADMIN);
   // Enquanto isso, Bia foi escalada em outro evento no mesmo horário
