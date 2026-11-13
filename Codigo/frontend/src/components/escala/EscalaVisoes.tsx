@@ -19,7 +19,7 @@ import {
 } from "../../services/escalaService";
 import { SlotDrop, payloadDeDrop, MoverUnificadoPayload } from "./EscalaQuadroUnificado";
 import { ParalelismoMapa } from "../../utils/ministerioParalelismo";
-import { faixaHorario, plural, rotuloStatus, toIsoDate } from "../../utils/escalaDatas";
+import { faixaHorario, plural, tituloSemana, toIsoDate } from "../../utils/escalaDatas";
 
 function formatarHora(s: string) {
   return s || "";
@@ -177,20 +177,24 @@ export const EscalaVisaoDia: React.FC<
   </section>
 );
 
+/**
+ * Semanas em sequência (o líder escolhe o intervalo de datas). Todas ficam no MESMO quadro de
+ * arrastar: dá para levar uma pessoa de um evento para outro em qualquer semana do intervalo.
+ */
 export const EscalaVisaoSemana: React.FC<
   PropsComuns & {
-    visao: VisualizacaoSemana;
+    semanas: VisualizacaoSemana[];
     onAbrirDia?: (data: string) => void;
     podeEditar?: boolean;
     paralelismoMapa?: ParalelismoMapa;
     onMover?: (payload: MoverUnificadoPayload) => Promise<void>;
     onEscalar?: (eventoId: number, slot: SlotInstrumento) => void;
-    onCopiarSemana?: () => void;
+    onCopiarSemana?: (dataInicio: string) => void;
     /** Mensagem quando soltar sobre o card não tem área compatível */
     onAviso?: (msg: string) => void;
   }
 > = ({
-  visao,
+  semanas,
   onAbrirEvento,
   onAbrirDia,
   podeEditar,
@@ -200,14 +204,23 @@ export const EscalaVisaoSemana: React.FC<
   onCopiarSemana,
   onAviso,
 }) => {
+  const todosDias = useMemo(() => semanas.flatMap((s) => s.dias || []), [semanas]);
+  const totalEventos = todosDias.reduce((n, d) => n + d.eventos.length, 0);
+  const pessoasUnicas = useMemo(() => {
+    const ids = new Set<number>();
+    for (const d of todosDias)
+      for (const e of d.eventos)
+        for (const s of Object.values(e.instrumentos || {})) for (const m of s.membros) ids.add(m.usuario.id);
+    return ids.size;
+  }, [todosDias]);
   const [active, setActive] = useState<SlotMembro | null>(null);
   const [expandidos, setExpandidos] = useState<Set<number>>(() => new Set());
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
   const hoje = toIsoDate(new Date());
 
   const todosIdsEventos = useMemo(
-    () => (visao.dias || []).flatMap((d) => d.eventos.map((e) => e.id)),
-    [visao.dias]
+    () => todosDias.flatMap((d) => d.eventos.map((e) => e.id)),
+    [todosDias]
   );
 
   const todosExpandidos =
@@ -242,7 +255,7 @@ export const EscalaVisaoSemana: React.FC<
     if (!slot && dest.evento) {
       // Soltou sobre o card (evento recolhido): vai para o MESMO ministério de origem.
       // Antes caía na primeira área do evento, que podia ser de outro ministério.
-      const origem = (visao.dias || [])
+      const origem = todosDias
         .flatMap((d) => d.eventos)
         .flatMap((e) => Object.values(e.instrumentos || {}))
         .find((s) => s.membros.some((m) => m.membroEscalaId === membro.membroEscalaId));
@@ -267,18 +280,16 @@ export const EscalaVisaoSemana: React.FC<
     <section className="escala-visao-semana">
       <div className="quadro-toolbar">
         <p className="quadro-stats">
-          {plural(visao.estatisticas?.totalEventos ?? 0, "evento")} ·{" "}
-          {plural(visao.estatisticas?.pessoasUnicas ?? 0, "pessoa única", "pessoas únicas")}
+          {plural(semanas.length, "semana")} · {plural(totalEventos, "evento")} ·{" "}
+          {plural(pessoasUnicas, "pessoa", "pessoas")}
+          {podeEditar && totalEventos > 0 && (
+            <span className="quadro-dica"> · Expanda os eventos e arraste as pessoas entre eles</span>
+          )}
         </p>
         <div className="quadro-toolbar-actions">
           {todosIdsEventos.length > 0 && (
-            <button type="button" className="btn-mapa" onClick={expandirOuRecolherTudo}>
+            <button type="button" className="esc-btn esc-btn--fantasma" onClick={expandirOuRecolherTudo}>
               {todosExpandidos ? "Recolher tudo" : "Expandir tudo"}
-            </button>
-          )}
-          {onCopiarSemana && (
-            <button type="button" className="btn-mapa" onClick={onCopiarSemana}>
-              Copiar semana
             </button>
           )}
         </div>
@@ -289,8 +300,22 @@ export const EscalaVisaoSemana: React.FC<
         onDragEnd={handleDragEnd}
         onDragCancel={() => setActive(null)}
       >
+        {semanas.map((semana) => (
+        <section key={semana.dataInicio} className="semana-bloco" aria-label={tituloSemana(semana.dataInicio)}>
+          <header className="semana-bloco__topo">
+            <h3 className="semana-bloco__titulo">{tituloSemana(semana.dataInicio)}</h3>
+            {onCopiarSemana && (
+              <button
+                type="button"
+                className="esc-btn esc-btn--fantasma semana-bloco__copiar"
+                onClick={() => onCopiarSemana(semana.dataInicio)}
+              >
+                Copiar semana
+              </button>
+            )}
+          </header>
         <div className="semana-grade">
-          {(visao.dias || []).map((dia) => (
+          {(semana.dias || []).map((dia) => (
             <div
               key={dia.data}
               className={`semana-coluna${dia.data === hoje ? " hoje" : ""}${dia.data < hoje ? " passado" : ""}`}
@@ -324,6 +349,8 @@ export const EscalaVisaoSemana: React.FC<
             </div>
           ))}
         </div>
+        </section>
+        ))}
         <DragOverlay>
           {active ? <div className="dnd-overlay-chip">{active.usuario.nome}</div> : null}
         </DragOverlay>
@@ -442,222 +469,6 @@ export const EscalaVisaoMesCalendario: React.FC<{
   );
 };
 
-
-/** Lista accordion por dia (mês detalhado) */
-export const EscalaVisaoMesUnificada: React.FC<{
-  visao: VisualizacaoMes;
-  onAbrirDia: (data: string) => void;
-  onAbrirEvento: (id: number) => void;
-  podeEditar?: boolean;
-  paralelismoMapa?: ParalelismoMapa;
-  onMover?: (payload: MoverUnificadoPayload) => Promise<void>;
-  onEscalar?: (eventoId: number, slot: SlotInstrumento) => void;
-}> = ({
-  visao,
-  onAbrirDia,
-  onAbrirEvento,
-  podeEditar,
-  paralelismoMapa = {},
-  onMover,
-  onEscalar,
-}) => {
-  const [active, setActive] = useState<SlotMembro | null>(null);
-  const [expandidos, setExpandidos] = useState<Set<string>>(() => new Set());
-  const [soComEventos, setSoComEventos] = useState(true);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
-  const hoje = toIsoDate(new Date());
-
-  const diasFiltrados = useMemo(
-    () => (visao.dias || []).filter((d) => (soComEventos ? d.temEventos : true)),
-    [visao.dias, soComEventos]
-  );
-
-  const datasComEventos = useMemo(
-    () => diasFiltrados.filter((d) => d.temEventos).map((d) => d.data),
-    [diasFiltrados]
-  );
-
-  const todosExpandidos =
-    datasComEventos.length > 0 && datasComEventos.every((d) => expandidos.has(d));
-
-  const toggleDia = (data: string) => {
-    setExpandidos((prev) => {
-      const next = new Set(prev);
-      if (next.has(data)) next.delete(data);
-      else next.add(data);
-      return next;
-    });
-  };
-
-  const expandirOuRecolherTudo = () => {
-    if (todosExpandidos) setExpandidos(new Set());
-    else setExpandidos(new Set(datasComEventos));
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    setActive(null);
-    if (!onMover) return;
-    const membro = event.active.data.current?.membro as SlotMembro | undefined;
-    const dest = event.over?.data.current as
-      | { eventoId: number; slot?: SlotInstrumento; evento?: EventoUnificado }
-      | undefined;
-    if (!membro || !dest) return;
-    let slot = dest.slot;
-    if (!slot && dest.evento) {
-      const slots = Object.values(dest.evento.instrumentos || {});
-      slot =
-        slots.find((s) => s.tipo === membro.tipoSlot) ||
-        slots.find((s) => s.id_escala_area === membro.id_escala_area) ||
-        slots[0];
-    }
-    if (!slot) return;
-    if (membro.id_escala_area === slot.id_escala_area && membro.tipoSlot === slot.tipo) return;
-    await onMover(payloadDeDrop(membro, { eventoId: dest.eventoId, slot }));
-  };
-
-  return (
-    <section className="escala-visao-mes-accordion">
-      <div className="quadro-toolbar">
-        <p className="quadro-stats">
-          {plural(visao.estatisticas?.totalEventos ?? 0, "evento")} ·{" "}
-          {plural(visao.estatisticas?.pessoasUnicas ?? 0, "pessoa única", "pessoas únicas")}
-        </p>
-        <div className="quadro-toolbar-actions">
-          <label className="mes-filtro-check">
-            <input
-              type="checkbox"
-              checked={soComEventos}
-              onChange={(e) => setSoComEventos(e.target.checked)}
-            />
-            Só dias com eventos
-          </label>
-          {datasComEventos.length > 0 && (
-            <button type="button" className="btn-mapa" onClick={expandirOuRecolherTudo}>
-              {todosExpandidos ? "Recolher tudo" : "Expandir tudo"}
-            </button>
-          )}
-        </div>
-      </div>
-
-      <DndContext
-        sensors={sensors}
-        onDragStart={(e) => setActive((e.active.data.current?.membro as SlotMembro) || null)}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setActive(null)}
-      >
-        <div className="mes-lista-dias">
-          {diasFiltrados.map((dia) => {
-            const aberto = expandidos.has(dia.data);
-            return (
-              <article
-                key={dia.data}
-                className={`mes-dia-card ${aberto ? "expandido" : "recolhido"} ${
-                  dia.temEventos ? "tem-eventos" : ""
-                }${dia.data === hoje ? " hoje" : ""}${dia.data < hoje ? " passado" : ""}`}
-              >
-                <header className="mes-dia-header">
-                  <button
-                    type="button"
-                    className="mes-dia-toggle"
-                    aria-expanded={aberto}
-                    onClick={() => (dia.temEventos ? toggleDia(dia.data) : undefined)}
-                    disabled={!dia.temEventos}
-                  >
-                    <span className="mes-dia-chevron">{aberto ? "▼" : "▶"}</span>
-                    <span className="mes-dia-titulo">
-                      {dia.diaDaSemana.charAt(0).toUpperCase() + dia.diaDaSemana.slice(1)}, {dia.diaNumero}
-                      {dia.data === hoje && <em className="mes-dia-hoje">hoje</em>}
-                    </span>
-                  </button>
-                  <div className="mes-dia-resumo">
-                    {dia.temEventos ? (
-                      <span>
-                        {plural(dia.totalEventos, "evento")} · {plural(dia.totalPessoas, "escalação", "escalações")}
-                      </span>
-                    ) : (
-                      <span className="semana-vazio">Sem eventos</span>
-                    )}
-                    <button
-                      type="button"
-                      className="btn-mapa mes-abrir-dia"
-                      onClick={() => onAbrirDia(dia.data)}
-                    >
-                      Ver dia
-                    </button>
-                  </div>
-                </header>
-
-                {!aberto && dia.temEventos && (
-                  <ul className="mes-dia-preview">
-                    {dia.eventos.map((ev) => (
-                      <li key={ev.id}>
-                        <button
-                          type="button"
-                          className={`mes-preview-evento tipo-${ev.tipo}`}
-                          onClick={() => onAbrirEvento(ev.id)}
-                        >
-                          {faixaHorario(ev.horaInicio, ev.horaFim)} · {ev.nome} ·{" "}
-                          {plural(ev.totais?.totalPessoas ?? 0, "pessoa")}
-                          {ev.status !== "publicada" ? ` · ${rotuloStatus(ev.status)}` : ""}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {aberto && (
-                  <div className="mes-dia-corpo">
-                    {dia.eventos.map((ev) => {
-                      const slots = Object.entries(ev.instrumentos || {}).sort(
-                        (a, b) => (a[1].ordem || 0) - (b[1].ordem || 0)
-                      );
-                      return (
-                        <article
-                          key={ev.id}
-                          className={`mes-evento-bloco tipo-${ev.tipo} status-${ev.status}`}
-                        >
-                          <header className="mes-evento-cabecalho">
-                            <button
-                              type="button"
-                              className="link-evento"
-                              onClick={() => onAbrirEvento(ev.id)}
-                            >
-                              {ev.nome}
-                            </button>
-                            <span className="quadro-horario">{faixaHorario(ev.horaInicio, ev.horaFim)}</span>
-                            <span className={`status-badge status-${ev.status}`}>{rotuloStatus(ev.status)}</span>
-                          </header>
-                          <div className="mes-evento-slots">
-                            {slots.map(([key, slot]) => (
-                              <SlotDrop
-                                key={key}
-                                eventoId={ev.id}
-                                slotKey={key}
-                                slot={slot}
-                                instrumentosDoEvento={Object.values(ev.instrumentos || {})}
-                                paralelismoMapa={paralelismoMapa}
-                                podeEditar={!!podeEditar}
-                                compacto
-                                onEscalar={() => onEscalar?.(ev.id, slot)}
-                              />
-                            ))}
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
-              </article>
-            );
-          })}
-        </div>
-        <DragOverlay>
-          {active ? <div className="dnd-overlay-chip">{active.usuario.nome}</div> : null}
-        </DragOverlay>
-      </DndContext>
-    </section>
-  );
-};
 
 export const EscalaVisaoAnoPainel: React.FC<
   PropsComuns & {

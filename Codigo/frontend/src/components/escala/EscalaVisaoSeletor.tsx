@@ -1,34 +1,40 @@
 import React from "react";
 
-export type EscalaVisaoTipo = "dia" | "semana" | "mes" | "mes_detalhado" | "ano";
+/** Agenda, Semana e Mês são as visões principais; Dia e Ano abrem a partir delas */
+export type EscalaVisaoTipo = "agenda" | "semana" | "mes" | "dia" | "ano";
 
 interface EscalaVisaoSeletorProps {
   visao: EscalaVisaoTipo;
   onChange: (v: EscalaVisaoTipo) => void;
 }
 
-const LABELS: { id: EscalaVisaoTipo; label: string }[] = [
-  { id: "dia", label: "Dia" },
+const PRINCIPAIS: { id: EscalaVisaoTipo; label: string }[] = [
+  { id: "agenda", label: "Agenda" },
   { id: "semana", label: "Semana" },
   { id: "mes", label: "Mês" },
-  { id: "mes_detalhado", label: "Mês detalhado" },
-  { id: "ano", label: "Ano" },
 ];
 
+const EXTRAS: Partial<Record<EscalaVisaoTipo, string>> = { dia: "Dia", ano: "Ano" };
+
 const EscalaVisaoSeletor: React.FC<EscalaVisaoSeletorProps> = ({ visao, onChange }) => (
-  <div className="escala-visao-seletor" role="tablist" aria-label="Tipo de visualização">
-    {LABELS.map(({ id, label }) => (
+  <div className="esc-segmentado" role="tablist" aria-label="Visualização">
+    {PRINCIPAIS.map(({ id, label }) => (
       <button
         key={id}
         type="button"
         role="tab"
         aria-selected={visao === id}
-        className={`visao-btn ${visao === id ? "ativo" : ""}`}
+        className={visao === id ? "ativo" : ""}
         onClick={() => onChange(id)}
       >
         {label}
       </button>
     ))}
+    {EXTRAS[visao] && (
+      <button type="button" role="tab" aria-selected className="ativo">
+        {EXTRAS[visao]}
+      </button>
+    )}
   </div>
 );
 

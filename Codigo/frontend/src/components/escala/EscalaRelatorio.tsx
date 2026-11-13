@@ -7,6 +7,8 @@ type Props = {
   subtitulo?: string;
   estatisticas: EstatisticasEscala | null | undefined;
   onAbrirEvento?: (id: number) => void;
+  /** No painel lateral: botão "Fechar" no lugar de recolher */
+  onFechar?: () => void;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -45,7 +47,7 @@ function Barra({ valor, max, tom = "teal" }: { valor: number; max: number; tom?:
   );
 }
 
-const EscalaRelatorio: React.FC<Props> = ({ titulo, subtitulo, estatisticas, onAbrirEvento }) => {
+const EscalaRelatorio: React.FC<Props> = ({ titulo, subtitulo, estatisticas, onAbrirEvento, onFechar }) => {
   const [aberto, setAberto] = useState(true);
   const s = estatisticas;
 
@@ -84,14 +86,20 @@ const EscalaRelatorio: React.FC<Props> = ({ titulo, subtitulo, estatisticas, onA
           </h2>
           {subtitulo && <p className="escala-relatorio__subtitulo">{subtitulo}</p>}
         </div>
-        <button
-          type="button"
-          className="escala-relatorio__toggle"
-          onClick={() => setAberto((v) => !v)}
-          aria-expanded={aberto}
-        >
-          {aberto ? "Recolher" : "Expandir"}
-        </button>
+        {onFechar ? (
+          <button type="button" className="escala-relatorio__toggle" onClick={onFechar} aria-label="Fechar relatório">
+            Fechar
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="escala-relatorio__toggle"
+            onClick={() => setAberto((v) => !v)}
+            aria-expanded={aberto}
+          >
+            {aberto ? "Recolher" : "Expandir"}
+          </button>
+        )}
       </header>
 
       {aberto && (

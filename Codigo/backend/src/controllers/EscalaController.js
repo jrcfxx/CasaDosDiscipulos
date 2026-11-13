@@ -282,6 +282,14 @@ class EscalaController {
     }
   }
 
+  async getMinhasEscalas(req, res, next) {
+    try {
+      res.json(await EscalaService.getMinhasEscalas(req.usuario, req.query.dias));
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getEscalasDaPessoa(req, res, next) {
     try {
       res.json(

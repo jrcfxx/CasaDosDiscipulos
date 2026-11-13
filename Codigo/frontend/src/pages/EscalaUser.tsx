@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import "../style/EscalaUser.css";
+import "../style/EscalaNova.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
@@ -28,7 +29,11 @@ import usuarioService from "../services/usuarioService";
 import AtribuicaoDetalhesForm from "../components/AtribuicaoDetalhesForm";
 import EscalaVisaoSeletor, { EscalaVisaoTipo } from "../components/escala/EscalaVisaoSeletor";
 import EscalaRelatorio from "../components/escala/EscalaRelatorio";
-import { EscalaVisaoSemana, EscalaVisaoAnoPainel, EscalaVisaoMesUnificada, EscalaVisaoMesCalendario } from "../components/escala/EscalaVisoes";
+import { EscalaVisaoSemana, EscalaVisaoAnoPainel, EscalaVisaoMesCalendario } from "../components/escala/EscalaVisoes";
+import EscalaAgenda from "../components/escala/EscalaAgenda";
+import MinhasEscalas from "../components/escala/MinhasEscalas";
+import MenuAcoes from "../components/escala/MenuAcoes";
+import FocusTrap from "../components/ui/FocusTrap";
 import EscalaGradeDnd from "../components/escala/EscalaGradeDnd";
 import EscalaQuadroUnificado from "../components/escala/EscalaQuadroUnificado";
 import ModalConflitos from "../components/escala/ModalConflitos";
@@ -44,9 +49,11 @@ import {
   referenciaDe,
   dataDoMes,
   somarDias,
+  deIso,
   tituloSemana,
   tituloDia,
   rotuloStatus,
+  plural,
 } from "../utils/escalaDatas";
 import { mapaParalelismoDeMinisterios } from "../utils/ministerioParalelismo";
 import type { Ministerio } from "../services/ministerioService";
@@ -58,6 +65,19 @@ const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
+
+/** Máximo de semanas carregadas de uma vez na visão Semana */
+const MAX_SEMANAS = 12;
+
+const MESES_CURTOS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+
+/** "8 nov – 5 dez 2026" */
+function tituloIntervalo(ini: string, fim: string) {
+  const a = new Date(`${ini}T12:00:00`);
+  const b = new Date(`${fim}T12:00:00`);
+  const anoA = a.getFullYear() !== b.getFullYear() ? ` ${a.getFullYear()}` : "";
+  return `${a.getDate()} ${MESES_CURTOS[a.getMonth()]}${anoA} – ${b.getDate()} ${MESES_CURTOS[b.getMonth()]} ${b.getFullYear()}`;
+}
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -109,10 +129,51 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
   const { isAdmin, isLiderMinisterio, user } = useAuth();
   const podeEditar = isAdmin || isLiderMinisterio;
 
-  const [visao, setVisao] = useState<EscalaVisaoTipo>("mes");
+  // Visão lembrada neste navegador; no celular começa pela Agenda (lista), no computador pelo Mês
+  const [visao, setVisaoEstado] = useState<EscalaVisaoTipo>(() => {
+    try {
+      const v = localStorage.getItem("escala_visao");
+      if (v === "agenda" || v === "semana" || v === "mes") return v;
+    } catch {
+      /* sem armazenamento */
+    }
+    return typeof window !== "undefined" && window.innerWidth < 720 ? "agenda" : "mes";
+  });
+  const setVisao = useCallback((v: EscalaVisaoTipo) => {
+    setVisaoEstado(v);
+    if (v === "agenda" || v === "semana" || v === "mes") {
+      try {
+        localStorage.setItem("escala_visao", v);
+      } catch {
+        /* sem armazenamento */
+      }
+    }
+  }, []);
+  // Abas: "Minhas escalas" (padrão para quem só serve) e "Calendário" (padrão para a liderança)
+  const [searchParams] = useSearchParams();
+  const verParam = searchParams.get("ver");
+  const aba: "minhas" | "calendario" = modoMeus
+    ? "calendario"
+    : verParam === "minhas" || verParam === "calendario"
+      ? verParam
+      : podeEditar
+        ? "calendario"
+        : "minhas";
+  const mostrarCalendario = aba === "calendario";
+  const [showRelatorio, setShowRelatorio] = useState(false);
+  // Esc fecha o painel do relatório (fora do focus-trap: o onDeactivate dele dispara no remount do StrictMode)
+  useEffect(() => {
+    if (!showRelatorio) return;
+    const tecla = (e: KeyboardEvent) => e.key === "Escape" && setShowRelatorio(false);
+    document.addEventListener("keydown", tecla);
+    return () => document.removeEventListener("keydown", tecla);
+  }, [showRelatorio]);
   const [visaoAno, setVisaoAno] = useState<VisaoAno | null>(null);
   const [visaoDiaUnificada, setVisaoDiaUnificada] = useState<VisualizacaoDia | null>(null);
-  const [visaoSemanaUnificada, setVisaoSemanaUnificada] = useState<VisualizacaoSemana | null>(null);
+  const [visaoSemanas, setVisaoSemanas] = useState<VisualizacaoSemana[] | null>(null);
+  // Visão Semana: intervalo de semanas (padrão 4), escolhido por data
+  const [qtdSemanas, setQtdSemanas] = useState(4);
+  const [semanaOrigemCopia, setSemanaOrigemCopia] = useState<string | null>(null);
   const [visaoMesUnificada, setVisaoMesUnificada] = useState<VisualizacaoMes | null>(null);
   const [showBuscaPessoa, setShowBuscaPessoa] = useState(false);
   const [usuariosBusca, setUsuariosBusca] = useState<{ id_usuario: number; nome: string }[]>([]);
@@ -219,11 +280,16 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
 
   useEffect(() => {
     conteudoCarregadoRef.current = false;
-  }, [visao, ano, mes, dataDia, dataSemana]);
+  }, [visao, ano, mes, dataDia, dataSemana, qtdSemanas]);
 
   const fetchEventos = useCallback(async () => {
     // "Meus ministérios": não mostra a igreja inteira enquanto os ministérios carregam
     if (modoMeus && !ministeriosCarregados) return;
+    // Na aba "Minhas escalas" o calendário não é carregado
+    if (!mostrarCalendario) {
+      setLoading(false);
+      return;
+    }
     const filtro = idsFiltro;
     // Sem nenhum ministério liderado: não busca (sem filtro viria a escala inteira)
     if (modoMeus && !filtro?.length) {
@@ -236,7 +302,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
         const data = await escalaService.getVisualizacaoMes(ano, mes, "compacto", filtro);
         setVisaoMesUnificada(data);
         setVisaoAno(null);
-      } else if (visao === "mes_detalhado") {
+      } else if (visao === "agenda") {
         const data = await escalaService.getVisualizacaoMes(ano, mes, "completo", filtro);
         setVisaoMesUnificada(data);
         setVisaoAno(null);
@@ -244,8 +310,9 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
         const data = await escalaService.getVisualizacaoDia(dataDia, filtro);
         setVisaoDiaUnificada(data);
       } else if (visao === "semana") {
-        const data = await escalaService.getVisualizacaoSemana(dataSemana, filtro);
-        setVisaoSemanaUnificada(data);
+        const inicios = Array.from({ length: qtdSemanas }, (_, i) => somarDias(dataSemana, 7 * i));
+        const data = await Promise.all(inicios.map((d) => escalaService.getVisualizacaoSemana(d, filtro)));
+        setVisaoSemanas(data);
       } else if (visao === "ano") {
         const data = await escalaService.getVisaoAno(ano, filtro);
         setVisaoAno(data);
@@ -258,7 +325,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
     // filtroKey: refaz a busca quando a seleção de ministérios muda
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ano, mes, visao, dataDia, dataSemana, showToast, modoMeus, ministeriosCarregados, filtroKey]);
+  }, [ano, mes, visao, dataDia, dataSemana, qtdSemanas, showToast, modoMeus, ministeriosCarregados, filtroKey, mostrarCalendario]);
 
   useEffect(() => {
     fetchEventos();
@@ -659,9 +726,10 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
   };
 
-  const handleCopiarSemana = () => {
+  const handleCopiarSemana = (dataInicio: string) => {
     if (!isAdmin) return;
-    setInputDialog({ kind: "copiar-semana", defaultValue: dataSemana });
+    setSemanaOrigemCopia(dataInicio);
+    setInputDialog({ kind: "copiar-semana", defaultValue: somarDias(dataInicio, 7) });
   };
 
   const executarCopiarSemana = async (dest: string) => {
@@ -671,7 +739,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
     try {
       const result = await escalaService.copiarSemana({
-        data_inicio_origem: dataSemana,
+        data_inicio_origem: semanaOrigemCopia || dataSemana,
         data_inicio_destino: dest,
       });
       const avisos = resumirAvisosCopia(result.warnings);
@@ -706,7 +774,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
       }
     };
     if (visaoDiaUnificada) coletar(visaoDiaUnificada.eventos);
-    if (visaoSemanaUnificada) coletar(visaoSemanaUnificada.dias.flatMap((d) => d.eventos));
+    if (visaoSemanas) coletar(visaoSemanas.flatMap((s) => s.dias.flatMap((d) => d.eventos)));
     return [...map.entries()].map(([id_usuario, nome]) => ({ id_usuario, nome }));
   };
 
@@ -780,11 +848,40 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
   };
 
+  const abrirBuscaPessoa = async () => {
+    try {
+      const list = await usuarioService.getAll();
+      setUsuariosBusca(list.map((u) => ({ id_usuario: u.id_usuario, nome: u.nome })));
+    } catch {
+      setUsuariosBusca(pessoasDaVisaoAtual());
+    }
+    setShowBuscaPessoa(true);
+  };
+
+  const estatisticasAtuais =
+    visao === "semana"
+      ? visaoSemanas?.length === 1
+        ? visaoSemanas[0].estatisticas
+        : undefined
+      : visao === "dia"
+        ? visaoDiaUnificada?.estatisticas
+        : visao === "ano"
+          ? undefined
+          : visaoMesUnificada?.estatisticas;
+  const tituloRelatorio =
+    visao === "semana"
+      ? `Semana de ${tituloSemana(dataSemana)}`
+      : visao === "dia"
+        ? tituloDia(dataDia)
+        : `${MESES[mes - 1]} ${ano}`;
+
   const navLabel =
     visao === "dia"
       ? tituloDia(dataDia)
       : visao === "semana"
-        ? tituloSemana(dataSemana)
+        ? qtdSemanas === 1
+          ? tituloSemana(dataSemana)
+          : tituloIntervalo(dataSemana, somarDias(dataSemana, 7 * qtdSemanas - 1))
         : visao === "ano"
           ? String(ano)
           : `${MESES[mes - 1]} ${ano}`;
@@ -802,13 +899,13 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
   }, []);
 
   const navegar = (passo: 1 | -1) => {
-    if (visao === "mes" || visao === "mes_detalhado") {
+    if (visao === "mes" || visao === "agenda") {
       const alvo = new Date(ano, mes - 1 + passo, 1);
       irPara(dataDoMes(alvo.getFullYear(), alvo.getMonth() + 1));
     } else if (visao === "dia") {
       irPara(somarDias(dataDia, passo));
     } else if (visao === "semana") {
-      irPara(somarDias(dataSemana, 7 * passo));
+      irPara(somarDias(dataSemana, 7 * qtdSemanas * passo));
     } else {
       irPara(dataDoMes(ano + passo, mes));
     }
@@ -826,237 +923,305 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     <div className="page-with-fixed-header escala-page">
       <Header />
       <main id="main-content" className="container escala-user" tabIndex={-1}>
-        <div className="escala-header">
-          <h1 className="page-title">{modoMeus ? "Meus ministérios" : "Escala"}</h1>
-          <div className="escala-header-actions">
-            {podeEditar &&
-              (modoMeus ? (
-                <Link to="/usuario/escala" className="btn-mapa">
-                  Escala completa
-                </Link>
-              ) : (
-                <Link to="/usuario/escala/meus-ministerios" className="btn-mapa">
-                  Meus ministérios
-                </Link>
-              ))}
-            <Link to="/usuario/escala/mapa" className="btn-mapa">
-              Mapa
-            </Link>
-            <button
-              type="button"
-              className="btn-mapa"
-              onClick={async () => {
-                try {
-                  const list = await usuarioService.getAll();
-                  setUsuariosBusca(list.map((u) => ({ id_usuario: u.id_usuario, nome: u.nome })));
-                } catch {
-                  setUsuariosBusca(pessoasDaVisaoAtual());
-                }
-                setShowBuscaPessoa(true);
-              }}
-            >
-              Buscar pessoa
-            </button>
-            {isAdmin && (
-              <>
-                <button type="button" className="btn-mapa" onClick={() => abrirTemplates(false)}>
-                  Templates
-                </button>
-                <button className="btn-criar" onClick={() => abrirModalEvento()}>
-                  + Novo Evento
-                </button>
-              </>
-            )}
+        <header className="esc-topo">
+          <div className="esc-topo__titulo">
+            <h1 className="page-title">{modoMeus ? "Meus ministérios" : "Escala"}</h1>
+            <p className="esc-topo__sub">
+              {modoMeus
+                ? "Só os ministérios que você lidera, para organizar a sua equipe."
+                : aba === "minhas"
+                  ? "Quando, onde e com quem você vai servir."
+                  : "Todos os eventos e equipes da igreja."}
+            </p>
           </div>
-        </div>
-
-        {modoMeus && (
-          <section className="filtro-ministerios" aria-label="Ministérios do cronograma">
-            {ministeriosCarregados && ministeriosLiderados.length === 0 ? (
-              <p className="filtro-ministerios__vazio">
-                Você ainda não lidera nenhum ministério. Peça à administração para vincular você como líder.
-              </p>
-            ) : (
-              <>
-                <p className="filtro-ministerios__rotulo">
-                  Cronograma só dos ministérios selecionados. Toque para incluir ou tirar:
-                </p>
-                <div className="filtro-ministerios__lista">
-                  {ministeriosLiderados.map((m) => {
-                    const ativo = (idsFiltro || []).includes(m.id_ministerio);
-                    return (
-                      <button
-                        key={m.id_ministerio}
-                        type="button"
-                        className={`filtro-ministerio${ativo ? " ativo" : ""}`}
-                        aria-pressed={ativo}
-                        onClick={() => alternarMinisterio(m.id_ministerio)}
-                        title={
-                          ativo && (idsFiltro || []).length === 1
-                            ? "Pelo menos um ministério fica selecionado"
-                            : undefined
-                        }
-                      >
-                        {ativo ? "✓ " : ""}
-                        {m.nome}
-                      </button>
-                    );
-                  })}
-                  {ministeriosLiderados.length > 1 &&
-                    (idsFiltro || []).length < ministeriosLiderados.length && (
-                      <button type="button" className="filtro-ministerio-todos" onClick={selecionarTodosMeus}>
-                        Selecionar todos
-                      </button>
-                    )}
-                </div>
-              </>
+          <nav className="esc-abas" aria-label="Seções da escala">
+            <Link
+              to="/usuario/escala?ver=minhas"
+              className={`esc-aba${!modoMeus && aba === "minhas" ? " ativo" : ""}`}
+              aria-current={!modoMeus && aba === "minhas" ? "page" : undefined}
+            >
+              Minhas escalas
+            </Link>
+            <Link
+              to="/usuario/escala?ver=calendario"
+              className={`esc-aba${!modoMeus && aba === "calendario" ? " ativo" : ""}`}
+              aria-current={!modoMeus && aba === "calendario" ? "page" : undefined}
+            >
+              Calendário
+            </Link>
+            {podeEditar && (
+              <Link
+                to="/usuario/escala/meus-ministerios"
+                className={`esc-aba${modoMeus ? " ativo" : ""}`}
+                aria-current={modoMeus ? "page" : undefined}
+              >
+                Meus ministérios
+              </Link>
             )}
-          </section>
+          </nav>
+        </header>
+
+        {aba === "minhas" && (
+          <MinhasEscalas
+            idUsuario={user?.id_usuario}
+            onAbrirEvento={abrirEvento}
+            onVerCalendario={() => navigate("/usuario/escala?ver=calendario")}
+          />
         )}
 
-        <EscalaVisaoSeletor visao={visao} onChange={setVisao} />
+        {mostrarCalendario && (
+          <>
+            <div className="esc-ferramentas">
+              <div className="esc-periodo">
+                <button type="button" className="esc-icone" onClick={navegarAnterior} aria-label="Período anterior">
+                  ‹
+                </button>
+                <h2 className="esc-periodo__titulo" aria-live="polite">
+                  {navLabel}
+                </h2>
+                <button type="button" className="esc-icone" onClick={navegarProximo} aria-label="Próximo período">
+                  ›
+                </button>
+                <button
+                  type="button"
+                  className="esc-btn esc-btn--fantasma esc-hoje"
+                  onClick={() => irPara(toIsoDate(new Date()))}
+                >
+                  Hoje
+                </button>
+              </div>
 
-        <div className="escala-calendario-nav">
-          <button type="button" className="btn-nav" onClick={navegarAnterior}>
-            ‹
-          </button>
-          <h2 className="escala-mes-ano">{navLabel}</h2>
-          <button type="button" className="btn-nav" onClick={navegarProximo}>
-            ›
-          </button>
-          <button
-            type="button"
-            className="btn-mapa"
-            onClick={() => irPara(toIsoDate(new Date()))}
-          >
-            Hoje
-          </button>
-        </div>
+              <EscalaVisaoSeletor visao={visao} onChange={setVisao} />
 
-        {loading ? (
-          <div className="loading">Carregando...</div>
-        ) : (
-          <div className="escala-layout">
-            {visao === "mes" && visaoMesUnificada && (
-              <>
-                <EscalaVisaoMesCalendario
-                  visao={visaoMesUnificada}
-                  onAbrirDia={abrirDia}
-                  onAbrirEvento={abrirEvento}
+              <div className="esc-acoes">
+                <MenuAcoes
+                  itens={[
+                    ...(podeEditar && estatisticasAtuais
+                      ? [{ rotulo: "Relatório do período", onSelecionar: () => setShowRelatorio(true) }]
+                      : []),
+                    { rotulo: "Buscar pessoa", onSelecionar: abrirBuscaPessoa },
+                    { rotulo: "Visão do ano", onSelecionar: () => setVisao("ano") },
+                    { rotulo: "Mapa da escala", onSelecionar: () => navigate("/usuario/escala/mapa") },
+                    ...(isAdmin
+                      ? [{ rotulo: "Templates de evento", onSelecionar: () => abrirTemplates(false), separar: true }]
+                      : []),
+                  ]}
                 />
-                {podeEditar && (
-                  <EscalaRelatorio
-                    titulo={`Relatório — ${MESES[mes - 1]} ${ano}`}
-                    subtitulo="Visão geral para liderança e secretaria"
-                    estatisticas={visaoMesUnificada.estatisticas}
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="esc-btn esc-btn--primario"
+                    onClick={() => abrirModalEvento()}
+                    aria-label="Novo evento"
+                  >
+                    + <span className="esc-so-largo">Novo </span>evento
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {visao === "semana" && (
+              <div className="esc-intervalo" role="group" aria-label="Intervalo de semanas">
+                <label>
+                  De
+                  <input
+                    type="date"
+                    value={dataSemana}
+                    onChange={(e) => e.target.value && irPara(inicioSemana(e.target.value))}
+                  />
+                </label>
+                <label>
+                  Até
+                  <input
+                    type="date"
+                    value={somarDias(dataSemana, 7 * qtdSemanas - 1)}
+                    min={dataSemana}
+                    onChange={(e) => {
+                      if (!e.target.value) return;
+                      const dias = (deIso(inicioSemana(e.target.value)).getTime() - deIso(dataSemana).getTime()) / 86400000;
+                      setQtdSemanas(Math.min(MAX_SEMANAS, Math.max(1, Math.round(dias / 7) + 1)));
+                    }}
+                  />
+                </label>
+                <div className="esc-intervalo__atalhos" aria-label="Atalhos">
+                  {[1, 4, 8].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`esc-btn esc-btn--fantasma${qtdSemanas === n ? " ativo" : ""}`}
+                      aria-pressed={qtdSemanas === n}
+                      onClick={() => setQtdSemanas(n)}
+                    >
+                      {n === 1 ? "1 semana" : `${n} semanas`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {modoMeus && (
+              <section className="filtro-ministerios" aria-label="Ministérios do cronograma">
+                {ministeriosCarregados && ministeriosLiderados.length === 0 ? (
+                  <p className="filtro-ministerios__vazio">
+                    Você ainda não lidera nenhum ministério. Peça à administração para vincular você como líder.
+                  </p>
+                ) : (
+                  <>
+                    <span className="filtro-ministerios__rotulo">Mostrando:</span>
+                    <div className="filtro-ministerios__lista">
+                      {ministeriosLiderados.map((m) => {
+                        const ativo = (idsFiltro || []).includes(m.id_ministerio);
+                        return (
+                          <button
+                            key={m.id_ministerio}
+                            type="button"
+                            className={`filtro-ministerio${ativo ? " ativo" : ""}`}
+                            aria-pressed={ativo}
+                            onClick={() => alternarMinisterio(m.id_ministerio)}
+                            title={
+                              ativo && (idsFiltro || []).length === 1
+                                ? "Pelo menos um ministério fica selecionado"
+                                : undefined
+                            }
+                          >
+                            {ativo ? "✓ " : ""}
+                            {m.nome}
+                          </button>
+                        );
+                      })}
+                      {ministeriosLiderados.length > 1 &&
+                        (idsFiltro || []).length < ministeriosLiderados.length && (
+                          <button type="button" className="filtro-ministerio-todos" onClick={selecionarTodosMeus}>
+                            Selecionar todos
+                          </button>
+                        )}
+                    </div>
+                  </>
+                )}
+              </section>
+            )}
+
+            {loading ? (
+              <div className="esc-carregando" aria-busy="true" aria-label="Carregando a escala">
+                <span />
+                <span />
+                <span />
+              </div>
+            ) : (
+              <div className="escala-layout">
+                {visao === "mes" && visaoMesUnificada && (
+                  <EscalaVisaoMesCalendario
+                    visao={visaoMesUnificada}
+                    onAbrirDia={abrirDia}
                     onAbrirEvento={abrirEvento}
                   />
                 )}
-              </>
-            )}
 
-            {visao === "mes_detalhado" && visaoMesUnificada && (
-              <>
-                <EscalaVisaoMesUnificada
-                  visao={visaoMesUnificada}
-                  onAbrirDia={abrirDia}
-                  onAbrirEvento={abrirEvento}
-                  podeEditar={podeEditar}
-                  paralelismoMapa={paralelismoMapa}
-                  onMover={handleMoverUnificado}
-                  onEscalar={abrirSlotParaEscalar}
-                />
-                {podeEditar && (
-                  <EscalaRelatorio
-                    titulo={`Relatório detalhado — ${MESES[mes - 1]} ${ano}`}
-                    subtitulo="Indicadores, equilíbrio da equipe e pendências"
-                    estatisticas={visaoMesUnificada.estatisticas}
+                {visao === "agenda" && visaoMesUnificada && (
+                  <EscalaAgenda
+                    visao={visaoMesUnificada}
+                    onAbrirDia={abrirDia}
+                    onAbrirEvento={abrirEvento}
+                    podeEditar={podeEditar}
+                  />
+                )}
+
+                {visao === "dia" && visaoDiaUnificada && (
+                  <EscalaQuadroUnificado
+                    visao={visaoDiaUnificada}
+                    podeEditar={podeEditar}
+                    paralelismoMapa={paralelismoMapa}
+                    onMover={handleMoverUnificado}
+                    onEscalar={abrirSlotParaEscalar}
+                    onAbrirEvento={abrirEvento}
+                    onCopiarDia={isAdmin ? handleCopiarDia : undefined}
+                    onTemplates={isAdmin ? () => abrirTemplates(false) : undefined}
+                    onEditarMembro={(m, areaNome) =>
+                      abrirModalEditarDetalhes(
+                        {
+                          id_escala_atribuicao: m.membroEscalaId,
+                          id_escala_area: m.id_escala_area,
+                          id_usuario: m.usuario.id,
+                          usuario_nome: m.usuario.nome,
+                          detalhes: (m.detalhes || {}) as EscalaAtribuicao["detalhes"],
+                        },
+                        areaNome
+                      )
+                    }
+                    onRemoverMembro={(m) =>
+                      handleRemoverAtribuicao(
+                        {
+                          id_escala_atribuicao: m.membroEscalaId,
+                          id_escala_area: m.id_escala_area,
+                          id_usuario: m.usuario.id,
+                        },
+                        m.usuario.nome
+                      )
+                    }
+                  />
+                )}
+
+                {visao === "semana" && visaoSemanas && (
+                  <EscalaVisaoSemana
+                    semanas={visaoSemanas}
+                    onAbrirEvento={abrirEvento}
+                    onAbrirDia={abrirDia}
+                    podeEditar={podeEditar}
+                    paralelismoMapa={paralelismoMapa}
+                    onMover={handleMoverUnificado}
+                    onEscalar={abrirSlotParaEscalar}
+                    onCopiarSemana={isAdmin ? handleCopiarSemana : undefined}
+                    onAviso={(msg) => showToast(msg, "info")}
+                  />
+                )}
+
+                {visao === "ano" && visaoAno && (
+                  <EscalaVisaoAnoPainel
+                    visao={visaoAno}
+                    onSelecionarMes={(m) => {
+                      irPara(dataDoMes(ano, m));
+                      setVisao("mes");
+                    }}
                     onAbrirEvento={abrirEvento}
                   />
                 )}
-              </>
+              </div>
             )}
-
-            {visao === "dia" && visaoDiaUnificada && (
-              <>
-              <EscalaQuadroUnificado
-                visao={visaoDiaUnificada}
-                podeEditar={podeEditar}
-                paralelismoMapa={paralelismoMapa}
-                onMover={handleMoverUnificado}
-                onEscalar={abrirSlotParaEscalar}
-                onAbrirEvento={abrirEvento}
-                onCopiarDia={isAdmin ? handleCopiarDia : undefined}
-                onTemplates={isAdmin ? () => abrirTemplates(false) : undefined}
-                onEditarMembro={(m, areaNome) =>
-                  abrirModalEditarDetalhes(
-                    {
-                      id_escala_atribuicao: m.membroEscalaId,
-                      id_escala_area: m.id_escala_area,
-                      id_usuario: m.usuario.id,
-                      usuario_nome: m.usuario.nome,
-                      detalhes: (m.detalhes || {}) as EscalaAtribuicao["detalhes"],
-                    },
-                    areaNome
-                  )
-                }
-                onRemoverMembro={(m) =>
-                  handleRemoverAtribuicao(
-                    {
-                      id_escala_atribuicao: m.membroEscalaId,
-                      id_escala_area: m.id_escala_area,
-                      id_usuario: m.usuario.id,
-                    },
-                    m.usuario.nome
-                  )
-                }
-              />
-              {podeEditar && (
-                <EscalaRelatorio
-                  titulo={`Relatório do dia`}
-                  subtitulo={tituloDia(dataDia)}
-                  estatisticas={visaoDiaUnificada.estatisticas}
-                  onAbrirEvento={abrirEvento}
-                />
-              )}
-              </>
-            )}
-            {visao === "semana" && visaoSemanaUnificada && (
-              <>
-              <EscalaVisaoSemana
-                visao={visaoSemanaUnificada}
-                onAbrirEvento={abrirEvento}
-                onAbrirDia={abrirDia}
-                podeEditar={podeEditar}
-                paralelismoMapa={paralelismoMapa}
-                onMover={handleMoverUnificado}
-                onEscalar={abrirSlotParaEscalar}
-                onCopiarSemana={isAdmin ? handleCopiarSemana : undefined}
-                onAviso={(msg) => showToast(msg, "info")}
-              />
-              {podeEditar && (
-                <EscalaRelatorio
-                  titulo="Relatório da semana"
-                  subtitulo={tituloSemana(visaoSemanaUnificada.dataInicio)}
-                  estatisticas={visaoSemanaUnificada.estatisticas}
-                  onAbrirEvento={abrirEvento}
-                />
-              )}
-              </>
-            )}
-            {visao === "ano" && visaoAno && (
-              <EscalaVisaoAnoPainel
-                visao={visaoAno}
-                onSelecionarMes={(m) => {
-                  irPara(dataDoMes(ano, m));
-                  setVisao("mes");
-                }}
-                onAbrirEvento={abrirEvento}
-              />
-            )}
-          </div>
+          </>
         )}
       </main>
+
+      {showRelatorio && estatisticasAtuais && (
+        <div className="esc-gaveta-raiz">
+          <button
+            type="button"
+            className="esc-gaveta-fundo"
+            aria-label="Fechar relatório"
+            tabIndex={-1}
+            onClick={() => setShowRelatorio(false)}
+          />
+          <FocusTrap
+            focusTrapOptions={{
+              allowOutsideClick: true,
+              escapeDeactivates: false,
+              fallbackFocus: ".esc-gaveta",
+            }}
+          >
+            <aside className="esc-gaveta" role="dialog" aria-modal="true" aria-label="Relatório da escala" tabIndex={-1}>
+              <EscalaRelatorio
+                titulo={tituloRelatorio}
+                subtitulo={modoMeus ? "Só os ministérios selecionados" : "Visão geral para liderança e secretaria"}
+                estatisticas={estatisticasAtuais}
+                onFechar={() => setShowRelatorio(false)}
+                onAbrirEvento={(id) => {
+                  setShowRelatorio(false);
+                  abrirEvento(id);
+                }}
+              />
+            </aside>
+          </FocusTrap>
+        </div>
+      )}
 
       {eventoSelecionado && (
         <div className="modal-overlay modal-escala-overlay">
@@ -1082,21 +1247,18 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
               <p className="escala-dashboard-desc">{eventoSelecionado.descricao}</p>
             )}
 
-            <div className="escala-dashboard-resumo">
-              <div className="resumo-card">
-                <span className="resumo-numero">
-                  {eventoSelecionado.areas?.reduce((acc, ar) => acc + (ar.atribuicoes?.length ?? 0), 0) ?? 0}
-                </span>
-                <span className="resumo-label">Pessoas escaladas</span>
-              </div>
-              <div className="resumo-card">
-                <span className="resumo-numero">{eventoSelecionado.areas?.length ?? 0}</span>
-                <span className="resumo-label">Ministérios</span>
-              </div>
-            </div>
+            <p className="esc-modal-meta">
+              {plural(
+                eventoSelecionado.areas?.reduce((acc, ar) => acc + (ar.atribuicoes?.length ?? 0), 0) ?? 0,
+                "pessoa escalada",
+                "pessoas escaladas"
+              )}{" "}
+              · {plural(eventoSelecionado.areas?.length ?? 0, "área")}
+            </p>
 
             <div className="escala-dashboard-titulo-secao">
-              <span>Escala do evento — arraste pessoas entre ministérios</span>
+              <span>Equipe</span>
+              {podeEditar && <small>Arraste uma pessoa para trocar de área</small>}
             </div>
 
             <EscalaGradeDnd
@@ -1112,58 +1274,67 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
             />
 
             {podeEditar && (
-              <div className="escala-dashboard-actions">
-                <div className="escala-dashboard-actions-main">
-                  <button type="button" className="btn-editar-evento" onClick={abrirHistorico}>
+              <footer className="esc-modal-rodape">
+                {isAdmin ? (
+                  <MenuAcoes
+                    rotulo="Mais ações"
+                    alinhar="esquerda"
+                    acima
+                    itens={[
+                      { rotulo: "Histórico de alterações", onSelecionar: abrirHistorico },
+                      {
+                        rotulo: "Copiar para a semana seguinte",
+                        onSelecionar: () => acaoCopiar.executar(handleCopiarEvento),
+                        desativado: acaoCopiar.executando,
+                      },
+                      { rotulo: "Salvar como template", onSelecionar: () => abrirTemplates(true) },
+                      {
+                        rotulo: "Desfazer última alteração",
+                        onSelecionar: () => desfazer(eventoSelecionado.id_escala_evento),
+                        desativado: !podeDesfazer,
+                      },
+                      {
+                        rotulo: "Excluir evento",
+                        perigo: true,
+                        separar: true,
+                        onSelecionar: () => {
+                          setEventoToExcluir(eventoSelecionado.id_escala_evento);
+                          setShowConfirmExcluir(true);
+                        },
+                      },
+                    ]}
+                  />
+                ) : (
+                  <button type="button" className="esc-btn esc-btn--fantasma" onClick={abrirHistorico}>
                     Histórico
                   </button>
-                  {isAdmin && (
-                    <>
-                      {eventoSelecionado.status === "rascunho" && (
-                        <BotaoCarregando type="button" className="btn-editar-evento" onClick={() => acaoPublicar.executar(handlePublicar)} carregando={acaoPublicar.executando} textoCarregando="Publicando…">
-                          Publicar
-                        </BotaoCarregando>
-                      )}
-                      <BotaoCarregando type="button" className="btn-editar-evento" onClick={() => acaoCopiar.executar(handleCopiarEvento)} carregando={acaoCopiar.executando} textoCarregando="Copiando…">
-                        Copiar (+7 dias)
-                      </BotaoCarregando>
-                      <button type="button" className="btn-editar-evento" onClick={() => abrirTemplates(true)}>
-                        Salvar como template
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-editar-evento"
-                        disabled={!podeDesfazer}
-                        onClick={() => desfazer(eventoSelecionado.id_escala_evento)}
-                      >
-                        Desfazer
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-editar-evento"
-                        onClick={() => {
-                          fecharEvento();
-                          abrirModalEvento(eventoSelecionado);
-                        }}
-                      >
-                        Editar evento
-                      </button>
-                    </>
-                  )}
-                </div>
-                {isAdmin && (
-                  <button
-                    type="button"
-                    className="btn-excluir-evento"
-                    onClick={() => {
-                      setEventoToExcluir(eventoSelecionado.id_escala_evento);
-                      setShowConfirmExcluir(true);
-                    }}
-                  >
-                    Excluir evento
-                  </button>
                 )}
-              </div>
+                {isAdmin && (
+                  <div className="esc-modal-rodape__direita">
+                    <button
+                      type="button"
+                      className="esc-btn"
+                      onClick={() => {
+                        fecharEvento();
+                        abrirModalEvento(eventoSelecionado);
+                      }}
+                    >
+                      Editar evento
+                    </button>
+                    {eventoSelecionado.status === "rascunho" && (
+                      <BotaoCarregando
+                        type="button"
+                        className="esc-btn esc-btn--primario"
+                        onClick={() => acaoPublicar.executar(handlePublicar)}
+                        carregando={acaoPublicar.executando}
+                        textoCarregando="Publicando…"
+                      >
+                        Publicar
+                      </BotaoCarregando>
+                    )}
+                  </div>
+                )}
+              </footer>
             )}
           </div>
         </div>

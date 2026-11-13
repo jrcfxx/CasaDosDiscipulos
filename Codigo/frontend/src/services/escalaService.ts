@@ -86,6 +86,20 @@ export interface VisaoAno {
   meses: { mes: number; total_eventos: number; eventos: EscalaEvento[] }[];
 }
 
+export interface MinhaEscala {
+  id: number;
+  evento: { id: number; nome: string; status: string };
+  inicio: string;
+  fim?: string | null;
+  area: string;
+  idArea: number;
+  detalhes?: Record<string, string | number | null> | null;
+  equipe: {
+    nome: string;
+    pessoas: { id: number; nome: string; detalhes?: Record<string, string | number | null> | null }[];
+  }[];
+}
+
 export interface SlotMembro {
   id: number;
   membroEscalaId: number;
@@ -298,6 +312,12 @@ const escalaService = {
 
   async getVisaoMes(ano: number, mes: number): Promise<EscalaEventoCompleto[]> {
     const response = await apiClient.get(`/escala/visao/mes/${ano}/${mes}`);
+    return response.data;
+  },
+
+  /** Próximas datas em que a pessoa logada serve, com a equipe de cada evento */
+  async getMinhasEscalas(dias = 120): Promise<MinhaEscala[]> {
+    const response = await apiClient.get(`/escala/minhas?dias=${dias}`);
     return response.data;
   },
 

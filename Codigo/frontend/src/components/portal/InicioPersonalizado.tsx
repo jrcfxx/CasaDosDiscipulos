@@ -111,7 +111,7 @@ const InicioPersonalizado: React.FC = () => {
           ) : (
             <p className="inicio-card__texto">Você não está escalado nos próximos dias.</p>
           )}
-          <Link to="/usuario/escala" className="inicio-card__link">
+          <Link to="/usuario/escala?ver=minhas" className="inicio-card__link">
             Ver escala
           </Link>
         </article>

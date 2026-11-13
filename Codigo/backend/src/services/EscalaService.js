@@ -1064,6 +1064,48 @@ class EscalaService {
     };
   }
 
+  /**
+   * "Minhas escalas": próximas datas em que a pessoa logada serve, com a equipe de cada evento
+   * (só nomes e funções). Membros não veem rascunhos.
+   */
+  async getMinhasEscalas(solicitante, dias = 120) {
+    const id = solicitante?.id_usuario;
+    if (!id) throw new ValidationError("Usuário não identificado");
+    const n = Math.min(Math.max(parseInt(dias, 10) || 120, 1), 366);
+    const agora = new Date();
+    const pad = (x) => String(x).padStart(2, "0");
+    const hoje = `${agora.getFullYear()}-${pad(agora.getMonth() + 1)}-${pad(agora.getDate())}`;
+    let rows = await EscalaRepository.listarEscalasDaPessoa(
+      id,
+      inicioDoDia(hoje),
+      fimDoDia(adicionarDias(hoje, n))
+    );
+    if (!this._podeVerRascunho(solicitante?.tipo)) {
+      rows = rows.filter((r) => r.status !== ESCALA_STATUS.RASCUNHO);
+    }
+    rows = rows.slice(0, 60);
+    const idsEventos = [...new Set(rows.map((r) => r.id_escala_evento))];
+    const equipe = await EscalaRepository.listarEquipeDosEventos(idsEventos);
+    const porEvento = new Map();
+    for (const p of equipe) {
+      const ev = porEvento.get(p.id_escala_evento) || new Map();
+      const area = ev.get(p.id_escala_area) || { nome: p.area_nome, pessoas: [] };
+      area.pessoas.push({ id: p.id_usuario, nome: p.usuario_nome, detalhes: p.detalhes || null });
+      ev.set(p.id_escala_area, area);
+      porEvento.set(p.id_escala_evento, ev);
+    }
+    return rows.map((r) => ({
+      id: r.id_escala_atribuicao,
+      evento: { id: r.id_escala_evento, nome: r.titulo, status: r.status },
+      inicio: r.data_hora,
+      fim: r.data_hora_fim,
+      area: r.area_nome,
+      idArea: r.id_escala_area,
+      detalhes: r.detalhes || null,
+      equipe: [...(porEvento.get(r.id_escala_evento) || new Map()).values()],
+    }));
+  }
+
   async getEscalasDaPessoa(idUsuario, dataInicio, dataFim, solicitante = null) {
     if (!dataInicio || !dataFim) {
       throw new ValidationError("Informe dataInicio e dataFim (YYYY-MM-DD)");

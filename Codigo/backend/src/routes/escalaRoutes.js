@@ -32,6 +32,7 @@ router.get("/visualizacao/dia/:data", authenticatedOnly, EscalaController.getVis
 router.get("/visualizacao/semana/:dataInicio", authenticatedOnly, EscalaController.getVisualizacaoSemana);
 router.get("/visualizacao/mes/:ano/:mes", authenticatedOnly, EscalaController.getVisualizacaoMes);
 router.get("/visualizacao/ano/:ano", authenticatedOnly, EscalaController.getVisualizacaoAno);
+router.get("/minhas", authenticatedOnly, EscalaController.getMinhasEscalas);
 router.get("/pessoa/:usuarioId/periodo", authenticatedOnly, EscalaController.getEscalasDaPessoa);
 router.post(
   "/mover-membro-validar",

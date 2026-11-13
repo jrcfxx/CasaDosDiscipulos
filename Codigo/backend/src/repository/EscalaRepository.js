@@ -138,6 +138,25 @@ const EscalaRepository = {
     return rows.map(parseDetalhes);
   },
 
+  /** Equipe dos eventos (nome, área e detalhes; nunca telefone ou e-mail) */
+  async listarEquipeDosEventos(idsEventos) {
+    if (!idsEventos.length) return [];
+    const rows = await knex("escala_atribuicao as a")
+      .join("usuario as u", "a.id_usuario", "u.id_usuario")
+      .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
+      .whereIn("ar.id_escala_evento", idsEventos)
+      .select(
+        "ar.id_escala_evento",
+        "ar.id_escala_area",
+        "ar.nome as area_nome",
+        "a.id_usuario",
+        "a.detalhes",
+        "u.nome as usuario_nome"
+      )
+      .orderBy([{ column: "ar.id_escala_area" }, { column: "u.nome" }]);
+    return rows.map(parseDetalhes);
+  },
+
   async listarEscalasDaPessoa(idUsuario, dataInicio, dataFim) {
     const rows = await knex("escala_atribuicao as a")
       .join("usuario as u", "a.id_usuario", "u.id_usuario")
