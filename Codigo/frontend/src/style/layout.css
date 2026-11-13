@@ -76,6 +76,91 @@
   background: var(--color-primary-teal, #02869b);
 }
 
+.header-home__acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 2rem;
+}
+
+/* Botão ☰ só aparece no celular */
+.header-home__menu {
+  display: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(235, 235, 235, 0.22);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (min-width: 761px) {
+  .header-home {
+    justify-content: flex-start;
+  }
+
+  .header-home__nav {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .header-home {
+    padding: 0.6rem 1rem;
+  }
+
+  .header-home__logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .header-home__acoes {
+    margin-left: auto;
+  }
+
+  .header-home__menu {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  /* Links num painel abaixo do cabeçalho */
+  .header-home__nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.5rem 1rem 1rem;
+    background: rgba(8, 10, 11, 0.97);
+    border-bottom: 1px solid rgba(235, 235, 235, 0.12);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  .header-home--aberto {
+    background: rgba(8, 10, 11, 0.97);
+  }
+
+  .header-home--aberto .header-home__nav {
+    display: flex;
+  }
+
+  .header-home__link {
+    padding: 0.9rem 0.25rem;
+    font-size: 1rem;
+    border-bottom: 1px solid rgba(235, 235, 235, 0.08);
+  }
+
+  .header-home__link:last-child {
+    border-bottom: 0;
+  }
+}
+
 /* CABEÇALHO */
 .top-bar-wrapper {
   width: 100%;

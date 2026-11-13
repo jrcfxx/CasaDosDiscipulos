@@ -104,6 +104,16 @@ async function main() {
     EscalaService.addAtribuicao(aLouvor.id_escala_area, ana, admin, ADMIN, { instrumento: "vocal" }, { confirmarConflitos: true })
   );
   ok(e?.statusCode === 409, "…e nem com confirmação passa");
+  // A pré-validação (usada pela tela antes de salvar) não pode oferecer "continuar mesmo assim"
+  const pre = await EscalaService.validarAtribuicao(domingo.id, {
+    id_escala_area: aLouvor.id_escala_area,
+    id_usuario: ana,
+    detalhes: { instrumento: "vocal" },
+  });
+  ok(
+    pre.conflitos?.some((c) => c.tipo === "mesma_area") && pre.confirmavel === false,
+    "pré-validação: mesma área = 'mesma_area', sem opção de confirmar"
+  );
 
   // ---------- 2. Mesma pessoa em duas áreas do mesmo evento ----------
   e = await erroDe(() => EscalaService.addAtribuicao(aSom.id_escala_area, ana, admin, ADMIN, null));

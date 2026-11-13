@@ -1,0 +1,137 @@
+/**
+ * Ajustes de celular do site inteiro (carregado depois do CSS de cada tela).
+ *
+ * Achados numa varredura de todas as páginas a 375px: colunas lado a lado que não empilhavam,
+ * barras de abas e filtros mais largos que a tela e grades com largura mínima maior que o celular.
+ * Seletores com "body:not(#_)" (peso de id) para valer sobre o CSS das telas sem !important.
+ */
+
+/* ==================== Base: nada passa da largura da tela ==================== */
+img,
+video,
+iframe,
+canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 760px) {
+  /* Texto longo (e-mails, links) quebra em vez de empurrar a página para o lado */
+  body:not(#_) :is(p, li, dd, td, h1, h2, h3, h4, a, label) {
+    overflow-wrap: break-word;
+  }
+
+  /* Itens de grade/flex podem encolher abaixo do conteúdo (padrão do navegador é não poder) */
+  body:not(#_) :is(main, section, article, aside) {
+    min-width: 0;
+  }
+
+  /* ==================== Formulários (Secretaria das Células) ==================== */
+  body:not(#_) .formularios-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  body:not(#_) .formularios-layout > .panel {
+    min-width: 0;
+  }
+
+  /* Três camadas de 32px de margem (página + painel + cartão) deixavam ~180px para os campos */
+  body:not(#_) .formularios-page main.page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  body:not(#_) .formularios-layout > .formularios-center {
+    padding: 1rem;
+  }
+
+  body:not(#_) .formularios-center .formulario-card {
+    padding: 0.25rem 0;
+  }
+
+  body:not(#_) .formularios-center .formulario-title {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+
+  body:not(#_) .campos-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body:not(#_) .campo-card {
+    min-width: 0;
+    padding: 1rem;
+  }
+
+  body:not(#_) .campo-card :is(input, select, textarea) {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Abas Formulário | Respostas | Dashboard: rolam na horizontal se não couberem */
+  body:not(#_) .formulario-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+
+  body:not(#_) .formulario-tabs button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  body:not(#_) .formulario-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  body:not(#_) .resposta-item-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  body:not(#_) .dashboard-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* ==================== Gerenciar usuários ==================== */
+  body:not(#_) .tabs-container {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  body:not(#_) .tabs-container .tab {
+    flex: 1 1 auto;
+    padding: 0.7rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  body:not(#_) .busca-container {
+    flex-wrap: wrap;
+    justify-content: stretch;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+  }
+
+  body:not(#_) .busca-container input {
+    flex: 1 1 100%;
+    width: auto;
+    max-width: none;
+  }
+
+  body:not(#_) .busca-container .filtro-nivel {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  body:not(#_) .busca-container .btn-add {
+    flex: 0 0 48px;
+  }
+
+  body:not(#_) .cards-container {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { colisaoEscala } from "./colisaoEscala";
 import {
   DndContext,
   DragEndEvent,
@@ -323,6 +324,7 @@ const EscalaQuadroUnificado: React.FC<Props> = ({
       ) : (
         <DndContext
           sensors={sensors}
+          collisionDetection={colisaoEscala}
           onDragStart={(e) => setActive((e.active.data.current?.membro as SlotMembro) || null)}
           onDragEnd={handleDragEnd}
           onDragCancel={() => setActive(null)}

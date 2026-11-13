@@ -40,11 +40,20 @@ if [ ! -f .env ]; then
   exit 1
 fi
 
+# Imagens recebidas do GitHub Actions valem mais que as gravadas no .env: o .env guarda as do
+# deploy ANTERIOR e, carregado por cima, fazia o deploy "subir" de novo a versão antiga.
+IMAGEM_BACKEND_NOVA="${BACKEND_IMAGE:-}"
+IMAGEM_WEB_NOVA="${WEB_IMAGE:-}"
+
 # shellcheck disable=SC1091
 set -a
 # shellcheck source=/dev/null
 . ./.env
 set +a
+
+if [ -n "$IMAGEM_BACKEND_NOVA" ]; then BACKEND_IMAGE="$IMAGEM_BACKEND_NOVA"; fi
+if [ -n "$IMAGEM_WEB_NOVA" ]; then WEB_IMAGE="$IMAGEM_WEB_NOVA"; fi
+export BACKEND_IMAGE WEB_IMAGE
 
 require_var() {
   local name="$1"
@@ -106,6 +115,17 @@ if [ -n "${BACKEND_IMAGE:-}" ] && [ -n "${WEB_IMAGE:-}" ]; then
   done
   echo "Subindo containers..."
   $COMPOSE up -d --no-build
+  # Confere se os containers ficaram MESMO com as imagens novas (antes um erro aqui passava calado)
+  for PAR in "casadiscipulos_backend:${BACKEND_IMAGE}" "casadiscipulos_web:${WEB_IMAGE}"; do
+    NOME="${PAR%%:*}"
+    ESPERADA="${PAR#*:}"
+    EM_USO="$(docker inspect --format '{{.Config.Image}}' "$NOME" 2>/dev/null || true)"
+    if [ "$EM_USO" != "$ESPERADA" ]; then
+      echo "Erro: $NOME está com '$EM_USO', esperado '$ESPERADA'"
+      exit 1
+    fi
+    echo "  $NOME -> $EM_USO"
+  done
 else
   echo "Construindo imagens no servidor..."
   $COMPOSE build

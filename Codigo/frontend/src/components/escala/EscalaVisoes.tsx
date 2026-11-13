@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { colisaoEscala } from "./colisaoEscala";
 import {
   DndContext,
   DragEndEvent,
@@ -55,9 +56,8 @@ function SemanaEventoCard({
     id: `evento-semana-${ev.id}`,
     data: { eventoId: ev.id, evento: ev },
   });
-  const slots = Object.entries(ev.instrumentos || {})
-    .sort((a, b) => (a[1].ordem || 0) - (b[1].ordem || 0))
-    .filter(([, slot]) => slot.membros.length > 0);
+  // Expandido mostra TODAS as áreas (inclusive vazias): são onde o líder solta as pessoas
+  const slots = Object.entries(ev.instrumentos || {}).sort((a, b) => (a[1].ordem || 0) - (b[1].ordem || 0));
   const nomesPreview = slots
     .flatMap(([, slot]) => slot.membros.map((m) => m.usuario.nome.split(" ")[0]))
     .slice(0, 3);
@@ -296,6 +296,7 @@ export const EscalaVisaoSemana: React.FC<
       </div>
       <DndContext
         sensors={sensors}
+        collisionDetection={colisaoEscala}
         onDragStart={(e) => setActive((e.active.data.current?.membro as SlotMembro) || null)}
         onDragEnd={handleDragEnd}
         onDragCancel={() => setActive(null)}

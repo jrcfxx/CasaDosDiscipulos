@@ -24,11 +24,14 @@ class ValidadorEscala {
   }) {
     const conflitos = [];
 
+    // O próprio evento fica de fora do choque de horário: estar nele duas vezes é tratado em
+    // validarConflitoMesmoEvento (antes a mesma situação aparecia em duas mensagens repetidas).
+    void excluirMesmoEventoDoOverlap;
     const duploEvento = await this.validarConflitoDuploEvento(
       idUsuario,
       dataHora,
       dataHoraFim,
-      excluirMesmoEventoDoOverlap ? idEvento : null,
+      idEvento,
       idAtribuicaoExcluir
     );
     if (!duploEvento.valido) conflitos.push(duploEvento);
@@ -37,7 +40,8 @@ class ValidadorEscala {
       idUsuario,
       idEvento,
       idAtribuicaoExcluir,
-      idMinisterioDestino
+      idMinisterioDestino,
+      idArea
     );
     if (!duploArea.valido) conflitos.push(duploArea);
 
@@ -98,14 +102,16 @@ class ValidadorEscala {
   }
 
   /**
-   * Bloqueia a mesma pessoa em duas áreas do mesmo evento,
-   * exceto quando os ministérios das áreas têm paralelismo configurado.
+   * Mesma pessoa duas vezes no mesmo evento:
+   * - na MESMA área/ministério (ex.: violão e teclado no Louvor): "mesma_area", nunca permitido;
+   * - em ministérios diferentes sem paralelismo: "duplo_instrumento", exceção confirmável.
    */
   async validarConflitoMesmoEvento(
     idUsuario,
     idEvento,
     idAtribuicaoExcluir = null,
-    idMinisterioDestino = null
+    idMinisterioDestino = null,
+    idAreaDestino = null
   ) {
     const existentes = await EscalaRepository.listarEscalasUsuarioNoEvento(
       idUsuario,
@@ -117,7 +123,23 @@ class ValidadorEscala {
     }
 
     const destino = idMinisterioDestino != null ? Number(idMinisterioDestino) : null;
+    const areaDestino = idAreaDestino != null ? Number(idAreaDestino) : null;
     const bloqueantes = [];
+
+    const mesmaArea = existentes.filter((e) => {
+      const origem = e.id_ministerio != null ? Number(e.id_ministerio) : null;
+      return (areaDestino && Number(e.id_escala_area) === areaDestino) || (origem && destino && origem === destino);
+    });
+    if (mesmaArea.length) {
+      const nome = mesmaArea[0].area_nome || "esta área";
+      return {
+        tipo: "mesma_area",
+        valido: false,
+        mensagem: `Esta pessoa já está escalada em ${nome} neste evento.`,
+        sugestao: `Para trocar a função, edite a escala dela em ${nome} ou arraste-a para a nova função.`,
+        detalhe: mesmaArea[0],
+      };
+    }
 
     for (const existente of existentes) {
       const origem = existente.id_ministerio != null ? Number(existente.id_ministerio) : null;

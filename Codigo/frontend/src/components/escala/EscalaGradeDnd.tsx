@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { colisaoEscala } from "./colisaoEscala";
 import {
   DndContext,
   DragEndEvent,
@@ -192,6 +193,7 @@ const EscalaGradeDnd: React.FC<EscalaGradeDndProps> = ({
   return (
     <DndContext
       sensors={sensors}
+      collisionDetection={colisaoEscala}
       onDragStart={(e) => {
         const att = e.active.data.current?.atribuicao as EscalaAtribuicao | undefined;
         setActiveAtt(att || null);
