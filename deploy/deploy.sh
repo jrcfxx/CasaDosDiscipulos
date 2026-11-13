@@ -94,6 +94,16 @@ if [ -n "${BACKEND_IMAGE:-}" ] && [ -n "${WEB_IMAGE:-}" ]; then
   echo "  backend: ${BACKEND_IMAGE}"
   echo "  web:     ${WEB_IMAGE}"
   $COMPOSE pull backend web
+  # Grava as imagens em uso no .env: assim um "docker compose up" manual depois do deploy
+  # usa a mesma versão (sem isso, cai na imagem local antiga "casadiscipulos-backend:latest").
+  for VAR in BACKEND_IMAGE WEB_IMAGE; do
+    VALOR="${!VAR}"
+    if grep -q "^${VAR}=" .env 2>/dev/null; then
+      sed -i "s|^${VAR}=.*|${VAR}=${VALOR}|" .env
+    else
+      echo "${VAR}=${VALOR}" >> .env
+    fi
+  done
   echo "Subindo containers..."
   $COMPOSE up -d --no-build
 else

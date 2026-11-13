@@ -19,6 +19,9 @@ router.use(verificarToken);
 // GET /api/usuarios/perfil - Buscar perfil do usuário autenticado
 router.get("/perfil", UsuarioController.perfil);
 
+// GET /api/usuarios/perfil/inicio - Resumo personalizado do início do portal
+router.get("/perfil/inicio", UsuarioController.inicio);
+
 // PUT /api/usuarios/perfil - Atualizar perfil do usuário autenticado
 router.put("/perfil", UsuarioController.updatePerfil);
 

@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { HashRouter } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
+import { migrarLinkHash, ouvirLinksHash } from "./utils/migrarLinkHash";
 import "./index.css";
 import "./style/accessibility.css";
 import "./style/feedback.css";
@@ -13,6 +14,10 @@ import SkipLink from "./components/accessibility/SkipLink";
 import AccessibilityBar from "./components/accessibility/AccessibilityBar";
 import MiniJesus from "./components/MiniJesus";
 
+// Links antigos "/#/caminho" → "/caminho" (antes de o roteador ler a URL)
+migrarLinkHash();
+ouvirLinksHash();
+
 const container = document.getElementById("root") as HTMLElement;
 const root = ReactDOM.createRoot(container);
 
@@ -23,7 +28,7 @@ if (import.meta.env.DEV) {
 
 root.render(
   <React.StrictMode>
-    <HashRouter>
+    <BrowserRouter>
       <AuthProvider>
         <AccessibilityProvider>
           <LiveAnnouncerProvider>
@@ -34,7 +39,7 @@ root.render(
           </LiveAnnouncerProvider>
         </AccessibilityProvider>
       </AuthProvider>
-    </HashRouter>
+    </BrowserRouter>
   </React.StrictMode>
 );
 

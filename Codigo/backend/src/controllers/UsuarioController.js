@@ -2,6 +2,8 @@ import bcrypt from "bcrypt";
 import knex from "../database/index.js";
 import UsuarioService from "../services/UsuarioService.js";
 import AuthService from "../services/authService.js";
+import InicioService from "../services/InicioService.js";
+import { gravarCookieSessao } from "../utils/cookieSessao.js";
 import { HTTP_STATUS } from "../utils/constants.js";
 import { ValidationError } from "../utils/AppError.js";
 
@@ -160,15 +162,15 @@ const UsuarioController = {
         ? await UsuarioService.update(usuarioId, dadosPermitidos)
         : await UsuarioService.getById(usuarioId);
 
-      // Troca de senha: mesma regra e efeitos do primeiro acesso (encerra outras sessões)
-      let token;
+      // Troca de senha: mesma regra e efeitos do primeiro acesso (encerra outras sessões;
+      // esta continua com a sessão nova no cookie)
       if (body.senha !== undefined) {
         const r = await AuthService.trocarSenha(usuarioId, body.senhaAtual, body.senha);
-        token = r.token;
+        gravarCookieSessao(res, r.token);
         usuario = await UsuarioService.getById(usuarioId);
       }
 
-      res.status(HTTP_STATUS.OK).json(token ? { ...usuario, token } : usuario);
+      res.status(HTTP_STATUS.OK).json(usuario);
     } catch (err) {
       next(err);
     }
@@ -179,6 +181,15 @@ const UsuarioController = {
    * POST /api/usuarios/:id/pontuacao-manual
    * Body: { pontos: number, motivo: string }
    */
+  /** GET /api/usuarios/perfil/inicio */
+  async inicio(req, res, next) {
+    try {
+      res.status(HTTP_STATUS.OK).json(await InicioService.getResumo(req.usuario.id_usuario));
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async redefinirSenha(req, res, next) {
     try {
       const id = parseInt(req.params.id, 10);

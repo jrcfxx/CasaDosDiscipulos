@@ -32,6 +32,12 @@ export async function createUser(userData) {
   }
 }
 
+/** Resumo personalizado do início do portal (escalas, módulo, palavra do dia...) */
+export async function getInicio() {
+  const res = await api.get(`${URL}/perfil/inicio`);
+  return res.data;
+}
+
 /**
  * Admin: gera senha temporária para o usuário (troca obrigatória no próximo acesso).
  * @returns {Promise<string>} a senha temporária (mostrada uma única vez)

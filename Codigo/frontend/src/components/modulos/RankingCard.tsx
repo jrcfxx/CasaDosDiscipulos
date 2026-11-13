@@ -26,13 +26,26 @@ export type MinhaPosicao = {
   pontuacao_anterior: number | null;
 };
 
-function getMensagemMotivacional(dados: MinhaPosicao): string {
+/** Posição só é mostrada a quem já pontuou e está perto do topo: "72º" para quem chegou agora desanima */
+export const LIMITE_POSICAO_VISIVEL = 20;
+
+export function deveMostrarPosicao(dados: MinhaPosicao): boolean {
+  return dados.pontuacao > 0 && dados.posicao <= LIMITE_POSICAO_VISIVEL;
+}
+
+export function getMensagemMotivacional(dados: MinhaPosicao): string {
   const { posicao, pontuacao, pontuacao_primeiro, pontuacao_anterior } = dados;
   const ptsPara1 = Math.max(0, pontuacao_primeiro - pontuacao);
   const ptsParaAnterior = pontuacao_anterior != null ? pontuacao_anterior - pontuacao : null;
 
   if (pontuacao === 0 && posicao > 1) {
-    return "Complete módulos e quizzes para ganhar pontos e subir no ranking! 🚀";
+    return "Conclua seu primeiro módulo para entrar no ranking! 🚀";
+  }
+  if (posicao > LIMITE_POSICAO_VISIVEL) {
+    const ptsParaSubir = ptsParaAnterior != null && ptsParaAnterior > 0 ? ptsParaAnterior : null;
+    return ptsParaSubir
+      ? `Você já tem ${pontuacao} pontos! Com mais ${ptsParaSubir} você passa mais uma pessoa. Continue! 🌱`
+      : `Você já tem ${pontuacao} pontos! Cada módulo concluído te faz subir. Continue! 🌱`;
   }
   if (posicao === 1) {
     return "Você está em 1º lugar! Parabéns, continue assim! 🏆";
@@ -126,12 +139,10 @@ export default function RankingCard({
       )}
       {mensagem && (
         <div className="ranking-minha-posicao">
-          {minhaPosicao && (
+          {minhaPosicao && deveMostrarPosicao(minhaPosicao) && (
             <p className="ranking-posicao-numero">
               Sua posição: <strong>{minhaPosicao.posicao}º</strong>
-              {minhaPosicao.pontuacao > 0 && (
-                <> · {minhaPosicao.pontuacao} pts</>
-              )}
+              <> · {minhaPosicao.pontuacao} pts</>
               {minhaPosicao.nivel_escola_nome && (
                 <> · {minhaPosicao.nivel_escola_nome}</>
               )}

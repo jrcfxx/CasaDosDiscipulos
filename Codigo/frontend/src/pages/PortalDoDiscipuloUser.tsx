@@ -11,6 +11,7 @@ import imgModulos from "../assets/IMG_6568.jpg";
 import imgStaff from "../assets/tres_mulheres.jpeg";
 
 import Header from "../components/layout/Header";
+import InicioPersonalizado from "../components/portal/InicioPersonalizado";
 import Footer from "../components/layout/Footer";
 
 const PortalDoDiscipuloUser: React.FC = () => {
@@ -28,6 +29,9 @@ const PortalDoDiscipuloUser: React.FC = () => {
             Seu espaço de formação, comunhão e crescimento.
           </p>
         </header>
+
+        {/* O que importa hoje para esta pessoa */}
+        <InicioPersonalizado />
 
         {/* Na Casa - Escala + Fala Aí + Staff */}
         <section className="portal-section">

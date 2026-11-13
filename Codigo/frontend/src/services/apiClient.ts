@@ -3,7 +3,7 @@ import axios, {
   InternalAxiosRequestConfig,
   AxiosError,
 } from "axios";
-import authService from "./authService";
+import authService, { OPCOES_SESSAO } from "./authService";
 
 const API_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
@@ -13,8 +13,11 @@ const API_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:3001/api"
  */
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
+  // Sessão no cookie HttpOnly + cabeçalho exigido pelo servidor contra CSRF
+  withCredentials: OPCOES_SESSAO.withCredentials,
   headers: {
     "Content-Type": "application/json",
+    ...OPCOES_SESSAO.headers,
   },
   timeout: 10000, // 10 segundos
 });
@@ -25,12 +28,6 @@ const api: AxiosInstance = axios.create({
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("token");
-
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
     // FormData: remover Content-Type para o navegador definir multipart/form-data com boundary
     if (config.data instanceof FormData && config.headers) {
       delete config.headers["Content-Type"];
@@ -54,8 +51,7 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<{ error?: string; codigo?: string }>) => {
     const status = error.response?.status;
-    const hash = window.location.hash || "#/";
-    const caminhoAtual = hash.replace(/^#/, "") || "/";
+    const caminhoAtual = window.location.pathname + window.location.search;
 
     // Senha provisória: o servidor só libera a criação da senha
     if (status === 403 && error.response?.data?.codigo === "TROCAR_SENHA") {
@@ -65,24 +61,21 @@ api.interceptors.response.use(
       } catch {
         /* ignore */
       }
-      if (!hash.startsWith("#/criar-senha")) {
+      if (!window.location.pathname.startsWith("/criar-senha")) {
         authService.definirRetorno(caminhoAtual);
-        window.location.hash = "#/criar-senha";
-        window.location.reload();
+        window.location.assign("/criar-senha");
       }
     }
 
     if (status === 401 && !isLoggingOut) {
       isLoggingOut = true;
-      localStorage.removeItem("token");
-      localStorage.removeItem("usuario");
+      authService.limparDadosLocais();
 
-      if (!hash.startsWith("#/login")) {
+      if (!window.location.pathname.startsWith("/login")) {
         // Explica o motivo na tela de login e volta para cá depois de entrar
         authService.definirAviso(error.response?.data?.error || "Sua sessão expirou. Entre novamente.");
         authService.definirRetorno(caminhoAtual);
-        window.location.hash = "#/login";
-        window.location.reload();
+        window.location.assign("/login");
       } else {
         isLoggingOut = false;
       }
