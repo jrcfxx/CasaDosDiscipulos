@@ -10,7 +10,7 @@
   --fala-ai-panel: #141414;
   --fala-ai-border: rgba(255, 255, 255, 0.08);
   --fala-ai-text: #f5f5f5;
-  --fala-ai-muted: #9ca3af;
+  --fala-ai-muted: var(--n-400);
 }
 
 .fala-ai-page {

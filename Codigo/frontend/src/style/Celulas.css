@@ -116,12 +116,12 @@
 
 .celulas-status {
   text-align: center;
-  color: #64748b;
+  color: var(--n-500);
   padding: 2rem 1rem;
 }
 
 .celulas-status--erro {
-  color: #b91c1c;
+  color: var(--color-error-700);
 }
 
 .celulas-grupo + .celulas-grupo {

@@ -34,13 +34,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  color: #9ca3af;
+  color: var(--n-400);
   font-size: 0.9rem;
 }
 
 .biblia-verse-card--erro {
   background: rgba(185, 28, 28, 0.15);
-  border-color: rgba(239, 68, 68, 0.35);
+  border-color: rgba(217, 72, 59, 0.35);
   color: #fca5a5;
   font-size: 0.88rem;
 }
@@ -134,7 +134,7 @@
   font-style: normal;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #7dd3e0;
+  color: var(--teal-200);
   font-family: var(--font-primary, inherit);
 }
 

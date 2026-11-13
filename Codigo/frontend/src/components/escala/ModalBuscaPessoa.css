@@ -75,7 +75,7 @@
   background: rgba(2, 134, 155, 0.22);
   border: 1px solid rgba(2, 134, 155, 0.28);
   border-radius: 12px;
-  color: #7dd3e0;
+  color: var(--teal-200);
   flex-shrink: 0;
 }
 
@@ -90,7 +90,7 @@
 
 .modal-busca-subtitle {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0;
   line-height: 1.4;
 }
@@ -104,7 +104,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: #94a3b8;
+  color: var(--n-400);
   font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
@@ -142,7 +142,7 @@
 .modal-busca-pessoa .form-group > label {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--n-400);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -158,8 +158,8 @@
   top: 50%;
   width: 0.45rem;
   height: 0.45rem;
-  border-right: 2px solid #7dd3e0;
-  border-bottom: 2px solid #7dd3e0;
+  border-right: 2px solid var(--teal-200);
+  border-bottom: 2px solid var(--teal-200);
   transform: translateY(-65%) rotate(45deg);
   pointer-events: none;
 }
@@ -173,7 +173,7 @@
   border-radius: 11px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(0, 68, 76, 0.35);
-  color: #f8fafc;
+  color: var(--n-50);
   padding: 0.72rem 0.9rem;
   font: inherit;
   font-size: 0.92rem;
@@ -188,7 +188,7 @@
 
 .modal-busca-pessoa .form-group select option {
   background: #1a2126;
-  color: #f8fafc;
+  color: var(--n-50);
 }
 
 .modal-busca-pessoa .form-group input[type="date"]::-webkit-calendar-picker-indicator {
@@ -221,8 +221,8 @@
   margin: 0.9rem 0 0;
   padding: 0.7rem 0.85rem;
   border-radius: 10px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.28);
+  background: rgba(217, 72, 59, 0.12);
+  border: 1px solid rgba(217, 72, 59, 0.28);
   color: #fca5a5;
   font-size: 0.84rem;
   line-height: 1.4;
@@ -247,7 +247,7 @@
 .modal-busca-resultado-head p {
   margin: 0;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .modal-busca-chips {
@@ -263,7 +263,7 @@
   border-radius: 999px;
   background: rgba(2, 134, 155, 0.16);
   border: 1px solid rgba(2, 134, 155, 0.28);
-  color: #9fe0ea;
+  color: var(--teal-200);
   font-size: 0.72rem;
   font-weight: 600;
 }
@@ -271,7 +271,7 @@
 .modal-busca-vazio {
   margin: 0.5rem 0 0;
   font-size: 0.86rem;
-  color: #94a3b8;
+  color: var(--n-400);
   text-align: center;
   padding: 0.85rem;
 }
@@ -323,7 +323,7 @@
 .modal-busca-item-data small {
   font-size: 0.7rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .modal-busca-item-info {
@@ -336,7 +336,7 @@
 .modal-busca-item-info strong {
   font-size: 0.88rem;
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--n-50);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -344,11 +344,11 @@
 
 .modal-busca-item-info span {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .modal-busca-item-arrow {
-  color: #7dd3e0;
+  color: var(--teal-200);
   font-size: 1rem;
   opacity: 0.7;
 }
@@ -374,13 +374,13 @@
 }
 
 .btn-busca-cancelar {
-  background: rgba(100, 116, 139, 0.18);
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(115, 122, 123, 0.18);
+  color: var(--n-300);
+  border: 1px solid rgba(155, 161, 162, 0.22);
 }
 
 .btn-busca-cancelar:hover {
-  background: rgba(100, 116, 139, 0.32);
+  background: rgba(115, 122, 123, 0.32);
   color: #fff;
 }
 

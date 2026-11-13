@@ -1,0 +1,274 @@
+/**
+ * Refino visual — identidade Casa dos Discípulos
+ *
+ * Camada global que dá unidade às telas sem mudar layout nem conteúdo:
+ * tipografia Montserrat (regular na maior parte, peso só para destaque), paleta da marca
+ * (petróleo #00444c, teal #02869b, grafite #2b2f30, off-white #ebebeb; amarelo e ciano só em
+ * detalhes e nunca juntos), sombras suaves.
+ *
+ * Os seletores começam com "body:not(#_)" (peso de id, #_ não existe na página) para valer sobre
+ * o CSS de cada tela, que carrega depois e usa classes compostas, sem precisar de !important. Só cor, borda, raio, peso e tipografia — tamanhos e posições
+ * continuam os de cada tela.
+ */
+
+/* ==================== Base ==================== */
+body {
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-regular);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Brilho teal muito sutil no topo das páginas escuras (elemento de apoio da marca) */
+  background:
+    radial-gradient(1100px 480px at 50% -12%, rgba(2, 134, 155, 0.09), transparent 62%),
+    var(--color-bg);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(2, 134, 155, 0.35);
+  color: inherit;
+}
+
+/* Foco visível consistente (teclado), no tom da marca */
+body:not(#_) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--teal-400);
+  outline-offset: 2px;
+}
+
+/* Barra de rolagem discreta */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(155, 161, 162, 0.45) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(155, 161, 162, 0.4);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(155, 161, 162, 0.65);
+  background-clip: padding-box;
+}
+
+/* ==================== Títulos das páginas internas ==================== */
+/* Mesmo padrão do Portal: caixa normal, peso de destaque, sem letras espaçadas pesadas */
+body:not(#_) :is(
+  .page-title,
+  .gerir-title,
+  .licoes-title,
+  .criar-modulo-title,
+  .editar-modulo-title,
+  .cf-title,
+  .fala-ai-title,
+  .fala-ai-admin-title,
+  .perfil-title,
+  .pfu-title,
+  .escala-mapa-titulo
+) {
+  font-family: var(--font-primary);
+  font-size: clamp(1.6rem, 2.8vw, 2.15rem);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+/* Filete sob o título: teal + detalhe amarelo (secundária usada só como detalhe) */
+body:not(#_) :is(.page-title, .gerir-title, .licoes-title)::after {
+  width: 56px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--teal-500) 0 70%, var(--gold-500) 70% 100%);
+}
+
+/* ==================== Botões ==================== */
+/* Ação principal: petróleo, teal no hover */
+body:not(#_) :is(
+  .save-btn,
+  .btn-salvar,
+  .btn-create,
+  .btn-criar,
+  .btn-add,
+  .cf-save,
+  .pfu-save,
+  .pfu-btn-enviar,
+  .btn-evento-salvar,
+  .modal-ministerio-btn-save,
+  .notif-modal-btn-primary,
+  .staff-btn--primario,
+  .btn-tpl-pri-sm,
+  .btn-tpl-novo
+) {
+  background: var(--teal-800);
+  color: #fff;
+  border: 1px solid var(--teal-800);
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  transition: background-color var(--transition-base), border-color var(--transition-base),
+    transform var(--transition-fast);
+}
+
+body:not(#_) :is(
+  .save-btn,
+  .btn-salvar,
+  .btn-create,
+  .btn-criar,
+  .btn-add,
+  .cf-save,
+  .pfu-save,
+  .pfu-btn-enviar,
+  .btn-evento-salvar,
+  .modal-ministerio-btn-save,
+  .notif-modal-btn-primary,
+  .staff-btn--primario,
+  .btn-tpl-pri-sm,
+  .btn-tpl-novo
+):hover:not(:disabled) {
+  background: var(--teal-500);
+  border-color: var(--teal-500);
+}
+
+/* Ação secundária: contorno que se adapta ao fundo (claro ou escuro) */
+body:not(#_) :is(
+  .cancel-btn,
+  .btn-cancel,
+  .btn-cancelar,
+  .btn-evento-cancelar,
+  .modal-ministerio-btn-cancel,
+  .notif-modal-btn-secondary,
+  .btn-tpl-sec,
+  .btn-tpl-cancelar,
+  .btn-busca-cancelar,
+  .btn-edit,
+  .btn-editar-evento,
+  .btn-reativar,
+  .btn-editar,
+  .btn-toggle
+) {
+  background: transparent;
+  color: inherit;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: none;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+body:not(#_) :is(
+  .cancel-btn,
+  .btn-cancel,
+  .btn-cancelar,
+  .btn-evento-cancelar,
+  .modal-ministerio-btn-cancel,
+  .notif-modal-btn-secondary,
+  .btn-tpl-sec,
+  .btn-tpl-cancelar,
+  .btn-busca-cancelar,
+  .btn-edit,
+  .btn-editar-evento,
+  .btn-reativar,
+  .btn-editar,
+  .btn-toggle
+):hover:not(:disabled) {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+
+/* Ação destrutiva: discreta até o hover */
+body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel) {
+  background: transparent;
+  color: var(--color-error-500);
+  border: 1px solid color-mix(in srgb, var(--color-error-500) 45%, transparent);
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: none;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel):hover:not(:disabled) {
+  background: var(--color-error-600);
+  border-color: var(--color-error-600);
+  color: #fff;
+}
+
+body:not(#_) :is(button, [role="button"]):disabled {
+  cursor: not-allowed;
+}
+
+/* ==================== Selos de status ==================== */
+body:not(#_) :is(.badge, .badge-status, .status-badge, .btn-status, .evento-status) {
+  border-radius: 999px;
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+body:not(#_) :is(.badge-active, .btn-status.active, .status-publicada) {
+  background: var(--teal-50);
+  color: var(--teal-700);
+  border-color: var(--teal-100);
+}
+
+body:not(#_) :is(.badge-inactive, .badge-inativo, .btn-status.inactive, .status-concluida) {
+  background: var(--n-100);
+  color: var(--n-600);
+  border-color: var(--n-200);
+}
+
+body:not(#_) .status-rascunho {
+  background: var(--gold-50);
+  color: var(--gold-700);
+  border-color: var(--gold-100);
+}
+
+/* ==================== Campos ==================== */
+body:not(#_) :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  font-family: var(--font-primary);
+}
+
+body:not(#_) :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus {
+  border-color: var(--teal-500);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+body:not(#_) :is(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--teal-500);
+}
+
+body:not(#_) ::placeholder {
+  color: var(--n-400);
+  opacity: 1;
+}
+
+/* ==================== Tabelas ==================== */
+body:not(#_) :is(.niveis-table, .celulas-table) th {
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ==================== Modais ==================== */
+body:not(#_) :is(.modal-fundo, .modal-overlay, .cd-modal-overlay) {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* ==================== Redução de movimento ==================== */
+@media (prefers-reduced-motion: reduce) {
+  body {
+    background-attachment: scroll;
+  }
+}

@@ -52,13 +52,13 @@
   margin-bottom: 0.5rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--color-gray-600, #475569);
+  color: var(--color-gray-600, var(--n-600));
 }
 
 .input-modal-input {
   width: 100%;
   padding: 0.65rem 0.85rem;
-  border: 2px solid var(--color-gray-200, #e2e8f0);
+  border: 2px solid var(--color-gray-200, var(--n-200));
   border-radius: 10px;
   font-size: 1rem;
   color: var(--color-neutral-dark, #2b2f30);
@@ -72,13 +72,13 @@
 }
 
 .input-modal-input::placeholder {
-  color: var(--color-gray-400, #94a3b8);
+  color: var(--color-gray-400, var(--n-400));
 }
 
 .input-modal-hint {
   margin: 0.45rem 0 0;
   font-size: 0.8rem;
-  color: var(--color-gray-500, #64748b);
+  color: var(--color-gray-500, var(--n-500));
   line-height: 1.4;
 }
 
@@ -100,11 +100,11 @@
 }
 
 .input-modal-btn-cancel {
-  background: var(--color-neutral-light, #e2e8f0);
-  color: var(--color-gray-600, #475569);
+  background: var(--color-neutral-light, var(--n-200));
+  color: var(--color-gray-600, var(--n-600));
 }
 .input-modal-btn-cancel:hover {
-  background: var(--color-gray-300, #cbd5e1);
+  background: var(--color-gray-300, var(--n-300));
 }
 
 .input-modal-btn-confirm {

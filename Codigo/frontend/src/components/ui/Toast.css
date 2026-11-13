@@ -24,19 +24,19 @@
 }
 
 .toast-toast-success {
-  background: #166534;
+  background: var(--teal-700);
   color: white;
-  border-left: 4px solid #22c55e;
+  border-left: 4px solid var(--teal-500);
 }
 
 .toast-toast-error {
-  background: #991b1b;
+  background: var(--color-error-700);
   color: white;
-  border-left: 4px solid #ef4444;
+  border-left: 4px solid var(--color-error-500);
 }
 
 .toast-toast-info {
-  background: #1e293b;
+  background: var(--n-800);
   color: white;
   border-left: 4px solid #02869b;
 }

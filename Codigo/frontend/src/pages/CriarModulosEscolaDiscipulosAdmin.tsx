@@ -256,7 +256,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
     <div className="criar-modulo-page">
       <Header />
       <div className="criar-modulo-container">
-        <h1 className="criar-modulo-title">CRIAR MÓDULO</h1>
+        <h1 className="criar-modulo-title">Criar módulo</h1>
       </div>
 
       <main id="main-content" className="criar-modulo-container" tabIndex={-1}>

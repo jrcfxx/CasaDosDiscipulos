@@ -210,7 +210,7 @@
   margin: 0.85rem 0 0;
   text-align: center;
   font-size: 0.85rem;
-  color: #9ca3af;
+  color: var(--n-400);
   font-family: var(--font-primary, "Montserrat", sans-serif);
 }
 
@@ -383,7 +383,7 @@
 .btn-fechar-dashboard {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #9ca3af;
+  color: var(--n-400);
   font-size: 1.35rem;
   line-height: 1;
   width: 36px;
@@ -399,14 +399,14 @@
 }
 
 .btn-fechar-dashboard:hover {
-  background: rgba(239, 68, 68, 0.18);
-  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(217, 72, 59, 0.18);
+  border-color: rgba(217, 72, 59, 0.4);
   color: #f87171;
 }
 
 .escala-dashboard-desc {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0 0 1.15rem 0;
   line-height: 1.55;
 }
@@ -442,7 +442,7 @@
 
 .resumo-label {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--n-400);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
@@ -458,8 +458,8 @@
 }
 
 .resumo-badge {
-  background: rgba(34, 197, 94, 0.2);
-  color: #4ade80;
+  background: rgba(2, 134, 155, 0.2);
+  color: var(--teal-400);
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   font-size: 0.85rem;
@@ -469,7 +469,7 @@
 .escala-dashboard-titulo-secao {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--n-500);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 0.85rem;
@@ -536,7 +536,7 @@
 
 .ministerio-count {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--n-500);
   background: rgba(255, 255, 255, 0.05);
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
@@ -613,7 +613,7 @@
 }
 
 .btn-remover-chip {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(217, 72, 59, 0.15);
   border: none;
   color: #f87171;
   width: 26px;
@@ -628,12 +628,12 @@
 }
 
 .btn-remover-chip:hover {
-  background: rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.3);
 }
 
 .ministerio-vazio {
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--n-500);
   font-style: italic;
   margin: 0;
   padding: 0.75rem 0;
@@ -714,12 +714,12 @@
 .btn-excluir-evento {
   background: transparent;
   color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.45);
+  border: 1px solid rgba(217, 72, 59, 0.45);
   margin-left: 0;
 }
 
 .btn-excluir-evento:hover {
-  background: rgba(239, 68, 68, 0.18);
+  background: rgba(217, 72, 59, 0.18);
 }
 
 
@@ -732,7 +732,7 @@
 
 .modal-atribuicao-contexto {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: -0.5rem 0 1rem 0;
 }
 
@@ -879,7 +879,7 @@
 
 .modal-evento-subtitle {
   font-size: 0.82rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0;
   line-height: 1.4;
 }
@@ -893,7 +893,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: #94a3b8;
+  color: var(--n-400);
   font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
@@ -903,8 +903,8 @@
 }
 
 .modal-evento-close:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.15);
+  border-color: rgba(217, 72, 59, 0.3);
   color: #f87171;
 }
 
@@ -932,7 +932,7 @@
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #d1d5db;
+  color: var(--n-300);
   margin-bottom: 0.45rem;
   letter-spacing: 0.01em;
 }
@@ -952,7 +952,7 @@
 .form-group-count {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #7dd3e0;
+  color: var(--teal-200);
 }
 
 .modal-escala-evento .form-group input[type="text"],
@@ -961,7 +961,7 @@
   width: 100%;
   padding: 0.75rem 0.9rem;
   background: rgba(15, 23, 28, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(155, 161, 162, 0.18);
   border-radius: 11px;
   color: #f5f5f5;
   font-size: 0.92rem;
@@ -972,7 +972,7 @@
 
 .modal-escala-evento .form-group input::placeholder,
 .modal-escala-evento .form-group textarea::placeholder {
-  color: #64748b;
+  color: var(--n-500);
 }
 
 .modal-escala-evento .form-group input:hover:not(:focus),
@@ -1027,7 +1027,7 @@
   position: relative;
   box-sizing: border-box;
   font-weight: 600;
-  color: #e5e7eb;
+  color: var(--n-200);
   letter-spacing: normal;
 }
 
@@ -1062,7 +1062,7 @@
   height: 18px;
   min-width: 18px;
   border-radius: 6px;
-  border: 1.5px solid rgba(148, 163, 184, 0.45);
+  border: 1.5px solid rgba(155, 161, 162, 0.45);
   background: transparent;
   position: relative;
   display: inline-block;
@@ -1092,7 +1092,7 @@
   min-width: 0;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #e5e7eb;
+  color: var(--n-200);
   line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1139,7 +1139,7 @@
   width: 42px;
   height: 24px;
   border-radius: 999px;
-  background: rgba(100, 116, 139, 0.45);
+  background: rgba(115, 122, 123, 0.45);
   transition: background 0.2s;
 }
 
@@ -1179,7 +1179,7 @@
 
 .evento-ativo-toggle__texto small {
   font-size: 0.72rem;
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .modal-evento-actions {
@@ -1202,13 +1202,13 @@
 }
 
 .btn-evento-cancelar {
-  background: rgba(100, 116, 139, 0.18);
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(115, 122, 123, 0.18);
+  color: var(--n-300);
+  border: 1px solid rgba(155, 161, 162, 0.22);
 }
 
 .btn-evento-cancelar:hover {
-  background: rgba(100, 116, 139, 0.32);
+  background: rgba(115, 122, 123, 0.32);
   color: #fff;
 }
 
@@ -1621,7 +1621,7 @@
 .area-count {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #7dd3e0;
+  color: var(--teal-200);
   background: rgba(2, 134, 155, 0.18);
   border: 1px solid rgba(2, 134, 155, 0.28);
   padding: 0.15rem 0.5rem;
@@ -1671,7 +1671,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #6b7280;
+  color: var(--n-500);
   cursor: grab;
   padding: 0;
 }
@@ -1681,7 +1681,7 @@
 }
 
 .pessoa-drag:hover {
-  color: #9ca3af;
+  color: var(--n-400);
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -1738,7 +1738,7 @@
   border: none;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
-  color: #9ca3af;
+  color: var(--n-400);
   cursor: pointer;
   padding: 0;
   transition: background 0.15s, color 0.15s;
@@ -1746,11 +1746,11 @@
 
 .pessoa-acao:hover {
   background: rgba(2, 134, 155, 0.28);
-  color: #7dd3e0;
+  color: var(--teal-200);
 }
 
 .pessoa-acao--perigo:hover {
-  background: rgba(239, 68, 68, 0.22);
+  background: rgba(217, 72, 59, 0.22);
   color: #f87171;
 }
 
@@ -1758,7 +1758,7 @@
   opacity: 0.55;
   font-size: 0.82rem;
   padding: 0.65rem 0.35rem;
-  color: #9ca3af;
+  color: var(--n-400);
   font-style: italic;
   list-style: none;
 }
@@ -2047,7 +2047,7 @@
   border: none;
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
+  color: var(--n-300);
   cursor: pointer;
   padding: 0;
   opacity: 1;
@@ -2056,11 +2056,11 @@
 
 .chip-acao:hover {
   background: rgba(2, 134, 155, 0.3);
-  color: #7dd3e0;
+  color: var(--teal-200);
 }
 
 .chip-acao.perigo:hover {
-  background: rgba(239, 68, 68, 0.25);
+  background: rgba(217, 72, 59, 0.25);
   color: #f87171;
 }
 

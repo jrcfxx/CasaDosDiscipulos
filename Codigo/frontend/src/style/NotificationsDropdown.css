@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e2e8f0;
+  color: var(--n-200);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -85,7 +85,7 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--n-200);
   letter-spacing: -0.02em;
 }
 
@@ -116,7 +116,7 @@
   align-items: center;
   justify-content: center;
   padding: 2.5rem 1.5rem;
-  color: #64748b;
+  color: var(--n-500);
   font-size: 0.9rem;
 }
 
@@ -195,22 +195,22 @@
 .notif-item-titulo {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--n-200);
 }
 
 .notif-item-msg {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .notif-item-time {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--n-500);
 }
 
 .notif-item-badge {
   font-size: 0.75rem;
-  color: #22c55e;
+  color: var(--teal-500);
   flex-shrink: 0;
 }
 
@@ -267,7 +267,7 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--n-200);
 }
 
 .notif-modal-close {
@@ -279,14 +279,14 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: #94a3b8;
+  color: var(--n-400);
   font-size: 1.5rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .notif-modal-close:hover {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(217, 72, 59, 0.15);
   color: #f87171;
 }
 
@@ -315,7 +315,7 @@
 
 .notif-evento-desc {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0;
   line-height: 1.5;
 }
@@ -330,7 +330,7 @@
 .notif-evento-ministerios-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--n-500);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -381,13 +381,13 @@
 }
 
 .notif-modal-btn-secondary {
-  background: rgba(100, 116, 139, 0.2);
-  color: #94a3b8;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(115, 122, 123, 0.2);
+  color: var(--n-400);
+  border: 1px solid rgba(155, 161, 162, 0.2);
 }
 
 .notif-modal-btn-secondary:hover {
-  background: rgba(100, 116, 139, 0.35);
+  background: rgba(115, 122, 123, 0.35);
 }
 
 .notif-modal-btn-primary {
@@ -405,7 +405,7 @@
 .notif-modal-simple-msg {
   margin: 0;
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--n-400);
   line-height: 1.5;
 }
 

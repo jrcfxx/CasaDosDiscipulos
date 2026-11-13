@@ -183,7 +183,7 @@
 
 .home-campanha {
   background: #0f0f0f;
-  color: #e2e8f0;
+  color: var(--n-200);
   padding: 6rem 1.5rem 4rem;
 }
 
@@ -210,7 +210,7 @@
 
 .home-campanha__titulo-light {
   font-weight: 400;
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .home-campanha__titulo-bold {
@@ -221,7 +221,7 @@
 .home-campanha__tagline {
   font-size: 1.15rem;
   font-weight: 400;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0 0 2rem 0;
   line-height: 1.6;
 }
@@ -231,7 +231,7 @@
   padding: 0.75rem 1.75rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: #e2e8f0;
+  color: var(--n-200);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50px;
@@ -268,20 +268,20 @@
 
 .home-campanha__detalhes-sub {
   font-size: 1.1rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0 0 1.5rem 0;
 }
 
 .home-campanha__detalhes-texto {
   font-size: 1rem;
-  color: #cbd5e1;
+  color: var(--n-300);
   line-height: 1.7;
   margin: 0 0 1rem 0;
 }
 
 .home-campanha__detalhes-cta {
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--n-200);
   margin-bottom: 2rem;
 }
 
@@ -334,7 +334,7 @@
 
 .home-campanha__qr-hint {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0;
 }
 
@@ -356,13 +356,13 @@
 
 .home-campanha__conta-item {
   font-size: 0.95rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0 0 0.4rem 0;
   line-height: 1.5;
 }
 
 .home-campanha__conta-item strong {
-  color: #cbd5e1;
+  color: var(--n-300);
 }
 
 .home-campanha__conta-razao {
@@ -407,7 +407,7 @@
 
 .home-participe__texto {
   font-size: 1.05rem;
-  color: #94a3b8;
+  color: var(--n-400);
   text-align: center;
   max-width: 540px;
   margin: 0 auto 3rem;
@@ -472,7 +472,7 @@
 
 .home-ministerio-card__texto {
   font-size: 0.95rem;
-  color: #cbd5e1;
+  color: var(--n-300);
   line-height: 1.65;
   margin: 0 0 1.25rem 0;
   flex: 1;
@@ -507,7 +507,7 @@
   max-width: 640px;
   margin: 0 auto;
   padding: 3rem 2rem;
-  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95) 0%, rgba(15, 23, 42, 0.9) 100%);
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95) 0%, rgba(27, 30, 31, 0.9) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   text-align: center;
@@ -532,7 +532,7 @@
 
 .home-plataforma__texto {
   font-size: 1.05rem;
-  color: #94a3b8;
+  color: var(--n-400);
   line-height: 1.7;
   margin: 0 0 2rem 0;
 }

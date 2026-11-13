@@ -46,7 +46,7 @@
 .fala-ai-admin-subtitle {
   margin: 0;
   font-size: 0.9rem;
-  color: #9ca3af;
+  color: var(--n-400);
 }
 
 .fala-ai-admin-form {
@@ -73,7 +73,7 @@
 .fala-ai-admin-field label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #e5e7eb;
+  color: var(--n-200);
 }
 
 .fala-ai-admin-field input,
@@ -91,7 +91,7 @@
 
 .fala-ai-admin-field input::placeholder,
 .fala-ai-admin-field textarea::placeholder {
-  color: #6b7280;
+  color: var(--n-500);
 }
 
 .fala-ai-admin-field input:focus,
@@ -181,7 +181,7 @@
   padding: 0.65rem 1.25rem;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #9ca3af;
+  color: var(--n-400);
   font-size: 0.95rem;
   font-weight: 500;
   border-radius: 10px;
@@ -218,7 +218,7 @@
 .fala-ai-admin-field-hint {
   margin: 0.4rem 0 0;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--n-500);
   font-family: var(--font-primary, inherit);
 }
 

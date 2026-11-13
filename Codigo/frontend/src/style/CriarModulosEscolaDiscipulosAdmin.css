@@ -93,7 +93,7 @@
 .criar-modulo-label {
   display: block;
   margin: 1.5rem 0 0.5rem;
-  color: #1f2937;
+  color: var(--n-800);
   font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -107,8 +107,8 @@
   width: 100%;
   border-radius: 10px;
   background: #ffffff;
-  color: #1f2937;
-  border: 2px solid #e2e8f0;
+  color: var(--n-800);
+  border: 2px solid var(--n-200);
   padding: 0.85rem 1.1rem;
   outline: none;
   font-family: var(--font-primary);
@@ -122,11 +122,11 @@
 }
 
 .criar-modulo-input-error {
-  border-color: #ef4444;
+  border-color: var(--color-error-500);
 }
 
 .criar-modulo-input-error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  box-shadow: 0 0 0 3px rgba(217, 72, 59, 0.15);
 }
 
 textarea.criar-modulo-input {
@@ -139,10 +139,10 @@ textarea.criar-modulo-input {
 .criar-modulo-section-title {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--n-800);
   margin: 2.5rem 0 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--n-200);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -151,7 +151,7 @@ textarea.criar-modulo-input {
   margin: 0 0 0.5rem;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--n-800);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -159,7 +159,7 @@ textarea.criar-modulo-input {
 .criar-modulo-aside-description {
   margin: 0 0 1.5rem;
   font-size: 0.9rem;
-  color: #64748b;
+  color: var(--n-500);
   line-height: 1.6;
 }
 
@@ -179,14 +179,14 @@ textarea.criar-modulo-input {
 .criar-modulo-toggle-text {
   font-size: 1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--n-800);
 }
 
 .criar-modulo-toggle-btn {
   position: relative;
   width: 56px;
   height: 28px;
-  background: #cbd5e1;
+  background: var(--n-300);
   border: none;
   border-radius: 14px;
   cursor: pointer;
@@ -217,10 +217,10 @@ textarea.criar-modulo-input {
 .criar-modulo-toggle-info {
   margin: 1rem 0 0;
   padding: 0.85rem;
-  background: #f1f5f9;
+  background: var(--n-50);
   border-radius: 8px;
   font-size: 0.85rem;
-  color: #475569;
+  color: var(--n-600);
   line-height: 1.6;
   border-left: 3px solid var(--cm-primary-teal);
 }
@@ -246,7 +246,7 @@ textarea.criar-modulo-input {
   position: relative;
   width: 48px;
   height: 26px;
-  background: #cbd5e1;
+  background: var(--n-300);
   border-radius: 13px;
   transition: background 0.2s;
 }
@@ -270,12 +270,12 @@ textarea.criar-modulo-input {
 }
 .criar-modulo-toggle-row .criar-modulo-toggle-text {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--n-800);
 }
 .criar-modulo-hint {
   margin: 0.5rem 0 0;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--n-500);
   line-height: 1.5;
 }
 
@@ -292,9 +292,9 @@ textarea.criar-modulo-input {
   max-height: 180px;
   overflow-y: auto;
   padding: 0.75rem;
-  background: #f8fafc;
+  background: var(--n-50);
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--n-200);
 }
 .criar-modulo-pre-req-item {
   display: flex;
@@ -302,7 +302,7 @@ textarea.criar-modulo-input {
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
-  color: #1f2937;
+  color: var(--n-800);
 }
 .criar-modulo-pre-req-item input {
   flex-shrink: 0;
@@ -311,8 +311,8 @@ textarea.criar-modulo-input {
 /* ========== FIELD CARDS ========== */
 .criar-modulo-field-card {
   position: relative;
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
+  background: var(--n-50);
+  border: 2px solid var(--n-200);
   border-radius: 12px;
   padding: 1.75rem;
   margin-bottom: 1.25rem;
@@ -328,7 +328,7 @@ textarea.criar-modulo-input {
 /* Labels dentro dos field cards */
 .criar-modulo-field-card label,
 .criar-modulo-field-card .form-label {
-  color: #1f2937 !important;
+  color: var(--n-800) !important;
   font-weight: 600;
   font-size: 0.95rem;
 }
@@ -338,13 +338,13 @@ textarea.criar-modulo-input {
 .criar-modulo-field-card textarea,
 .criar-modulo-field-card select,
 .criar-modulo-field-card .input {
-  color: #1f2937 !important;
+  color: var(--n-800) !important;
   background: #ffffff !important;
 }
 
 .criar-modulo-field-card input::placeholder,
 .criar-modulo-field-card textarea::placeholder {
-  color: #9ca3af !important;
+  color: var(--n-400) !important;
 }
 
 .criar-modulo-field-remove {
@@ -357,8 +357,8 @@ textarea.criar-modulo-input {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #fee2e2;
-  color: #991b1b;
+  background: var(--color-error-50);
+  color: var(--color-error-700);
   border: none;
   cursor: pointer;
   font-size: 1.5rem;
@@ -414,7 +414,7 @@ textarea.criar-modulo-input {
 .criar-modulo-btn-secondary {
   background: white;
   color: var(--cm-primary-gray);
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--n-200);
 }
 
 .criar-modulo-btn-secondary:hover:not(:disabled) {
@@ -443,7 +443,7 @@ textarea.criar-modulo-input {
   align-items: center;
   margin-top: 2.5rem;
   padding-top: 2rem;
-  border-top: 2px solid #e2e8f0;
+  border-top: 2px solid var(--n-200);
 }
 
 /* ========== TOAST NOTIFICATIONS ========== */

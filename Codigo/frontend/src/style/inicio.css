@@ -24,7 +24,7 @@
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
   background: var(--portal-teal-light, rgba(2, 134, 155, 0.15));
-  color: #7fd3df;
+  color: var(--teal-200);
   font-weight: 600;
   font-size: 0.8rem;
 }

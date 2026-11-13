@@ -5,6 +5,7 @@ import { migrarLinkHash, ouvirLinksHash } from "./utils/migrarLinkHash";
 import "./index.css";
 import "./style/accessibility.css";
 import "./style/feedback.css";
+import "./style/refino.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./contexts/AuthContext";

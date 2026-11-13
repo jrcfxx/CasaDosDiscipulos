@@ -639,7 +639,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
     <div className="formularios-page page-with-fixed-header">
       <Header />
       <main id="main-content" className="page" tabIndex={-1}>
-        <h1 className="page-title">SECRETARIA DAS CÉLULAS</h1>
+        <h1 className="page-title">Secretaria das Células</h1>
 
         {loading && <p className="loading-message">Carregando...</p>}
 

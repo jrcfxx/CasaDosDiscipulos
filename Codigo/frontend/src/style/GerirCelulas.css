@@ -188,12 +188,12 @@
 }
 
 .celulas-table .badge-ativo {
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
+  background: rgba(2, 134, 155, 0.2);
+  color: var(--teal-500);
 }
 
 .celulas-table .badge-inativo {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(217, 72, 59, 0.2);
   color: #fca5a5;
 }
 
@@ -233,13 +233,13 @@
 }
 
 .celulas-table .btn-delete {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.2);
+  color: var(--color-error-500);
+  border: 1px solid rgba(217, 72, 59, 0.3);
 }
 
 .celulas-table .btn-delete:hover {
-  background: rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.3);
   transform: translateY(-1px);
 }
 
@@ -329,7 +329,7 @@
 .gerir-celulas-container .cd-modal-subtitle {
   margin: 0;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--n-400);
   line-height: 1.4;
 }
 
@@ -342,7 +342,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: #94a3b8;
+  color: var(--n-400);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
@@ -352,8 +352,8 @@
 }
 
 .gerir-celulas-container .cd-modal-close:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.15);
+  border-color: rgba(217, 72, 59, 0.3);
   color: #f87171;
 }
 
@@ -391,7 +391,7 @@
 
 .gerir-celulas-container .modal-content input[type="text"]::placeholder,
 .gerir-celulas-container .modal-content input[type="time"]::placeholder {
-  color: #6b7280;
+  color: var(--n-500);
 }
 
 .gerir-celulas-container .modal-content input[type="text"]:focus,
@@ -456,7 +456,7 @@
 }
 
 .gerir-celulas-container .lideres-search-input::placeholder {
-  color: #6b7280;
+  color: var(--n-500);
 }
 
 .gerir-celulas-container .lideres-selected-count {

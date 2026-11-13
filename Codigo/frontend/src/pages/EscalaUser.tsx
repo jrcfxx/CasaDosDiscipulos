@@ -756,7 +756,7 @@ const EscalaUser: React.FC = () => {
       <Header />
       <main id="main-content" className="container escala-user" tabIndex={-1}>
         <div className="escala-header">
-          <h1 className="page-title">ESCALA</h1>
+          <h1 className="page-title">Escala</h1>
           <div className="escala-header-actions">
             <Link to="/usuario/escala/mapa" className="btn-mapa">
               Mapa

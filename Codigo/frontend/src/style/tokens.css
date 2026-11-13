@@ -36,15 +36,17 @@
 
   /* ==================== SEMÂNTICAS ==================== */
 
-  --color-success-50: #f0fdf4;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
+  /* Sucesso no tom da marca (teal), sem o verde genérico */
+  --color-success-50: var(--teal-50);
+  --color-success-500: var(--teal-500);
+  --color-success-600: var(--teal-600);
+  --color-success-700: var(--teal-700);
 
-  --color-error-50: #fef2f2;
-  --color-error-500: #ef4444;
-  --color-error-600: #dc2626;
-  --color-error-700: #b91c1c;
+  /* Erro: vermelho sóbrio, que conversa com o petróleo */
+  --color-error-50: #fbefee;
+  --color-error-500: #d9483b;
+  --color-error-600: #c0392b;
+  --color-error-700: #96281f;
 
   --color-warning-50: #fffbeb;
   --color-warning-500: #f59e0b;
@@ -56,24 +58,68 @@
   --color-info-600: var(--color-primary-dark);
   --color-info-700: #00353b;
 
-  /* Neutros auxiliares (UI) */
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-300: #d1d5db;
-  --color-gray-400: #9ca3af;
-  --color-gray-500: #6b7280;
-  --color-gray-600: #4b5563;
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  /* Neutros da marca: do grafite #2b2f30 ao off-white #ebebeb (sem o cinza azulado genérico) */
+  --n-0: #ffffff;
+  --n-50: #f6f7f7;
+  --n-100: #ebebeb;
+  --n-200: #dcdfdf;
+  --n-300: #c4c8c9;
+  --n-400: #9ba1a2;
+  --n-500: #737a7b;
+  --n-600: #555b5c;
+  --n-700: #3c4142;
+  --n-800: #2b2f30;
+  --n-900: #1b1e1f;
+  --n-950: #111314;
+
+  /* Tons da marca (petróleo #00444c e teal #02869b) */
+  --teal-50: #e8f4f6;
+  --teal-100: #cce8ec;
+  --teal-200: #99d0d8;
+  --teal-300: #5fb2bf;
+  --teal-400: #2a99aa;
+  --teal-500: #02869b;
+  --teal-600: #026f80;
+  --teal-700: #00576a;
+  --teal-800: #00444c;
+  --teal-900: #00353b;
+
+  /* Amarelo (secundária: só detalhes) */
+  --gold-50: #fef8e6;
+  --gold-100: #fdecb8;
+  --gold-500: #f4b002;
+  --gold-700: #9c6f00;
+
+  /* Neutros auxiliares (UI) — apontam para a escala da marca */
+  --color-gray-50: var(--n-50);
+  --color-gray-100: var(--n-100);
+  --color-gray-200: var(--n-200);
+  --color-gray-300: var(--n-300);
+  --color-gray-400: var(--n-400);
+  --color-gray-500: var(--n-500);
+  --color-gray-600: var(--n-600);
+  --color-gray-700: var(--n-700);
+  --color-gray-800: var(--n-800);
+  --color-gray-900: var(--n-900);
 
   /* Superfícies padrão (app interno escuro) */
   --color-bg: #020202;
-  --color-surface: #111111;
+  --color-surface: #111314;
+  --color-surface-2: #181b1c;
   --color-text: var(--color-neutral-light);
   --color-text-muted: #a8acad;
-  --color-border: rgba(235, 235, 235, 0.2);
+  --color-border: rgba(235, 235, 235, 0.12);
+  --color-border-strong: rgba(235, 235, 235, 0.22);
+
+  /* Superfícies claras (painéis de trabalho sobre o fundo escuro) */
+  --surface-light: #ffffff;
+  --surface-light-2: var(--n-50);
+  --border-light: var(--n-200);
+  --text-on-light: var(--n-800);
+  --text-on-light-muted: var(--n-500);
+
+  /* Foco acessível no tom da marca */
+  --focus-ring: 0 0 0 3px rgba(2, 134, 155, 0.35);
 
   /* ==================== ESPAÇAMENTOS ==================== */
   --spacing-xs: 0.25rem;
@@ -121,9 +167,10 @@
   --line-height-relaxed: 1.75;
 
   /* ==================== BORDAS ==================== */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
   --radius-full: 9999px;
 
   --border-radius-none: 0;
@@ -139,14 +186,12 @@
   --border-width-4: 4px;
 
   /* ==================== SOMBRAS ==================== */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  /* Sombras suaves (a branding pede: nada de sombra forte) */
+  --shadow-sm: 0 1px 2px rgba(0, 20, 24, 0.06);
+  --shadow: 0 1px 3px rgba(0, 20, 24, 0.08), 0 1px 2px rgba(0, 20, 24, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(0, 20, 24, 0.1);
+  --shadow-lg: 0 12px 28px -8px rgba(0, 20, 24, 0.18);
+  --shadow-xl: 0 24px 48px -12px rgba(0, 20, 24, 0.28);
 
   /* ==================== TRANSIÇÕES ==================== */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);

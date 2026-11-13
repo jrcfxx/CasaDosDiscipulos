@@ -96,7 +96,7 @@
 
 .sobre-nos-instagram__texto {
   font-size: 1.05rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0 auto 1.5rem;
   max-width: 480px;
   line-height: 1.6;
@@ -200,7 +200,7 @@
 
 .sobre-nos-section__texto {
   font-size: 1.05rem;
-  color: #cbd5e1;
+  color: var(--n-300);
   line-height: 1.75;
   margin: 0;
 }
@@ -231,7 +231,7 @@
 
 .sobre-nos-dizimos__texto {
   font-size: 1rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0 0 1.5rem 0;
   line-height: 1.6;
 }

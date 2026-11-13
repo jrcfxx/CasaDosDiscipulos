@@ -379,7 +379,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
     <div className="editar-modulo-page">
       <Header />
       <div className="editar-modulo-container">
-        <h1 className="editar-modulo-title">EDITAR MÓDULO</h1>
+        <h1 className="editar-modulo-title">Editar módulo</h1>
       </div>
 
       {loading ? (

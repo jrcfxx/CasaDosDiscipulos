@@ -104,23 +104,24 @@ const ModulosEscolaDiscipulosUser: React.FC = () => {
     <div className="modulos-page page-with-fixed-header">
       <Header />
       <main id="main-content" className="page" tabIndex={-1}>
-        <div className="page-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
-          ESCOLA DE DISCÍPULOS
+        <h1 className="page-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
+          Escola de Discípulos
           <span
             className="nivel-badge"
             style={{
-              background: "rgba(2, 134, 155, 0.2)",
-              color: "#02869b",
-              padding: "0.4rem 1rem",
+              background: "rgba(2, 134, 155, 0.18)",
+              color: "var(--teal-200)",
+              padding: "0.35rem 0.9rem",
               borderRadius: "999px",
-              fontSize: "0.95rem",
-              fontWeight: 700,
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              letterSpacing: "0.01em",
             }}
             aria-label={nivelEscola ? `Nível ${nivelEscola}` : "Nível"}
           >
             {nivelEscola ?? "Sem nível"}
           </span>
-        </div>
+        </h1>
 
         {loading && <p className="loading-message">Carregando...</p>}
 

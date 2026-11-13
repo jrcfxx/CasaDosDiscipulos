@@ -15,19 +15,19 @@
   --em-secondary-cyan: #00b5d2;
   --em-bg-black: #000000;
   --em-white: #ffffff;
-  --em-gray-900: #1f2937;
-  --em-gray-700: #374151;
-  --em-gray-600: #4b5563;
-  --em-gray-500: #64748b;
-  --em-gray-400: #94a3b8;
-  --em-gray-300: #cbd5e1;
-  --em-gray-200: #e2e8f0;
-  --em-gray-100: #f1f5f9;
-  --em-gray-50: #f8fafc;
-  --em-red-500: #ef4444;
-  --em-red-600: #dc2626;
-  --em-red-900: #991b1b;
-  --em-red-100: #fee2e2;
+  --em-gray-900: var(--n-800);
+  --em-gray-700: var(--n-700);
+  --em-gray-600: var(--n-600);
+  --em-gray-500: var(--n-500);
+  --em-gray-400: var(--n-400);
+  --em-gray-300: var(--n-300);
+  --em-gray-200: var(--n-200);
+  --em-gray-100: var(--n-50);
+  --em-gray-50: var(--n-50);
+  --em-red-500: var(--color-error-500);
+  --em-red-600: var(--color-error-600);
+  --em-red-900: var(--color-error-700);
+  --em-red-100: var(--color-error-50);
   --em-red-200: #fecaca;
 }
 
@@ -149,7 +149,7 @@ main.editar-modulo-container {
 }
 
 .editar-modulo-input.editar-modulo-input-error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  box-shadow: 0 0 0 3px rgba(217, 72, 59, 0.15);
 }
 
 textarea.editar-modulo-input {
@@ -464,7 +464,7 @@ textarea.editar-modulo-input {
 .editar-modulo-btn-danger {
   background: var(--em-red-500);
   color: var(--em-white);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 2px 8px rgba(217, 72, 59, 0.2);
 }
 
 .editar-modulo-btn-danger:hover:not(:disabled) {

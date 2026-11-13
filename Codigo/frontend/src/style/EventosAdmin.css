@@ -96,12 +96,12 @@
 }
 
 .evento-status.ativo {
-  background: #22c55e;
+  background: var(--teal-500);
   color: #fff;
 }
 
 .evento-status.inativo {
-  background: #ef4444;
+  background: var(--color-error-500);
   color: #fff;
 }
 
@@ -174,28 +174,28 @@
 }
 
 .btn-toggle.desativar {
-  background: #ef4444;
+  background: var(--color-error-500);
 }
 
 .btn-toggle.desativar:hover {
-  background: #dc2626;
+  background: var(--color-error-600);
 }
 
 .btn-toggle.ativar {
-  background: #22c55e;
+  background: var(--teal-500);
 }
 
 .btn-toggle.ativar:hover {
-  background: #16a34a;
+  background: var(--teal-600);
 }
 
 .btn-deletar {
-  background: #64748b;
+  background: var(--n-500);
   color: #fff;
 }
 
 .btn-deletar:hover {
-  background: #475569;
+  background: var(--n-600);
   transform: translateY(-2px);
 }
 
@@ -332,12 +332,12 @@
 }
 
 .btn-cancelar {
-  background: #64748b;
+  background: var(--n-500);
   color: #fff;
 }
 
 .btn-cancelar:hover {
-  background: #475569;
+  background: var(--n-600);
 }
 
 .btn-salvar {

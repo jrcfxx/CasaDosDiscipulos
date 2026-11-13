@@ -118,7 +118,7 @@ const Header: React.FC = () => {
         </Link>
 
         <nav className="header-links" aria-label="Menu principal">
-          <Link to="/home">HOME</Link>
+          <Link to="/home" className="header-link--home">HOME</Link>
 
           <div className="nav-dropdown-container" ref={portalDropdownRef}>
             <button
@@ -128,7 +128,8 @@ const Header: React.FC = () => {
               aria-haspopup="true"
               aria-label="Abrir menu Portal do Discípulo"
             >
-              PORTAL DO DISCÍPULO
+              <span className="rotulo-longo">PORTAL DO DISCÍPULO</span>
+              <span className="rotulo-curto" aria-hidden="true">PORTAL</span>
               <svg
                 className={`dropdown-arrow ${portalDropdownOpen ? "open" : ""}`}
                 width="16"
@@ -237,8 +238,10 @@ const Header: React.FC = () => {
             <Link
               to="/admin/usuarios"
               aria-current={location.pathname === "/admin/usuarios" ? "page" : undefined}
+              aria-label="Gerenciamento"
             >
-              GERENCIAMENTO
+              <span className="rotulo-longo">GERENCIAMENTO</span>
+              <span className="rotulo-curto" aria-hidden="true">GERENCIAR</span>
             </Link>
           )}
         </nav>

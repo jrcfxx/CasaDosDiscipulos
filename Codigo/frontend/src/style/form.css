@@ -30,7 +30,7 @@
 .form-field--error .form-select:focus,
 .form-field--error .form-textarea:focus {
   border-color: var(--color-error-600);
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 0 3px rgba(217, 72, 59, 0.1);
 }
 
 /* ==================== LABELS ==================== */
@@ -38,7 +38,7 @@
 .form-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: #1f2937;
+  color: var(--n-800);
   line-height: var(--line-height-tight);
   cursor: pointer;
   user-select: none;
@@ -50,7 +50,7 @@
 }
 
 .form-label--disabled {
-  color: #9ca3af;
+  color: var(--n-400);
   cursor: not-allowed;
 }
 
@@ -63,9 +63,9 @@
   padding: var(--spacing-3) var(--spacing-4);
   font-size: var(--font-size-base);
   font-family: var(--font-sans);
-  color: #1f2937;
+  color: var(--n-800);
   background-color: #ffffff;
-  border: var(--border-width) solid #d1d5db;
+  border: var(--border-width) solid var(--n-300);
   border-radius: var(--border-radius-md);
   transition: all var(--transition-base);
   outline: none;
@@ -93,7 +93,7 @@
 .form-select:disabled,
 .form-textarea:disabled {
   background-color: var(--color-gray-100);
-  color: #6b7280;
+  color: var(--n-500);
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -142,7 +142,7 @@
   width: 1.125rem;
   height: 1.125rem;
   color: var(--color-primary-teal);
-  border: var(--border-width-2) solid #d1d5db;
+  border: var(--border-width-2) solid var(--n-300);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -188,7 +188,7 @@
 
 .form-help {
   font-size: var(--font-size-sm);
-  color: #6b7280;
+  color: var(--n-500);
   line-height: var(--line-height-normal);
   margin-top: var(--spacing-1);
 }
@@ -229,8 +229,8 @@
   align-items: center;
   padding: var(--spacing-3) var(--spacing-4);
   background-color: var(--color-gray-100);
-  border: var(--border-width) solid #d1d5db;
-  color: #6b7280;
+  border: var(--border-width) solid var(--n-300);
+  color: var(--n-500);
   font-size: var(--font-size-sm);
   white-space: nowrap;
 }
@@ -262,7 +262,7 @@
   padding: var(--spacing-4);
   margin-bottom: var(--spacing-4);
   background-color: #ffffff;
-  border: var(--border-width) solid #d1d5db;
+  border: var(--border-width) solid var(--n-300);
   border-radius: var(--border-radius-lg);
   transition: all var(--transition-base);
 }
@@ -385,13 +385,13 @@
 }
 
 .form-field__file-name {
-  color: #1f2937;
+  color: var(--n-800);
   font-weight: 600;
   word-break: break-word;
 }
 
 .form-field__file-size {
-  color: #4b5563;
+  color: var(--n-600);
   font-size: var(--font-size-xs);
   font-weight: 500;
   white-space: nowrap;

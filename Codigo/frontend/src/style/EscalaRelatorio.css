@@ -35,7 +35,7 @@
 .escala-relatorio__subtitulo {
   margin: 0.35rem 0 0;
   font-size: 0.85rem;
-  color: #9ca3af;
+  color: var(--n-400);
 }
 
 .escala-relatorio__toggle {
@@ -44,7 +44,7 @@
   border-radius: 8px;
   border: 1px solid rgba(2, 134, 155, 0.45);
   background: rgba(2, 134, 155, 0.15);
-  color: #7dd3e0;
+  color: var(--teal-200);
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
@@ -106,7 +106,7 @@
   margin-top: 0.35rem;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #9ca3af;
+  color: var(--n-400);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -133,7 +133,7 @@
   margin: 0 0 0.65rem;
   font-size: 0.92rem;
   font-weight: 700;
-  color: #e5e7eb;
+  color: var(--n-200);
 }
 
 .escala-relatorio__card h4 {
@@ -146,14 +146,14 @@
 .escala-relatorio__hint {
   margin: -0.25rem 0 0.65rem;
   font-size: 0.78rem;
-  color: #9ca3af;
+  color: var(--n-400);
   line-height: 1.4;
 }
 
 .escala-relatorio__vazio {
   margin: 0;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--n-500);
 }
 
 .escala-relatorio__lista {
@@ -163,7 +163,7 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.86rem;
-  color: #d1d5db;
+  color: var(--n-300);
 }
 
 .escala-relatorio__lista strong {
@@ -184,22 +184,22 @@
   font-size: 0.72rem;
   font-weight: 700;
   background: rgba(2, 134, 155, 0.18);
-  color: #7dd3e0;
+  color: var(--teal-200);
 }
 
 .escala-relatorio__chip.status-rascunho {
   background: rgba(156, 163, 175, 0.2);
-  color: #d1d5db;
+  color: var(--n-300);
 }
 
 .escala-relatorio__chip.status-publicada {
   background: rgba(2, 134, 155, 0.22);
-  color: #7dd3e0;
+  color: var(--teal-200);
 }
 
 .escala-relatorio__chip.status-concluida {
-  background: rgba(34, 197, 94, 0.15);
-  color: #86efac;
+  background: rgba(2, 134, 155, 0.15);
+  color: var(--teal-200);
 }
 
 .escala-relatorio__ranking {
@@ -242,7 +242,7 @@
 
 .escala-relatorio__pessoa span {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--n-400);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -262,7 +262,7 @@
   justify-content: space-between;
   gap: 0.5rem;
   font-size: 0.82rem;
-  color: #d1d5db;
+  color: var(--n-300);
   margin-bottom: 0.2rem;
 }
 
@@ -313,7 +313,7 @@
   text-align: left;
   border: none;
   background: rgba(0, 0, 0, 0.25);
-  color: #e5e7eb;
+  color: var(--n-200);
   border-radius: 8px;
   padding: 0.45rem 0.55rem;
   font-family: inherit;

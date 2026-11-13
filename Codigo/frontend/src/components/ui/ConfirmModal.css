@@ -86,8 +86,8 @@
   background: var(--color-primary-dark);
 }
 .confirm-modal-btn-danger {
-  background: var(--color-error-700, #b91c1c);
+  background: var(--color-error-700, var(--color-error-700));
 }
 .confirm-modal-btn-danger:hover {
-  background: var(--color-error-800, #991b1b);
+  background: var(--color-error-800, var(--color-error-700));
 }

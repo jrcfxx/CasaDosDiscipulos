@@ -603,3 +603,69 @@
 .btn-dark:hover {
   background-color: var(--color-primary-teal, #02869b);
 }
+
+/* ==================== Cabeçalho (logado) no celular ==================== */
+.cd-header .rotulo-curto {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .cd-header {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .header-icone {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+
+  .header-icone img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .header-links {
+    gap: 16px;
+    min-width: 0;
+  }
+
+  /* O logo já leva ao início */
+  .header-links .header-link--home {
+    display: none;
+  }
+
+  .header-links a,
+  .nav-dropdown-btn {
+    font-size: 12px;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+
+  .cd-header .rotulo-longo {
+    display: none;
+  }
+
+  .cd-header .rotulo-curto {
+    display: inline;
+  }
+
+  /* Menu do portal ocupa a largura da tela */
+  .nav-dropdown-menu {
+    position: fixed;
+    top: 66px;
+    left: 12px;
+    right: 12px;
+    min-width: 0;
+    transform: none;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    animation: none;
+  }
+
+  .header-right-group {
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+}

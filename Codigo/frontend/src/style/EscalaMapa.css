@@ -40,7 +40,7 @@
 
 .escala-mapa-subtitulo {
   font-size: 1rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0;
   font-weight: 400;
 }
@@ -159,7 +159,7 @@
   align-items: center;
   justify-content: center;
   padding: 4rem 2rem;
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .loading-spinner {
@@ -204,7 +204,7 @@
 
 .escala-mapa-empty p {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--n-500);
   margin: 0;
 }
 
@@ -254,7 +254,7 @@
 
 .evento-hero-desc {
   font-size: 0.95rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0;
   line-height: 1.5;
 }
@@ -282,7 +282,7 @@
 
 .stat-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--n-500);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -295,7 +295,7 @@
 .mapa-titulo-secao {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--n-500);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0 0 1.25rem 0;
@@ -368,7 +368,7 @@
 
 .mapa-card-count {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--n-500);
   background: rgba(255, 255, 255, 0.05);
   padding: 0.3rem 0.6rem;
   border-radius: 8px;
@@ -420,7 +420,7 @@
 
 .mapa-vazio {
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--n-600);
   font-style: italic;
   margin: 0;
   padding: 1rem 0;

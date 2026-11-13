@@ -242,9 +242,9 @@
 }
 
 .user-card.inativo .nivel {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.2);
+  color: var(--color-error-500);
+  border: 1px solid rgba(217, 72, 59, 0.3);
 }
 
 .user-card .badge-nivel {
@@ -318,26 +318,26 @@
 }
 
 .inativar-btn {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.15);
+  color: var(--color-error-500);
+  border: 1px solid rgba(217, 72, 59, 0.3);
 }
 
 .inativar-btn:hover {
-  background: rgba(239, 68, 68, 0.25);
-  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(217, 72, 59, 0.25);
+  border-color: rgba(217, 72, 59, 0.5);
   transform: translateY(-1px);
 }
 
 .inativar-btn.reativar {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(2, 134, 155, 0.15);
+  color: var(--teal-500);
+  border: 1px solid rgba(2, 134, 155, 0.3);
 }
 
 .inativar-btn.reativar:hover {
-  background: rgba(16, 185, 129, 0.25);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(2, 134, 155, 0.25);
+  border-color: rgba(2, 134, 155, 0.5);
 }
 
 /* Modal - tema escuro, alinhado ao sistema */
@@ -364,7 +364,7 @@
   flex-direction: column;
   border-radius: 16px;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
 }
 
 /* Modal usuário: tamanho moderado */
@@ -447,7 +447,7 @@
 .modal-fundo .modal .password-input-wrapper input {
   padding-right: 2.75rem;
   background: rgba(255, 255, 255, 0.05) !important;
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   font-family: var(--font-primary);
@@ -462,7 +462,7 @@
   border: none;
   padding: 0.35rem;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--n-400);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -471,7 +471,7 @@
 }
 
 .modal-fundo .modal .password-toggle:hover {
-  color: #e2e8f0;
+  color: var(--n-200);
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -592,7 +592,7 @@
 .modal-ministerio-subtitle {
   margin: 0;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--n-400);
   font-family: var(--font-primary);
   line-height: 1.4;
 }
@@ -607,7 +607,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: #94a3b8;
+  color: var(--n-400);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
@@ -619,8 +619,8 @@
 
 .cd-modal-close:hover,
 .modal-ministerio-close:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.15);
+  border-color: rgba(217, 72, 59, 0.3);
   color: #f87171;
 }
 
@@ -631,7 +631,7 @@
   flex: 1;
   min-height: 0;
   background: transparent !important;
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box;
@@ -659,7 +659,7 @@
   margin: 0 0 0.4rem;
   font-weight: 600;
   font-size: 0.85rem;
-  color: #94a3b8 !important;
+  color: var(--n-400) !important;
 }
 
 .modal-fundo .modal .lider-permissoes .checkbox-row {
@@ -670,7 +670,7 @@
   margin-bottom: 0.35rem;
   font-weight: 500;
   font-size: 0.85rem;
-  color: #cbd5e1 !important;
+  color: var(--n-300) !important;
 }
 
 .modal-fundo .modal .lider-permissoes > .checkbox-row {
@@ -712,7 +712,7 @@
   margin-bottom: 0.3rem;
   font-weight: 500;
   font-size: 0.85rem;
-  color: #cbd5e1 !important;
+  color: var(--n-300) !important;
 }
 
 .ministerios-participa-box .checkbox-row input,
@@ -724,7 +724,7 @@
 
 .modal-fundo .modal .hint {
   font-size: 0.8rem;
-  color: #94a3b8 !important;
+  color: var(--n-400) !important;
   margin: 0.5rem 0 0;
 }
 
@@ -733,7 +733,7 @@
   margin-bottom: 0;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #94a3b8 !important;
+  color: var(--n-400) !important;
 }
 
 .modal-fundo .modal input[type="text"],
@@ -748,7 +748,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05) !important;
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
   margin-bottom: 0;
   font-size: 0.9rem;
   font-family: var(--font-primary);
@@ -763,7 +763,7 @@
   width: 100%;
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.05) !important;
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   font-family: var(--font-primary);
@@ -773,7 +773,7 @@
 .modal-fundo .modal .password-input-wrapper input {
   padding-right: 2.75rem;
   background: rgba(255, 255, 255, 0.05) !important;
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
 }
 
 /* Chrome/Edge autofill — evita fundo branco nos campos do modal escuro */
@@ -782,8 +782,8 @@
 .modal-fundo .modal input:-webkit-autofill:focus,
 .modal-fundo .modal input:-webkit-autofill:active,
 .modal-fundo .modal .password-input-wrapper input:-webkit-autofill {
-  -webkit-text-fill-color: #e2e8f0 !important;
-  caret-color: #e2e8f0;
+  -webkit-text-fill-color: var(--n-200) !important;
+  caret-color: var(--n-200);
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 0 0 1000px #1f2429 inset !important;
   transition: background-color 99999s ease-out 0s;
@@ -791,14 +791,14 @@
 
 .modal-fundo .modal input::placeholder,
 .modal-fundo .modal textarea::placeholder {
-  color: #64748b !important;
-  -webkit-text-fill-color: #64748b !important;
+  color: var(--n-500) !important;
+  -webkit-text-fill-color: var(--n-500) !important;
   opacity: 1;
 }
 
 .modal-fundo .modal input[type="tel"]::placeholder {
-  color: #64748b !important;
-  -webkit-text-fill-color: #64748b !important;
+  color: var(--n-500) !important;
+  -webkit-text-fill-color: var(--n-500) !important;
   opacity: 1;
 }
 
@@ -815,18 +815,18 @@
 }
 
 .modal-fundo .modal select option {
-  background: #1e293b;
-  color: #e2e8f0;
+  background: var(--n-800);
+  color: var(--n-200);
 }
 
 .modal-fundo .modal p {
-  color: #94a3b8 !important;
+  color: var(--n-400) !important;
 }
 
 .modal-fundo .modal .modal-confirm-text {
   text-align: center;
   margin-bottom: 1.5rem;
-  color: #94a3b8 !important;
+  color: var(--n-400) !important;
 }
 
 .modal-fundo .modal p strong {
@@ -870,7 +870,7 @@
 
 .modal-fundo .modal .modal-buttons button:first-child {
   background: rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  color: var(--n-300);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -1043,13 +1043,13 @@
 }
 
 .niveis-table .btn-delete {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.2);
+  color: var(--color-error-500);
+  border: 1px solid rgba(217, 72, 59, 0.3);
 }
 
 .niveis-table .btn-delete:hover {
-  background: rgba(239, 68, 68, 0.3);
+  background: rgba(217, 72, 59, 0.3);
   transform: translateY(-1px);
 }
 
@@ -1074,13 +1074,13 @@
   font-size: 0.9rem;
   font-family: var(--font-primary);
   transition: all 0.2s;
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(2, 134, 155, 0.2);
+  color: var(--teal-500);
+  border: 1px solid rgba(2, 134, 155, 0.3);
 }
 
 .niveis-table .btn-reativar:hover {
-  background: rgba(34, 197, 94, 0.3);
+  background: rgba(2, 134, 155, 0.3);
   transform: translateY(-1px);
 }
 
@@ -1100,7 +1100,7 @@
   padding: 0.2rem 0.5rem;
   font-size: 0.7rem;
   font-weight: 600;
-  background: rgba(239, 68, 68, 0.25);
+  background: rgba(217, 72, 59, 0.25);
   color: #fca5a5;
   border-radius: 6px;
 }
@@ -1112,7 +1112,7 @@
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.06) !important;
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
   outline: none;
   font-size: 0.95rem;
   font-family: var(--font-primary);
@@ -1121,7 +1121,7 @@
 }
 
 .modal-fundo .modal .modal-content textarea::placeholder {
-  color: #64748b;
+  color: var(--n-500);
 }
 
 .modal-fundo .modal .modal-content textarea:focus {
@@ -1185,7 +1185,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--n-200);
   margin-bottom: 0.5rem;
   font-family: var(--font-primary);
 }
@@ -1195,8 +1195,8 @@
 .modal-ministerio-form-group textarea {
   width: 100%;
   padding: 0.85rem 1rem;
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(43, 47, 48, 0.6);
+  border: 1px solid rgba(155, 161, 162, 0.2);
   border-radius: 12px;
   color: var(--primary-light);
   font-size: 1rem;
@@ -1208,7 +1208,7 @@
 .modal-ministerio-form-group input[type="text"]::placeholder,
 .modal-ministerio-form-group input[type="number"]::placeholder,
 .modal-ministerio-form-group textarea::placeholder {
-  color: #64748b;
+  color: var(--n-500);
 }
 
 .modal-ministerio-form-group input[type="text"]:focus,
@@ -1243,7 +1243,7 @@
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #e2e8f0;
+  color: var(--n-200);
   padding-bottom: 0.5rem;
   margin: 0;
   font-family: var(--font-primary);
@@ -1279,7 +1279,7 @@
   transition: background 0.2s, border-color 0.2s;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #e2e8f0 !important;
+  color: var(--n-200) !important;
   font-family: var(--font-primary);
   box-sizing: border-box;
   min-height: 44px;
@@ -1322,7 +1322,7 @@
 
 .modal-ministerio-hint {
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--n-400);
   margin: 0.15rem 0 0.5rem;
   line-height: 1.4;
 }
@@ -1344,7 +1344,7 @@
   border-radius: 50%;
   border: 1px solid rgba(2, 134, 155, 0.45);
   background: rgba(2, 134, 155, 0.18);
-  color: #9fe0ea;
+  color: var(--teal-200);
   font-weight: 700;
   font-size: 0.85rem;
   cursor: pointer;
@@ -1367,14 +1367,14 @@
   border-radius: 10px;
   background: rgba(2, 134, 155, 0.12);
   border: 1px solid rgba(2, 134, 155, 0.28);
-  color: #cbd5e1;
+  color: var(--n-300);
   font-size: 0.82rem;
   line-height: 1.45;
 }
 
 .modal-ministerio-info-box strong {
   display: block;
-  color: #9fe0ea;
+  color: var(--teal-200);
   margin-bottom: 0.25rem;
   font-size: 0.84rem;
 }
@@ -1382,7 +1382,7 @@
 .modal-ministerio-lideres .modal-ministerio-hint {
   grid-column: 1 / -1;
   padding: 0.5rem 0;
-  color: #64748b;
+  color: var(--n-500);
 }
 
 .modal-ministerio-footer {
@@ -1405,14 +1405,14 @@
 }
 
 .modal-ministerio-btn-cancel {
-  background: rgba(100, 116, 139, 0.2);
-  color: #94a3b8;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(115, 122, 123, 0.2);
+  color: var(--n-400);
+  border: 1px solid rgba(155, 161, 162, 0.2);
 }
 
 .modal-ministerio-btn-cancel:hover {
-  background: rgba(100, 116, 139, 0.35);
-  color: #e2e8f0;
+  background: rgba(115, 122, 123, 0.35);
+  color: var(--n-200);
 }
 
 .modal-ministerio-btn-save {

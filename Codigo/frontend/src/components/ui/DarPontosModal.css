@@ -58,7 +58,7 @@
   margin-bottom: 0.4rem;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #475569;
+  color: var(--n-600);
 }
 
 .dar-pontos-modal-field-pessoa .dar-pontos-pessoa-wrapper {
@@ -77,8 +77,8 @@
   width: 1.5rem;
   height: 1.5rem;
   border: none;
-  background: #e2e8f0;
-  color: #64748b;
+  background: var(--n-200);
+  color: var(--n-500);
   font-size: 1.2rem;
   line-height: 1;
   border-radius: 50%;
@@ -90,8 +90,8 @@
 }
 
 .dar-pontos-limpar:hover {
-  background: #cbd5e1;
-  color: #475569;
+  background: var(--n-300);
+  color: var(--n-600);
 }
 
 .dar-pontos-lista-usuarios {
@@ -102,7 +102,7 @@
   max-height: 200px;
   overflow-y: auto;
   background: #fff;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--n-200);
   border-top: none;
   border-radius: 0 0 10px 10px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
@@ -113,7 +113,7 @@
 .dar-pontos-lista-loading,
 .dar-pontos-lista-vazia {
   padding: 1rem;
-  color: #64748b;
+  color: var(--n-500);
   font-size: 0.9rem;
 }
 
@@ -125,24 +125,24 @@
   background: none;
   text-align: left;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var(--n-800);
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .dar-pontos-lista-item:hover,
 .dar-pontos-lista-item.selected {
-  background: #f1f5f9;
+  background: var(--n-50);
 }
 
 .dar-pontos-modal-field input,
 .dar-pontos-modal-field textarea {
   width: 100%;
   padding: 0.65rem 0.85rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--n-200);
   border-radius: 10px;
   font-size: 1rem;
-  color: #1e293b;
+  color: var(--n-800);
   transition: border-color 0.2s;
   box-sizing: border-box;
   font-family: inherit;
@@ -161,7 +161,7 @@
 
 .dar-pontos-modal-field input::placeholder,
 .dar-pontos-modal-field textarea::placeholder {
-  color: #94a3b8;
+  color: var(--n-400);
 }
 
 .dar-pontos-modal-field input:disabled,
@@ -173,7 +173,7 @@
 .dar-pontos-modal-erro {
   margin: -0.5rem 0 1rem;
   font-size: 0.9rem;
-  color: #dc2626;
+  color: var(--color-error-600);
 }
 
 .dar-pontos-modal-actions {
@@ -200,11 +200,11 @@
 }
 
 .dar-pontos-modal-btn-cancel {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--n-200);
+  color: var(--n-600);
 }
 .dar-pontos-modal-btn-cancel:hover:not(:disabled) {
-  background: #cbd5e1;
+  background: var(--n-300);
 }
 
 .dar-pontos-modal-btn-confirm {
