@@ -83,7 +83,22 @@ function formatarDataHora(s: string, fim?: string | null) {
   return str;
 }
 
-const EscalaUser: React.FC = () => {
+/** Ministérios escolhidos no "Meus ministérios" (por pessoa, neste navegador) */
+function lerFiltroSalvo(chave: string): number[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(chave) || "[]");
+    return Array.isArray(v) ? v.map(Number).filter((n) => Number.isInteger(n) && n > 0) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Escala. modo "meus": cronograma só dos ministérios que a pessoa lidera (ela escolhe um ou mais),
+ * para se organizar sem a escala da igreja inteira.
+ */
+const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) => {
+  const modoMeus = modo === "meus";
   // Progresso das ações (spinner + sem envio duplo)
   const acaoEvento = useAcao();
   const acaoPublicar = useAcao();
@@ -91,7 +106,7 @@ const EscalaUser: React.FC = () => {
   const acaoAtribuicao = useAcao();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAdmin, isLiderMinisterio } = useAuth();
+  const { isAdmin, isLiderMinisterio, user } = useAuth();
   const podeEditar = isAdmin || isLiderMinisterio;
 
   const [visao, setVisao] = useState<EscalaVisaoTipo>("mes");
@@ -152,6 +167,46 @@ const EscalaUser: React.FC = () => {
     [ministerios]
   );
 
+  // ----- "Meus ministérios" -----
+  const [ministeriosCarregados, setMinisteriosCarregados] = useState(false);
+  const ministeriosLiderados = useMemo(
+    () =>
+      ministerios
+        .filter((m) => m.ativo)
+        .filter((m) => isAdmin || (m.lideres || []).some((l) => l.id_usuario === user?.id_usuario)),
+    [ministerios, isAdmin, user?.id_usuario]
+  );
+  const chaveFiltro = `escala_meus_ministerios_${user?.id_usuario ?? 0}`;
+  const [filtroSalvo, setFiltroSalvo] = useState<number[]>(() => lerFiltroSalvo(chaveFiltro));
+  // Só vale o que a pessoa ainda lidera; nada escolhido = todos os que lidera
+  const idsFiltro = useMemo(() => {
+    if (!modoMeus) return undefined;
+    const meus = ministeriosLiderados.map((m) => m.id_ministerio);
+    const validos = filtroSalvo.filter((id) => meus.includes(id));
+    return validos.length ? validos : meus;
+  }, [modoMeus, ministeriosLiderados, filtroSalvo]);
+  const filtroKey = (idsFiltro || []).join(",");
+
+  const alternarMinisterio = (id: number) => {
+    const atuais = idsFiltro || [];
+    const proximo = atuais.includes(id) ? atuais.filter((x) => x !== id) : [...atuais, id];
+    if (!proximo.length) return; // pelo menos um ministério fica selecionado
+    setFiltroSalvo(proximo);
+    try {
+      localStorage.setItem(chaveFiltro, JSON.stringify(proximo));
+    } catch {
+      /* sem armazenamento: vale só nesta visita */
+    }
+  };
+  const selecionarTodosMeus = () => {
+    setFiltroSalvo([]);
+    try {
+      localStorage.removeItem(chaveFiltro);
+    } catch {
+      /* ignore */
+    }
+  };
+
   const { podeDesfazer, marcarAlteracao, desfazer } = useEscalaUndo(
     (ev) => {
       setEventoSelecionado(ev);
@@ -167,24 +222,32 @@ const EscalaUser: React.FC = () => {
   }, [visao, ano, mes, dataDia, dataSemana]);
 
   const fetchEventos = useCallback(async () => {
+    // "Meus ministérios": não mostra a igreja inteira enquanto os ministérios carregam
+    if (modoMeus && !ministeriosCarregados) return;
+    const filtro = idsFiltro;
+    // Sem nenhum ministério liderado: não busca (sem filtro viria a escala inteira)
+    if (modoMeus && !filtro?.length) {
+      setLoading(false);
+      return;
+    }
     try {
       if (!conteudoCarregadoRef.current) setLoading(true);
       if (visao === "mes") {
-        const data = await escalaService.getVisualizacaoMes(ano, mes, "compacto");
+        const data = await escalaService.getVisualizacaoMes(ano, mes, "compacto", filtro);
         setVisaoMesUnificada(data);
         setVisaoAno(null);
       } else if (visao === "mes_detalhado") {
-        const data = await escalaService.getVisualizacaoMes(ano, mes, "completo");
+        const data = await escalaService.getVisualizacaoMes(ano, mes, "completo", filtro);
         setVisaoMesUnificada(data);
         setVisaoAno(null);
       } else if (visao === "dia") {
-        const data = await escalaService.getVisualizacaoDia(dataDia);
+        const data = await escalaService.getVisualizacaoDia(dataDia, filtro);
         setVisaoDiaUnificada(data);
       } else if (visao === "semana") {
-        const data = await escalaService.getVisualizacaoSemana(dataSemana);
+        const data = await escalaService.getVisualizacaoSemana(dataSemana, filtro);
         setVisaoSemanaUnificada(data);
       } else if (visao === "ano") {
-        const data = await escalaService.getVisaoAno(ano);
+        const data = await escalaService.getVisaoAno(ano, filtro);
         setVisaoAno(data);
       }
       conteudoCarregadoRef.current = true;
@@ -193,7 +256,9 @@ const EscalaUser: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [ano, mes, visao, dataDia, dataSemana, showToast]);
+    // filtroKey: refaz a busca quando a seleção de ministérios muda
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ano, mes, visao, dataDia, dataSemana, showToast, modoMeus, ministeriosCarregados, filtroKey]);
 
   useEffect(() => {
     fetchEventos();
@@ -201,7 +266,11 @@ const EscalaUser: React.FC = () => {
 
   useEffect(() => {
     if (podeEditar) {
-      ministerioService.getAll().then(setMinisterios).catch(() => setMinisterios([]));
+      ministerioService
+        .getAll()
+        .then(setMinisterios)
+        .catch(() => setMinisterios([]))
+        .finally(() => setMinisteriosCarregados(true));
       escalaService.listarTemplates().then(setTemplates).catch(() => setTemplates([]));
     }
   }, [podeEditar]);
@@ -758,8 +827,18 @@ const EscalaUser: React.FC = () => {
       <Header />
       <main id="main-content" className="container escala-user" tabIndex={-1}>
         <div className="escala-header">
-          <h1 className="page-title">Escala</h1>
+          <h1 className="page-title">{modoMeus ? "Meus ministérios" : "Escala"}</h1>
           <div className="escala-header-actions">
+            {podeEditar &&
+              (modoMeus ? (
+                <Link to="/usuario/escala" className="btn-mapa">
+                  Escala completa
+                </Link>
+              ) : (
+                <Link to="/usuario/escala/meus-ministerios" className="btn-mapa">
+                  Meus ministérios
+                </Link>
+              ))}
             <Link to="/usuario/escala/mapa" className="btn-mapa">
               Mapa
             </Link>
@@ -790,6 +869,50 @@ const EscalaUser: React.FC = () => {
             )}
           </div>
         </div>
+
+        {modoMeus && (
+          <section className="filtro-ministerios" aria-label="Ministérios do cronograma">
+            {ministeriosCarregados && ministeriosLiderados.length === 0 ? (
+              <p className="filtro-ministerios__vazio">
+                Você ainda não lidera nenhum ministério. Peça à administração para vincular você como líder.
+              </p>
+            ) : (
+              <>
+                <p className="filtro-ministerios__rotulo">
+                  Cronograma só dos ministérios selecionados. Toque para incluir ou tirar:
+                </p>
+                <div className="filtro-ministerios__lista">
+                  {ministeriosLiderados.map((m) => {
+                    const ativo = (idsFiltro || []).includes(m.id_ministerio);
+                    return (
+                      <button
+                        key={m.id_ministerio}
+                        type="button"
+                        className={`filtro-ministerio${ativo ? " ativo" : ""}`}
+                        aria-pressed={ativo}
+                        onClick={() => alternarMinisterio(m.id_ministerio)}
+                        title={
+                          ativo && (idsFiltro || []).length === 1
+                            ? "Pelo menos um ministério fica selecionado"
+                            : undefined
+                        }
+                      >
+                        {ativo ? "✓ " : ""}
+                        {m.nome}
+                      </button>
+                    );
+                  })}
+                  {ministeriosLiderados.length > 1 &&
+                    (idsFiltro || []).length < ministeriosLiderados.length && (
+                      <button type="button" className="filtro-ministerio-todos" onClick={selecionarTodosMeus}>
+                        Selecionar todos
+                      </button>
+                    )}
+                </div>
+              </>
+            )}
+          </section>
+        )}
 
         <EscalaVisaoSeletor visao={visao} onChange={setVisao} />
 
@@ -909,6 +1032,7 @@ const EscalaUser: React.FC = () => {
                 onMover={handleMoverUnificado}
                 onEscalar={abrirSlotParaEscalar}
                 onCopiarSemana={isAdmin ? handleCopiarSemana : undefined}
+                onAviso={(msg) => showToast(msg, "info")}
               />
               {podeEditar && (
                 <EscalaRelatorio

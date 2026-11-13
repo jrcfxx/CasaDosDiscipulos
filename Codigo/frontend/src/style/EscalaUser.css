@@ -2570,3 +2570,55 @@
     font-size: 0.75rem;
   }
 }
+
+/* ==================== "Meus ministérios": seleção de ministérios ==================== */
+.filtro-ministerios {
+  margin: 0 auto 1.25rem;
+  max-width: 900px;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(2, 134, 155, 0.35);
+  border-radius: 12px;
+  background: rgba(2, 134, 155, 0.08);
+  text-align: center;
+}
+.filtro-ministerios__rotulo,
+.filtro-ministerios__vazio {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--n-300, #c4c8c9);
+}
+.filtro-ministerios__vazio {
+  margin: 0;
+}
+.filtro-ministerios__lista {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.filtro-ministerio,
+.filtro-ministerio-todos {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(235, 235, 235, 0.22);
+  background: transparent;
+  color: var(--primary-light, #ebebeb);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.filtro-ministerio:hover {
+  border-color: var(--teal-400, #2a99aa);
+}
+.filtro-ministerio.ativo {
+  background: var(--teal-500, #02869b);
+  border-color: var(--teal-500, #02869b);
+  color: #fff;
+}
+.filtro-ministerio-todos {
+  border-style: dashed;
+  color: var(--gold-500, #f4b002);
+  border-color: rgba(244, 176, 2, 0.5);
+}

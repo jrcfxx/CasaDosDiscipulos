@@ -165,9 +165,76 @@ async function main() {
   ok(e?.statusCode === 409, "mover para área que a deixaria em 2 ministérios não paralelos → bloqueado");
   const anaSom = await knex("escala_atribuicao").where({ id_escala_area: aSom.id_escala_area, id_usuario: ana }).first();
   await EscalaService.removeAtribuicao(anaSom.id_escala_atribuicao, admin, ADMIN);
+  // Ana não participa da Mídia: para o admin é exceção confirmável
   e = await erroDe(() => EscalaService.moverAtribuicao(anaLouvor.id_escala_atribuicao, aMidia.id_escala_area, null, admin, ADMIN));
-  ok(e === null, "mover para outra área livre do mesmo evento funciona");
+  ok(e?.statusCode === 409 && e.confirmavel === true && e.conflitos?.some((c) => c.tipo === "fora_do_ministerio"),
+    "mover para ministério do qual a pessoa não participa → exceção confirmável (admin)");
+  e = await erroDe(() =>
+    EscalaService.moverAtribuicao(anaLouvor.id_escala_atribuicao, aMidia.id_escala_area, null, admin, ADMIN, { forcarMovimento: true })
+  );
+  ok(e === null, "confirmando, o admin move para a outra área");
   ok((await contarNoEvento(ana, domingo.id)) === 1, "após mover ela sai da área anterior: continua 1x no evento");
+  const anaMidia = await knex("escala_atribuicao").where({ id_escala_area: aMidia.id_escala_area, id_usuario: ana }).first();
+  const det = typeof anaMidia.detalhes === "string" ? JSON.parse(anaMidia.detalhes || "null") : anaMidia.detalhes;
+  ok(!det?.instrumento, "a função do Louvor (violão) não vai junto para a Mídia");
+
+  // ---------- 9b. Arrastar (mesmo caminho das telas: moverMembroUnificado) ----------
+  // Bia (violão no Louvor) arrastada para o Som: antes falhava com "Valor inválido para funcao: violao"
+  await knex("usuario_ministerio").insert({ id_ministerio: mSom, id_usuario: bia });
+  const biaLouvor = await knex("escala_atribuicao").where({ id_escala_area: aLouvor.id_escala_area, id_usuario: bia }).first();
+  e = await erroDe(() =>
+    EscalaService.moverMembroUnificado(
+      { membroEscalaOrigemId: biaLouvor.id_escala_atribuicao, escalaDestinoId: domingo.id, instrumentoDestino: "violao", id_escala_area: aSom.id_escala_area },
+      admin,
+      ADMIN
+    )
+  );
+  ok(e === null, `arrastar do Louvor (violão) para o Som funciona${e ? ` (${e.message})` : ""}`);
+
+  // Arrastar para OUTRO evento no mesmo horário → choque de horário (confirmável)
+  // 20:30–21:30: choca com "Depois" (21h–22h, em que a Bia está) e com o próprio evento de origem (19h–21h)
+  const paralelo = await evento(admin, "Paralelo", "2032-03-07 20:30:00", "2032-03-07 21:30:00", [mSom], [nomeSom]);
+  const biaSom = await knex("escala_atribuicao").where({ id_escala_area: aSom.id_escala_area, id_usuario: bia }).first();
+  const val = await EscalaService.validarMoverMembro({
+    membroEscalaOrigemId: biaSom.id_escala_atribuicao,
+    escalaDestinoId: paralelo.id,
+    instrumentoDestino: "_geral",
+    id_escala_area: paralelo.areas[0].id_escala_area,
+  });
+  ok(val.conflitos.some((c) => c.tipo === "duplo_evento" && /Depois/.test(c.mensagem)), "arrastar para outro evento no mesmo horário → choque de horário apontado");
+  ok(!val.conflitos.some((c) => /Culto Domingo/.test(c.mensagem)), "o evento de origem não conta como choque (a pessoa sai de lá)");
+  ok(val.confirmavel === true, "choque de horário ao arrastar pode ser confirmado como exceção");
+  // Caio está em outro evento às 22:30; arrastar Bia para lá não choca, mas arrastar Caio para "Paralelo" sim
+  const caioSemFim = await knex("escala_atribuicao as a").join("escala_area as ar", "ar.id_escala_area", "a.id_escala_area")
+    .where({ "a.id_usuario": caio, "ar.id_escala_evento": semFim.id }).select("a.id_escala_atribuicao").first();
+  const valCaio = await EscalaService.validarMoverMembro({
+    membroEscalaOrigemId: caioSemFim.id_escala_atribuicao,
+    escalaDestinoId: domingo.id,
+    instrumentoDestino: "_geral",
+    id_escala_area: aSom.id_escala_area,
+  });
+  ok(valCaio.conflitos.some((c) => c.tipo === "fora_do_ministerio"), "arrastar alguém para ministério que não é dele é sinalizado");
+
+  // Líder arrastando alguém da Mídia para o Louvor (pessoa não é do Louvor) → bloqueado
+  const daviAttr = await EscalaService.addAtribuicao(aMidia.id_escala_area, davi, admin, ADMIN, null);
+  e = await erroDe(() => EscalaService.moverAtribuicao(daviAttr.id_escala_atribuicao, aLouvor.id_escala_area, null, lider, LIDER));
+  ok(e?.statusCode >= 400 && e?.statusCode < 500 && !e.confirmavel, "líder NÃO arrasta para o Louvor quem não é do Louvor");
+
+  // ---------- 9c. "Meus ministérios": cronograma filtrado ----------
+  const so = await EscalaService.getVisualizacaoDia("2032-03-07", lider, LIDER, [mMidia]);
+  const areasVistas = so.dados.eventos.flatMap((ev) => Object.values(ev.instrumentos).map((s) => s.areaNome));
+  ok(so.dados.eventos.length >= 1 && areasVistas.every((n) => n === nomeMidia), "filtro por Mídia: só eventos e áreas da Mídia");
+  ok(!so.dados.eventos.some((ev) => /Ensaio|Paralelo/.test(ev.nome)), "eventos sem a Mídia ficam de fora");
+  const todos = await EscalaService.getVisualizacaoDia("2032-03-07", lider, LIDER, null);
+  ok(todos.dados.eventos.length > so.dados.eventos.length, "sem filtro aparecem todos os eventos");
+  const varios = await EscalaService.getVisualizacaoDia("2032-03-07", lider, LIDER, [mMidia, mLouvor]);
+  ok(varios.dados.eventos.length > so.dados.eventos.length, "pode selecionar mais de um ministério");
+  const semana = await EscalaService.getVisualizacaoSemana("2032-03-07", lider, LIDER, [mMidia]);
+  ok(semana.dados.dias.flatMap((d) => d.eventos).every((ev) => Object.values(ev.instrumentos).every((s) => s.areaNome === nomeMidia)),
+    "filtro vale também na semana");
+  const ano = await EscalaService.getVisualizacaoAno(2032, LIDER, [mSom]);
+  ok(ano.dados.meses[2].total_eventos >= 1 && ano.dados.meses[2].total_eventos < (await EscalaService.getVisualizacaoAno(2032, LIDER, null)).dados.meses[2].total_eventos,
+    "filtro vale também no ano");
 
   // ---------- 10. Líder ----------
   e = await erroDe(() => EscalaService.addAtribuicao(aLouvor.id_escala_area, davi, lider, LIDER, { instrumento: "vocal" }));
@@ -187,6 +254,7 @@ async function main() {
   // ---------- 11. Copiar evento / modelo ----------
   await knex("usuario_ministerio").where({ id_ministerio: mLouvor, id_usuario: caio }).del(); // Caio saiu do Louvor
   await knex("escala_atribuicao").where({ id_escala_area: aLouvor.id_escala_area }).del();
+  await knex("escala_atribuicao").where({ id_escala_area: aSom.id_escala_area, id_usuario: bia }).del();
   await EscalaService.addAtribuicao(aLouvor.id_escala_area, bia, admin, ADMIN, { instrumento: "vocal" });
   await knex("escala_atribuicao").insert({ id_escala_area: aLouvor.id_escala_area, id_usuario: caio, detalhes: JSON.stringify({ instrumento: "baixo" }) });
   const copia = await EscalaService.copiarEvento(domingo.id, { data_hora: "2032-03-14 19:00:00", data_hora_fim: "2032-03-14 21:00:00" }, admin, ADMIN);

@@ -310,6 +310,14 @@ export default function App() {
         }
       />
       <Route
+        path="/usuario/escala/meus-ministerios"
+        element={
+          <ProtectedRoute requireLiderMinisterio>
+            <EscalaUser key="meus-ministerios" modo="meus" />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/usuario/escala/mapa"
         element={
           <ProtectedRoute>

@@ -121,6 +121,26 @@ function SemanaEventoCard({
   );
 }
 
+/**
+ * Área de destino ao soltar sobre o card de um evento: mesmo ministério e mesma função de origem;
+ * senão o mesmo ministério; senão nenhuma (o líder escolhe abrindo o evento).
+ */
+export function slotCompativel(
+  slotsDestino: SlotInstrumento[],
+  origem: SlotInstrumento | undefined,
+  membro: SlotMembro
+): SlotInstrumento | undefined {
+  const mesmoMinisterio = (s: SlotInstrumento) =>
+    origem?.id_ministerio != null
+      ? s.id_ministerio === origem.id_ministerio
+      : !!origem && s.areaNome === origem.areaNome;
+  return (
+    slotsDestino.find((s) => mesmoMinisterio(s) && s.tipo === (membro.tipoSlot || origem?.tipo)) ||
+    slotsDestino.find((s) => mesmoMinisterio(s) && s.tipo === "_geral") ||
+    slotsDestino.find((s) => mesmoMinisterio(s))
+  );
+}
+
 interface PropsComuns {
   onAbrirEvento: (id: number) => void;
 }
@@ -166,6 +186,8 @@ export const EscalaVisaoSemana: React.FC<
     onMover?: (payload: MoverUnificadoPayload) => Promise<void>;
     onEscalar?: (eventoId: number, slot: SlotInstrumento) => void;
     onCopiarSemana?: () => void;
+    /** Mensagem quando soltar sobre o card não tem área compatível */
+    onAviso?: (msg: string) => void;
   }
 > = ({
   visao,
@@ -176,6 +198,7 @@ export const EscalaVisaoSemana: React.FC<
   onMover,
   onEscalar,
   onCopiarSemana,
+  onAviso,
 }) => {
   const [active, setActive] = useState<SlotMembro | null>(null);
   const [expandidos, setExpandidos] = useState<Set<number>>(() => new Set());
@@ -217,11 +240,21 @@ export const EscalaVisaoSemana: React.FC<
     if (!membro || !dest) return;
     let slot = dest.slot;
     if (!slot && dest.evento) {
-      const slots = Object.values(dest.evento.instrumentos || {});
-      slot =
-        slots.find((s) => s.tipo === membro.tipoSlot) ||
-        slots.find((s) => s.id_escala_area === membro.id_escala_area) ||
-        slots[0];
+      // Soltou sobre o card (evento recolhido): vai para o MESMO ministério de origem.
+      // Antes caía na primeira área do evento, que podia ser de outro ministério.
+      const origem = (visao.dias || [])
+        .flatMap((d) => d.eventos)
+        .flatMap((e) => Object.values(e.instrumentos || {}))
+        .find((s) => s.membros.some((m) => m.membroEscalaId === membro.membroEscalaId));
+      slot = slotCompativel(Object.values(dest.evento.instrumentos || {}), origem, membro);
+      if (!slot) {
+        onAviso?.(
+          origem
+            ? `${dest.evento.nome} não tem a área ${origem.areaNome}. Expanda o evento e solte sobre a área desejada.`
+            : "Expanda o evento e solte sobre a área desejada."
+        );
+        return;
+      }
     }
     if (!slot) return;
     if (membro.id_escala_area === slot.id_escala_area && membro.tipoSlot === slot.tipo) {

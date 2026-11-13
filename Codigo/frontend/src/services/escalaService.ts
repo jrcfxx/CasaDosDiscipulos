@@ -264,6 +264,11 @@ export interface EscalasPessoa {
   };
 }
 
+/** "?ministerios=1,3" para o cronograma "Meus ministérios" (vazio = todos) */
+function qsMinisterios(ministerios?: number[]): string {
+  return ministerios?.length ? `?ministerios=${ministerios.join(",")}` : "";
+}
+
 const escalaService = {
   async getEventos(params?: {
     ano?: number;
@@ -296,8 +301,8 @@ const escalaService = {
     return response.data;
   },
 
-  async getVisaoAno(ano: number): Promise<VisaoAno> {
-    const response = await apiClient.get(`/escala/visao/ano/${ano}`);
+  async getVisaoAno(ano: number, ministerios?: number[]): Promise<VisaoAno> {
+    const response = await apiClient.get(`/escala/visao/ano/${ano}${qsMinisterios(ministerios)}`);
     return response.data;
   },
 
@@ -474,18 +479,24 @@ const escalaService = {
     return response.data;
   },
 
-  async getVisualizacaoDia(data: string): Promise<VisualizacaoDia> {
-    const response = await apiClient.get(`/escala/visualizacao/dia/${data}`);
+  async getVisualizacaoDia(data: string, ministerios?: number[]): Promise<VisualizacaoDia> {
+    const response = await apiClient.get(`/escala/visualizacao/dia/${data}${qsMinisterios(ministerios)}`);
     return response.data.dados ?? response.data;
   },
 
-  async getVisualizacaoSemana(dataInicio: string): Promise<VisualizacaoSemana> {
-    const response = await apiClient.get(`/escala/visualizacao/semana/${dataInicio}`);
+  async getVisualizacaoSemana(dataInicio: string, ministerios?: number[]): Promise<VisualizacaoSemana> {
+    const response = await apiClient.get(`/escala/visualizacao/semana/${dataInicio}${qsMinisterios(ministerios)}`);
     return response.data.dados ?? response.data;
   },
 
-  async getVisualizacaoMes(ano: number, mes: number, modo = "compacto"): Promise<VisualizacaoMes> {
-    const response = await apiClient.get(`/escala/visualizacao/mes/${ano}/${mes}?modo=${modo}`);
+  async getVisualizacaoMes(
+    ano: number,
+    mes: number,
+    modo = "compacto",
+    ministerios?: number[]
+  ): Promise<VisualizacaoMes> {
+    const filtro = ministerios?.length ? `&ministerios=${ministerios.join(",")}` : "";
+    const response = await apiClient.get(`/escala/visualizacao/mes/${ano}/${mes}?modo=${modo}${filtro}`);
     return response.data.dados ?? response.data;
   },
 

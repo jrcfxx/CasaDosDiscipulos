@@ -35,7 +35,7 @@ const ProfileIcon = () => (
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin, isLiderCelula, logout } = useAuth();
+  const { isAdmin, isLiderCelula, isLiderMinisterio, logout } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [portalDropdownOpen, setPortalDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -166,6 +166,14 @@ const Header: React.FC = () => {
                   >
                     Escala (Calendário)
                   </Link>
+                  {(isAdmin || isLiderMinisterio) && (
+                    <Link
+                      to="/usuario/escala/meus-ministerios"
+                      onClick={() => setPortalDropdownOpen(false)}
+                    >
+                      Meus ministérios
+                    </Link>
+                  )}
                   <Link
                     to="/usuario/escala/mapa"
                     onClick={() => setPortalDropdownOpen(false)}

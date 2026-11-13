@@ -41,6 +41,9 @@ class ValidadorEscala {
     );
     if (!duploArea.valido) conflitos.push(duploArea);
 
+    const participa = await this.validarParticipacaoMinisterio(idUsuario, idMinisterioDestino);
+    if (!participa.valido) conflitos.push(participa);
+
     if (detalhes && areaNome) {
       const habilidade = this.validarHabilidadeUsuario(areaNome, detalhes);
       if (!habilidade.valido) conflitos.push(habilidade);
@@ -151,6 +154,21 @@ class ValidadorEscala {
       tipo: "duplo_instrumento",
       valido: true,
       mensagem: "Paralelismo de ministérios permitido",
+    };
+  }
+
+  /** A pessoa participa (ou lidera) o ministério da área? Área sem ministério não restringe. */
+  async validarParticipacaoMinisterio(idUsuario, idMinisterio) {
+    if (!idMinisterio || !idUsuario) {
+      return { tipo: "fora_do_ministerio", valido: true, mensagem: "Sem restrição", skip: true };
+    }
+    const participa = await EscalaRepository.usuarioParticipaDoMinisterio(idUsuario, idMinisterio);
+    if (participa) return { tipo: "fora_do_ministerio", valido: true, mensagem: "Participa do ministério" };
+    return {
+      tipo: "fora_do_ministerio",
+      valido: false,
+      mensagem: "Esta pessoa não participa deste ministério.",
+      sugestao: "Inclua a pessoa no ministério (Gerenciar Usuários) ou confirme a exceção.",
     };
   }
 

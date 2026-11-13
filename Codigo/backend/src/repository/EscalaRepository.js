@@ -293,6 +293,16 @@ const EscalaRepository = {
     return q;
   },
 
+  async usuarioParticipaDoMinisterio(idUsuario, idMinisterio) {
+    const membro = await knex("usuario_ministerio")
+      .where({ id_usuario: idUsuario, id_ministerio: idMinisterio })
+      .first();
+    if (membro) return true;
+    return Boolean(
+      await knex("ministerio_lider").where({ id_usuario: idUsuario, id_ministerio: idMinisterio }).first()
+    );
+  },
+
   async usuarioJaEscaladoNoEvento(idUsuario, idEvento, idAtribuicaoExcluir = null) {
     const rows = await this.listarEscalasUsuarioNoEvento(
       idUsuario,

@@ -15,7 +15,7 @@ import InicioPersonalizado from "../components/portal/InicioPersonalizado";
 import Footer from "../components/layout/Footer";
 
 const PortalDoDiscipuloUser: React.FC = () => {
-  const { isLiderCelula } = useAuth();
+  const { isLiderCelula, isLiderMinisterio } = useAuth();
 
   return (
     <div className="portal-user">
@@ -50,6 +50,18 @@ const PortalDoDiscipuloUser: React.FC = () => {
               <span className="portal-card__title">Escala</span>
               <span className="portal-card__desc">Calendário e ministérios</span>
             </NavLink>
+            {isLiderMinisterio && (
+              <NavLink
+                to="/usuario/escala/meus-ministerios"
+                className="portal-card"
+                style={{ backgroundImage: `url(${imgEscala})` }}
+                aria-label="Acessar o cronograma dos meus ministérios"
+              >
+                <span className="portal-card__overlay" />
+                <span className="portal-card__title">Meus ministérios</span>
+                <span className="portal-card__desc">Cronograma só dos ministérios que você lidera</span>
+              </NavLink>
+            )}
             <NavLink
               to="/usuario/escala/mapa"
               className="portal-card"

@@ -43,7 +43,7 @@ import { getLimitesPorArea } from "../config/ministerioCampos.js";
  * a pessoa já está em outra função do mesmo evento, em outro evento no mesmo horário,
  * ou a função já atingiu o limite de vagas. Valor inválido de função nunca é confirmável.
  */
-const CONFLITOS_CONFIRMAVEIS = new Set(["duplo_evento", "duplo_instrumento", "limite"]);
+const CONFLITOS_CONFIRMAVEIS = new Set(["duplo_evento", "duplo_instrumento", "limite", "fora_do_ministerio"]);
 
 class EscalaService {
   // ---------- Eventos ----------
@@ -646,21 +646,38 @@ class EscalaService {
     return eventos;
   }
 
-  async getVisaoDia(data, tipoUsuario = null) {
+  /**
+   * "Meus ministérios": mantém só eventos com áreas (ou vínculo) desses ministérios e,
+   * dentro de cada evento, só as áreas deles. Sem filtro, devolve tudo.
+   */
+  _filtrarPorMinisterios(eventos, idsMinisterios) {
+    if (!idsMinisterios?.length) return eventos;
+    const ids = new Set(idsMinisterios.map(Number));
+    return eventos
+      .map((ev) => ({
+        ...ev,
+        areas: (ev.areas || []).filter((a) => a.id_ministerio != null && ids.has(Number(a.id_ministerio))),
+      }))
+      .filter(
+        (ev) => ev.areas.length > 0 || (ev.ministerios || []).some((m) => ids.has(Number(m.id_ministerio)))
+      );
+  }
+
+  async getVisaoDia(data, tipoUsuario = null, idsMinisterios = null) {
     const ini = inicioDoDia(data);
     const fim = fimDoDia(data);
     const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
-    return this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
+    return this._filtrarPorMinisterios(this._filtrarRascunhosSeMembro(eventos, tipoUsuario), idsMinisterios);
   }
 
-  async getVisaoSemana(dataInicio, tipoUsuario = null) {
+  async getVisaoSemana(dataInicio, tipoUsuario = null, idsMinisterios = null) {
     const ini = inicioDoDia(dataInicio);
     const fim = fimDoDia(adicionarDias(dataInicio, 6));
     const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
-    return this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
+    return this._filtrarPorMinisterios(this._filtrarRascunhosSeMembro(eventos, tipoUsuario), idsMinisterios);
   }
 
-  async getVisaoMes(ano, mes, tipoUsuario = null) {
+  async getVisaoMes(ano, mes, tipoUsuario = null, idsMinisterios = null) {
     const y = Number(ano);
     const m = Number(mes);
     if (!y || !m || m < 1 || m > 12) throw new ValidationError("Ano/mês inválidos");
@@ -668,10 +685,10 @@ class EscalaService {
     const ultimo = new Date(y, m, 0).getDate();
     const fim = `${y}-${String(m).padStart(2, "0")}-${String(ultimo).padStart(2, "0")} 23:59:59`;
     const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
-    return this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
+    return this._filtrarPorMinisterios(this._filtrarRascunhosSeMembro(eventos, tipoUsuario), idsMinisterios);
   }
 
-  async getVisaoAno(ano, tipoUsuario = null) {
+  async getVisaoAno(ano, tipoUsuario = null, idsMinisterios = null) {
     const y = Number(ano);
     if (!y) throw new ValidationError("Ano inválido");
     let eventos = await EscalaRepository.listarEventos({
@@ -679,6 +696,11 @@ class EscalaService {
       ativo: true,
     });
     eventos = this._filtrarRascunhosSeMembro(eventos, tipoUsuario);
+    if (idsMinisterios?.length) {
+      const ids = new Set(idsMinisterios.map(Number));
+      const mapa = await EscalaRepository.mapearMinisteriosPorEventos(eventos.map((e) => e.id_escala_evento));
+      eventos = eventos.filter((e) => (mapa.get(e.id_escala_evento) || []).some((id) => ids.has(Number(id))));
+    }
     const porMes = Array.from({ length: 12 }, (_, i) => ({
       mes: i + 1,
       total_eventos: 0,
@@ -697,8 +719,8 @@ class EscalaService {
     return { ano: y, meses: porMes };
   }
 
-  async getVisualizacaoAno(ano, tipoUsuario = null) {
-    const visao = await this.getVisaoAno(ano, tipoUsuario);
+  async getVisualizacaoAno(ano, tipoUsuario = null, idsMinisterios = null) {
+    const visao = await this.getVisaoAno(ano, tipoUsuario, idsMinisterios);
     return {
       sucesso: true,
       dados: {
@@ -742,8 +764,8 @@ class EscalaService {
     return meus.map((m) => m.id_ministerio);
   }
 
-  async getVisualizacaoDia(data, idUsuario = null, tipoUsuario = null) {
-    const eventos = await this.getVisaoDia(data, tipoUsuario);
+  async getVisualizacaoDia(data, idUsuario = null, tipoUsuario = null, idsMinisterios = null) {
+    const eventos = await this.getVisaoDia(data, tipoUsuario, idsMinisterios);
     const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);
     const unificados = this._formatarEventosComPermissao(eventos, idsLider, tipoUsuario);
     return {
@@ -757,8 +779,8 @@ class EscalaService {
     };
   }
 
-  async getVisualizacaoSemana(dataInicio, idUsuario = null, tipoUsuario = null) {
-    const eventos = await this.getVisaoSemana(dataInicio, tipoUsuario);
+  async getVisualizacaoSemana(dataInicio, idUsuario = null, tipoUsuario = null, idsMinisterios = null) {
+    const eventos = await this.getVisaoSemana(dataInicio, tipoUsuario, idsMinisterios);
     const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);
     const unificados = this._formatarEventosComPermissao(eventos, idsLider, tipoUsuario);
     const dataFim = adicionarDias(dataInicio, 6);
@@ -789,8 +811,8 @@ class EscalaService {
     };
   }
 
-  async getVisualizacaoMes(ano, mes, modo = "compacto", idUsuario = null, tipoUsuario = null) {
-    const eventos = await this.getVisaoMes(ano, mes, tipoUsuario);
+  async getVisualizacaoMes(ano, mes, modo = "compacto", idUsuario = null, tipoUsuario = null, idsMinisterios = null) {
+    const eventos = await this.getVisaoMes(ano, mes, tipoUsuario, idsMinisterios);
     const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);
     const unificados = this._formatarEventosComPermissao(eventos, idsLider, tipoUsuario);
     const y = Number(ano);
@@ -883,6 +905,19 @@ class EscalaService {
     return base;
   }
 
+  /**
+   * Detalhes ao mover: dentro do mesmo tipo de ministério mantém a função (ex.: violão → violão);
+   * para outro ministério a função antiga não vale (violão no Som era recusado) — fica só a observação.
+   */
+  _detalhesParaDestino(areaOrigemNome, areaDestinoNome, detalhesBase, instrumentoDestino) {
+    const mesmoGrupo =
+      String(areaOrigemNome || "").toLowerCase().trim() === String(areaDestinoNome || "").toLowerCase().trim() ||
+      (chaveAreaGrupo(areaOrigemNome) !== "area" && chaveAreaGrupo(areaOrigemNome) === chaveAreaGrupo(areaDestinoNome));
+    if (mesmoGrupo) return this._detalhesComSlot(areaDestinoNome, detalhesBase, instrumentoDestino);
+    const base = detalhesBase && typeof detalhesBase === "object" ? detalhesBase : {};
+    return base.observacoes ? { observacoes: base.observacoes } : {};
+  }
+
   async validarMoverMembro(body) {
     const idAtribuicao = this._parseId(body.membroEscalaOrigemId || body.id_escala_atribuicao);
     const atribuicao = await EscalaRepository.buscarAtribuicaoCompleta(idAtribuicao);
@@ -898,7 +933,8 @@ class EscalaService {
     });
     if (!areaDestino) throw new ValidationError("Área/instrumento de destino não encontrado");
 
-    const detalhes = this._detalhesComSlot(
+    const detalhes = this._detalhesParaDestino(
+      atribuicao.area_nome,
       areaDestino.nome,
       body.detalhes || atribuicao.detalhes,
       body.instrumentoDestino
@@ -980,7 +1016,8 @@ class EscalaService {
     const atribuicao = await EscalaRepository.buscarAtribuicaoCompleta(idAtribuicao);
     const areaDestinoId = validacao.dadosDestino.id_escala_area;
     const areaDestino = await EscalaRepository.buscarAreaPorId(areaDestinoId);
-    const detalhes = this._detalhesComSlot(
+    const detalhes = this._detalhesParaDestino(
+      atribuicao.area_nome,
       areaDestino.nome,
       body.detalhes || atribuicao.detalhes,
       body.instrumentoDestino
@@ -1162,10 +1199,15 @@ class EscalaService {
 
     await this._assertPodeGerenciarArea(areaOrigem, idUsuarioLogado, tipoUsuario);
     await this._assertPodeGerenciarArea(areaDestino, idUsuarioLogado, tipoUsuario);
+    if (tipoUsuario === USER_TYPES.LEADER && areaDestino.id_escala_area !== areaOrigem.id_escala_area) {
+      await this._assertUsuarioNoMinisterioDoLider(atribuicao.id_usuario, idUsuarioLogado, areaDestino);
+    }
 
     const eventoDestino = await EscalaRepository.buscarEventoPorId(areaDestino.id_escala_evento);
     const detalhesFinais =
-      detalhes && typeof detalhes === "object" ? detalhes : atribuicao.detalhes;
+      detalhes && typeof detalhes === "object"
+        ? detalhes
+        : this._detalhesParaDestino(atribuicao.area_nome, areaDestino.nome, atribuicao.detalhes, null);
 
     const { valido, conflitos } = await ValidadorEscala.validarTodosConflitos({
       idUsuario: atribuicao.id_usuario,

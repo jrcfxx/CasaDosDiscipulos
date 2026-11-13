@@ -3,6 +3,17 @@ import EscalaService from "../services/EscalaService.js";
 /**
  * Controller para operações da Escala
  */
+/** "?ministerios=1,3" → [1, 3] (vazio = todos os ministérios) */
+function idsMinisteriosDaQuery(req) {
+  const bruto = String(req.query?.ministerios || "").trim();
+  if (!bruto) return null;
+  const ids = bruto
+    .split(",")
+    .map((v) => Number(v))
+    .filter((n) => Number.isInteger(n) && n > 0);
+  return ids.length ? ids.slice(0, 50) : null;
+}
+
 class EscalaController {
   async getEventos(req, res, next) {
     try {
@@ -185,7 +196,7 @@ class EscalaController {
   async getVisaoAno(req, res, next) {
     try {
       res.json(
-        await EscalaService.getVisaoAno(req.params.ano, req.usuario?.tipo)
+        await EscalaService.getVisaoAno(req.params.ano, req.usuario?.tipo, idsMinisteriosDaQuery(req))
       );
     } catch (err) {
       next(err);
@@ -198,7 +209,8 @@ class EscalaController {
         await EscalaService.getVisualizacaoDia(
           req.params.data,
           req.usuario?.id_usuario,
-          req.usuario?.tipo
+          req.usuario?.tipo,
+          idsMinisteriosDaQuery(req)
         )
       );
     } catch (err) {
@@ -212,7 +224,8 @@ class EscalaController {
         await EscalaService.getVisualizacaoSemana(
           req.params.dataInicio,
           req.usuario?.id_usuario,
-          req.usuario?.tipo
+          req.usuario?.tipo,
+          idsMinisteriosDaQuery(req)
         )
       );
     } catch (err) {
@@ -222,7 +235,9 @@ class EscalaController {
 
   async getVisualizacaoAno(req, res, next) {
     try {
-      res.json(await EscalaService.getVisualizacaoAno(req.params.ano, req.usuario?.tipo));
+      res.json(
+        await EscalaService.getVisualizacaoAno(req.params.ano, req.usuario?.tipo, idsMinisteriosDaQuery(req))
+      );
     } catch (err) {
       next(err);
     }
@@ -236,7 +251,8 @@ class EscalaController {
           req.params.mes,
           req.query.modo || "compacto",
           req.usuario?.id_usuario,
-          req.usuario?.tipo
+          req.usuario?.tipo,
+          idsMinisteriosDaQuery(req)
         )
       );
     } catch (err) {

@@ -105,6 +105,13 @@ async function main() {
     .where({ ativo: true })
     .whereNotIn("id_usuario", [admin.id_usuario, pessoa.id_usuario])
     .first();
+  for (const m of mins) {
+    const ja = await knex("usuario_ministerio").where({ id_usuario: pessoa2.id_usuario, id_ministerio: m.id_ministerio }).first();
+    if (!ja) {
+      await knex("usuario_ministerio").insert({ id_usuario: pessoa2.id_usuario, id_ministerio: m.id_ministerio });
+      vinculosCriados.push({ id_usuario: pessoa2.id_usuario, id_ministerio: m.id_ministerio });
+    }
+  }
   await knex("ministerio_paralelismo").insert({
     id_ministerio: mins[0].id_ministerio,
     id_ministerio_paralelo: mins[1].id_ministerio,
