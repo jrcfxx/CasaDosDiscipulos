@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import escalaService, { EscalaEventoCompleto } from "../services/escalaService";
+import { getErrorMessage } from "../utils/errorUtils";
 
 /**
  * Pilha local + desfazer via API (último snapshot do histórico).
@@ -20,8 +21,9 @@ export function useEscalaUndo(
         const ev = await escalaService.desfazer(idEvento);
         onRestaurado(ev);
         setPodeDesfazer(false);
-      } catch {
-        onErro("Não foi possível desfazer a última alteração");
+      } catch (err) {
+        // Mostra o motivo (ex.: recolocar a pessoa criaria choque de horário)
+        onErro(getErrorMessage(err, "Não foi possível desfazer a última alteração"));
       }
     },
     [onRestaurado, onErro]

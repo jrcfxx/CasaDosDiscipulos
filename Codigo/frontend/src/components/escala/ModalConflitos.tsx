@@ -67,8 +67,8 @@ const ModalConflitos: React.FC<ModalConflitosProps> = ({
           </ul>
           {podeConfirmar && (
             <p className="escala-dialog-hint">
-              Se for uma exceção (por exemplo, a pessoa consegue servir nas duas funções), você
-              pode continuar mesmo assim. A decisão fica registrada no histórico.
+              Se for uma exceção combinada com a pessoa, você pode continuar mesmo assim. A
+              decisão fica registrada no histórico do evento.
             </p>
           )}
           <div className="escala-dialog-actions">

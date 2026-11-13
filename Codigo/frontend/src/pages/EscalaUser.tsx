@@ -37,6 +37,7 @@ import ModalHistorico from "../components/escala/ModalHistorico";
 import EscalaTemplatesModal from "../components/escala/EscalaTemplatesModal";
 import { useEscalaUndo } from "../hooks/useEscalaUndo";
 import { getErrorMessage } from "../utils/errorUtils";
+import { resumirAvisosCopia } from "../utils/avisosEscala";
 import { mapaParalelismoDeMinisterios } from "../utils/ministerioParalelismo";
 import type { Ministerio } from "../services/ministerioService";
 import ModalEvento, { type FormEvento } from "../components/escala/ModalEvento";
@@ -450,7 +451,18 @@ const EscalaUser: React.FC = () => {
 
   const handleAdicionarAtribuicao = () => adicionarAtribuicao(false);
 
-  const handleRemoverAtribuicao = async (a: EscalaAtribuicao) => {
+  // Remover pede confirmação: em escala publicada a pessoa é avisada na hora
+  const [aRemover, setARemover] = useState<{ att: EscalaAtribuicao; nome: string; publicada: boolean } | null>(null);
+
+  const handleRemoverAtribuicao = (a: EscalaAtribuicao, nome?: string) => {
+    setARemover({
+      att: a,
+      nome: nome || a.usuario_nome || "esta pessoa",
+      publicada: eventoSelecionado?.status === "publicada",
+    });
+  };
+
+  const executarRemocao = async (a: EscalaAtribuicao) => {
     try {
       await escalaService.removeAtribuicao(a.id_escala_atribuicao);
       showToast("Removido da escala", "success");
@@ -460,8 +472,8 @@ const EscalaUser: React.FC = () => {
         const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
         setEventoSelecionado(ev);
       }
-    } catch {
-      showToast("Erro ao remover", "error");
+    } catch (err) {
+      showToast(getErrorMessage(err, "Não foi possível remover da escala"), "error");
     }
   };
 
@@ -568,8 +580,8 @@ const EscalaUser: React.FC = () => {
     }
     try {
       const result = await escalaService.copiarDia(dataDia, dest);
-      const avisos = result.warnings?.length ? ` (${result.warnings.length} aviso(s))` : "";
-      showToast(`Dia copiado para ${dest}${avisos}`, "success");
+      const avisos = resumirAvisosCopia(result.warnings);
+      showToast(`Dia copiado para ${dest}.${avisos ? ` ${avisos}` : ""}`, avisos ? "info" : "success");
       setInputDialog(null);
       fetchEventos();
     } catch (err) {
@@ -592,8 +604,8 @@ const EscalaUser: React.FC = () => {
         data_inicio_origem: dataSemana,
         data_inicio_destino: dest,
       });
-      const avisos = result.warnings?.length ? ` (${result.warnings.length} aviso(s))` : "";
-      showToast(`Semana copiada${avisos}`, "success");
+      const avisos = resumirAvisosCopia(result.warnings);
+      showToast(`Semana copiada.${avisos ? ` ${avisos}` : ""}`, avisos ? "info" : "success");
       setInputDialog(null);
       fetchEventos();
     } catch (err) {
@@ -659,10 +671,8 @@ const EscalaUser: React.FC = () => {
         data_hora,
         data_hora_fim,
       });
-      const avisos = result.warnings?.length
-        ? ` (${result.warnings.length} aviso(s) de conflito)`
-        : "";
-      showToast(`Evento copiado para +7 dias${avisos}`, "success");
+      const avisos = resumirAvisosCopia(result.warnings);
+      showToast(`Evento copiado para +7 dias (como rascunho).${avisos ? ` ${avisos}` : ""}`, avisos ? "info" : "success");
       fetchEventos();
     } catch (err) {
       showToast(getErrorMessage(err, "Erro ao copiar"), "error");
@@ -888,11 +898,14 @@ const EscalaUser: React.FC = () => {
                   )
                 }
                 onRemoverMembro={(m) =>
-                  handleRemoverAtribuicao({
-                    id_escala_atribuicao: m.membroEscalaId,
-                    id_escala_area: m.id_escala_area,
-                    id_usuario: m.usuario.id,
-                  })
+                  handleRemoverAtribuicao(
+                    {
+                      id_escala_atribuicao: m.membroEscalaId,
+                      id_escala_area: m.id_escala_area,
+                      id_usuario: m.usuario.id,
+                    },
+                    m.usuario.nome
+                  )
                 }
               />
               {podeEditar && (
@@ -1009,9 +1022,11 @@ const EscalaUser: React.FC = () => {
                   </button>
                   {isAdmin && (
                     <>
-                      <BotaoCarregando type="button" className="btn-editar-evento" onClick={() => acaoPublicar.executar(handlePublicar)} carregando={acaoPublicar.executando} textoCarregando="Publicando…">
-                        Publicar
-                      </BotaoCarregando>
+                      {eventoSelecionado.status === "rascunho" && (
+                        <BotaoCarregando type="button" className="btn-editar-evento" onClick={() => acaoPublicar.executar(handlePublicar)} carregando={acaoPublicar.executando} textoCarregando="Publicando…">
+                          Publicar
+                        </BotaoCarregando>
+                      )}
                       <BotaoCarregando type="button" className="btn-editar-evento" onClick={() => acaoCopiar.executar(handleCopiarEvento)} carregando={acaoCopiar.executando} textoCarregando="Copiando…">
                         Copiar (+7 dias)
                       </BotaoCarregando>
@@ -1205,6 +1220,25 @@ const EscalaUser: React.FC = () => {
       )}
 
       <ConfirmModal
+        open={!!aRemover}
+        title={`Remover ${aRemover?.nome ?? ""} da escala?`}
+        message={
+          aRemover?.publicada
+            ? "A escala já está publicada: a pessoa será avisada da remoção."
+            : "A escala ainda é rascunho: ninguém será avisado."
+        }
+        confirmLabel="Remover"
+        cancelLabel="Cancelar"
+        variant="danger"
+        textoCarregando="Removendo…"
+        onConfirm={async () => {
+          if (aRemover) await executarRemocao(aRemover.att);
+          setARemover(null);
+        }}
+        onCancel={() => setARemover(null)}
+      />
+
+      <ConfirmModal
         open={showConfirmExcluir}
         title="Excluir evento?"
         message="Esta ação não pode ser desfeita. Todas as atribuições serão removidas."
@@ -1246,7 +1280,13 @@ const EscalaUser: React.FC = () => {
       />
 
       {toast && (
-        <Toast message={toast} onClose={() => setToast(null)} variant={toastVariant} />
+        <Toast
+          message={toast}
+          onClose={() => setToast(null)}
+          variant={toastVariant}
+          // Mensagens longas (ex.: quem não foi copiado e por quê) ficam mais tempo na tela
+          duration={Math.min(12000, Math.max(3000, toast.length * 60))}
+        />
       )}
 
       <Footer />

@@ -31,6 +31,7 @@ const espera = async (fn) => {
   }
 };
 const eventosCriados = [];
+const vinculosCriados = [];
 
 async function notifs(idUsuario, idEvento) {
   const [{ n }] = await knex("notificacao")
@@ -45,6 +46,14 @@ async function main() {
   if (!admin || mins.length < 2) throw new Error("Precisa de um admin e 2 ministérios (rode o seed)");
   const pessoa = await knex("usuario").where({ ativo: true }).whereNot("id_usuario", admin.id_usuario).first();
   const membro = await knex("usuario").where({ tipo: USER_TYPES.MEMBER, ativo: true }).first();
+  // A pessoa participa dos dois ministérios (cópias de evento só levam quem é do ministério)
+  for (const m of mins) {
+    const ja = await knex("usuario_ministerio").where({ id_usuario: pessoa.id_usuario, id_ministerio: m.id_ministerio }).first();
+    if (!ja) {
+      await knex("usuario_ministerio").insert({ id_usuario: pessoa.id_usuario, id_ministerio: m.id_ministerio });
+      vinculosCriados.push({ id_usuario: pessoa.id_usuario, id_ministerio: m.id_ministerio });
+    }
+  }
   await knex("ministerio_paralelismo")
     .where({ id_ministerio: mins[0].id_ministerio, id_ministerio_paralelo: mins[1].id_ministerio })
     .orWhere({ id_ministerio: mins[1].id_ministerio, id_ministerio_paralelo: mins[0].id_ministerio })
@@ -166,6 +175,9 @@ main()
     for (const id of eventosCriados) {
       await knex("notificacao").where("id_escala_evento", id).del().catch(() => {});
       await knex("escala_evento").where("id_escala_evento", id).del().catch(() => {});
+    }
+    for (const v of vinculosCriados) {
+      await knex("usuario_ministerio").where(v).del().catch(() => {});
     }
     await knex.destroy();
     console.log(falhas ? `\n${falhas} falha(s)` : "\nTodos os testes passaram.");

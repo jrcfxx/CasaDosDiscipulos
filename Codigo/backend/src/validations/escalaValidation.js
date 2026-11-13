@@ -5,8 +5,8 @@ const validarFimAposInicio = (value, helpers) => {
   if (data_hora && data_hora_fim) {
     const ini = new Date(data_hora).getTime();
     const fim = new Date(data_hora_fim).getTime();
-    if (!Number.isNaN(ini) && !Number.isNaN(fim) && fim < ini) {
-      return helpers.message("Horário de término deve ser após o início");
+    if (!Number.isNaN(ini) && !Number.isNaN(fim) && fim <= ini) {
+      return helpers.message("O horário de término precisa ser depois do início");
     }
   }
   return value;

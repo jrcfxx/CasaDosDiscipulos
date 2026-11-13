@@ -132,3 +132,13 @@
 .escala-dialog-btn-primary:hover:not(:disabled) {
   background: var(--color-primary-dark, #00444c);
 }
+
+/* Texto de exceção não encosta nos botões */
+.escala-dialog > .escala-dialog-hint {
+  margin: 0 0 1.25rem;
+}
+
+/* Conflito é atenção: destaque no amarelo da marca (teal fica para o que está certo) */
+.escala-dialog-list strong {
+  color: var(--gold-500, #f4b002);
+}

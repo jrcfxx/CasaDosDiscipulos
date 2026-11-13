@@ -90,6 +90,7 @@ class EscalaService {
 
   async createEvento(dados, idUsuario, tipoUsuario) {
     this._assertAdmin(tipoUsuario);
+    this._assertHorarioValido(dados.data_hora, dados.data_hora_fim);
 
     const trx = await knex.transaction();
     try {
@@ -179,6 +180,14 @@ class EscalaService {
     const eventoAntes = await EscalaRepository.buscarEventoPorId(parsed);
     if (!eventoAntes) throw new NotFoundError("Evento não encontrado");
 
+    // Editar só o início ou só o término: compara com o outro valor já salvo
+    if (dados.data_hora !== undefined || dados.data_hora_fim !== undefined) {
+      this._assertHorarioValido(
+        dados.data_hora !== undefined ? dados.data_hora : eventoAntes.data_hora,
+        dados.data_hora_fim !== undefined ? dados.data_hora_fim : eventoAntes.data_hora_fim
+      );
+    }
+
     const atribuicoesAntes = await EscalaRepository.listarAtribuicoesPorEvento(parsed);
 
     const trx = await knex.transaction();
@@ -216,17 +225,26 @@ class EscalaService {
         }
 
         const restantes = await trx("escala_area").where("id_escala_evento", parsed);
-        const nomesExistentes = new Set(restantes.map((a) => String(a.nome).toLowerCase()));
+        const porNome = new Map(restantes.map((a) => [String(a.nome).toLowerCase(), a]));
+        const idsMinEvento =
+          dados.id_ministerios !== undefined
+            ? dados.id_ministerios || []
+            : (await trx("escala_evento_ministerio").where("id_escala_evento", parsed)).map((r) => r.id_ministerio);
+        const minsEvento = idsMinEvento.length
+          ? await trx("ministerio").whereIn("id_ministerio", idsMinEvento).select("id_ministerio", "nome")
+          : [];
 
         for (let i = 0; i < nomesNovos.length; i++) {
           const nome = nomesNovos[i];
           const key = nome.toLowerCase();
-          if (nomesExistentes.has(key)) {
-            await trx("escala_area")
-              .where({ id_escala_evento: parsed, nome })
-              .update({ ordem: i });
+          const existente = porNome.get(key);
+          if (existente) {
+            await trx("escala_area").where("id_escala_area", existente.id_escala_area).update({ ordem: i });
           } else {
-            const min = await trx("ministerio").where("nome", nome).where("ativo", true).first();
+            // Prefere o ministério do próprio evento com esse nome (nomes podem repetir entre ministérios)
+            const min =
+              minsEvento.find((m) => String(m.nome).toLowerCase().trim() === key) ||
+              (await trx("ministerio").where("nome", nome).where("ativo", true).first());
             await EscalaRepository.criarArea(
               {
                 id_escala_evento: parsed,
@@ -362,6 +380,10 @@ class EscalaService {
     if (!area) throw new NotFoundError("Área não encontrada");
 
     await this._assertPodeGerenciarArea(area, idUsuarioLogado, tipoUsuario);
+
+    const pessoa = await knex("usuario").where({ id_usuario: parsedUsuario }).select("ativo").first();
+    if (!pessoa) throw new NotFoundError("Pessoa não encontrada");
+    if (!pessoa.ativo) throw new ValidationError("Esta pessoa está desativada e não pode ser escalada");
 
     if (tipoUsuario === USER_TYPES.LEADER) {
       await this._assertUsuarioNoMinisterioDoLider(parsedUsuario, idUsuarioLogado, area);
@@ -561,8 +583,17 @@ class EscalaService {
 
     let idMinisterioFiltro = null;
     if (nomeArea) {
-      const ministerio = await EscalaRepository.buscarMinisterioPorNome(nomeArea);
-      if (ministerio) idMinisterioFiltro = ministerio.id_ministerio;
+      // A área do evento guarda o ministério pelo id: renomear o ministério não quebra o vínculo
+      const areas = await EscalaRepository.listarAreasPorEvento(parsed);
+      const area = areas.find(
+        (a) => String(a.nome).toLowerCase().trim() === String(nomeArea).toLowerCase().trim()
+      );
+      if (area?.id_ministerio) {
+        idMinisterioFiltro = area.id_ministerio;
+      } else {
+        const ministerio = await EscalaRepository.buscarMinisterioPorNome(nomeArea);
+        if (ministerio) idMinisterioFiltro = ministerio.id_ministerio;
+      }
     }
 
     if (tipoUsuario === USER_TYPES.ADMIN) {
@@ -1248,6 +1279,7 @@ class EscalaService {
   // ---------- Copiar / Templates / Desfazer ----------
   async copiarEvento(id, { data_hora, data_hora_fim, titulo }, idUsuario, tipoUsuario) {
     this._assertAdmin(tipoUsuario);
+    this._assertHorarioValido(data_hora, data_hora_fim);
     const origem = await this.getEventoCompleto(id);
     const warnings = [];
 
@@ -1284,6 +1316,13 @@ class EscalaService {
             warnings.push({
               usuario: attr.usuario_nome,
               mensagem: "Não copiado: usuário desativado",
+            });
+            continue;
+          }
+          if (!(await this._participaDoMinisterio(attr.id_usuario, area.id_ministerio))) {
+            warnings.push({
+              usuario: attr.usuario_nome,
+              mensagem: `Não copiado: não participa mais do ministério de ${area.nome}`,
             });
             continue;
           }
@@ -1387,6 +1426,7 @@ class EscalaService {
 
   async aplicarTemplate(idTemplate, body, idUsuario, tipoUsuario) {
     this._assertAdmin(tipoUsuario);
+    this._assertHorarioValido(body.data_hora, body.data_hora_fim);
     const template = await EscalaRepository.buscarTemplate(this._parseId(idTemplate));
     if (!template) throw new NotFoundError("Template não encontrado");
     const payload = template.payload || {};
@@ -1425,7 +1465,16 @@ class EscalaService {
           if (!(await this._usuarioAtivo(slot.id_usuario))) {
             warnings.push({
               id_usuario: slot.id_usuario,
+              usuario: await this._nomeUsuario(slot.id_usuario),
               mensagem: "Não incluído: usuário desativado ou removido",
+            });
+            continue;
+          }
+          if (!(await this._participaDoMinisterio(slot.id_usuario, area.id_ministerio))) {
+            warnings.push({
+              id_usuario: slot.id_usuario,
+              usuario: await this._nomeUsuario(slot.id_usuario),
+              mensagem: `Não incluído: não participa mais do ministério de ${area.nome}`,
             });
             continue;
           }
@@ -1437,6 +1486,7 @@ class EscalaService {
           if (conflito) {
             warnings.push({
               id_usuario: slot.id_usuario,
+              usuario: await this._nomeUsuario(slot.id_usuario),
               mensagem: `Conflito: ${conflito.evento_titulo}`,
             });
             continue;
@@ -1512,6 +1562,32 @@ class EscalaService {
     // Datas do snapshot JSON vêm como ISO (UTC); converte de volta para o horário local
     const dataDoSnapshot = (v) => (v ? toMysqlDatetime(new Date(v)) : null);
     const recriar = async (a) => {
+      // Antes de recolocar a pessoa, confere se isso não cria choque de horário ou duplicidade
+      const area = await EscalaRepository.buscarAreaPorId(a.id_escala_area);
+      if (!area) throw new ValidationError("A área original não existe mais; não é possível desfazer");
+      const ev = await EscalaRepository.buscarEventoPorId(area.id_escala_evento);
+      const { conflitos } = await ValidadorEscala.validarTodosConflitos({
+        idUsuario: a.id_usuario,
+        idArea: area.id_escala_area,
+        areaNome: area.nome,
+        idEvento: area.id_escala_evento,
+        dataHora: ev?.data_hora,
+        dataHoraFim: ev?.data_hora_fim,
+        detalhes: null,
+        excluirMesmoEventoDoOverlap: true,
+        idMinisterioDestino: area.id_ministerio ?? null,
+      });
+      // Dentro do próprio evento, desfazer só restaura o estado anterior (inclusive exceções
+      // já confirmadas). O que não pode é criar choque com OUTRO evento marcado nesse meio tempo.
+      const bloqueios = conflitos.filter((c) => !c.valido && !c.skip && c.tipo === "duplo_evento");
+      if (bloqueios.length) {
+        const err = new ConflictError(
+          `Não dá para desfazer: ${bloqueios[0].mensagem} Ajuste a escala manualmente.`
+        );
+        err.conflitos = bloqueios.map((c) => ({ tipo: c.tipo, mensagem: c.mensagem }));
+        err.confirmavel = false;
+        throw err;
+      }
       try {
         await EscalaRepository.criarAtribuicao({
           id_escala_area: a.id_escala_area,
@@ -1664,18 +1740,52 @@ class EscalaService {
     }
   }
 
+  /** Líder só escala, na área, pessoas que participam do ministério DAQUELA área */
   async _assertUsuarioNoMinisterioDoLider(idUsuario, idLider, area) {
-    const meus = await MinisterioModel.getMinisteriosByUsuario(idLider);
-    const idsMeus = meus.map((m) => m.id_ministerio);
-    const usuarioParticipa = await knex("usuario_ministerio")
-      .where("id_usuario", idUsuario)
-      .whereIn("id_ministerio", idsMeus)
-      .first();
-    if (!usuarioParticipa) {
-      throw new ValidationError(
-        "Esta pessoa não participa de nenhum ministério que você lidera neste evento"
-      );
+    let idMin = area?.id_ministerio;
+    if (!idMin) {
+      const min = await EscalaRepository.buscarMinisterioPorNome(area?.nome);
+      idMin = min?.id_ministerio;
     }
+    const meus = await MinisterioModel.getMinisteriosByUsuario(idLider);
+    if (!idMin || !meus.some((m) => m.id_ministerio === idMin)) {
+      throw new ForbiddenError("Você só pode escalar nos ministérios em que é líder");
+    }
+    if (!(await this._participaDoMinisterio(idUsuario, idMin))) {
+      throw new ValidationError(`Esta pessoa não participa do ministério de ${area.nome}`);
+    }
+  }
+
+  /** true se a pessoa participa do ministério (área sem ministério vinculado: não restringe) */
+  async _participaDoMinisterio(idUsuario, idMinisterio) {
+    if (!idMinisterio) return true;
+    const row = await knex("usuario_ministerio")
+      .where({ id_usuario: idUsuario, id_ministerio: idMinisterio })
+      .first();
+    if (row) return true;
+    // Líder do ministério também pode servir nele
+    return Boolean(
+      await knex("ministerio_lider").where({ id_usuario: idUsuario, id_ministerio: idMinisterio }).first()
+    );
+  }
+
+  /** Término precisa ser depois do início (evento de duração zero nunca entraria em conflito) */
+  _assertHorarioValido(dataHora, dataHoraFim) {
+    if (!dataHora) throw new ValidationError("Informe a data e o horário do evento");
+    // Aceita Date (vindo do banco) ou texto "AAAA-MM-DD HH:MM[:SS]" / ISO (vindo da tela)
+    const ms = (v) => (v instanceof Date ? v.getTime() : new Date(String(v).replace(" ", "T")).getTime());
+    const ini = ms(dataHora);
+    if (Number.isNaN(ini)) throw new ValidationError("Data/horário de início inválido");
+    if (dataHoraFim) {
+      const fim = ms(dataHoraFim);
+      if (Number.isNaN(fim)) throw new ValidationError("Horário de término inválido");
+      if (fim <= ini) throw new ValidationError("O horário de término precisa ser depois do início");
+    }
+  }
+
+  async _nomeUsuario(idUsuario) {
+    const u = await knex("usuario").where({ id_usuario: idUsuario }).select("nome").first();
+    return u?.nome || null;
   }
 
   async _usuarioAtivo(idUsuario) {

@@ -14,7 +14,7 @@
     "admin:setup": "node scripts/setupAdmin.js",
     "membresia:importar": "node scripts/importarMembresia.js",
     "uploads:otimizar": "node scripts/otimizarUploads.js",
-    "test:escala": "node scripts/testEscalaValidacao.js && node scripts/testEscalaRegras.js",
+    "test:escala": "node scripts/testEscalaValidacao.js && node scripts/testEscalaRegras.js && node scripts/testEscalaCompleta.js",
     "test:seguranca": "node scripts/testSeguranca.js",
     "test:whatsapp-modulos": "node scripts/testWhatsAppModulos.js",
     "test:staff": "node scripts/testStaff.js",
