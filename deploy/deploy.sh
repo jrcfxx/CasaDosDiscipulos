@@ -103,6 +103,15 @@ else
   $COMPOSE up -d
 fi
 
+# A configuração do Nginx é montada de nginx/active.conf: se só ela mudou, o container
+# não é recriado e continuaria com a configuração antiga. Valida e recarrega sempre.
+if $COMPOSE exec -T web nginx -t >/dev/null 2>&1; then
+  $COMPOSE exec -T web nginx -s reload && echo "Nginx: configuração recarregada"
+else
+  echo "Aviso: nginx -t falhou; mantida a configuração anterior em execução"
+  $COMPOSE exec -T web nginx -t || true
+fi
+
 echo "Aguardando health do backend..."
 READY=0
 for i in $(seq 1 40); do

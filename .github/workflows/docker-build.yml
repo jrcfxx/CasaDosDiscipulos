@@ -73,6 +73,8 @@ jobs:
         run: npm run test:staff
       - name: Testes da pontuação de quiz
         run: npm run test:quiz
+      - name: Testes de autenticação
+        run: npm run test:auth
 
   # Testes e checagem de tipos do frontend (Vitest)
   test-frontend:

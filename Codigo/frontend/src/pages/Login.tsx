@@ -1,16 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import authService from "../services/authService";
+import CampoSenha from "../components/ui/CampoSenha";
 import "../style/Login.css";
 import logo from "../assets/logo_mark.png";
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Motivo de ter caído no login (ex.: sessão expirada), lido uma única vez
+  const [aviso] = useState(() => authService.consumirAviso());
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,16 +32,10 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const usuario = await login(email, senha);
-
-      if (usuario.tipo === "administrador") {
-        navigate("/portal/admin", { replace: true });
-      } else {
-        navigate("/portal/usuario", { replace: true });
-      }
+      // O destino (criar senha / página anterior / portal) é decidido pela rota /login no App
+      await login(email.trim(), senha);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erro ao fazer login. Tente novamente.");
-    } finally {
       setLoading(false);
     }
   };
@@ -52,6 +49,12 @@ const Login: React.FC = () => {
       <main id="main-content" className="login-form" tabIndex={-1}>
         <h1>Seja bem-vindo!</h1>
         <p className="login-form__subtitle">Entre para acessar a Casa dos Discípulos</p>
+
+        {aviso && !error && (
+          <div className="login-aviso" role="status">
+            {aviso}
+          </div>
+        )}
 
         {error && (
           <div id="login-error" className="error-message" role="alert" aria-live="assertive">
@@ -76,9 +79,8 @@ const Login: React.FC = () => {
           </div>
           <div className="login-field">
             <label htmlFor="login-senha">Senha</label>
-            <input
+            <CampoSenha
               id="login-senha"
-              type="password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="Sua senha"
@@ -92,6 +94,14 @@ const Login: React.FC = () => {
             {loading ? <><span className="btn-spinner" aria-hidden />Entrando…</> : "Entrar"}
           </button>
         </form>
+
+        <details className="login-esqueci">
+          <summary>Esqueci minha senha</summary>
+          <p>
+            Fale com a secretaria da igreja. Ela gera uma senha temporária para você e, no próximo
+            acesso, você cria uma nova.
+          </p>
+        </details>
       </main>
 
       <Link to="/" className="login-back">

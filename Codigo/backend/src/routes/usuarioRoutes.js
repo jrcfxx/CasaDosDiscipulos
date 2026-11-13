@@ -44,6 +44,9 @@ router.post(
   UsuarioController.addPontuacaoManual
 );
 
+// POST /api/usuarios/:id/redefinir-senha - Admin: gera senha temporária (troca obrigatória no acesso)
+router.post("/:id/redefinir-senha", adminOnly, UsuarioController.redefinirSenha);
+
 // POST /api/usuarios - Criar novo (admin)
 router.post("/", adminOnly, validate(createUsuarioSchema), UsuarioController.store);
 

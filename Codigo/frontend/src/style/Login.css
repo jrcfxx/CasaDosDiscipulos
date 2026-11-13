@@ -91,6 +91,82 @@
   white-space: pre-line;
 }
 
+/* Aviso neutro (ex.: sessão expirada) */
+.login-aviso {
+  padding: 0.75rem 1rem;
+  background-color: rgba(2, 134, 155, 0.08);
+  color: var(--color-primary-dark);
+  border: 1px solid rgba(2, 134, 155, 0.35);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+/* "Esqueci minha senha" */
+.login-esqueci {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  text-align: center;
+}
+
+.login-esqueci summary {
+  cursor: pointer;
+  color: var(--color-primary-teal);
+  font-weight: var(--font-weight-semibold);
+  list-style: none;
+}
+
+.login-esqueci summary::-webkit-details-marker {
+  display: none;
+}
+
+.login-esqueci summary:focus-visible {
+  outline: 2px solid var(--color-accent-yellow);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.login-esqueci p {
+  margin: var(--spacing-sm) 0 0;
+  line-height: 1.5;
+}
+
+/* Lista de regras da senha (tela "Crie sua senha") */
+.regras-senha {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: var(--font-size-sm);
+}
+
+.regras-senha li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-gray-600);
+}
+
+.regras-senha li::before {
+  content: "○";
+  display: inline-flex;
+  justify-content: center;
+  width: 1.1em;
+  color: var(--color-gray-500);
+}
+
+.regras-senha li.ok {
+  color: var(--color-primary-dark);
+}
+
+.regras-senha li.ok::before {
+  content: "✓";
+  color: var(--color-primary-teal);
+  font-weight: var(--font-weight-bold);
+}
+
 .login-form form {
   display: flex;
   flex-direction: column;
@@ -178,6 +254,13 @@
   text-decoration: none;
   opacity: 0.85;
   transition: color var(--transition-fast), opacity var(--transition-fast);
+}
+
+.login-back--botao {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .login-back:hover {

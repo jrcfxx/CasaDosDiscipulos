@@ -1,15 +1,17 @@
 import { Router } from "express";
 import AuthController from "../controllers/authController.js";
 import validate from "../middlewares/validate.js";
-import { loginUsuarioSchema } from "../validations/usuarioValidation.js";
-import { registerSchema } from "../validations/authValidation.js";
+import verificarToken from "../middlewares/authMiddleware.js";
+import { loginUsuarioSchema, updatePasswordSchema } from "../validations/usuarioValidation.js";
 
 const router = Router();
 
-// POST /api/auth/register - Registrar novo usuário (apenas como membro)
-router.post("/register", validate(registerSchema), AuthController.register);
+// Não há cadastro público: contas são criadas pelo administrador (Gerenciar Usuários).
 
 // POST /api/auth/login - Fazer login
 router.post("/login", validate(loginUsuarioSchema), AuthController.login);
+
+// POST /api/auth/senha - Trocar a própria senha (inclusive no primeiro acesso)
+router.post("/senha", verificarToken, validate(updatePasswordSchema), AuthController.trocarSenha);
 
 export default router;

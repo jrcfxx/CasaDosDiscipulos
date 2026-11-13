@@ -1,21 +1,30 @@
 import { ValidationError } from "../utils/AppError.js";
 
 /**
- * Middleware centralizado para tratamento de erros
- * Diferencia erros operacionais de bugs e retorna respostas apropriadas
+ * Registra erros inesperados — também em produção (`docker compose logs backend`).
+ * Não registra corpo da requisição nem cabeçalhos (podem ter senha, token, dados pessoais).
  */
-const errorHandler = (err, req, res, next) => {
-  // Log detalhado para debugging (em produção, usar logger apropriado)
-  if (process.env.NODE_ENV !== "production") {
-    console.error("Erro capturado:", {
-      message: err.message,
-      stack: err.stack,
-      path: req.path,
-      method: req.method,
-    });
-  }
+function registrarErro(err, req) {
+  console.error(
+    JSON.stringify({
+      nivel: "erro",
+      quando: new Date().toISOString(),
+      metodo: req.method,
+      rota: req.originalUrl?.split("?")[0],
+      usuario: req.usuario?.id_usuario ?? null,
+      mensagem: err.message,
+      codigo: err.code,
+      pilha: err.stack?.split("\n").slice(0, 6).join(" | "),
+    })
+  );
+}
 
-  // Erro de validação do Joi
+/**
+ * Middleware centralizado para tratamento de erros
+ * Diferencia erros operacionais (resposta clara ao usuário) de bugs (500 + registro).
+ */
+// eslint-disable-next-line no-unused-vars
+const errorHandler = (err, req, res, next) => {
   if (err.name === "ValidationError" && err.isJoi) {
     return res.status(400).json({
       error: "Erro de validação",
@@ -26,50 +35,50 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Erro operacional esperado (AppError e suas subclasses)
-  if (err.isOperational) {
-    const response = {
-      error: err.message,
-    };
+  // Upload (multer): tamanho e quantidade de arquivos
+  if (err.name === "MulterError") {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({ error: "Arquivo muito grande. Envie um arquivo menor." });
+    }
+    return res.status(400).json({ error: "Não foi possível receber o arquivo. Verifique o tipo e tente de novo." });
+  }
 
-    // Se for ValidationError com array de erros, incluir detalhes
+  // JSON malformado ou corpo grande demais
+  if (err.type === "entity.parse.failed") {
+    return res.status(400).json({ error: "Requisição inválida" });
+  }
+  if (err.type === "entity.too.large") {
+    return res.status(413).json({ error: "Conteúdo grande demais" });
+  }
+
+  if (err.isOperational) {
+    const response = { error: err.message };
+    if (err.codigo) response.codigo = err.codigo;
     if (err instanceof ValidationError && err.errors?.length) {
       response.details = err.errors;
     }
     if (err.conflitos?.length) {
       response.sucesso = false;
       response.conflitos = err.conflitos;
-      // true = o usuário pode confirmar e prosseguir mesmo assim (exceção consciente)
       response.confirmavel = Boolean(err.confirmavel);
     }
-
     return res.status(err.statusCode).json(response);
   }
 
-  // Erros do Knex/MySQL
   if (err.code) {
     switch (err.code) {
       case "ER_DUP_ENTRY":
-        return res.status(409).json({
-          error: "Registro duplicado - esse item já existe",
-        });
+        return res.status(409).json({ error: "Registro duplicado - esse item já existe" });
       case "ER_NO_REFERENCED_ROW_2":
-        return res.status(400).json({
-          error: "Referência inválida - verifique os IDs fornecidos",
-        });
+        return res.status(400).json({ error: "Referência inválida - verifique os IDs fornecidos" });
       case "ER_ROW_IS_REFERENCED_2":
-        return res.status(409).json({
-          error: "Não é possível remover - existem registros dependentes",
-        });
+        return res.status(409).json({ error: "Não é possível remover - existem registros dependentes" });
       default:
-        console.error("Erro de banco de dados:", err);
+        break;
     }
   }
 
-  // Erro inesperado (bug) - nunca expor stack ou detalhes ao cliente
-  if (process.env.NODE_ENV !== "production") {
-    console.error("ERRO NÃO TRATADO:", err);
-  }
+  registrarErro(err, req);
   return res.status(500).json({
     error: "Ocorreu um erro inesperado. Por favor, tente novamente.",
   });

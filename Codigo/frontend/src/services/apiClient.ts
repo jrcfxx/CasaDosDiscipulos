@@ -3,6 +3,7 @@ import axios, {
   InternalAxiosRequestConfig,
   AxiosError,
 } from "axios";
+import authService from "./authService";
 
 const API_URL = import.meta.env.REACT_APP_API_URL || "http://localhost:3001/api";
 
@@ -51,15 +52,35 @@ let isLoggingOut = false;
  */
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401 && !isLoggingOut) {
+  (error: AxiosError<{ error?: string; codigo?: string }>) => {
+    const status = error.response?.status;
+    const hash = window.location.hash || "#/";
+    const caminhoAtual = hash.replace(/^#/, "") || "/";
+
+    // Senha provisória: o servidor só libera a criação da senha
+    if (status === 403 && error.response?.data?.codigo === "TROCAR_SENHA") {
+      try {
+        const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+        if (usuario) localStorage.setItem("usuario", JSON.stringify({ ...usuario, trocar_senha: true }));
+      } catch {
+        /* ignore */
+      }
+      if (!hash.startsWith("#/criar-senha")) {
+        authService.definirRetorno(caminhoAtual);
+        window.location.hash = "#/criar-senha";
+        window.location.reload();
+      }
+    }
+
+    if (status === 401 && !isLoggingOut) {
       isLoggingOut = true;
       localStorage.removeItem("token");
       localStorage.removeItem("usuario");
 
-      const hash = window.location.hash || "#/";
-      const isLogin = hash.includes("#/login");
-      if (!isLogin) {
+      if (!hash.startsWith("#/login")) {
+        // Explica o motivo na tela de login e volta para cá depois de entrar
+        authService.definirAviso(error.response?.data?.error || "Sua sessão expirou. Entre novamente.");
+        authService.definirRetorno(caminhoAtual);
         window.location.hash = "#/login";
         window.location.reload();
       } else {

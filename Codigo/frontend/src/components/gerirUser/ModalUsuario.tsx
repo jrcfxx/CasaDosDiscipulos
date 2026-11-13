@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { formatarTelefoneInput } from "../../utils/telefoneUtils";
 import type { Ministerio } from "../../services/ministerioService";
@@ -35,6 +35,8 @@ interface Props {
   onSalvar: () => void;
   /** true enquanto salva: mostra progresso e bloqueia fechar/salvar de novo */
   salvando?: boolean;
+  /** Gera uma senha temporária para o usuário (só na edição). Devolve a senha gerada. */
+  onRedefinirSenha?: () => Promise<string>;
 }
 
 /** Modal de cadastro/edição de usuário (renderizado no body para não herdar estilos do container) */
@@ -50,8 +52,38 @@ const ModalUsuario: React.FC<Props> = ({
   onFechar,
   onSalvar,
   salvando = false,
-}) =>
-  createPortal(
+  onRedefinirSenha,
+}) => {
+  const [senhaTemporaria, setSenhaTemporaria] = useState<string | null>(null);
+  const [redefinindo, setRedefinindo] = useState(false);
+  const [erroRedefinir, setErroRedefinir] = useState("");
+  const [copiado, setCopiado] = useState(false);
+
+  const redefinir = async () => {
+    if (!onRedefinirSenha) return;
+    setRedefinindo(true);
+    setErroRedefinir("");
+    try {
+      setSenhaTemporaria(await onRedefinirSenha());
+    } catch (e) {
+      setErroRedefinir(e instanceof Error ? e.message : "Não foi possível redefinir a senha");
+    } finally {
+      setRedefinindo(false);
+    }
+  };
+
+  const copiar = async () => {
+    if (!senhaTemporaria) return;
+    try {
+      await navigator.clipboard.writeText(senhaTemporaria);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      /* sem permissão de área de transferência: a senha continua visível na tela */
+    }
+  };
+
+  return createPortal(
     <div className="modal-fundo" role="dialog" aria-modal="true">
       <div className="modal modal-usuario">
         <div className="cd-modal-header">
@@ -217,6 +249,43 @@ const ModalUsuario: React.FC<Props> = ({
             </div>
           </div>
 
+          {usuarioModal.id_usuario && onRedefinirSenha && (
+            <div className="form-field form-field-full redefinir-senha">
+              <span className="lider-permissoes-title">Esqueceu a senha?</span>
+              {senhaTemporaria ? (
+                <div className="redefinir-senha__resultado" role="status">
+                  <p>
+                    Senha temporária: <strong className="redefinir-senha__valor">{senhaTemporaria}</strong>{" "}
+                    <button type="button" className="redefinir-senha__copiar" onClick={copiar}>
+                      {copiado ? "Copiada!" : "Copiar"}
+                    </button>
+                  </p>
+                  <p className="hint">
+                    Envie para a pessoa por um canal privado. Ela vai criar uma nova senha ao entrar. Esta
+                    senha não será mostrada de novo, e as sessões abertas dessa pessoa foram encerradas.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="hint">
+                    Gera uma senha temporária. A pessoa cria uma nova no próximo acesso.
+                  </p>
+                  <BotaoCarregando
+                    type="button"
+                    className="redefinir-senha__botao"
+                    onClick={redefinir}
+                    carregando={redefinindo}
+                    textoCarregando="Gerando…"
+                    disabled={salvando}
+                  >
+                    Gerar senha temporária
+                  </BotaoCarregando>
+                </>
+              )}
+              {erroRedefinir && <p className="hint redefinir-senha__erro" role="alert">{erroRedefinir}</p>}
+            </div>
+          )}
+
           <div className="form-field form-field-full form-field-senhas">
             <div className="form-field">
               <label htmlFor="usuarioModalSenha">
@@ -234,6 +303,7 @@ const ModalUsuario: React.FC<Props> = ({
                       ? "Nova senha (opcional)"
                       : "Mínimo 6 caracteres"
                   }
+                  aria-describedby="usuarioModalSenhaDica"
                 />
                 <button
                   type="button"
@@ -267,6 +337,9 @@ const ModalUsuario: React.FC<Props> = ({
                 </button>
               </div>
             </div>
+            <p id="usuarioModalSenhaDica" className="hint form-field-full">
+              A senha definida aqui é provisória: a pessoa cria a própria no primeiro acesso.
+            </p>
           </div>
         </div>
 
@@ -282,5 +355,6 @@ const ModalUsuario: React.FC<Props> = ({
     </div>,
     document.body
   );
+};
 
 export default ModalUsuario;

@@ -1,164 +1,97 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import knex from "../database/index.js";
 import UsuarioModel from "../models/UsuarioModel.js";
 import { UnauthorizedError, ValidationError } from "../utils/AppError.js";
-import { USER_TYPES } from "../utils/constants.js";
+import { validarNovaSenha, gerarSenhaTemporaria } from "../utils/senha.js";
 
-/**
- * Service para operações de autenticação
- * Contém lógica de negócio relacionada a registro, login, validação de credenciais e geração de tokens
- */
+export const JWT_ALGORITMO = "HS256";
+const JWT_VALIDADE = "7d";
+
+// Hash fixo para comparar quando o e-mail não existe: o tempo de resposta fica igual
+// e não dá para descobrir quais e-mails têm conta.
+const HASH_FALSO = bcrypt.hashSync("conta-inexistente", 10);
+
+/** Token de sessão. `sv` = versão da sessão: trocar a senha invalida os tokens antigos. */
+export function gerarToken(usuario) {
+  return jwt.sign(
+    { id_usuario: Number(usuario.id_usuario), tipo: usuario.tipo, sv: Number(usuario.sessao_versao || 0) },
+    process.env.JWT_SECRET,
+    { expiresIn: JWT_VALIDADE, algorithm: JWT_ALGORITMO }
+  );
+}
+
+function semSenha(usuario) {
+  const { senha: _s, sessao_versao: _v, ...resto } = usuario;
+  return { ...resto, trocar_senha: Boolean(usuario.trocar_senha) };
+}
+
 const AuthService = {
-  /**
-   * Registra um novo usuário
-   * @param {Object} userData - Dados do usuário
-   * @param {string} userData.nome - Nome completo
-   * @param {string} userData.email - Email
-   * @param {string} userData.senha - Senha
-   * @param {string} userData.tipo - Tipo de usuário (administrador, lider, membro)
-   * @returns {Promise<Object>} Usuário criado (sem senha)
-   * @throws {ValidationError} Se dados forem inválidos
-   * @throws {ConflictError} Se email já estiver em uso
-   */
-  async register({ nome, email, senha, tipo = USER_TYPES.MEMBER }) {
-    // Validações
-    if (!nome || !email || !senha) {
-      throw new ValidationError("Nome, email e senha são obrigatórios");
-    }
-
-    if (senha.length < 6) {
-      throw new ValidationError("Senha deve ter no mínimo 6 caracteres");
-    }
-
-    // Verifica se email já existe
-    const usuarioExistente = await UsuarioModel.getByEmail(email);
-    if (usuarioExistente) {
-      throw new ValidationError("Email já está em uso");
-    }
-
-    // Valida tipo de usuário
-    const tiposValidos = Object.values(USER_TYPES);
-    if (!tiposValidos.includes(tipo)) {
-      throw new ValidationError(
-        `Tipo de usuário inválido. Use: ${tiposValidos.join(", ")}`
-      );
-    }
-
-    // Hash da senha
-    const senhaHash = await bcrypt.hash(senha, 10);
-
-    // Cria usuário
-    const novoUsuario = await UsuarioModel.create({
-      nome,
-      email,
-      senha: senhaHash,
-      tipo,
-      pontuacao: 0,
-      ativo: true,
-    });
-
-    // Busca usuário completo
-    const usuario = await UsuarioModel.getById(novoUsuario.id_usuario);
-
-    // Remove senha antes de retornar
-    delete usuario.senha;
-
-    return usuario;
-  },
-
-  /**
-   * Realiza login do usuário
-   * @param {string} email - Email do usuário
-   * @param {string} senha - Senha do usuário
-   * @returns {Promise<Object>} Objeto contendo usuário e token JWT
-   * @throws {ValidationError} Se email ou senha não forem fornecidos
-   * @throws {UnauthorizedError} Se credenciais forem inválidas
-   */
   async login(email, senha) {
-    // Validação de campos obrigatórios
     if (!email || !senha) {
       throw new ValidationError("Email e senha são obrigatórios");
     }
 
-    // Busca usuário pelo email
-    const usuario = await UsuarioModel.getByEmail(email);
-    if (!usuario) {
-      throw new UnauthorizedError("Credenciais inválidas");
+    const usuario = await UsuarioModel.getByEmail(String(email).trim().toLowerCase());
+    const senhaCorreta = await bcrypt.compare(String(senha), usuario?.senha || HASH_FALSO);
+    if (!usuario || !senhaCorreta) {
+      throw new UnauthorizedError("E-mail ou senha incorretos");
     }
 
-    // Verifica se usuário está ativo
+    // Só informa "desativado" depois de conferir a senha (não revela contas a terceiros)
     if (!usuario.ativo) {
-      throw new UnauthorizedError(
-        "Usuário desativado. Contate o administrador."
-      );
+      throw new UnauthorizedError("Usuário desativado. Contate o administrador.");
     }
 
-    // Valida senha
-    const senhaCorreta = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaCorreta) {
-      throw new UnauthorizedError("Credenciais inválidas");
-    }
-
-    // Atualiza último login
     await UsuarioModel.updateLastLogin(usuario.id_usuario);
-
-    // Gera token JWT
-    const token = jwt.sign(
-      {
-        id_usuario: Number(usuario.id_usuario),
-        tipo: usuario.tipo,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" } // Token expira em 7 dias
-    );
-
-    // Remove senha antes de retornar
-    delete usuario.senha;
-
-    return { usuario, token };
+    return { usuario: semSenha(usuario), token: gerarToken(usuario) };
   },
 
   /**
-   * Atualiza senha do usuário
-   * @param {number} id_usuario - ID do usuário
-   * @param {string} senhaAtual - Senha atual do usuário
-   * @param {string} novaSenha - Nova senha
-   * @returns {Promise<void>}
-   * @throws {ValidationError} Se senhas não forem válidas
-   * @throws {UnauthorizedError} Se senha atual estiver incorreta
+   * A própria pessoa troca a senha (primeiro acesso ou Perfil).
+   * Derruba as outras sessões e devolve um token novo para continuar logado.
    */
-  async updatePassword(id_usuario, senhaAtual, novaSenha) {
-    // Validações
+  async trocarSenha(id_usuario, senhaAtual, novaSenha) {
     if (!senhaAtual || !novaSenha) {
-      throw new ValidationError("Senha atual e nova senha são obrigatórias");
+      throw new ValidationError("Informe a senha atual e a nova senha");
+    }
+    const usuario = await knex("usuario").where({ id_usuario }).first();
+    if (!usuario) throw new UnauthorizedError("Usuário não encontrado");
+
+    if (!(await bcrypt.compare(String(senhaAtual), usuario.senha))) {
+      throw new ValidationError("Senha atual incorreta");
+    }
+    const erro = validarNovaSenha(novaSenha, usuario);
+    if (erro) throw new ValidationError(erro);
+    if (await bcrypt.compare(String(novaSenha), usuario.senha)) {
+      throw new ValidationError("A nova senha precisa ser diferente da atual");
     }
 
-    if (novaSenha.length < 6) {
-      throw new ValidationError("Nova senha deve ter no mínimo 6 caracteres");
-    }
+    await knex("usuario")
+      .where({ id_usuario })
+      .update({
+        senha: await bcrypt.hash(String(novaSenha), 10),
+        trocar_senha: false,
+        sessao_versao: knex.raw("sessao_versao + 1"),
+      });
 
-    // Busca usuário com senha
-    const usuario = await UsuarioModel.getByEmail(
-      (
-        await UsuarioModel.getById(id_usuario)
-      ).email
-    );
+    const atualizado = await knex("usuario").where({ id_usuario }).first();
+    return { usuario: semSenha(atualizado), token: gerarToken(atualizado) };
+  },
 
-    if (!usuario) {
-      throw new UnauthorizedError("Usuário não encontrado");
-    }
-
-    // Verifica senha atual
-    const senhaCorreta = await bcrypt.compare(senhaAtual, usuario.senha);
-    if (!senhaCorreta) {
-      throw new UnauthorizedError("Senha atual incorreta");
-    }
-
-    // Hash da nova senha
-    const senhaHash = await bcrypt.hash(novaSenha, 10);
-
-    // Atualiza senha
-    await UsuarioModel.update(id_usuario, { senha: senhaHash });
+  /** Admin redefine a senha: gera uma temporária, derruba as sessões e obriga a troca. */
+  async redefinirSenha(id_usuario) {
+    const usuario = await knex("usuario").where({ id_usuario }).first();
+    if (!usuario) throw new ValidationError("Usuário não encontrado");
+    const senha_temporaria = gerarSenhaTemporaria();
+    await knex("usuario")
+      .where({ id_usuario })
+      .update({
+        senha: await bcrypt.hash(senha_temporaria, 10),
+        trocar_senha: true,
+        sessao_versao: knex.raw("sessao_versao + 1"),
+      });
+    return { senha_temporaria };
   },
 };
 

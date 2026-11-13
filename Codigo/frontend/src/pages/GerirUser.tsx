@@ -24,7 +24,7 @@ import { formatarTelefoneInput, normalizarTelefoneParaEnvio } from "../utils/tel
 import Toast from "../components/ui/Toast";
 import perfil from "../assets/perfil-preto.png";
 import { ASSETS_BASE } from "../config/api";
-import { showAllUsers, showUserById, createUser, updateUser } from "../services/usuario";
+import { showAllUsers, showUserById, createUser, updateUser, redefinirSenhaUsuario } from "../services/usuario";
 import {
   showAllNiveis,
   createNivel,
@@ -939,6 +939,9 @@ export default function GerenciarUsuarios() {
           onFechar={fecharModal}
           onSalvar={() => acaoUsuario.executar(salvarUsuario)}
           salvando={acaoUsuario.executando}
+          onRedefinirSenha={
+            usuarioModal.id_usuario ? () => redefinirSenhaUsuario(usuarioModal.id_usuario) : undefined
+          }
         />
       )}
 

@@ -9,6 +9,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Páginas Públicas
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
+import CriarSenha from "./pages/CriarSenha";
+import RedirecionarAposLogin from "./components/RedirecionarAposLogin";
 import SobreNos from "./pages/SobreNos";
 import Celulas from "./pages/Celulas";
 
@@ -62,7 +64,7 @@ import Perfil from "./pages/Perfil";
  */
 export default function App() {
   const navigate = useNavigate();
-  const { isAuthenticated, isAdmin, userType, logout } = useAuth();
+  const { isAuthenticated, isAdmin, userType, logout, precisaTrocarSenha } = useAuth();
   usePageTitle(); // Atualiza título para leitores de tela
 
   const handleLogout = () => {
@@ -101,12 +103,15 @@ export default function App() {
         path="/login"
         element={
           isAuthenticated ? (
-            <Navigate to={getPortalPath()} replace />
+            <RedirecionarAposLogin precisaTrocarSenha={precisaTrocarSenha} portal={getPortalPath()} />
           ) : (
             <Login />
           )
         }
       />
+
+      {/* Primeiro acesso / senha redefinida: criar a própria senha */}
+      <Route path="/criar-senha" element={<CriarSenha />} />
 
       {/* ==================== ROTAS PROTEGIDAS - ADMIN ==================== */}
 

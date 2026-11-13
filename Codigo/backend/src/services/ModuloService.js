@@ -556,6 +556,22 @@ const ModuloService = {
    * @returns {Promise<number|null>} id_nivel ou null
    */
   async getNivelEscola(id_usuario) {
+    // Nível oficial (definido pelo admin) prevalece se for maior que o calculado pelos módulos:
+    // sem isso, quem ainda não fez módulos no sistema aparecia como "Sem nível".
+    const [calculado, usuario, niveis] = await Promise.all([
+      this._nivelPorModulos(id_usuario),
+      knex("usuario").where({ id_usuario }).select("id_nivel").first(),
+      NivelModel.findAll(),
+    ]);
+    const ordem = (id) => niveis.find((n) => n.id_nivel === id)?.ordem ?? -1;
+    const oficial = usuario?.id_nivel ?? null;
+    if (!calculado) return oficial;
+    if (!oficial) return calculado;
+    return ordem(oficial) >= ordem(calculado) ? oficial : calculado;
+  },
+
+  /** Nível alcançado pelos módulos concluídos (regra original) */
+  async _nivelPorModulos(id_usuario) {
     const concluidos = await knex("usuario_modulo")
       .where({ id_usuario, status: "concluido" })
       .select("id_modulo")

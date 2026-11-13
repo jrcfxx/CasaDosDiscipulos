@@ -15,6 +15,9 @@ import celulaService from "../services/celulaService";
 import usuarioCelulaService from "../services/usuarioCelulaService";
 import { ASSETS_BASE } from "../config/api";
 import { formatarTelefoneInput, normalizarTelefoneParaEnvio } from "../utils/telefoneUtils";
+import CampoSenha from "../components/ui/CampoSenha";
+import { avaliarSenha } from "../utils/regrasSenha";
+import authService from "../services/authService";
 
 function buildFotoUrl(foto: string | undefined): string | null {
   if (!foto) return null;
@@ -217,8 +220,10 @@ export default function Perfil() {
         return;
       }
 
-      if (novaSenha.length < 6) {
-        showToast("A nova senha deve ter no mínimo 6 caracteres");
+      // Mesmas regras do servidor (ver utils/regrasSenha.ts)
+      const pendente = avaliarSenha(novaSenha, { telefone: perfil.telefone, email: perfil.email }).find((r) => !r.ok);
+      if (pendente) {
+        showToast(`Nova senha: ${pendente.texto.toLowerCase()}`);
         return;
       }
 
@@ -226,6 +231,13 @@ export default function Perfil() {
         showToast("As senhas não coincidem");
         return;
       }
+    }
+
+    // Mudar o e-mail (que é o login) exige a senha atual
+    const mudaEmail = email.trim().toLowerCase() !== String(perfil.email ?? "").toLowerCase();
+    if (mudaEmail && !senhaAtual) {
+      showToast("Para alterar o e-mail, informe sua senha atual no campo \"Senha atual\"");
+      return;
     }
 
     try {
@@ -238,10 +250,8 @@ export default function Perfil() {
       };
 
       // Adiciona senha apenas se foi alterada (backend exige senhaAtual)
-      if (novaSenha) {
-        updateData.senha = novaSenha;
-        updateData.senhaAtual = senhaAtual;
-      }
+      if (novaSenha) updateData.senha = novaSenha;
+      if (senhaAtual) updateData.senhaAtual = senhaAtual;
 
       // Fazer upload da foto primeiro, se houver
       if (fotoFile) {
@@ -258,7 +268,11 @@ export default function Perfil() {
       }
 
       // Atualizar outros dados do perfil
-      await updateUserProfile(updateData);
+      const atualizado = await updateUserProfile(updateData);
+      // Trocar a senha encerra as outras sessões: o servidor devolve um token novo para esta
+      if (atualizado && typeof atualizado === "object" && "token" in atualizado && typeof atualizado.token === "string") {
+        authService.updateToken(atualizado.token);
+      }
 
       // Célula principal (membros e líderes)
       if (perfil.tipo === "membro" || perfil.tipo === "lider") {
@@ -453,40 +467,40 @@ export default function Perfil() {
             <div className="password-section">
               <div className="form-group">
                 <label htmlFor="perfil-senha-atual" className="form-label">Senha Atual</label>
-                <input
+                <CampoSenha
                   id="perfil-senha-atual"
-                  type="password"
                   value={senhaAtual}
                   onChange={(e) => setSenhaAtual(e.target.value)}
                   className="form-input"
                   placeholder="Digite sua senha atual"
+                  autoComplete="current-password"
                 />
                 <p className="password-hint">
-                  Preencha apenas se desejar alterar a senha
+                  Preencha para alterar a senha ou o e-mail
                 </p>
               </div>
 
               <div className="form-group">
                 <label htmlFor="perfil-nova-senha" className="form-label">Nova Senha</label>
-                <input
+                <CampoSenha
                   id="perfil-nova-senha"
-                  type="password"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
                   className="form-input"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
+                  autoComplete="new-password"
                 />
               </div>
 
               <div className="form-group">
                 <label htmlFor="perfil-confirmar-senha" className="form-label">Confirmar Nova Senha</label>
-                <input
+                <CampoSenha
                   id="perfil-confirmar-senha"
-                  type="password"
                   value={confirmarSenha}
                   onChange={(e) => setConfirmarSenha(e.target.value)}
                   className="form-input"
                   placeholder="Repita a nova senha"
+                  autoComplete="new-password"
                 />
               </div>
             </div>

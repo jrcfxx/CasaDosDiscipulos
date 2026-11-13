@@ -48,7 +48,8 @@ const UsuarioModel = {
         "ativo",
         "ultimo_login",
         "lider_celula",
-        "lider_ministerio"
+        "lider_ministerio",
+        "trocar_senha"
       )
       .first();
   },

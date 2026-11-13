@@ -1440,3 +1440,56 @@
     flex-direction: column;
   }
 }
+
+/* Redefinir senha (modal de usuário) */
+.modal-fundo .modal .redefinir-senha {
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--color-gray-300);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.modal-fundo .modal .redefinir-senha__botao {
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-primary-teal);
+  background: transparent;
+  color: var(--color-primary-teal);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.modal-fundo .modal .redefinir-senha__botao:hover:not(:disabled) {
+  background: rgba(2, 134, 155, 0.08);
+}
+
+.modal-fundo .modal .redefinir-senha__resultado p {
+  margin: 0 0 0.35rem;
+}
+
+.modal-fundo .modal .redefinir-senha__valor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.4rem;
+  background: var(--color-gray-50);
+  border-radius: 4px;
+}
+
+.modal-fundo .modal .redefinir-senha__copiar {
+  margin-left: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--color-primary-dark);
+  color: #fff;
+  cursor: pointer;
+  font-size: var(--font-size-xs, 0.8rem);
+}
+
+.modal-fundo .modal .redefinir-senha__erro {
+  color: var(--color-error-700);
+}

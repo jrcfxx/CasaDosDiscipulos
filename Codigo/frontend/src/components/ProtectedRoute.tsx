@@ -1,7 +1,7 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import type { UserType } from "../services/authService";
+import authService, { type UserType } from "../services/authService";
 
 type AllowedRole = UserType | UserType[];
 
@@ -29,11 +29,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireLiderMinisterio = false,
   allowedRoles,
 }) => {
-  const { isAuthenticated, userType, isAdmin, isLiderCelula, isLiderMinisterio } = useAuth();
+  const { isAuthenticated, userType, isAdmin, isLiderCelula, isLiderMinisterio, precisaTrocarSenha } = useAuth();
+  const location = useLocation();
 
-  // Se não estiver autenticado, redireciona para login
+  // Se não estiver autenticado, vai para o login e volta para cá depois de entrar
   if (!isAuthenticated) {
+    authService.definirRetorno(location.pathname + location.search);
     return <Navigate to="/login" replace />;
+  }
+
+  // Senha provisória: primeiro a pessoa cria a própria senha
+  if (precisaTrocarSenha) {
+    authService.definirRetorno(location.pathname + location.search);
+    return <Navigate to="/criar-senha" replace />;
   }
 
   // Se requer admin e não é admin, bloqueia acesso

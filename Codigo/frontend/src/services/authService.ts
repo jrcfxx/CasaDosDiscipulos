@@ -7,13 +7,6 @@ export interface LoginCredentials {
   senha: string;
 }
 
-export interface RegisterData {
-  nome: string;
-  email: string;
-  senha: string;
-  tipo: "admin" | "usuario";
-}
-
 export type UserType = "administrador" | "lider" | "membro";
 
 export interface Usuario {
@@ -25,6 +18,8 @@ export interface Usuario {
   data_cadastro?: string;
   lider_celula?: boolean;
   lider_ministerio?: boolean;
+  /** true enquanto a pessoa usa senha provisória (telefone ou definida pelo admin) */
+  trocar_senha?: boolean;
 }
 
 export interface LoginResponse {
@@ -33,10 +28,8 @@ export interface LoginResponse {
   token: string;
 }
 
-export interface RegisterResponse {
-  message: string;
-  usuario: Usuario;
-}
+const AVISO_KEY = "auth_aviso";
+const RETORNO_KEY = "auth_retorno";
 
 export interface AuthError {
   error?: string;
@@ -52,6 +45,13 @@ export interface AuthError {
 class AuthService {
   private readonly TOKEN_KEY = "token";
   private readonly USER_KEY = "usuario";
+  /** Senha digitada no login quando é provisória (só em memória, nunca em armazenamento) */
+  private senhaDoLogin: string | null = null;
+
+  /** Senha provisória digitada no login (apagada ao trocar a senha ou sair) */
+  obterSenhaDoLogin(): string {
+    return this.senhaDoLogin ?? "";
+  }
 
   /**
    * Realiza login do usuário
@@ -63,12 +63,9 @@ class AuthService {
         credentials
       );
 
-      const { token, usuario } = response.data;
-
-      // Armazena token e dados do usuário
-      this.setToken(token);
-      this.setUser(usuario);
-
+      this.setSession(response.data.token, response.data.usuario);
+      // Senha provisória: guarda só em memória para a tela "Crie sua senha" não pedir de novo
+      this.senhaDoLogin = response.data.usuario.trocar_senha ? credentials.senha : null;
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -76,25 +73,94 @@ class AuthService {
   }
 
   /**
-   * Registra novo usuário
+   * Troca a própria senha (primeiro acesso ou Perfil).
+   * O servidor encerra as outras sessões e devolve um token novo, que passa a ser usado aqui.
    */
-  async register(data: RegisterData): Promise<RegisterResponse> {
+  async trocarSenha(senhaAtual: string, novaSenha: string): Promise<Usuario> {
     try {
-      const response = await axios.post<RegisterResponse>(
-        `${API_URL}/auth/register`,
-        data
+      const response = await axios.post<LoginResponse>(
+        `${API_URL}/auth/senha`,
+        { senhaAtual, novaSenha },
+        { headers: { Authorization: `Bearer ${this.getToken()}` } }
       );
-
-      return response.data;
+      this.setSession(response.data.token, response.data.usuario);
+      this.senhaDoLogin = null;
+      return response.data.usuario;
     } catch (error) {
       throw this.handleError(error);
     }
+  }
+
+  /** Grava token e usuário juntos (login, troca de senha) */
+  setSession(token: string, usuario: Usuario): void {
+    this.setToken(token);
+    this.setUser(usuario);
+  }
+
+  /** Atualiza só o token (ex.: Perfil devolve token novo após trocar a senha) */
+  updateToken(token: string): void {
+    this.setToken(token);
+  }
+
+  /** Mensagem para mostrar na tela de login (ex.: sessão expirada). Lida uma única vez. */
+  definirAviso(mensagem: string): void {
+    try {
+      sessionStorage.setItem(AVISO_KEY, mensagem);
+    } catch {
+      /* armazenamento indisponível: segue sem aviso */
+    }
+  }
+
+  consumirAviso(): string | null {
+    try {
+      const msg = sessionStorage.getItem(AVISO_KEY);
+      sessionStorage.removeItem(AVISO_KEY);
+      return msg;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Página para onde voltar depois do login */
+  definirRetorno(caminho: string): void {
+    if (!caminho || caminho.startsWith("/login") || caminho.startsWith("/criar-senha")) return;
+    try {
+      sessionStorage.setItem(RETORNO_KEY, caminho);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Página guardada para depois do login (sem apagar; use limparRetorno ao usar) */
+  obterRetorno(): string | null {
+    try {
+      const caminho = sessionStorage.getItem(RETORNO_KEY);
+      // Só caminhos internos do próprio site
+      return caminho && caminho.startsWith("/") && !caminho.startsWith("//") ? caminho : null;
+    } catch {
+      return null;
+    }
+  }
+
+  limparRetorno(): void {
+    try {
+      sessionStorage.removeItem(RETORNO_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  consumirRetorno(): string | null {
+    const caminho = this.obterRetorno();
+    this.limparRetorno();
+    return caminho;
   }
 
   /**
    * Realiza logout do usuário
    */
   logout(): void {
+    this.senhaDoLogin = null;
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
   }

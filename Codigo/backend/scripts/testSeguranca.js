@@ -178,7 +178,8 @@ try {
   console.error("ERRO:", e);
   falhas += 1;
 } finally {
-  for (const desfazer of limpeza.reverse()) await desfazer().catch(() => {});
+  // Promise.resolve: uma limpeza que não devolve promessa não interrompe as demais
+  for (const desfazer of limpeza.reverse()) await Promise.resolve().then(desfazer).catch(() => {});
   await knex.destroy();
   console.log(falhas ? `\n${falhas} falha(s)` : "\nTodos os testes passaram.");
   process.exit(falhas ? 1 : 0);

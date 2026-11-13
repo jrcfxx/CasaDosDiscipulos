@@ -5,6 +5,7 @@ const ROUTE_TITLES: Record<string, string> = {
   "/": "Casa dos Discípulos – Página inicial",
   "/home": "Casa dos Discípulos – Página inicial",
   "/login": "Casa dos Discípulos – Entrar",
+  "/criar-senha": "Casa dos Discípulos – Crie sua senha",
   "/sobre-nos": "Casa dos Discípulos – Sobre nós",
   "/celulas": "Casa dos Discípulos – Células",
   "/portal/admin": "Casa dos Discípulos – Portal Admin",
@@ -23,6 +24,9 @@ const ROUTE_TITLES: Record<string, string> = {
   "/usuario/escala/mapa": "Casa dos Discípulos – Mapa da escala",
   "/usuario/fala-ai": "Casa dos Discípulos – Fala Aí, Discípulo",
   "/perfil": "Casa dos Discípulos – Meu perfil",
+  "/usuario/staff": "Casa dos Discípulos – Staff e Estrutura",
+  "/admin/staff": "Casa dos Discípulos – Staff e Estrutura",
+  "/usuario/fala-ai/admin": "Casa dos Discípulos – Fala Aí (gerenciar)",
 };
 
 /**

@@ -1,0 +1,42 @@
+/* Campo de senha com mostrar/ocultar — usa os tokens da marca */
+.campo-senha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.campo-senha input {
+  width: 100%;
+  padding-right: 5.25rem !important;
+}
+
+.campo-senha__alternar {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.35rem 0.6rem;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--color-primary-teal);
+  font-family: inherit;
+  font-size: var(--font-size-xs, 0.8rem);
+  font-weight: var(--font-weight-semibold, 600);
+  cursor: pointer;
+}
+
+.campo-senha__alternar:hover:not(:disabled) {
+  background: rgba(2, 134, 155, 0.08);
+}
+
+.campo-senha__alternar:focus-visible {
+  outline: 2px solid var(--color-accent-yellow);
+  outline-offset: 1px;
+}
+
+.campo-senha__alternar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

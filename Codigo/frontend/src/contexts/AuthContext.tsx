@@ -19,7 +19,10 @@ interface AuthContextValue {
   isMembro: boolean;
   userType: UserType | null;
   loading: boolean;
+  /** true enquanto a pessoa usa senha provisória */
+  precisaTrocarSenha: boolean;
   login: (email: string, senha: string) => Promise<Usuario>;
+  trocarSenha: (senhaAtual: string, novaSenha: string) => Promise<Usuario>;
   logout: () => void;
   refreshUser: () => void;
 }
@@ -78,6 +81,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const trocarSenha = useCallback(async (senhaAtual: string, novaSenha: string): Promise<Usuario> => {
+    const usuario = await authService.trocarSenha(senhaAtual, novaSenha);
+    setUser(usuario);
+    return usuario;
+  }, []);
+
   const logout = useCallback(() => {
     authService.logout();
     setUser(null);
@@ -93,7 +102,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isMembro: user?.tipo === "membro",
     userType: user?.tipo ?? null,
     loading,
+    precisaTrocarSenha: !!user?.trocar_senha,
     login,
+    trocarSenha,
     logout,
     refreshUser,
   };

@@ -127,8 +127,8 @@ export const updatePasswordSchema = Joi.object({
     "string.empty": "Senha atual é obrigatória",
   }),
 
-  novaSenha: Joi.string().min(6).required().messages({
+  // Regras completas (tamanho, telefone, e-mail...) ficam em utils/senha.js
+  novaSenha: Joi.string().max(128).required().messages({
     "string.empty": "Nova senha é obrigatória",
-    "string.min": "Nova senha deve ter no mínimo 6 caracteres",
   }),
 });

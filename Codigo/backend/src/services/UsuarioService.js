@@ -248,6 +248,7 @@ const UsuarioService = {
       nome: data.nome.trim(),
       email: data.email.toLowerCase().trim(),
       senha: senhaHash,
+      trocar_senha: true, // senha definida pelo admin é provisória
       tipo: data.tipo || USER_TYPES.MEMBER,
       pontuacao: 0,
       ativo: data.ativo ?? true,
@@ -375,7 +376,11 @@ const UsuarioService = {
       if (data.senha.length < 6) {
         throw new ValidationError("Senha deve ter no mínimo 6 caracteres");
       }
+      // Senha definida pelo admin é provisória: a pessoa cria a própria no próximo acesso,
+      // e as sessões abertas com a senha antiga são encerradas.
       dadosAtualizacao.senha = await bcrypt.hash(data.senha, 10);
+      dadosAtualizacao.trocar_senha = true;
+      dadosAtualizacao.sessao_versao = knex.raw("sessao_versao + 1");
     }
 
     if (data.tipo !== undefined) {
@@ -411,8 +416,11 @@ const UsuarioService = {
     }
 
     if (data.foto !== undefined) {
-      // Permite string (caminho da foto) ou null para remover
-      dadosAtualizacao.foto = data.foto;
+      // Só arquivos enviados ao próprio servidor (ou null para remover)
+      if (data.foto !== null && data.foto !== "" && !/^\/uploads\/[\w./-]+$/.test(String(data.foto))) {
+        throw new ValidationError("Foto inválida");
+      }
+      dadosAtualizacao.foto = data.foto || null;
     }
 
     if (data.telefone !== undefined) {

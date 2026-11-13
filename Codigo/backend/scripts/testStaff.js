@@ -4,7 +4,7 @@
  * Uso: node scripts/testStaff.js
  */
 import express from "express";
-import jwt from "jsonwebtoken";
+import { gerarToken } from "../src/services/authService.js";
 import knex from "../src/database/index.js";
 import StaffService, { PROFUNDIDADE_MAXIMA } from "../src/services/StaffService.js";
 import staffRoutes from "../src/routes/staffRoutes.js";
@@ -89,8 +89,9 @@ async function testePermissoes() {
   const base = `http://127.0.0.1:${server.address().port}/api/staff`;
 
   const token = async (tipo) => {
-    const u = await knex("usuario").where({ tipo, ativo: true }).first();
-    return u ? jwt.sign({ id_usuario: u.id_usuario, tipo }, process.env.JWT_SECRET, { expiresIn: "5m" }) : null;
+    // Usuário que já criou a própria senha (quem tem senha provisória fica bloqueado de propósito)
+    const u = await knex("usuario").where({ tipo, ativo: true, trocar_senha: false }).first();
+    return u ? gerarToken(u) : null;
   };
   const chamar = (metodo, caminho, tk, corpo) =>
     fetch(base + caminho, {

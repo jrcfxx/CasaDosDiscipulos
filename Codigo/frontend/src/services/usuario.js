@@ -32,6 +32,19 @@ export async function createUser(userData) {
   }
 }
 
+/**
+ * Admin: gera senha temporária para o usuário (troca obrigatória no próximo acesso).
+ * @returns {Promise<string>} a senha temporária (mostrada uma única vez)
+ */
+export async function redefinirSenhaUsuario(id) {
+  try {
+    const res = await api.post(`${URL}/${id}/redefinir-senha`);
+    return res.data.senha_temporaria;
+  } catch (err) {
+    throw new Error(err?.response?.data?.error || "Não foi possível redefinir a senha");
+  }
+}
+
 export async function updateUser(id, userData) {
   try {
     const res = await api.put(`${URL}/${id}`, userData);

@@ -1,5 +1,9 @@
+import bcrypt from "bcrypt";
+import knex from "../database/index.js";
 import UsuarioService from "../services/UsuarioService.js";
+import AuthService from "../services/authService.js";
 import { HTTP_STATUS } from "../utils/constants.js";
+import { ValidationError } from "../utils/AppError.js";
 
 /**
  * Controller para operações relacionadas a usuários
@@ -140,40 +144,31 @@ const UsuarioController = {
       if (body.telefone !== undefined) dadosPermitidos.telefone = body.telefone;
       if (body.foto !== undefined) dadosPermitidos.foto = body.foto;
 
+      // Mudar o e-mail (que é o login) exige a senha atual
+      const atual = await knex("usuario").where({ id_usuario: usuarioId }).select("email", "senha").first();
+      const mudaEmail =
+        dadosPermitidos.email !== undefined &&
+        String(dadosPermitidos.email).trim().toLowerCase() !== String(atual?.email || "").toLowerCase();
+      if (!mudaEmail) delete dadosPermitidos.email;
+      if (mudaEmail) {
+        if (!body.senhaAtual || !(await bcrypt.compare(String(body.senhaAtual), atual.senha))) {
+          throw new ValidationError("Para alterar o e-mail, informe sua senha atual corretamente");
+        }
+      }
+
+      let usuario = Object.keys(dadosPermitidos).length
+        ? await UsuarioService.update(usuarioId, dadosPermitidos)
+        : await UsuarioService.getById(usuarioId);
+
+      // Troca de senha: mesma regra e efeitos do primeiro acesso (encerra outras sessões)
+      let token;
       if (body.senha !== undefined) {
-        if (!body.senhaAtual) {
-          return res.status(HTTP_STATUS.BAD_REQUEST).json({
-            error: "Informe a senha atual para alterar a senha",
-          });
-        }
-        const bcrypt = (await import("bcrypt")).default;
-        const knex = (await import("../database/index.js")).default;
-        const row = await knex("usuario")
-          .where({ id_usuario: usuarioId })
-          .select("senha")
-          .first();
-        if (!row?.senha) {
-          return res.status(HTTP_STATUS.BAD_REQUEST).json({
-            error: "Não foi possível validar a senha atual",
-          });
-        }
-        const ok = await bcrypt.compare(String(body.senhaAtual), row.senha);
-        if (!ok) {
-          return res.status(HTTP_STATUS.BAD_REQUEST).json({
-            error: "Senha atual incorreta",
-          });
-        }
-        dadosPermitidos.senha = body.senha;
+        const r = await AuthService.trocarSenha(usuarioId, body.senhaAtual, body.senha);
+        token = r.token;
+        usuario = await UsuarioService.getById(usuarioId);
       }
 
-      // Sem campos permitidos (ex.: tentativa de escalação) — retorna perfil atual
-      if (Object.keys(dadosPermitidos).length === 0) {
-        const atual = await UsuarioService.getById(usuarioId);
-        return res.status(HTTP_STATUS.OK).json(atual);
-      }
-
-      const usuario = await UsuarioService.update(usuarioId, dadosPermitidos);
-      res.status(HTTP_STATUS.OK).json(usuario);
+      res.status(HTTP_STATUS.OK).json(token ? { ...usuario, token } : usuario);
     } catch (err) {
       next(err);
     }
@@ -183,6 +178,23 @@ const UsuarioController = {
    * Admin: atribui pontuação manual a um usuário (ex: dinâmicas presenciais)
    * POST /api/usuarios/:id/pontuacao-manual
    * Body: { pontos: number, motivo: string }
+   */
+  async redefinirSenha(req, res, next) {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (!id) throw new ValidationError("Usuário inválido");
+      const { senha_temporaria } = await AuthService.redefinirSenha(id);
+      res.status(HTTP_STATUS.OK).json({
+        message: "Senha redefinida. A pessoa criará uma nova senha ao entrar.",
+        senha_temporaria,
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * Admin: atribui pontuação manual a um usuário (ex: dinâmicas presenciais)
    */
   async addPontuacaoManual(req, res, next) {
     try {

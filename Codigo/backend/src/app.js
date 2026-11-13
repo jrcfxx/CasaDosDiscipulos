@@ -27,6 +27,7 @@ import ministerioRoutes from "./routes/ministerioRoutes.js";
 import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 import falaAiRoutes from "./routes/falaAiRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
+import { verificarAmbiente } from "./config/ambiente.js";
 import { iniciarJobModulosWhatsApp } from "./jobs/whatsappModulosJob.js";
 import { iniciarJobConcluirEscalas } from "./jobs/escalaConcluirJob.js";
 
@@ -34,8 +35,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
+verificarAmbiente();
 
 const app = express();
+app.disable("x-powered-by");
 
 // Atrás do Nginx: usa o IP real do visitante (X-Forwarded-For) no rate limit.
 // Sem isso, todos compartilham o IP do proxy e o limite vale para a igreja inteira.
@@ -49,7 +52,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -68,7 +71,18 @@ const authLimiter = rateLimit({
   message: { error: "Muitas tentativas de login. Tente novamente em alguns minutos." },
 });
 app.use("/api/auth/login", authLimiter);
-app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/senha", authLimiter);
+
+// Limite por conta (além do limite por IP): impede testar várias senhas de um mesmo e-mail
+// a partir de muitas conexões. Só conta tentativas que falharam.
+const loginPorContaLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: process.env.NODE_ENV === "production" ? 10 : 200,
+  skipSuccessfulRequests: true,
+  keyGenerator: (req) => `conta:${String(req.body?.email || "").trim().toLowerCase()}`,
+  message: { error: "Muitas tentativas para esta conta. Aguarde 15 minutos ou fale com a secretaria." },
+});
+app.use("/api/auth/login", loginPorContaLimiter);
 
 // Servir arquivos estáticos da pasta uploads (permite carregamento cross-origin para imagens no frontend)
 app.use(
