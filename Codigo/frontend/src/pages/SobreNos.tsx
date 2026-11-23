@@ -4,7 +4,7 @@ import HeaderHome from "../components/layout/HeaderHome";
 import Footer from "../components/layout/Footer";
 import "../style/SobreNos.css";
 
-import imagem01 from "../assets/lendo_biblia_.jpeg";
+import imagem01 from "../assets/equipe_casa.jpg";
 import imagem02 from "../assets/casal_leitura.jpeg";
 import imagem03 from "../assets/tres_mulheres.jpeg";
 

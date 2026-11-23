@@ -104,88 +104,75 @@ const HomePage: React.FC = () => {
           </p>
         </section>
 
-        {/* Participe - Escola de Discípulos / Células */}
-        <section className="home-participe">
-          <p className="home-participe__label">— Nossos ministérios</p>
-          <h2 className="home-participe__titulo">
-            Participe e encontre seu lugar
-          </h2>
-          <p className="home-participe__texto">
-            A Escola de Discípulos e as Células são pilares da nossa comunhão.
-            Encontre o seu lugar e cresça conosco.
-          </p>
-
-          <div className="home-ministerios-grid">
-            <article className="home-ministerio-card">
-              <div className="home-ministerio-card__img-wrap">
-                <img
-                  src={imagemDiscipulado}
-                  alt="Escola de Discípulos"
-                  className="home-ministerio-card__img"
-                  loading="lazy"
-                />
-              </div>
-              <div className="home-ministerio-card__body">
-                <h3 className="home-ministerio-card__titulo">Escola de Discípulos</h3>
-                <p className="home-ministerio-card__texto">
-                  Aprenda a seguir os passos de Cristo, aprofundando sua fé e
-                  crescendo espiritualmente em comunhão com outros irmãos.
-                </p>
-              </div>
-            </article>
-
-            <article className="home-ministerio-card">
-              <div className="home-ministerio-card__img-wrap">
-                <img
-                  src={imagemCelulas}
-                  alt="Células de Comunhão"
-                  className="home-ministerio-card__img"
-                  loading="lazy"
-                />
-              </div>
-              <div className="home-ministerio-card__body">
-                <h3 className="home-ministerio-card__titulo">Células</h3>
-                <p className="home-ministerio-card__texto">
-                  Pequenos grupos que se reúnem para compartilhar a vida,
-                  estudar a Palavra e fortalecer os laços de amor e comunhão na
-                  família de Deus.
-                </p>
-                <button
-                  className="home-ministerio-card__cta"
-                  onClick={() => navigate("/celulas")}
-                  aria-label="Encontre sua Célula"
-                >
-                  Encontre sua Célula
-                </button>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        {/* Plataforma de Estudos */}
-        <section className="home-plataforma">
-          <div className="home-plataforma__card">
-            <p className="home-plataforma__label">— Aprendizado bíblico</p>
-            <h2 className="home-plataforma__titulo">
-              Cresça na Fé com Nossa Plataforma
+        {/* Integre-se e cresça: Células + Aprendizado bíblico (Escola de Discípulos) */}
+        <section className="home-integre" aria-labelledby="home-integre-titulo">
+          <header className="home-integre__topo">
+            <p className="home-integre__label">— Integre-se e cresça</p>
+            <h2 id="home-integre-titulo" className="home-integre__titulo">
+              Encontre o seu lugar na Casa
             </h2>
-            <p className="home-plataforma__texto">
-              Módulos interativos, quizzes desafiadores e um sistema de pontuação que
-              torna o aprendizado bíblico envolvente e gratificante.
+            <p className="home-integre__texto">
+              Na Casa ninguém caminha sozinho: a gente se encontra nas células durante a
+              semana e cresce junto no estudo da Palavra.
             </p>
-            <button
-              className="home-plataforma__cta"
-              onClick={() =>
-                window.open(
-                  "https://docs.google.com/forms/d/e/1FAIpQLSfk4IIu8u5k6bHX0q3QmtAHnNiEYciE8Zm000_jowTllXIhUQ/viewform",
-                  "_blank",
-                  "noopener,noreferrer"
-                )
-              }
-              aria-label="Fazer parte da Escola de Discípulos"
-            >
-              Faça Parte da Escola de Discípulos
-            </button>
+          </header>
+
+          <div className="home-integre__bloco">
+            <img
+              src={imagemCelulas}
+              alt="Célula reunida em casa"
+              className="home-integre__img"
+              loading="lazy"
+            />
+            <div className="home-integre__conteudo">
+              <p className="home-integre__rotulo">Células</p>
+              <h3 className="home-integre__subtitulo">Comunhão perto de você</h3>
+              <p className="home-integre__paragrafo">
+                Pequenos grupos que se reúnem para compartilhar a vida, estudar a Palavra e
+                fortalecer os laços de amor e comunhão na família de Deus.
+              </p>
+              <button
+                type="button"
+                className="home-integre__cta home-integre__cta--contorno"
+                onClick={() => navigate("/celulas")}
+              >
+                Encontre sua célula
+              </button>
+            </div>
+          </div>
+
+          <div className="home-integre__bloco home-integre__bloco--invertido">
+            <img
+              src={imagemDiscipulado}
+              alt="Pessoa lendo a Bíblia"
+              className="home-integre__img"
+              loading="lazy"
+            />
+            <div className="home-integre__conteudo">
+              <p className="home-integre__rotulo">Aprendizado bíblico</p>
+              <h3 className="home-integre__subtitulo">Escola de Discípulos</h3>
+              <p className="home-integre__paragrafo">
+                Um caminho de formação para aprender a seguir os passos de Cristo, aprofundar
+                a fé e crescer espiritualmente em comunhão com outros irmãos.
+              </p>
+              <p className="home-integre__paragrafo">
+                As aulas acontecem na nossa plataforma, com módulos interativos, quizzes e um
+                sistema de pontuação que acompanha o seu progresso.
+              </p>
+              <button
+                type="button"
+                className="home-integre__cta"
+                onClick={() =>
+                  window.open(
+                    "https://docs.google.com/forms/d/e/1FAIpQLSfk4IIu8u5k6bHX0q3QmtAHnNiEYciE8Zm000_jowTllXIhUQ/viewform",
+                    "_blank",
+                    "noopener,noreferrer"
+                  )
+                }
+              >
+                Faça parte da Escola de Discípulos
+              </button>
+            </div>
           </div>
         </section>
 

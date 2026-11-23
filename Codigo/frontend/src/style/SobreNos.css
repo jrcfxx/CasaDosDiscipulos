@@ -31,7 +31,8 @@
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
+  /* Foto da equipe: mantém os rostos (fileira de trás inclusive) no recorte largo do topo */
+  background-position: center 20%;
 }
 
 .sobre-nos-hero__overlay {

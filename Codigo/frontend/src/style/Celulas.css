@@ -24,7 +24,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 20%;
+  /* Foto em pé: deixa espaço acima da cabeça (o menu fixo cobre o topo) */
+  object-position: center 15%;
 }
 
 .celulas-hero__veil {
@@ -169,6 +170,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Fotos em pé (inclusive a padrão): mantém o rosto no recorte */
+  object-position: center 20%;
   display: block;
 }
 
