@@ -2,6 +2,7 @@ import FormularioRespostaModel from "../models/FormularioRespostaModel.js";
 import { ValidationError, NotFoundError, ForbiddenError } from "../utils/AppError.js";
 import knex from "../database/index.js";
 import { USER_TYPES } from "../utils/constants.js";
+import { montarRelatorio, dataDeReferencia } from "../utils/relatorioFormulario.js";
 
 /**
  * Service para gerenciar respostas de formulário
@@ -66,8 +67,89 @@ const FormularioRespostaService = {
    * @returns {Promise<Array>} Lista de respostas
    */
   async getByFormulario(idFormulario, usuario = null) {
-    const rows = await FormularioRespostaModel.getByFormulario(idFormulario);
-    return this._filtrar(rows, await this._celulasPermitidas(usuario));
+    const rows = this._filtrar(
+      await FormularioRespostaModel.getByFormulario(idFormulario),
+      await this._celulasPermitidas(usuario)
+    );
+    // Valores curtos (data e números) para a lista mostrar sem abrir cada resposta
+    const campos = await this._camposDoFormulario(idFormulario);
+    const curtos = campos.filter((c) => c.tipo === "data" || c.tipo === "numero");
+    const valores = await this._valoresPorResposta(rows.map((r) => r.id_resposta), curtos);
+    const campoData = curtos.find((c) => c.tipo === "data");
+    return rows.map((r) => {
+      const v = valores.get(r.id_resposta) || {};
+      return {
+        ...r,
+        data_referencia: dataDeReferencia({ ...r, valores: v }, campoData?.id),
+        resumo: curtos.map((c) => ({ id: c.id, label: c.label, tipo: c.tipo, valor: v[c.id] ?? null })),
+      };
+    });
+  },
+
+  /** Campos do formulário com o tipo (data, numero, texto...) */
+  async _camposDoFormulario(idFormulario) {
+    const rows = await knex("formulario_campo as fc")
+      .leftJoin("campo_personalizado as cp", "cp.id_campo", "fc.id_campo")
+      .where("fc.id_formulario", idFormulario)
+      .orderBy("fc.ordem", "asc")
+      .select("fc.id", "fc.label", "cp.tipo_campo as tipo");
+    return rows.map((r) => ({ id: Number(r.id), label: r.label || "", tipo: r.tipo || "" }));
+  },
+
+  /** Map id_resposta -> { id_formulario_campo: valor } só dos campos pedidos */
+  async _valoresPorResposta(idsRespostas, campos) {
+    const mapa = new Map();
+    if (!idsRespostas.length || !campos.length) return mapa;
+    const rows = await knex("formulario_resposta_campo")
+      .whereIn("id_resposta", idsRespostas)
+      .whereIn("id_formulario_campo", campos.map((c) => c.id))
+      .select("id_resposta", "id_formulario_campo", "valor");
+    for (const r of rows) {
+      const v = mapa.get(r.id_resposta) || {};
+      v[r.id_formulario_campo] = r.valor;
+      mapa.set(r.id_resposta, v);
+    }
+    return mapa;
+  },
+
+  /**
+   * Relatório do formulário no período: por célula e por janela da frequência
+   * (enviado / faltou / aguardando), totais dos campos numéricos. Líder vê só as células dele.
+   */
+  async getRelatorio(idFormulario, inicio, fim, usuario = null) {
+    const iso = /^\d{4}-\d{2}-\d{2}$/;
+    if (!iso.test(String(inicio || "")) || !iso.test(String(fim || ""))) {
+      throw new ValidationError("Informe inicio e fim no formato AAAA-MM-DD");
+    }
+    if (inicio > fim) throw new ValidationError("A data inicial deve ser anterior à final");
+    const formulario = await knex("formulario").where({ id_formulario: idFormulario }).first();
+    if (!formulario) throw new NotFoundError("Formulário não encontrado");
+
+    const permitidas = await this._celulasPermitidas(usuario);
+    const campos = await this._camposDoFormulario(idFormulario);
+
+    let celulas = await knex("celula").select("id_celula", "nome", "ativa");
+    celulas = this._filtrar(celulas, permitidas);
+    const lideres = await knex("celula_lider as cl")
+      .join("usuario as u", "u.id_usuario", "cl.id_usuario")
+      .select("cl.id_celula", "u.nome");
+    const lideresPorCelula = new Map();
+    for (const l of lideres) {
+      lideresPorCelula.set(l.id_celula, [...(lideresPorCelula.get(l.id_celula) || []), l.nome]);
+    }
+
+    const respostas = this._filtrar(await FormularioRespostaModel.getByFormulario(idFormulario), permitidas);
+    const usados = campos.filter((c) => c.tipo === "data" || c.tipo === "numero");
+    const valores = await this._valoresPorResposta(respostas.map((r) => r.id_resposta), usados);
+
+    return montarRelatorio({
+      frequencia: formulario.frequencia || "",
+      inicio,
+      fim,
+      campos: usados,
+      celulas: celulas.map((c) => ({ ...c, lideres: lideresPorCelula.get(c.id_celula) || [] })),
+      respostas: respostas.map((r) => ({ ...r, valores: valores.get(r.id_resposta) || {} })),
+    });
   },
 
   /**

@@ -51,6 +51,21 @@ const FormularioRespostaController = {
    * Lista respostas de uma célula específica
    * GET /api/formulario-resposta/celula/:idCelula
    */
+  async relatorio(req, res, next) {
+    try {
+      res.status(HTTP_STATUS.OK).json(
+        await FormularioRespostaService.getRelatorio(
+          req.params.idFormulario,
+          req.query.inicio,
+          req.query.fim,
+          req.usuario
+        )
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async byCelula(req, res, next) {
     try {
       const respostas = await FormularioRespostaService.getByCelula(

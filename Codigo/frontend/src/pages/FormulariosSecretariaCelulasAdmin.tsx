@@ -28,8 +28,10 @@ import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
 import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
-import { calcularStatusCelulas, filtrarRespostas, respondentesUnicos } from "../components/formularios/statusCelulas";
-import PainelStatusCelulas from "../components/formularios/PainelStatusCelulas";
+import { filtrarRespostas, respondentesUnicos } from "../components/formularios/statusCelulas";
+import RelatorioFormulario from "../components/formularios/RelatorioFormulario";
+import { formatarDiaMes, rotuloCurto, singularSeUm } from "../components/formularios/periodoRelatorio";
+import type { ResumoCampoResposta } from "../services/formularioRespostaService";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
 
@@ -66,6 +68,9 @@ type LocalField = {
 };
 
 type Resposta = {
+  /** Data da reunião (campo de data do formulário) ou, sem ele, a do envio */
+  data_referencia?: string;
+  resumo?: ResumoCampoResposta[];
   id_resposta: number;
   id_formulario: number;
   id_celula: number;
@@ -89,6 +94,12 @@ const initialFormState: FormularioForm = {
   ativo: 1,
   frequencia: "",
 };
+
+/** A lista mostra "Reunião 11 nov" quando o formulário tem a data da reunião; senão a data é a do envio */
+function rotuloDataReferencia(r: { resumo?: ResumoCampoResposta[] }) {
+  const campo = (r.resumo || []).find((c) => c.tipo === "data" && c.valor);
+  return campo ? campo.label.replace(/^data d[aoe]s? /i, "").replace(/^./, (x) => x.toUpperCase()) : "Envio";
+}
 
 export default function FormulariosSecretariaCelulasAdmin() {
   const acaoSalvar = useAcao();
@@ -122,19 +133,6 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const [filtroRespondente, setFiltroRespondente] = useState<string>("");
   const [filtroDataInicio, setFiltroDataInicio] = useState<string>("");
   const [filtroDataFim, setFiltroDataFim] = useState<string>("");
-
-  /* Filtro de período no dashboard */
-  const hoje = new Date();
-  const fimPadrao = hoje.getFullYear() + "-" +
-    String(hoje.getMonth() + 1).padStart(2, "0") + "-" +
-    String(hoje.getDate()).padStart(2, "0");
-  const dInicio = new Date(hoje);
-  dInicio.setDate(dInicio.getDate() - 30);
-  const inicioPadrao = dInicio.getFullYear() + "-" +
-    String(dInicio.getMonth() + 1).padStart(2, "0") + "-" +
-    String(dInicio.getDate()).padStart(2, "0");
-  const [filtroDataDashboardInicio, setFiltroDataDashboardInicio] = useState<string>(inicioPadrao);
-  const [filtroDataDashboardFim, setFiltroDataDashboardFim] = useState<string>(fimPadrao);
 
   const [celulas, setCelulas] = useState<
     Array<{ id_celula: number; nome: string }>
@@ -334,25 +332,6 @@ export default function FormulariosSecretariaCelulasAdmin() {
   });
 
   const respondentesUnicosLista = respondentesUnicos(respostas);
-
-  /* Em dia / atrasada no período escolhido (regras em statusCelulas.ts) */
-  const frequenciaFormulario = selectedFormulario?.frequencia ?? "";
-  const {
-    temFrequencia,
-    periodoValido,
-    celulasEmDia,
-    celulasAtrasadas,
-    totalCelulas,
-    emDiaCount,
-    pendentesCount,
-    percentualEmDia,
-  } = calcularStatusCelulas({
-    celulas,
-    respostas,
-    frequencia: frequenciaFormulario,
-    inicio: filtroDataDashboardInicio,
-    fim: filtroDataDashboardFim,
-  });
 
   const buildUploadUrl = (path: string) => {
     if (!path || !path.startsWith("/")) return "";
@@ -709,7 +688,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     className={abaAtiva === "dashboard" ? "active" : ""}
                     onClick={() => setAbaAtiva("dashboard")}
                   >
-                    Dashboard
+                    Relatório
                   </button>
                 </div>
 
@@ -888,14 +867,28 @@ export default function FormulariosSecretariaCelulasAdmin() {
                                 handleExpandResposta(r.id_resposta)
                               }
                             >
-                              <span className="resposta-celula">
-                                {r.nome_celula || `Célula #${r.id_celula}`}
+                              <span className="resposta-quem">
+                                <span className="resposta-celula">
+                                  {r.nome_celula || `Célula #${r.id_celula}`}
+                                </span>
+                                <span className="resposta-lider">{r.nome_lider || "Sem respondente"}</span>
                               </span>
-                              <span className="resposta-lider">
-                                {r.nome_lider || "-"}
+                              <span className="resposta-resumo">
+                                {r.data_referencia && (
+                                  <span className="resposta-reuniao">
+                                    {rotuloDataReferencia(r)} {formatarDiaMes(r.data_referencia)}
+                                  </span>
+                                )}
+                                {(r.resumo || [])
+                                  .filter((c) => c.tipo === "numero" && c.valor !== null && String(c.valor).trim() !== "")
+                                  .map((c) => (
+                                    <span key={c.id} className="resposta-numero">
+                                      <strong>{c.valor}</strong> {singularSeUm(rotuloCurto(c.label), c.valor)}
+                                    </span>
+                                  ))}
                               </span>
                               <span className="resposta-data">
-                                {formatarData(r.data_resposta)}
+                                Enviado em {formatarData(r.data_resposta)}
                               </span>
                               <span className="resposta-toggle">
                                 {expandedRespostaId === r.id_resposta
@@ -943,20 +936,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 )}
 
                 {abaAtiva === "dashboard" && (
-                  <PainelStatusCelulas
-                    temFrequencia={temFrequencia}
-                    periodoValido={periodoValido}
-                    celulasEmDia={celulasEmDia}
-                    celulasAtrasadas={celulasAtrasadas}
-                    totalCelulas={totalCelulas}
-                    emDiaCount={emDiaCount}
-                    pendentesCount={pendentesCount}
-                    percentualEmDia={percentualEmDia}
-                    frequenciaFormulario={frequenciaFormulario}
-                    filtroDataDashboardInicio={filtroDataDashboardInicio}
-                    setFiltroDataDashboardInicio={setFiltroDataDashboardInicio}
-                    filtroDataDashboardFim={filtroDataDashboardFim}
-                    setFiltroDataDashboardFim={setFiltroDataDashboardFim}
+                  <RelatorioFormulario
+                    idFormulario={selectedFormulario.id}
+                    frequencia={selectedFormulario.frequencia}
                   />
                 )}
               </div>

@@ -1,51 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { calcularStatusCelulas, filtrarRespostas, respondentesUnicos } from "./statusCelulas";
+import { filtrarRespostas, respondentesUnicos } from "./statusCelulas";
+import { atalhosDoPeriodo, haQuantoTempo } from "./periodoRelatorio";
 
-const celulas = [
-  { id_celula: 1, nome: "Videira" },
-  { id_celula: 2, nome: "Morada" },
-  { id_celula: 3, nome: "Resgate" },
-];
 const respostas = [
   { id_celula: 1, data_resposta: "2026-11-05T19:00:00", nome_lider: "Simone" },
   { id_celula: 1, data_resposta: "2026-11-10T19:00:00", nome_lider: "Simone" },
   { id_celula: 2, data_resposta: "2026-09-01T19:00:00", nome_lider: "Kelly" },
   { id_celula: 3, data_resposta: "2026-11-08T19:00:00" },
 ];
-
-describe("calcularStatusCelulas", () => {
-  const base = { celulas, respostas, frequencia: "semanal", inicio: "2026-11-01", fim: "2026-11-12" };
-
-  it("em dia = pelo menos 1 resposta no período; fora do período conta como atrasada", () => {
-    const s = calcularStatusCelulas(base);
-    expect(s.celulasEmDia.map((c) => [c.nome, c.count])).toEqual([["Videira", 2], ["Resgate", 1]]);
-    expect(s.celulasAtrasadas.map((c) => c.nome)).toEqual(["Morada"]);
-    expect([s.totalCelulas, s.emDiaCount, s.pendentesCount, s.percentualEmDia]).toEqual([3, 2, 1, 67]);
-  });
-
-  it("resposta no último dia do período conta (até 23:59:59)", () => {
-    const s = calcularStatusCelulas({ ...base, inicio: "2026-11-10", fim: "2026-11-10" });
-    expect(s.celulasEmDia.map((c) => c.nome)).toEqual(["Videira"]);
-  });
-
-  it("período inválido: ninguém fica em dia", () => {
-    const s = calcularStatusCelulas({ ...base, inicio: "2026-11-12", fim: "2026-11-01" });
-    expect(s.periodoValido).toBe(false);
-    expect(s.emDiaCount).toBe(0);
-    expect(s.pendentesCount).toBe(3);
-  });
-
-  it("sem frequência no formulário: acompanhamento não se aplica", () => {
-    const s = calcularStatusCelulas({ ...base, frequencia: "" });
-    expect(s.temFrequencia).toBe(false);
-    expect(s.celulasEmDia).toEqual([]);
-    expect(s.celulasAtrasadas).toEqual([]);
-  });
-
-  it("sem células: 0%", () => {
-    expect(calcularStatusCelulas({ ...base, celulas: [] }).percentualEmDia).toBe(0);
-  });
-});
 
 describe("filtrarRespostas", () => {
   const todos = { celula: "" as const, respondente: "", dataInicio: "", dataFim: "" };
@@ -62,6 +24,35 @@ describe("filtrarRespostas", () => {
     // A véspera não entra
     expect(filtrarRespostas(respostas, { ...todos, dataInicio: "2026-11-06", dataFim: "2026-11-30" }).map((x) => x.data_resposta))
       .toEqual(["2026-11-10T19:00:00", "2026-11-08T19:00:00"]);
+  });
+});
+
+describe("filtro pela data da reunião", () => {
+  it("usa a data da reunião (data_referencia), não a do envio", () => {
+    const lista = [{ id_celula: 1, data_resposta: "2026-11-02T22:00:00", data_referencia: "2026-11-01" }];
+    const todos = { celula: "" as const, respondente: "", dataInicio: "", dataFim: "" };
+    expect(filtrarRespostas(lista, { ...todos, dataInicio: "2026-11-01", dataFim: "2026-11-01" })).toHaveLength(1);
+    expect(filtrarRespostas(lista, { ...todos, dataInicio: "2026-11-02", dataFim: "2026-11-02" })).toHaveLength(0);
+  });
+});
+
+describe("atalhos de período do relatório", () => {
+  const hoje = new Date(2026, 10, 23, 10); // segunda, 23/11/2026
+  it("semanal: 'Últimas 4 semanas' começa num domingo, 3 semanas antes da atual", () => {
+    const [a] = atalhosDoPeriodo("semanal", hoje);
+    expect([a.rotulo, a.inicio, a.fim]).toEqual(["Últimas 4 semanas", "2026-11-01", "2026-11-23"]);
+  });
+  it("mensal: 'Últimos 3 meses' começa no dia 1", () => {
+    expect(atalhosDoPeriodo("mensal", hoje)[0].inicio).toBe("2026-09-01");
+  });
+  it("mês passado vai do dia 1 ao último dia", () => {
+    const m = atalhosDoPeriodo("semanal", hoje).find((x) => x.id === "mes-passado")!;
+    expect([m.inicio, m.fim]).toEqual(["2026-10-01", "2026-10-31"]);
+  });
+  it("há quanto tempo", () => {
+    expect(haQuantoTempo("2026-11-23", hoje)).toBe("hoje");
+    expect(haQuantoTempo("2026-11-22", hoje)).toBe("ontem");
+    expect(haQuantoTempo("2026-11-11", hoje)).toBe("há 12 dias");
   });
 });
 

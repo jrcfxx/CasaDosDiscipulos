@@ -1,0 +1,416 @@
+/**
+ * Relatório dos formulários (Secretaria das Células) — painel claro da página de formulários.
+ * Petróleo/teal para "enviado", vermelho suave para "não enviado", amarelo só em detalhe.
+ */
+
+.rel {
+  --rel-texto: #1f2425;
+  --rel-suave: #5f6668;
+  --rel-borda: #e3e7e8;
+  --rel-fundo: #f6f8f8;
+  --rel-ok: #02869b;
+  --rel-ok-fundo: #e3f3f6;
+  --rel-falta: #c0392b;
+  --rel-falta-fundo: #fbeceb;
+  color: var(--rel-texto);
+}
+
+/* ---------- Período ---------- */
+.rel-periodo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.rel-atalhos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rel-atalho {
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--rel-borda);
+  background: #fff;
+  color: var(--rel-suave);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.rel-atalho:hover {
+  border-color: var(--rel-ok);
+  color: var(--rel-texto);
+}
+
+.rel-atalho.ativo {
+  background: var(--primary-dark, #00444c);
+  border-color: var(--primary-dark, #00444c);
+  color: #fff;
+}
+
+.rel-datas {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.rel-datas label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rel-suave);
+}
+
+.rel-datas input {
+  padding: 0.4rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--rel-borda);
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--rel-texto);
+  background: #fff;
+}
+
+.rel-criterio {
+  margin: 0 0 1.1rem;
+  font-size: 0.85rem;
+  color: var(--rel-suave);
+  line-height: 1.5;
+}
+
+.rel-aviso {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: #fff8e1;
+  border: 1px solid #f3dfa0;
+  color: #6b5200;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.rel-aviso--erro {
+  background: var(--rel-falta-fundo);
+  border-color: #f1c4bf;
+  color: var(--rel-falta);
+}
+
+.rel-carregando {
+  padding: 2rem;
+  text-align: center;
+  color: var(--rel-suave);
+}
+
+.rel-atualizando {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+/* ---------- Números do período ---------- */
+.rel-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.rel-kpi {
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: var(--rel-fundo);
+  border: 1px solid var(--rel-borda);
+}
+
+.rel-kpi--ok {
+  border-left: 4px solid var(--rel-ok);
+}
+
+.rel-kpi--alerta {
+  border-left: 4px solid var(--rel-falta);
+}
+
+.rel-kpi__valor {
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--rel-texto);
+}
+
+.rel-kpi__valor small {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--rel-suave);
+}
+
+.rel-kpi__rotulo {
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--rel-suave);
+}
+
+.rel-kpi__rotulo small {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ---------- Tabela célula × semana ---------- */
+.rel-tabela-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--rel-borda);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.rel-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.rel-tabela th,
+.rel-tabela td {
+  padding: 0.65rem 0.7rem;
+  border-bottom: 1px solid var(--rel-borda);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rel-tabela tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.rel-tabela thead th {
+  background: var(--rel-fundo);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--rel-suave);
+  text-transform: none;
+}
+
+.rel-tabela thead th small {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary-teal, #02869b);
+}
+
+.rel-tabela thead th.atual {
+  background: #eef7f8;
+}
+
+/* Primeira coluna fixa ao rolar para o lado */
+.rel-col-celula {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 150px;
+  text-align: left !important;
+  background: #fff;
+  box-shadow: 1px 0 0 var(--rel-borda);
+}
+
+thead .rel-col-celula {
+  background: var(--rel-fundo);
+}
+
+.rel-celula-nome {
+  display: block;
+  font-weight: 700;
+  color: var(--rel-texto);
+}
+
+.rel-celula-nome em {
+  font-weight: 500;
+  color: var(--rel-suave);
+}
+
+.rel-celula-lider {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--rel-suave);
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* position: relative segura o texto de leitor de tela (sr-only, absoluto) dentro da tabela que
+   rola de lado; sem isso ele "vazava" e alargava a página inteira no celular */
+.rel-marca {
+  position: relative;
+}
+
+.rel-marca span:first-child {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 0.3rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.rel-marca--enviado span:first-child {
+  background: var(--rel-ok-fundo);
+  color: var(--rel-ok);
+}
+
+.rel-marca--faltou span:first-child {
+  background: var(--rel-falta-fundo);
+  color: var(--rel-falta);
+}
+
+.rel-marca--aguardando span:first-child {
+  color: #9aa1a3;
+}
+
+.rel-chip {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.rel-chip--ok {
+  background: var(--rel-ok-fundo);
+  color: var(--rel-ok);
+}
+
+.rel-chip--atraso {
+  background: var(--rel-falta-fundo);
+  color: var(--rel-falta);
+}
+
+.rel-ultimo small {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--rel-suave);
+}
+
+.rel-nunca {
+  font-size: 0.8rem;
+  color: var(--rel-falta);
+  font-weight: 600;
+}
+
+.rel-sem-envio {
+  font-size: 0.8rem;
+  color: var(--rel-suave);
+}
+
+.rel-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  color: var(--rel-suave);
+}
+
+.rel-legenda > span {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-weight: 800;
+  margin-left: 0.5rem;
+}
+
+.rel-legenda > span:first-child {
+  margin-left: 0;
+}
+
+.rel-legenda .rel-marca--enviado {
+  background: var(--rel-ok-fundo);
+  color: var(--rel-ok);
+}
+
+.rel-legenda .rel-marca--faltou {
+  background: var(--rel-falta-fundo);
+  color: var(--rel-falta);
+}
+
+.rel-legenda .rel-marca--aguardando {
+  color: #9aa1a3;
+}
+
+@media (max-width: 640px) {
+  .rel-periodo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* min-width: 0 — sem isso a fileira de atalhos (que rola de lado) alargava a página inteira */
+  .rel-atalhos {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .rel-atalho {
+    flex: 0 0 auto;
+  }
+
+  .rel-datas {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .rel-datas label {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .rel-datas input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .rel-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rel-kpi__valor {
+    font-size: 1.4rem;
+  }
+
+  /* Coluna da célula estreita no celular: sobra espaço para as semanas */
+  .rel-tabela .rel-col-celula {
+    min-width: 0;
+    width: 118px;
+    max-width: 118px;
+    white-space: normal;
+  }
+
+  .rel-celula-lider {
+    max-width: 104px;
+    white-space: nowrap;
+  }
+
+  .rel-tabela th,
+  .rel-tabela td {
+    padding: 0.55rem 0.45rem;
+  }
+}

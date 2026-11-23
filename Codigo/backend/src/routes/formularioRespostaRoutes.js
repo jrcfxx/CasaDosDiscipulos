@@ -11,6 +11,7 @@ import {
 const router = Router();
 
 // Rotas especiais - admin ou líder
+router.get("/formulario/:idFormulario/relatorio", verificarToken, adminAndLeader, FormularioRespostaController.relatorio);
 router.get("/formulario/:idFormulario", verificarToken, adminAndLeader, FormularioRespostaController.byFormulario);
 router.get("/celula/:idCelula", verificarToken, adminAndLeader, FormularioRespostaController.byCelula);
 

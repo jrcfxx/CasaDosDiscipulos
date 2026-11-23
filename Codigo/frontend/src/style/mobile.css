@@ -85,13 +85,17 @@ canvas {
     gap: 0.75rem;
   }
 
+  /* Resposta no celular: célula + seta na 1ª linha, números na 2ª, envio na 3ª */
   body:not(#_) .resposta-item-header {
     grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "quem toggle" "resumo resumo" "data data";
+    row-gap: 0.45rem;
   }
 
-  body:not(#_) .dashboard-cards {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  body:not(#_) .resposta-item-header .resposta-quem { grid-area: quem; }
+  body:not(#_) .resposta-item-header .resposta-resumo { grid-area: resumo; }
+  body:not(#_) .resposta-item-header .resposta-data { grid-area: data; text-align: left; }
+  body:not(#_) .resposta-item-header .resposta-toggle { grid-area: toggle; }
 
   /* ==================== Gerenciar usuários ==================== */
   body:not(#_) .tabs-container {

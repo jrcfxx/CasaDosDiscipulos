@@ -75,6 +75,8 @@ jobs:
         run: npm run test:quiz
       - name: Testes de autenticação
         run: npm run test:auth
+      - name: Testes do relatório de formulários
+        run: npm run test:formularios
 
   # Testes e checagem de tipos do frontend (Vitest)
   test-frontend:
