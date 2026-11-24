@@ -20,7 +20,8 @@
     "test:staff": "node scripts/testStaff.js",
     "test:quiz": "node scripts/testQuiz.js",
     "test:formularios": "node scripts/testRelatorioFormulario.js",
-    "test:auth": "node scripts/testAuth.js"
+    "test:auth": "node scripts/testAuth.js",
+    "qa:escala": "node scripts/qaEscalaApi.js"
   },
   "keywords": [],
   "author": "",

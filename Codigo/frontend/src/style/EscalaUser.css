@@ -2622,3 +2622,81 @@
   color: var(--gold-500, #f4b002);
   border-color: rgba(244, 176, 2, 0.5);
 }
+
+/* ==================== Área com várias funções (ex.: Louvor: vocal, violão, bateria…) ==================== */
+.quadro-area {
+  margin-top: 0.65rem;
+  padding: 0.5rem 0.55rem 0.55rem;
+  border-radius: 10px;
+  border: 1px solid rgba(95, 178, 191, 0.22);
+  background: rgba(95, 178, 191, 0.05);
+  min-width: 0;
+}
+
+.quadro-area.compacto {
+  margin-top: 0.35rem;
+  padding: 0.3rem;
+}
+
+.quadro-area__titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ebebeb;
+  min-width: 0;
+}
+
+.quadro-area.compacto .quadro-area__titulo {
+  font-size: 0.66rem;
+}
+
+.quadro-area__titulo .icone {
+  color: #5fb2bf;
+  flex-shrink: 0;
+}
+
+.quadro-area__nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quadro-area__total {
+  font-variant-numeric: tabular-nums;
+  color: rgba(235, 235, 235, 0.7);
+  flex-shrink: 0;
+}
+
+.quadro-area__funcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+  padding-left: 0.45rem;
+  border-left: 2px solid rgba(95, 178, 191, 0.3);
+  min-width: 0;
+}
+
+.quadro-area .quadro-slot--sub {
+  margin-top: 0;
+  padding: 0.35rem 0.45rem;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.quadro-area .quadro-slot--sub .quadro-slot-header {
+  font-size: 0.74rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.semana-evento .quadro-area .quadro-slot--sub .quadro-slot-header {
+  font-size: 0.62rem;
+}
+
+.semana-evento .quadro-area .quadro-area__funcoes {
+  padding-left: 0.25rem;
+}

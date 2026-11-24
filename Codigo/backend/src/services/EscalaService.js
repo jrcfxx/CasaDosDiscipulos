@@ -18,7 +18,6 @@ import {
 } from "../utils/constants.js";
 import {
   toMysqlDatetime,
-  formatarDatetimeLocal,
   formatarDataHoraPtBr,
   inicioDoDia,
   fimDoDia,
@@ -44,6 +43,16 @@ import { getLimitesPorArea } from "../config/ministerioCampos.js";
  * ou a função já atingiu o limite de vagas. Valor inválido de função nunca é confirmável.
  */
 const CONFLITOS_CONFIRMAVEIS = new Set(["duplo_evento", "duplo_instrumento", "limite", "fora_do_ministerio"]);
+
+/** Data "AAAA-MM-DD" que existe no calendário (recusa 2026-02-30, "abc"…) com 400 em vez de 500 */
+function exigirDataIso(data) {
+  const txt = String(data ?? "").slice(0, 10);
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(txt);
+  const d = m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+  if (!d || d.getUTCFullYear() !== +m[1] || d.getUTCMonth() !== +m[2] - 1 || d.getUTCDate() !== +m[3]) {
+    throw new ValidationError("Data inválida (use AAAA-MM-DD)");
+  }
+}
 
 class EscalaService {
   // ---------- Eventos ----------
@@ -653,6 +662,7 @@ class EscalaService {
   }
 
   async getVisaoDia(data, tipoUsuario = null, idsMinisterios = null) {
+    exigirDataIso(data);
     const ini = inicioDoDia(data);
     const fim = fimDoDia(data);
     const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
@@ -660,6 +670,7 @@ class EscalaService {
   }
 
   async getVisaoSemana(dataInicio, tipoUsuario = null, idsMinisterios = null) {
+    exigirDataIso(dataInicio);
     const ini = inicioDoDia(dataInicio);
     const fim = fimDoDia(adicionarDias(dataInicio, 6));
     const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(ini, fim);
@@ -1160,19 +1171,21 @@ class EscalaService {
 
   async copiarDia(dataOrigem, dataDestino, idUsuario, tipoUsuario) {
     this._assertAdmin(tipoUsuario);
+    exigirDataIso(dataOrigem);
+    exigirDataIso(dataDestino);
+    if (dataOrigem === dataDestino) throw new ValidationError("Escolha um dia diferente do dia de origem");
     const eventos = await this.getVisaoDia(dataOrigem);
+    // Desloca início e fim pelo mesmo intervalo: evento que vira a noite (23h -> 2h) continua virando
+    const deltaMs =
+      new Date(`${dataDestino}T12:00:00`).getTime() - new Date(`${dataOrigem}T12:00:00`).getTime();
     const criados = [];
     const warnings = [];
     for (const ev of eventos) {
-      const hora = (formatarDatetimeLocal(ev.data_hora) || "").slice(11, 19) || "19:00:00";
-      const horaFim = ev.data_hora_fim
-        ? (formatarDatetimeLocal(ev.data_hora_fim) || "").slice(11, 19)
-        : null;
       const result = await this.copiarEvento(
         ev.id_escala_evento,
         {
-          data_hora: `${dataDestino} ${hora}`,
-          data_hora_fim: horaFim ? `${dataDestino} ${horaFim}` : null,
+          data_hora: deslocarDatetime(ev.data_hora, deltaMs),
+          data_hora_fim: ev.data_hora_fim ? deslocarDatetime(ev.data_hora_fim, deltaMs) : null,
           titulo: ev.titulo,
         },
         idUsuario,
@@ -1455,6 +1468,11 @@ class EscalaService {
 
   async copiarSemana({ data_inicio_origem, data_inicio_destino }, idUsuario, tipoUsuario) {
     this._assertAdmin(tipoUsuario);
+    exigirDataIso(data_inicio_origem);
+    exigirDataIso(data_inicio_destino);
+    if (data_inicio_origem === data_inicio_destino) {
+      throw new ValidationError("Escolha uma semana diferente da semana de origem");
+    }
     const eventos = await this.getVisaoSemana(data_inicio_origem);
     const deltaMs =
       new Date(`${data_inicio_destino}T12:00:00`).getTime() -

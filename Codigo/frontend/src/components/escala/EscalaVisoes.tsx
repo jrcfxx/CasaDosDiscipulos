@@ -18,7 +18,7 @@ import {
   SlotInstrumento,
   SlotMembro,
 } from "../../services/escalaService";
-import { SlotDrop, payloadDeDrop, MoverUnificadoPayload } from "./EscalaQuadroUnificado";
+import { SlotsPorArea, payloadDeDrop, MoverUnificadoPayload } from "./EscalaQuadroUnificado";
 import { ParalelismoMapa } from "../../utils/ministerioParalelismo";
 import { faixaHorario, plural, tituloSemana, toIsoDate } from "../../utils/escalaDatas";
 
@@ -100,20 +100,17 @@ function SemanaEventoCard({
           {resto > 0 ? ` +${resto}` : ""}
         </p>
       )}
-      {expandido &&
-        slots.map(([key, slot]) => (
-          <SlotDrop
-            key={key}
-            eventoId={ev.id}
-            slotKey={key}
-            slot={slot}
-            instrumentosDoEvento={Object.values(ev.instrumentos || {})}
-            paralelismoMapa={paralelismoMapa}
-            podeEditar={podeEditar}
-            compacto
-            onEscalar={() => onEscalar?.(ev.id, slot)}
-          />
-        ))}
+      {expandido && (
+        <SlotsPorArea
+          eventoId={ev.id}
+          entradas={slots}
+          instrumentosDoEvento={Object.values(ev.instrumentos || {})}
+          paralelismoMapa={paralelismoMapa}
+          podeEditar={podeEditar}
+          compacto
+          onEscalar={(slot) => onEscalar?.(ev.id, slot)}
+        />
+      )}
       {expandido && slots.length === 0 && (
         <span className="semana-evento-vazio">Sem pessoas</span>
       )}

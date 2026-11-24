@@ -23,6 +23,7 @@ import {
 } from "../../utils/ministerioParalelismo";
 import { faixaHorario, formatarTelefone, plural, rotuloStatus } from "../../utils/escalaDatas";
 import Icone, { existeIcone } from "../ui/Icone";
+import { agruparPorArea, iconeDaArea } from "../../utils/slotsPorArea";
 
 export interface MoverUnificadoPayload {
   membroEscalaOrigemId: number;
@@ -168,10 +169,16 @@ export function SlotDrop({
   onEscalar,
   onEditarMembro,
   onRemoverMembro,
+  rotulo,
+  sub,
 }: {
   eventoId: number;
   slotKey: string;
   slot: SlotInstrumento;
+  /** Nome exibido no lugar de slot.nome */
+  rotulo?: string;
+  /** Função dentro de uma área com várias funções (visual mais enxuto) */
+  sub?: boolean;
   instrumentosDoEvento: SlotInstrumento[];
   paralelismoMapa?: ParalelismoMapa;
   podeEditar: boolean;
@@ -204,11 +211,11 @@ export function SlotDrop({
       ref={setNodeRef}
       className={`quadro-slot ${valido ? "drop-over" : ""} ${invalido ? "drop-invalido" : ""} ${
         lotado ? "slot-lotado" : ""
-      } ${compacto ? "compacto" : ""}`}
+      } ${compacto ? "compacto" : ""}${sub ? " quadro-slot--sub" : ""}`}
     >
       <div className="quadro-slot-header">
         <span>
-          {existeIcone(slot.icone) && <Icone nome={slot.icone} tamanho={14} />} {slot.nome}
+          {existeIcone(slot.icone) && <Icone nome={slot.icone} tamanho={14} />} {rotulo ?? slot.nome}
           {slot.limite != null ? ` (${slot.atual}/${slot.limite})` : ` (${slot.atual})`}
         </span>
         {isOver && invalido && <span className="drop-hint erro">Conflito</span>}
@@ -232,6 +239,73 @@ export function SlotDrop({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Funções do evento agrupadas por área: área com uma função só aparece como antes; área com várias
+ * (Louvor: vocal, violão, bateria…) ganha um cabeçalho com o total e as funções aninhadas embaixo.
+ */
+export function SlotsPorArea({
+  eventoId,
+  entradas,
+  instrumentosDoEvento,
+  paralelismoMapa,
+  podeEditar,
+  compacto,
+  onEscalar,
+  onEditarMembro,
+  onRemoverMembro,
+}: {
+  eventoId: number;
+  entradas: [string, SlotInstrumento][];
+  instrumentosDoEvento: SlotInstrumento[];
+  paralelismoMapa?: ParalelismoMapa;
+  podeEditar: boolean;
+  compacto?: boolean;
+  onEscalar: (slot: SlotInstrumento) => void;
+  onEditarMembro?: (membro: SlotMembro, areaNome: string) => void;
+  onRemoverMembro?: (membro: SlotMembro) => void;
+}) {
+  return (
+    <>
+      {agruparPorArea(entradas).map((g) => {
+        const slotDrop = ([key, slot]: [string, SlotInstrumento], sub = false) => (
+          <SlotDrop
+            key={key}
+            eventoId={eventoId}
+            slotKey={key}
+            slot={slot}
+            rotulo={sub && slot.tipo === "_geral" ? "Sem função definida" : undefined}
+            sub={sub}
+            instrumentosDoEvento={instrumentosDoEvento}
+            paralelismoMapa={paralelismoMapa}
+            podeEditar={podeEditar}
+            compacto={compacto}
+            onEscalar={() => onEscalar(slot)}
+            onEditarMembro={onEditarMembro}
+            onRemoverMembro={onRemoverMembro}
+          />
+        );
+        if (g.entradas.length === 1) return slotDrop(g.entradas[0]);
+        // "_geral" vazio dentro de área com funções não precisa aparecer (só ocupa espaço)
+        const visiveis = g.entradas.filter(([, s]) => s.tipo !== "_geral" || s.membros.length > 0);
+        const icone = iconeDaArea(g);
+        return (
+          <section key={`area-${g.id_escala_area}`} className={`quadro-area${compacto ? " compacto" : ""}`}>
+            <header className="quadro-area__titulo">
+              {existeIcone(icone) && <Icone nome={icone} tamanho={compacto ? 14 : 16} />}
+              <span className="quadro-area__nome">{g.areaNome}</span>
+              <span className="quadro-area__total">
+                {g.atual}
+                {g.limite != null ? `/${g.limite}` : ""}
+              </span>
+            </header>
+            <div className="quadro-area__funcoes">{visiveis.map((e) => slotDrop(e, true))}</div>
+          </section>
+        );
+      })}
+    </>
   );
 }
 
@@ -349,20 +423,16 @@ const EscalaQuadroUnificado: React.FC<Props> = ({
                   </div>
                   <span className={`status-badge status-${ev.status}`}>{rotuloStatus(ev.status)}</span>
                 </header>
-                {(slotsOrdenados.get(ev.id) || []).map(([key, slot]) => (
-                  <SlotDrop
-                    key={key}
-                    eventoId={ev.id}
-                    slotKey={key}
-                    slot={slot}
-                    instrumentosDoEvento={instrumentosPorEvento.get(ev.id) || []}
-                    paralelismoMapa={paralelismoMapa}
-                    podeEditar={podeEditar}
-                    onEscalar={() => onEscalar(ev.id, slot)}
-                    onEditarMembro={onEditarMembro}
-                    onRemoverMembro={onRemoverMembro}
-                  />
-                ))}
+                <SlotsPorArea
+                  eventoId={ev.id}
+                  entradas={slotsOrdenados.get(ev.id) || []}
+                  instrumentosDoEvento={instrumentosPorEvento.get(ev.id) || []}
+                  paralelismoMapa={paralelismoMapa}
+                  podeEditar={podeEditar}
+                  onEscalar={(slot) => onEscalar(ev.id, slot)}
+                  onEditarMembro={onEditarMembro}
+                  onRemoverMembro={onRemoverMembro}
+                />
               </article>
             ))}
           </div>

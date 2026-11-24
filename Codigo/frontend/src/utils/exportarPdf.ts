@@ -60,6 +60,7 @@ const GRUPOS_JUNTOS = [
   ".escala-area-card",
   ".resposta-item",
   ".mes-dia",
+  ".quadro-area",
 ].join(",");
 
 /** Margem da página em pontos (1 pt = 1/72 pol.) */

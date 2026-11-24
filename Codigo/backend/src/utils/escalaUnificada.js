@@ -59,11 +59,22 @@ export function chaveSlotDeDetalhes(areaNome, detalhes) {
   return "_geral";
 }
 
+/** "recepcao" -> "Recepção", "boas_vindas" -> "Boas vindas" (para funções fora da lista conhecida) */
+export function rotuloDeChave(chave) {
+  const texto = String(chave || "")
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .map((p) => p.replace(/coes$/i, "ções").replace(/cao$/i, "ção").replace(/sao$/i, "são").replace(/oes$/i, "ões"))
+    .join(" ");
+  return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : "Função";
+}
+
 export function metaSlot(chave, areaNome) {
   if (chave === "_geral") {
     return { nome: areaNome || "Equipe", icone: "equipe", ordem: 0 };
   }
-  return SLOT_META[chave] || { nome: chave, icone: "musica", ordem: 50 };
+  return SLOT_META[chave] || { nome: rotuloDeChave(chave), icone: "equipe", ordem: 50 };
 }
 
 export function horaDeDatetime(value) {

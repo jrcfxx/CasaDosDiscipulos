@@ -965,6 +965,22 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     setVisao("dia");
   };
 
+  // Esc fecha o modal de cima (escalar/editar pessoa e depois o evento). Ouvimos na captura para
+  // saber, antes dos outros, se há algo empilhado por cima (confirmação, conflitos, menu aberto):
+  // nesse caso o Esc é deles.
+  const algumModalEscalaAberto = !!eventoSelecionado || showModalAtribuicao || !!atribuicaoEditando;
+  useEffect(() => {
+    if (!algumModalEscalaAberto) return;
+    const tecla = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      if (document.querySelector('[role="dialog"]:not([data-modal-escala]), [role="menu"]')) return;
+      if (atribuicaoEditando) fecharModalEditarDetalhes();
+      else if (showModalAtribuicao) fecharModalAtribuicao();
+      else fecharEvento();
+    };
+    document.addEventListener("keydown", tecla, true);
+    return () => document.removeEventListener("keydown", tecla, true);
+  });
   return (
     <div className="page-with-fixed-header escala-page">
       <Header />
@@ -1279,7 +1295,13 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
 
       {eventoSelecionado && (
         <div className="modal-overlay modal-escala-overlay">
-          <div className="modal-escala-dashboard">
+          <div
+            className="modal-escala-dashboard"
+            role="dialog"
+            aria-modal="true"
+            aria-label={eventoSelecionado.titulo}
+            data-modal-escala=""
+          >
             <div className="escala-dashboard-header">
               <div className="escala-dashboard-titulo">
                 <h2>{eventoSelecionado.titulo}</h2>
@@ -1411,7 +1433,13 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
 
       {showModalAtribuicao && areaParaAtribuir && !atribuicaoEditando && (
         <div className="modal-overlay modal-evento-overlay">
-          <div className="modal-content modal-atribuicao modal-atribuicao-completo">
+          <div
+            className="modal-content modal-atribuicao modal-atribuicao-completo"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Escalar em ${areaParaAtribuir.nome}`}
+            data-modal-escala=""
+          >
             <h2>Escalar em {areaParaAtribuir.nome}</h2>
             <div className="form-group">
               <label htmlFor="atribuicaoUsuarioSelect">Selecione a pessoa</label>
@@ -1462,7 +1490,13 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
 
       {atribuicaoEditando && areaParaAtribuir && (
         <div className="modal-overlay modal-evento-overlay">
-          <div className="modal-content modal-atribuicao modal-atribuicao-editar">
+          <div
+            className="modal-content modal-atribuicao modal-atribuicao-editar"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Editar informações de ${atribuicaoEditando.usuario_nome}`}
+            data-modal-escala=""
+          >
             <h2>Editar informações — {atribuicaoEditando.usuario_nome}</h2>
             <p className="modal-atribuicao-contexto">Em {areaParaAtribuir.nome}</p>
             <AtribuicaoDetalhesForm

@@ -13,7 +13,7 @@ const validarFimAposInicio = (value, helpers) => {
 };
 
 export const createEscalaEventoSchema = Joi.object({
-  titulo: Joi.string().min(1).max(255).required().messages({
+  titulo: Joi.string().trim().min(1).max(255).required().messages({
     "string.empty": "Título é obrigatório",
     "string.max": "Título deve ter no máximo 255 caracteres",
   }),
@@ -43,7 +43,8 @@ export const createEscalaEventoSchema = Joi.object({
 }).custom(validarFimAposInicio);
 
 export const updateEscalaEventoSchema = Joi.object({
-  titulo: Joi.string().min(1).max(255).messages({
+  titulo: Joi.string().trim().min(1).max(255).messages({
+    "string.empty": "Título é obrigatório",
     "string.max": "Título deve ter no máximo 255 caracteres",
   }),
   data_hora: Joi.date(),
@@ -52,7 +53,9 @@ export const updateEscalaEventoSchema = Joi.object({
   ativo: Joi.boolean(),
   status: Joi.string().valid("rascunho", "publicada", "concluida"),
   areas: Joi.array().items(Joi.string().min(1).max(100)).optional(),
-  id_ministerios: Joi.array().items(Joi.number().integer().positive()),
+  id_ministerios: Joi.array().items(Joi.number().integer().positive()).min(1).messages({
+    "array.min": "Selecione ao menos um ministério",
+  }),
 }).custom(validarFimAposInicio);
 
 export const createAtribuicaoSchema = Joi.object({
