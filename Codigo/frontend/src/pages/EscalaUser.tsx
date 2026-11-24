@@ -22,6 +22,7 @@ import escalaService, {
   VisualizacaoMes,
   SlotInstrumento,
   MoverMembroPayload,
+  EventoUnificado,
   UsuarioParaEscalar,
 } from "../services/escalaService";
 import ministerioService from "../services/ministerioService";
@@ -34,6 +35,9 @@ import EscalaAgenda from "../components/escala/EscalaAgenda";
 import MinhasEscalas from "../components/escala/MinhasEscalas";
 import MenuAcoes from "../components/escala/MenuAcoes";
 import FocusTrap from "../components/ui/FocusTrap";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarEscala } from "../utils/exportacoes";
+import { exportarPdf } from "../utils/exportarPdf";
 import EscalaGradeDnd from "../components/escala/EscalaGradeDnd";
 import EscalaQuadroUnificado from "../components/escala/EscalaQuadroUnificado";
 import ModalConflitos from "../components/escala/ModalConflitos";
@@ -848,6 +852,40 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
   };
 
+  /** Excel do período que está na tela (mês, semanas escolhidas, dia ou ano), com quem serve em cada área */
+  const exportarExcelEscala = async () => {
+    try {
+      showToast("Gerando a planilha…", "info");
+      let eventos: EventoUnificado[] = [];
+      let est = estatisticasAtuais;
+      if (visao === "semana") {
+        eventos = (visaoSemanas || []).flatMap((s) => s.dias.flatMap((d) => d.eventos));
+      } else if (visao === "dia") {
+        eventos = visaoDiaUnificada?.eventos || [];
+      } else if (visao === "ano") {
+        const meses = await Promise.all(
+          Array.from({ length: 12 }, (_, i) => escalaService.getVisualizacaoMes(ano, i + 1, "completo", idsFiltro))
+        );
+        eventos = meses.flatMap((m) => m.dias.flatMap((d) => d.eventos));
+        est = undefined;
+      } else {
+        // O Mês compacto não traz as pessoas de cada área: busca o mês completo
+        const m = await escalaService.getVisualizacaoMes(ano, mes, "completo", idsFiltro);
+        eventos = m.dias.flatMap((d) => d.eventos);
+        est = m.estatisticas;
+      }
+      await exportarEscala(`${modoMeus ? "Meus ministérios – " : ""}${navLabel}`, eventos, est);
+      showToast("Planilha baixada.", "success");
+    } catch {
+      showToast("Não foi possível gerar a planilha.", "error");
+    }
+  };
+
+  const exportarPdfEscala = () =>
+    exportarPdf(`Escala – ${modoMeus ? "Meus ministérios – " : ""}${navLabel}`, {
+      paisagem: visao !== "agenda" && visao !== "dia",
+    });
+
   const abrirBuscaPessoa = async () => {
     try {
       const list = await usuarioService.getAll();
@@ -962,11 +1000,17 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
         </header>
 
         {aba === "minhas" && (
+          <>
+          <BotoesExportar
+            className="minhas-exportar"
+            onPdf={() => exportarPdf(`Minhas escalas – ${user?.nome ?? ""}`)}
+          />
           <MinhasEscalas
             idUsuario={user?.id_usuario}
             onAbrirEvento={abrirEvento}
             onVerCalendario={() => navigate("/usuario/escala?ver=calendario")}
           />
+          </>
         )}
 
         {mostrarCalendario && (
@@ -1002,6 +1046,8 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                     { rotulo: "Buscar pessoa", onSelecionar: abrirBuscaPessoa },
                     { rotulo: "Visão do ano", onSelecionar: () => setVisao("ano") },
                     { rotulo: "Mapa da escala", onSelecionar: () => navigate("/usuario/escala/mapa") },
+                    { rotulo: "Exportar Excel", onSelecionar: exportarExcelEscala, separar: true },
+                    { rotulo: "Exportar PDF", onSelecionar: exportarPdfEscala },
                     ...(isAdmin
                       ? [{ rotulo: "Templates de evento", onSelecionar: () => abrirTemplates(false), separar: true }]
                       : []),

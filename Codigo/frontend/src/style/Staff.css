@@ -215,3 +215,14 @@
     justify-content: flex-start;
   }
 }
+
+.staff-pagina__exportar {
+  justify-content: center;
+  margin: 0 0 1rem;
+}
+
+@media print {
+  .staff-pagina__aviso {
+    display: none !important;
+  }
+}

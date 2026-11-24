@@ -2,7 +2,7 @@ import { Router } from "express";
 import ModuloController from "../controllers/ModuloController.js";
 import validate from "../middlewares/validate.js";
 import verificarToken from "../middlewares/authMiddleware.js";
-import { adminOnly } from "../middlewares/checkRole.js";
+import { adminOnly, adminAndLeader } from "../middlewares/checkRole.js";
 import {
   createModuloSchema,
   updateModuloSchema,
@@ -18,6 +18,8 @@ router.get("/", ModuloController.index);
 router.get("/active", ModuloController.active);
 router.get("/ativos-com-progresso", ModuloController.activeWithProgress);
 router.get("/ranking/minha-posicao", ModuloController.minhaPosicao);
+// Ranking inteiro (todos os membros ativos) para exportar em Excel: administração e líderes
+router.get("/ranking/completo", adminAndLeader, ModuloController.rankingCompleto);
 router.post("/:id/iniciar", ModuloController.iniciar);
 router.post("/:id/concluir", ModuloController.concluir);
 router.get("/:id/progresso", ModuloController.getProgresso);

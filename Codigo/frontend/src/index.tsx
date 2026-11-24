@@ -7,6 +7,7 @@ import "./style/accessibility.css";
 import "./style/feedback.css";
 import "./style/refino.css";
 import "./style/mobile.css";
+import "./style/impressao.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./contexts/AuthContext";

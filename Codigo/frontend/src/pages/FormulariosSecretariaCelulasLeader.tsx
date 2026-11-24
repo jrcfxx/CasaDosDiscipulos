@@ -15,12 +15,17 @@ import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import { ASSETS_BASE } from "../config/api";
 import { valorUpload, type ValorCampo } from "../types/campoConteudo";
+import RelatorioFormulario from "../components/formularios/RelatorioFormulario";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarRespostasFormulario } from "../utils/exportacoes";
 
 type Formulario = {
   id_formulario: number;
   titulo: string;
   descricao?: string | null;
   ativo: boolean;
+  /** semanal, quinzenal, mensal, bimestral (ou vazio) */
+  frequencia?: string | null;
   campos?: FormularioCampo[];
 };
 
@@ -43,6 +48,7 @@ export default function FormulariosSecretariaCelulasLeader() {
   const [celulas, setCelulas] = useState<Celula[]>([]);
   const [selectedFormulario, setSelectedFormulario] = useState<Formulario | null>(null);
   const [selectedCelula, setSelectedCelula] = useState<number | null>(null);
+  const [aba, setAba] = useState<"preencher" | "relatorio">("preencher");
   const [fields, setFields] = useState<LocalField[]>([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -229,128 +235,172 @@ export default function FormulariosSecretariaCelulasLeader() {
                   </span>
                 </div>
 
-                {selectedFormulario.descricao && (
-                  <div className="formulario-description">
-                    <p>{selectedFormulario.descricao}</p>
-                  </div>
-                )}
+                <div className="lider-abas" role="tablist" aria-label="Formulário">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={aba === "preencher"}
+                    className={aba === "preencher" ? "ativo" : ""}
+                    onClick={() => setAba("preencher")}
+                  >
+                    Preencher
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={aba === "relatorio"}
+                    className={aba === "relatorio" ? "ativo" : ""}
+                    onClick={() => setAba("relatorio")}
+                  >
+                    Relatório das minhas células
+                  </button>
+                </div>
 
-                {selectedFormulario.campos?.length ? (
-                  <form className="formulario-fields" onSubmit={handleSubmit}>
-                    <div className="celula-selector">
-                      <label htmlFor="celula">Célula *</label>
-                      <select
-                        id="celula"
-                        value={selectedCelula ?? ""}
-                        onChange={(e) => setSelectedCelula(Number(e.target.value))}
-                        required
-                      >
-                        <option value="">Selecione a célula</option>
-                        {celulas.map((c) => (
-                          <option key={c.id_celula} value={c.id_celula}>
-                            {c.nome}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <h3>Preencha os campos</h3>
-                    <div className="campos-grid">
-                      {fields.map((campo) => {
-                        const safeLabel = String(campo.label ?? "Campo");
-                        return (
-                          <div key={campo.uid} className="campo-card">
-                            <div className="campo-label">
-                              {campo.label}
-                              {campo.obrigatorio && " *"}
-                            </div>
-                            <div className="campo-conteudo">
-                              {campo.tipo === "texto" && (
-                                <TextField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  placeholder={safeLabel}
-                                  value={campo.conteudo}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                />
-                              )}
-                              {campo.tipo === "textarea" && (
-                                <TextareaField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  placeholder={safeLabel}
-                                  value={campo.conteudo}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                  rows={5}
-                                />
-                              )}
-                              {campo.tipo === "numero" && (
-                                <NumberField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  placeholder={safeLabel}
-                                  value={campo.conteudo}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                />
-                              )}
-                              {campo.tipo === "data" && (
-                                <DateField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  placeholder={safeLabel}
-                                  value={campo.conteudo}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                />
-                              )}
-                              {campo.tipo === "link" && (
-                                <LinkField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  placeholder={safeLabel}
-                                  value={campo.conteudo}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                />
-                              )}
-                              {campo.tipo === "upload" && (
-                                <UploadField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  value={valorUpload(campo.conteudo)}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                />
-                              )}
-                              {campo.tipo === "video" && (
-                                <VideoField
-                                  id={`campo_${campo.uid}`}
-                                  name={`campo_${campo.uid}`}
-                                  label=""
-                                  value={campo.conteudo}
-                                  onChange={(v) => handleChangeField(campo.uid, v)}
-                                />
-                              )}
-                              {formatarConteudoCampo(campo) || null}
-                            </div>
-                          </div>
+                {aba === "relatorio" ? (
+                  <>
+                    <BotoesExportar
+                      tema="claro"
+                      className="lider-exportar-respostas"
+                      rotuloExcel="Exportar respostas (Excel)"
+                      onExcel={async () => {
+                        const dados = await formularioRespostaService.exportacao(selectedFormulario.id_formulario);
+                        await exportarRespostasFormulario(selectedFormulario.titulo, dados, null, (p) =>
+                          p.startsWith("/") ? `${ASSETS_BASE}${p}` : p
                         );
-                      })}
-                    </div>
-                    <div className="formulario-actions">
-                      <button type="submit" className="save-btn" disabled={sending} aria-busy={sending}>
-                        {sending ? <><span className="btn-spinner" aria-hidden />Enviando…</> : "Enviar"}
-                      </button>
-                      {success && <span className="success-message">Formulário enviado!</span>}
-                    </div>
-                  </form>
+                      }}
+                    />
+                    <RelatorioFormulario
+                      idFormulario={selectedFormulario.id_formulario}
+                      frequencia={selectedFormulario.frequencia}
+                      titulo={selectedFormulario.titulo}
+                    />
+                  </>
                 ) : (
-                  <div className="formulario-empty">
-                    <p>Este formulário não possui campos cadastrados.</p>
-                  </div>
+                  <>
+                    {selectedFormulario.descricao && (
+                      <div className="formulario-description">
+                        <p>{selectedFormulario.descricao}</p>
+                      </div>
+                    )}
+
+                    {selectedFormulario.campos?.length ? (
+                      <form className="formulario-fields" onSubmit={handleSubmit}>
+                        <div className="celula-selector">
+                          <label htmlFor="celula">Célula *</label>
+                          <select
+                            id="celula"
+                            value={selectedCelula ?? ""}
+                            onChange={(e) => setSelectedCelula(Number(e.target.value))}
+                            required
+                          >
+                            <option value="">Selecione a célula</option>
+                            {celulas.map((c) => (
+                              <option key={c.id_celula} value={c.id_celula}>
+                                {c.nome}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <h3>Preencha os campos</h3>
+                        <div className="campos-grid">
+                          {fields.map((campo) => {
+                            const safeLabel = String(campo.label ?? "Campo");
+                            return (
+                              <div key={campo.uid} className="campo-card">
+                                <div className="campo-label">
+                                  {campo.label}
+                                  {campo.obrigatorio && " *"}
+                                </div>
+                                <div className="campo-conteudo">
+                                  {campo.tipo === "texto" && (
+                                    <TextField
+                                      id={`campo_${campo.uid}`}
+                                      name={`campo_${campo.uid}`}
+                                      label=""
+                                      placeholder={safeLabel}
+                                      value={campo.conteudo}
+                                      onChange={(v) => handleChangeField(campo.uid, v)}
+                                    />
+                                  )}
+                                  {campo.tipo === "textarea" && (
+                                    <TextareaField
+                                      id={`campo_${campo.uid}`}
+                                      name={`campo_${campo.uid}`}
+                                      label=""
+                                      placeholder={safeLabel}
+                                      value={campo.conteudo}
+                                      onChange={(v) => handleChangeField(campo.uid, v)}
+                                      rows={5}
+                                    />
+                                  )}
+                                  {campo.tipo === "numero" && (
+                                    <NumberField
+                                      id={`campo_${campo.uid}`}
+                                      name={`campo_${campo.uid}`}
+                                      label=""
+                                      placeholder={safeLabel}
+                                      value={campo.conteudo}
+                                      onChange={(v) => handleChangeField(campo.uid, v)}
+                                    />
+                                  )}
+                                  {campo.tipo === "data" && (
+                                    <DateField
+                                      id={`campo_${campo.uid}`}
+                                      name={`campo_${campo.uid}`}
+                                      label=""
+                                      placeholder={safeLabel}
+                                      value={campo.conteudo}
+                                      onChange={(v) => handleChangeField(campo.uid, v)}
+                                    />
+                                  )}
+                                  {campo.tipo === "link" && (
+                                    <LinkField
+                                      id={`campo_${campo.uid}`}
+                                      name={`campo_${campo.uid}`}
+                                      label=""
+                                      placeholder={safeLabel}
+                                      value={campo.conteudo}
+                                      onChange={(v) => handleChangeField(campo.uid, v)}
+                                    />
+                                  )}
+                                  {campo.tipo === "upload" && (
+                                    <UploadField
+                                      id={`campo_${campo.uid}`}
+                                      name={`campo_${campo.uid}`}
+                                      label=""
+                                      value={valorUpload(campo.conteudo)}
+                                      onChange={(v) => handleChangeField(campo.uid, v)}
+                                    />
+                                  )}
+                                  {campo.tipo === "video" && (
+                                    <VideoField
+                                      id={`campo_${campo.uid}`}
+                                      name={`campo_${campo.uid}`}
+                                      label=""
+                                      value={campo.conteudo}
+                                      onChange={(v) => handleChangeField(campo.uid, v)}
+                                    />
+                                  )}
+                                  {formatarConteudoCampo(campo) || null}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="formulario-actions">
+                          <button type="submit" className="save-btn" disabled={sending} aria-busy={sending}>
+                            {sending ? <><span className="btn-spinner" aria-hidden />Enviando…</> : "Enviar"}
+                          </button>
+                          {success && <span className="success-message">Formulário enviado!</span>}
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="formulario-empty">
+                        <p>Este formulário não possui campos cadastrados.</p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ) : (

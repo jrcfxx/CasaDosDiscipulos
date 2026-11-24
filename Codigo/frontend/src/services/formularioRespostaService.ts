@@ -67,6 +67,12 @@ const formularioRespostaService = {
     return response.data;
   },
 
+  /** Todas as respostas com todos os campos (para exportar em Excel) */
+  async exportacao(idFormulario: number): Promise<import("../utils/exportacoes").ExportacaoRespostas> {
+    const response = await apiClient.get(`/formulario-resposta/formulario/${idFormulario}/exportar`);
+    return response.data;
+  },
+
   /** Relatório no período: por célula e por janela da frequência (semana, mês...) */
   async relatorio(idFormulario: number, inicio: string, fim: string): Promise<RelatorioFormulario> {
     const response = await apiClient.get(`/formulario-resposta/formulario/${idFormulario}/relatorio`, {

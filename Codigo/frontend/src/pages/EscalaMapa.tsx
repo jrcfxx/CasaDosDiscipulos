@@ -4,6 +4,8 @@ import "../style/EscalaMapa.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Toast from "../components/ui/Toast";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarPdf } from "../utils/exportarPdf";
 import escalaService, {
   EscalaEvento,
   EscalaEventoCompleto,
@@ -116,9 +118,20 @@ const EscalaMapa: React.FC = () => {
               Visualize a escala completa de cada evento — igreja em ação
             </p>
           </div>
-          <Link to="/usuario/escala" className="escala-mapa-voltar">
-            ← Calendário
-          </Link>
+          <div className="escala-mapa-acoes">
+            {eventoSelecionado && (
+              <BotoesExportar
+                onPdf={() =>
+                  exportarPdf(
+                    `Mapa da escala – ${eventoSelecionado.titulo} – ${new Date(eventoSelecionado.data_hora).toLocaleDateString("pt-BR")}`
+                  )
+                }
+              />
+            )}
+            <Link to="/usuario/escala" className="escala-mapa-voltar">
+              ← Calendário
+            </Link>
+          </div>
         </div>
 
         <div className="escala-mapa-seletor">

@@ -6,6 +6,8 @@ import StaffOrganograma from "../components/staff/StaffOrganograma";
 import { getEstrutura, type StaffEstrutura } from "../services/staffService";
 import { useAuth } from "../hooks/useAuth";
 import { getErrorMessage } from "../utils/errorUtils";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarPdf } from "../utils/exportarPdf";
 import "../style/Portal.css";
 import "../style/Staff.css";
 
@@ -30,6 +32,13 @@ const StaffUser: React.FC = () => {
           <h1 className="portal-hero__title">{estrutura?.titulo || "Staff e Estrutura"}</h1>
           {estrutura?.subtitulo && <p className="portal-hero__subtitle">{estrutura.subtitulo}</p>}
         </header>
+
+        {estrutura && (
+          <BotoesExportar
+            className="staff-pagina__exportar"
+            onPdf={() => exportarPdf(estrutura.titulo || "Staff e Estrutura", { paisagem: true })}
+          />
+        )}
 
         {isAdmin && (
           <p className="staff-pagina__aviso">

@@ -3,10 +3,15 @@ import formularioRespostaService, { type RelatorioFormulario as Relatorio } from
 import { FREQUENCIA_OPCOES } from "../../services/formularioService";
 import { atalhosDoPeriodo, formatarDiaMes, haQuantoTempo, rotuloCurto } from "./periodoRelatorio";
 import "../../style/RelatorioFormulario.css";
+import BotoesExportar from "../ui/BotoesExportar";
+import { exportarRelatorioFormulario } from "../../utils/exportacoes";
+import { exportarPdf } from "../../utils/exportarPdf";
 
 interface Props {
   idFormulario: number;
   frequencia: string | null | undefined;
+  /** Título do formulário (nome dos arquivos exportados) */
+  titulo?: string;
 }
 
 const fmtNumero = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
@@ -15,7 +20,7 @@ const fmtNumero = (n: number) => n.toLocaleString("pt-BR", { maximumFractionDigi
  * Aba "Relatório" dos formulários: quem enviou em cada semana/mês do período, quem está em dia,
  * pontualidade e totais dos campos numéricos (presentes, visitantes...).
  */
-const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia }) => {
+const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia, titulo = "Formulário" }) => {
   const freq = frequencia || "";
   const atalhos = useMemo(() => atalhosDoPeriodo(freq), [freq]);
   const [atalho, setAtalho] = useState(atalhos[0].id);
@@ -62,6 +67,8 @@ const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia }) => {
   const naUnidade = `${feminino ? "na" : "no"} ${unidade}`;
   const aPrimeira = `${feminino ? "A primeira" : "O primeiro"} ${unidade}`;
   const r = dados?.resumo;
+  const periodoTexto =
+    atalhos.find((a) => a.id === atalho)?.rotulo ?? `${formatarDiaMes(inicio)} a ${formatarDiaMes(fim)}`;
 
   return (
     <section className="rel" aria-label="Relatório do formulário">
@@ -79,6 +86,11 @@ const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia }) => {
             </button>
           ))}
         </div>
+        <BotoesExportar
+          tema="claro"
+          onExcel={dados ? () => exportarRelatorioFormulario(titulo, periodoTexto, dados) : undefined}
+          onPdf={dados ? () => exportarPdf(`Relatório – ${titulo} – ${periodoTexto}`, { paisagem: true }) : undefined}
+        />
         <div className="rel-datas">
           <label>
             De
@@ -106,6 +118,10 @@ const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia }) => {
           </label>
         </div>
       </div>
+
+      <h2 className="rel-titulo-impressao">
+        {titulo} — {periodoTexto}
+      </h2>
 
       {!freq && (
         <p className="rel-aviso">

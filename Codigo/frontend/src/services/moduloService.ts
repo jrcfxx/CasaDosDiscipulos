@@ -152,6 +152,12 @@ const moduloService = {
   /**
    * Ranking de usuários por pontuação
    */
+  /** Ranking com todos os membros ativos (administração e líderes; usado para exportar) */
+  async getRankingCompleto(): Promise<Array<{ id_usuario: number; nome: string; pontuacao: number; nivel_escola?: number | null; nivel_escola_nome?: string | null }>> {
+    const response = await apiClient.get(`/modulo/ranking/completo`);
+    return response.data;
+  },
+
   async getRanking(limit = 10): Promise<Array<{ id_usuario: number; nome: string; pontuacao: number; foto?: string }>> {
     const response = await apiClient.get(`/modulo/ranking?limit=${limit}`);
     return response.data;

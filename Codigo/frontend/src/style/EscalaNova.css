@@ -1092,3 +1092,22 @@ body:not(#_) .escala-page .escala-dashboard-titulo-secao {
     flex: 1;
   }
 }
+
+/* Botão de PDF acima de "Minhas escalas" */
+.escala-page .minhas-exportar {
+  justify-content: flex-end;
+  max-width: 760px;
+  margin-bottom: 0.75rem;
+}
+
+/* No PDF: o título do período continua, sem setas nem botões */
+@media print {
+  .escala-page .esc-ferramentas {
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .escala-page .esc-periodo {
+    justify-content: flex-start;
+  }
+}

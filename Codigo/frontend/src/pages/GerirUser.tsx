@@ -38,6 +38,8 @@ import ministerioService from "../services/ministerioService";
 import { useAcao } from "../hooks/useAcao";
 import SortableNivelRow from "../components/gerirUser/SortableNivelRow";
 import ModalUsuario from "../components/gerirUser/ModalUsuario";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarUsuarios } from "../utils/exportacoes";
 import ModalNivel from "../components/gerirUser/ModalNivel";
 import ModalMinisterio from "../components/gerirUser/ModalMinisterio";
 import type { Nivel, Usuario, UsuarioModal, NivelModal, MinisterioModal } from "../components/gerirUser/tipos";
@@ -710,6 +712,10 @@ export default function GerenciarUsuarios() {
               >
                 +
               </button>
+              <BotoesExportar
+                rotuloExcel="Excel"
+                onExcel={() => exportarUsuarios(usuariosFiltrados, ministerios)}
+              />
             </div>
 
             {loading ? (

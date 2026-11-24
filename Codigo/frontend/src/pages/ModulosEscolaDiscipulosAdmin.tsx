@@ -5,6 +5,8 @@ import "../style/ModulosEscolaDiscipulosAdmin.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarRanking } from "../utils/exportacoes";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import DarPontosModal from "../components/ui/DarPontosModal";
 import Toast from "../components/ui/Toast";
@@ -318,13 +320,20 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
               subtitle="Top 20 Discípulos"
               theme="light"
               headerAction={
-                <button
-                  type="button"
-                  className="ranking-btn-dar-pontos"
-                  onClick={() => setModalDarPontosAberto(true)}
-                >
-                  + Dar pontos
-                </button>
+                <div className="ranking-acoes">
+                  <BotoesExportar
+                    tema="claro"
+                    rotuloExcel="Excel"
+                    onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
+                  />
+                  <button
+                    type="button"
+                    className="ranking-btn-dar-pontos"
+                    onClick={() => setModalDarPontosAberto(true)}
+                  >
+                    + Dar pontos
+                  </button>
+                </div>
               }
             />
           </aside>

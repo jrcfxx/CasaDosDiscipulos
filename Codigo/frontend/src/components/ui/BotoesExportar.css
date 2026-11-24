@@ -1,0 +1,58 @@
+.exportar-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.exportar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0.4rem 0.85rem;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.exportar-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Fundo escuro (escala, gerenciamento, staff) */
+.exportar-barra--escuro .exportar-btn {
+  border: 1px solid rgba(235, 235, 235, 0.22);
+  background: transparent;
+  color: #ebebeb;
+}
+
+.exportar-barra--escuro .exportar-btn:hover:not(:disabled) {
+  border-color: #5fb2bf;
+  background: rgba(2, 134, 155, 0.14);
+}
+
+/* Painel claro (formulários) */
+.exportar-barra--claro .exportar-btn {
+  border: 1px solid #d5dbdc;
+  background: #fff;
+  color: #1f2425;
+}
+
+.exportar-barra--claro .exportar-btn:hover:not(:disabled) {
+  border-color: #02869b;
+  background: #eef7f8;
+}
+
+.exportar-erro {
+  font-size: 0.8rem;
+  color: #e07a70;
+}
+
+.exportar-barra--claro .exportar-erro {
+  color: #c0392b;
+}

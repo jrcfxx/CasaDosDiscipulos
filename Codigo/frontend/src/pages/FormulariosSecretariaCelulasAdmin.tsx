@@ -31,6 +31,8 @@ import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 import { filtrarRespostas, respondentesUnicos } from "../components/formularios/statusCelulas";
 import RelatorioFormulario from "../components/formularios/RelatorioFormulario";
 import { formatarDiaMes, rotuloCurto, singularSeUm } from "../components/formularios/periodoRelatorio";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarRespostasFormulario } from "../utils/exportacoes";
 import type { ResumoCampoResposta } from "../services/formularioRespostaService";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
@@ -842,11 +844,27 @@ export default function FormulariosSecretariaCelulasAdmin() {
                             Limpar filtros
                           </button>
                         </div>
-                        <p className="respostas-count">
-                          {filteredRespostas.length} resposta{filteredRespostas.length !== 1 ? "s" : ""}
-                          {(filtroCelula !== "" || filtroRespondente || filtroDataInicio || filtroDataFim) &&
-                            ` de ${respostas.length}`}
-                        </p>
+                        <div className="respostas-topo">
+                          <p className="respostas-count">
+                            {filteredRespostas.length} resposta{filteredRespostas.length !== 1 ? "s" : ""}
+                            {(filtroCelula !== "" || filtroRespondente || filtroDataInicio || filtroDataFim) &&
+                              ` de ${respostas.length}`}
+                          </p>
+                          <BotoesExportar
+                            tema="claro"
+                            onExcel={async () => {
+                              const dados = await formularioRespostaService.exportacao(selectedFormulario.id);
+                              const filtrando =
+                                filtroCelula !== "" || !!filtroRespondente || !!filtroDataInicio || !!filtroDataFim;
+                              await exportarRespostasFormulario(
+                                selectedFormulario.titulo,
+                                dados,
+                                filtrando ? new Set(filteredRespostas.map((r) => r.id_resposta)) : null,
+                                buildUploadUrl
+                              );
+                            }}
+                          />
+                        </div>
                         <div className="respostas-list">
                         {filteredRespostas.map((r) => (
                           <div
@@ -939,6 +957,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                   <RelatorioFormulario
                     idFormulario={selectedFormulario.id}
                     frequencia={selectedFormulario.frequencia}
+                    titulo={selectedFormulario.titulo}
                   />
                 )}
               </div>

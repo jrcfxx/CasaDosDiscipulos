@@ -460,3 +460,17 @@
     grid-template-columns: 1fr;
   }
 }
+
+.escala-mapa-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@media print {
+  .escala-mapa-voltar,
+  .escala-mapa-seletor {
+    display: none !important;
+  }
+}

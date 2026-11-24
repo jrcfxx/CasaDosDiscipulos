@@ -233,6 +233,14 @@ const ModuloController = {
    * Ranking de usuários por pontuação
    * GET /api/modulo/ranking?limit=10
    */
+  async rankingCompleto(req, res, next) {
+    try {
+      res.status(HTTP_STATUS.OK).json(await ModuloService.getRanking(5000));
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async ranking(req, res, next) {
     try {
       const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);

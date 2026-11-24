@@ -15,6 +15,20 @@
   color: var(--rel-texto);
 }
 
+/* Título que só aparece no PDF */
+.rel-titulo-impressao {
+  display: none;
+}
+
+@media print {
+  .rel-titulo-impressao {
+    display: block;
+    margin: 0 0 0.75rem;
+    font-size: 1.3rem;
+    color: var(--rel-texto);
+  }
+}
+
 /* ---------- Período ---------- */
 .rel-periodo {
   display: flex;

@@ -10,6 +10,8 @@ import celulaService, { Celula, CelulaCreateUpdate } from "../services/celulaSer
 import { showAllUsers } from "../services/usuario";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarCelulas } from "../utils/exportacoes";
 
 interface CelulaModal extends CelulaCreateUpdate {
   id_celula?: number;
@@ -260,6 +262,7 @@ export default function GerirCelulas() {
           <button className="btn-add" onClick={abrirModalCadastro} title="Criar nova célula">
             +
           </button>
+          <BotoesExportar rotuloExcel="Excel" onExcel={() => exportarCelulas(celulasFiltradas)} />
         </div>
 
         {loading ? (

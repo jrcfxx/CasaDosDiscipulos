@@ -5,6 +5,9 @@ import "../style/ModulosEscolaDiscipulosAdmin.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import RankingCard, { type RankItem, type MinhaPosicao } from "../components/modulos/RankingCard";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarRanking } from "../utils/exportacoes";
+import { useAuth } from "../hooks/useAuth";
 import { formatarConteudoCampo } from "../utils/moduloConteudoUtils";
 import moduloService from "../services/moduloService";
 
@@ -26,6 +29,7 @@ type ModuloComProgresso = {
 };
 
 const ModulosEscolaDiscipulosUser: React.FC = () => {
+  const { isLider, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [modulos, setModulos] = useState<ModuloComProgresso[]>([]);
   const [selectedModulo, setSelectedModulo] = useState<ModuloComProgresso | null>(null);
@@ -285,6 +289,15 @@ const ModulosEscolaDiscipulosUser: React.FC = () => {
               subtitle="Top 20 Discípulos"
               theme="light"
               minhaPosicao={minhaPosicao}
+              headerAction={
+                isLider || isAdmin ? (
+                  <BotoesExportar
+                    tema="claro"
+                    rotuloExcel="Excel"
+                    onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
+                  />
+                ) : undefined
+              }
             />
           </aside>
         </section>

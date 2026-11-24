@@ -86,6 +86,35 @@ const FormularioRespostaService = {
     });
   },
 
+  /**
+   * Todas as respostas do formulário com todos os campos preenchidos (para exportar em Excel).
+   * Líder recebe só as das células dele.
+   */
+  async getExportacao(idFormulario, usuario = null) {
+    const respostas = this._filtrar(
+      await FormularioRespostaModel.getByFormulario(idFormulario),
+      await this._celulasPermitidas(usuario)
+    );
+    const campos = await this._camposDoFormulario(idFormulario);
+    const valores = await this._valoresPorResposta(respostas.map((r) => r.id_resposta), campos);
+    const campoData = campos.find((c) => c.tipo === "data");
+    return {
+      campos,
+      respostas: respostas.map((r) => {
+        const v = valores.get(r.id_resposta) || {};
+        return {
+          id_resposta: r.id_resposta,
+          id_celula: r.id_celula,
+          nome_celula: r.nome_celula || null,
+          nome_lider: r.nome_lider || null,
+          data_resposta: r.data_resposta,
+          data_referencia: dataDeReferencia({ ...r, valores: v }, campoData?.id),
+          valores: v,
+        };
+      }),
+    };
+  },
+
   /** Campos do formulário com o tipo (data, numero, texto...) */
   async _camposDoFormulario(idFormulario) {
     const rows = await knex("formulario_campo as fc")

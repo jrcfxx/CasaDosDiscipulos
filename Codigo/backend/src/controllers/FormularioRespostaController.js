@@ -51,6 +51,16 @@ const FormularioRespostaController = {
    * Lista respostas de uma célula específica
    * GET /api/formulario-resposta/celula/:idCelula
    */
+  async exportacao(req, res, next) {
+    try {
+      res
+        .status(HTTP_STATUS.OK)
+        .json(await FormularioRespostaService.getExportacao(req.params.idFormulario, req.usuario));
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async relatorio(req, res, next) {
     try {
       res.status(HTTP_STATUS.OK).json(

@@ -1037,3 +1037,12 @@ main.container {
     gap: 1rem;
   }
 }
+
+/* Excel + "Dar pontos" lado a lado no cabeçalho do ranking */
+.ranking-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}

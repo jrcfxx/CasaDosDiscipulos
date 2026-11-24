@@ -1,0 +1,100 @@
+/**
+ * Impressão / "Salvar como PDF" (utils/exportarPdf.ts).
+ * Some com menus, rodapé, botões e elementos flutuantes; mantém as cores da tela (a escala é
+ * escura) e evita cortar cartões e linhas de tabela no meio da página.
+ * Para esconder qualquer outro elemento só no PDF: className="no-print".
+ */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: var(--color-bg, #020202) !important;
+  }
+
+  /* Cabeçalho, rodapé, mascote, acessibilidade, avisos e "pular para o conteúdo" */
+  .top-bar-wrapper,
+  .cd-header,
+  .header-home,
+  .cd-footer,
+  .mini-jesus-layer,
+  .a11y-bar,
+  .skip-link,
+  .toast-toast,
+  .toast,
+  .no-print,
+  /* Controles da escala e dos relatórios: no PDF só fica o conteúdo */
+  .esc-abas,
+  .esc-acoes,
+  .esc-icone,
+  .esc-hoje,
+  .esc-segmentado,
+  .esc-intervalo,
+  .filtro-ministerios,
+  .quadro-toolbar-actions,
+  .quadro-add,
+  .chip-acao,
+  .rel-atalhos,
+  .rel-datas,
+  .formularios-left,
+  .formulario-tabs,
+  .exportar-barra {
+    display: none !important;
+  }
+
+  /* Conteúdo ocupa a página inteira (sem o espaço do cabeçalho fixo) */
+  .page-with-fixed-header,
+  main {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  .formularios-layout {
+    display: block !important;
+  }
+
+  .panel,
+  .formularios-center {
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* Tabelas que rolam de lado na tela: no papel mostram tudo */
+  .rel-tabela-wrap,
+  .esc-tabela-wrap {
+    overflow: visible !important;
+  }
+
+  /* Não partir cartões, eventos e linhas no meio */
+  tr,
+  .agenda-dia,
+  .agenda-evento,
+  .minha-card,
+  .semana-evento,
+  .semana-bloco,
+  .mes-dia,
+  .rel-kpi,
+  .staff-card,
+  .organograma-no {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+
+  /* A coluna fixa da tabela (sticky) não faz sentido no papel */
+  .rel-col-celula {
+    position: static !important;
+  }
+}

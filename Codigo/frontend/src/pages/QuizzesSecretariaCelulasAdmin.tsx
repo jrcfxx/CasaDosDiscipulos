@@ -28,6 +28,8 @@ import { ASSETS_BASE } from "../config/api";
 import type { Usuario } from "../services/usuarioService";
 import { generateUid } from "../utils/generateUid";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
+import BotoesExportar from "../components/ui/BotoesExportar";
+import { exportarRanking } from "../utils/exportacoes";
 import DarPontosModal from "../components/ui/DarPontosModal";
 import { isRecord, type Alternativa, type CampoDinamico, type CampoVinculado, type ValorCampo } from "../types/campoConteudo";
 import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
@@ -711,13 +713,20 @@ export default function QuizzesSecretariaCelulasAdmin() {
               subtitle="Top 20 Discípulos"
               theme="light"
               headerAction={
-                <button
-                  type="button"
-                  className="ranking-btn-dar-pontos"
-                  onClick={() => setModalDarPontosAberto(true)}
-                >
-                  + Dar pontos
-                </button>
+                <div className="ranking-acoes">
+                  <BotoesExportar
+                    tema="claro"
+                    rotuloExcel="Excel"
+                    onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
+                  />
+                  <button
+                    type="button"
+                    className="ranking-btn-dar-pontos"
+                    onClick={() => setModalDarPontosAberto(true)}
+                  >
+                    + Dar pontos
+                  </button>
+                </div>
               }
             />
           </aside>
