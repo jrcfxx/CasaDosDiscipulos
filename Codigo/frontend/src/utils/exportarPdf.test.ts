@@ -25,25 +25,43 @@ describe("quebra de página", () => {
   });
 });
 
+describe("grupos inteiros (semana, dia...)", () => {
+  it("a semana que não cabe no fim da página vai inteira para a próxima (antes era partida ao meio)", () => {
+    // página de 1000px; semanas: 0-300, 320-620, 640-1250 (esta não cabe no resto da página 1)
+    const cartoes: [number, number][] = [[0, 300], [320, 620], [640, 900], [910, 1250]];
+    const semanas: [number, number][] = [[0, 300], [320, 620], [640, 1250]];
+    const f = paginar(1250, 1000, cortesValidos(cartoes, 1250), cortesValidos([...cartoes, ...semanas], 1250));
+    expect(f[0][1]).toBe(640); // página 1 termina antes da 3ª semana
+    expect(f[1]).toEqual([640, 1250]); // 3ª semana inteira na página 2
+  });
+  it("grupo maior que uma página: aí sim divide, mas entre cartões", () => {
+    const cartoes: [number, number][] = [[0, 600], [600, 1200], [1200, 1800]];
+    const semanas: [number, number][] = [[0, 1800]];
+    const f = paginar(1800, 1000, cortesValidos(cartoes, 1800), cortesValidos(cartoes, 1800));
+    expect(f[0]).toEqual([0, 600]);
+    void semanas;
+  });
+});
+
 describe("escolha de orientação e tamanho", () => {
   it("organograma alto e estreito: retrato numa página só (antes saía em 2 páginas em paisagem)", () => {
-    const l = escolherLayout(1100, 1468, [400, 900, 1468], true);
+    const l = escolherLayout(1100, 1468, [[0, 400], [400, 900], [900, 1468]], true);
     expect(l.fatias).toHaveLength(1);
     expect(l.paisagem).toBe(false);
   });
   it("conteúdo largo e baixo: paisagem", () => {
-    const l = escolherLayout(1800, 700, [700], false);
+    const l = escolherLayout(1800, 700, [[0, 700]], false);
     expect(l.paisagem).toBe(true);
     expect(l.fatias).toHaveLength(1);
   });
   it("nunca passa da largura da página (nada cortado nas laterais)", () => {
-    const l = escolherLayout(2400, 900, [900]);
+    const l = escolherLayout(2400, 900, [[0, 900]]);
     const larguraUtil = (l.paisagem ? 841.89 : 595.28) - 48;
     expect(2400 * l.escala).toBeLessThanOrEqual(larguraUtil + 0.01);
   });
   it("conteúdo longo: várias páginas com texto legível, sem encolher demais", () => {
-    const cortes = Array.from({ length: 60 }, (_, i) => (i + 1) * 100);
-    const l = escolherLayout(1000, 6000, cortes);
+    const blocos = Array.from({ length: 60 }, (_, i) => [i * 100, (i + 1) * 100] as [number, number]);
+    const l = escolherLayout(1000, 6000, blocos);
     expect(l.fatias.length).toBeGreaterThan(1);
     expect(l.escala).toBeGreaterThanOrEqual(0.45);
   });
