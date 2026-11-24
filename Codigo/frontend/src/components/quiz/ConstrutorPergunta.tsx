@@ -108,12 +108,38 @@ function Alternativas({ tipo, valor, onChange, id }: Props) {
   );
 }
 
+/**
+ * Qual opção é a certa. Vale a posição guardada ("correta_indice"); sem ela (listas antigas),
+ * a primeira opção com o texto da certa. Pela posição, dá para marcar antes de escrever e
+ * opções com o mesmo texto não trocam a marcação.
+ */
+export function indiceDaCerta(valor: ValorCampo, opcoes: string[]): number {
+  let idx: unknown;
+  if (typeof valor === "string" && valor.trim().startsWith("{")) {
+    try {
+      idx = (JSON.parse(valor) as { correta_indice?: unknown }).correta_indice;
+    } catch {
+      idx = undefined;
+    }
+  }
+  if (Number.isInteger(idx) && (idx as number) >= 0 && (idx as number) < opcoes.length) return idx as number;
+  const correta = parseSelect(valor).correta;
+  return correta ? opcoes.findIndex((o) => o === correta) : -1;
+}
+
 function Lista({ valor, onChange }: Props) {
   const dados = parseSelect(valor);
   const opcoes = comMinimo(dados.opcoes, () => "");
-  const certaIdx = dados.correta ? opcoes.findIndex((o) => o === dados.correta) : -1;
+  const certaIdx = indiceDaCerta(valor, opcoes);
+  // "correta" (texto) é o que o servidor usa; "correta_indice" guarda a posição para a tela
   const salvar = (lista: string[], idxCerta: number) =>
-    onChange(JSON.stringify({ opcoes: lista, correta: idxCerta >= 0 ? lista[idxCerta] ?? "" : "" }));
+    onChange(
+      JSON.stringify({
+        opcoes: lista,
+        correta: idxCerta >= 0 ? lista[idxCerta] ?? "" : "",
+        ...(idxCerta >= 0 ? { correta_indice: idxCerta } : {}),
+      })
+    );
 
   return (
     <div className="cp">
@@ -133,7 +159,7 @@ function Lista({ valor, onChange }: Props) {
               maxLength={200}
               placeholder={`Opção ${i + 1}`}
               aria-label={`Texto da opção ${i + 1}`}
-              // A certa é guardada pelo texto: ao editar a certa, ela continua marcada
+              // A certa fica pela posição: editar o texto dela mantém a marcação
               onChange={(e) => salvar(opcoes.map((o, j) => (j === i ? e.target.value : o)), certaIdx)}
             />
             <button

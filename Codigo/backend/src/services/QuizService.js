@@ -112,9 +112,12 @@ class QuizService {
           }));
           opcoes = JSON.stringify(ops);
           const corretaVal = parsed?.correta;
-          const corretaIdx = opcoesArr.findIndex(
-            (o) => String(o) === String(corretaVal)
-          );
+          // A tela guarda a posição da certa (correta_indice); sem ela, procura pelo texto
+          const indice = parsed?.correta_indice;
+          const corretaIdx =
+            Number.isInteger(indice) && indice >= 0 && indice < opcoesArr.length
+              ? indice
+              : opcoesArr.findIndex((o) => String(o) === String(corretaVal));
           resposta_correta =
             corretaIdx >= 0 ? String(corretaIdx) : (opcoesArr[0] ? "0" : null);
         } catch {
