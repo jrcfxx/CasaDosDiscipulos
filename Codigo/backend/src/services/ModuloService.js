@@ -7,6 +7,7 @@ import ModuloQuizModel from "../models/ModuloQuizModel.js";
 import UsuarioModuloModel from "../models/UsuarioModuloModel.js";
 import QuizQuestaoModel from "../models/QuizQuestaoModel.js";
 import { NotFoundError, ValidationError } from "../utils/AppError.js";
+import { conteudoParaTexto, validarConteudoDeModulo, validarListaDeCampos } from "../utils/camposEntidade.js";
 
 /**
  * Service para operações relacionadas a módulos
@@ -198,103 +199,163 @@ const ModuloService = {
    * @throws {ValidationError} Se dados forem inválidos
    */
   async createComCampos(data) {
-    // Validações básicas
-    if (!data.titulo || data.titulo.trim().length < 3) {
-      throw new ValidationError(
-        "Título do módulo deve ter no mínimo 3 caracteres"
-      );
-    }
+    const titulo = String(data.titulo ?? "").trim();
+    if (titulo.length < 3) throw new ValidationError("O título precisa ter pelo menos 3 letras.");
+    const campos = Array.isArray(data.campos) ? data.campos : [];
+    await this._validarCampos(campos);
+    await this._validarNivel(data.id_nivel);
+    const preRequisitos = await this._validarPreRequisitos(null, data.pre_requisitos);
 
-    // Cria o módulo
-    const novoModulo = await ModuloModel.create({
-      titulo: data.titulo.trim(),
-      descricao: data.descricao?.trim() || null,
-      ordem: data.ordem || 0,
-      ativo: data.ativo ?? true,
-      obrigatorio: data.obrigatorio ?? true,
-      id_nivel: data.id_nivel ?? null,
+    // Tudo ou nada: um conteúdo inválido não deixa um módulo pela metade
+    const idModulo = await knex.transaction(async (trx) => {
+      const [id] = await trx("modulo").insert({
+        titulo,
+        descricao: String(data.descricao ?? "").trim() || null,
+        ordem: Number.isInteger(data.ordem) && data.ordem >= 0 ? data.ordem : await this._proximaOrdem(trx),
+        ativo: data.ativo ?? true,
+        obrigatorio: data.obrigatorio ?? true,
+        id_nivel: data.id_nivel ?? null,
+      });
+      await this._gravarPreRequisitos(trx, id, preRequisitos);
+      await this._gravarCampos(trx, id, campos);
+      return id;
     });
 
-    await ModuloPreRequisitoModel.setForModulo(
-      novoModulo.id_modulo,
-      data.pre_requisitos || []
-    );
-
-    // Vincula campos se fornecidos
-    if (data.campos && Array.isArray(data.campos) && data.campos.length > 0) {
-      for (const campo of data.campos) {
-        if (!campo.id_campo) {
-          throw new ValidationError("Cada campo deve ter um id_campo válido");
-        }
-
-        await CampoModel.linkToEntity(
-          "modulo",
-          novoModulo.id_modulo,
-          campo.id_campo,
-          campo.conteudo || "",
-          campo.label || "",
-          campo.ordem || 0
-        );
-      }
-    }
-
-    // Busca campos vinculados
-    const camposVinculados = await CampoModel.getByEntity(
-      "modulo",
-      novoModulo.id_modulo
-    );
-
-    return { ...novoModulo, campos: camposVinculados };
+    return this.getById(idModulo);
   },
 
   /**
-   * Atualiza módulo e seus campos
+   * Atualiza só o que vier: { ativo } sozinho só liga/desliga (não mexe nos conteúdos).
    * @param {number} id - ID do módulo
    * @param {Object} data - Dados para atualizar
-   * @returns {Promise<Object>} Módulo atualizado
-   * @throws {NotFoundError} Se módulo não for encontrado
    */
   async update(id, data) {
-    // Verifica se módulo existe
-    await this.getById(id);
+    const idModulo = this._idValido(id);
+    await this.getById(idModulo);
 
     const dadosAtualizacao = {};
-
-    if (data.titulo !== undefined) dadosAtualizacao.titulo = data.titulo.trim();
-    if (data.descricao !== undefined)
-      dadosAtualizacao.descricao = data.descricao?.trim() || null;
+    if (data.titulo !== undefined) {
+      dadosAtualizacao.titulo = String(data.titulo).trim();
+      if (dadosAtualizacao.titulo.length < 3) throw new ValidationError("O título precisa ter pelo menos 3 letras.");
+    }
+    if (data.descricao !== undefined) dadosAtualizacao.descricao = String(data.descricao ?? "").trim() || null;
     if (data.ordem !== undefined) dadosAtualizacao.ordem = data.ordem;
     if (data.ativo !== undefined) dadosAtualizacao.ativo = data.ativo;
     if (data.obrigatorio !== undefined) dadosAtualizacao.obrigatorio = data.obrigatorio;
-    if (data.id_nivel !== undefined) dadosAtualizacao.id_nivel = data.id_nivel;
-
-    await ModuloModel.update(id, dadosAtualizacao);
-
-    if (data.pre_requisitos && Array.isArray(data.pre_requisitos)) {
-      await ModuloPreRequisitoModel.setForModulo(id, data.pre_requisitos);
+    if (data.id_nivel !== undefined) {
+      await this._validarNivel(data.id_nivel);
+      dadosAtualizacao.id_nivel = data.id_nivel;
     }
+    const preRequisitos = Array.isArray(data.pre_requisitos)
+      ? await this._validarPreRequisitos(idModulo, data.pre_requisitos)
+      : null;
+    const campos = Array.isArray(data.campos) ? data.campos : null;
+    if (campos) await this._validarCampos(campos);
 
-    // Se campos foram enviados, atualiza vínculos
-    if (data.campos && Array.isArray(data.campos)) {
-      // Remove campos antigos
-      await CampoModel.unlinkAllFromEntity("modulo", id);
+    await knex.transaction(async (trx) => {
+      if (Object.keys(dadosAtualizacao).length) {
+        await trx("modulo").where({ id_modulo: idModulo }).update(dadosAtualizacao);
+      }
+      if (preRequisitos) await this._gravarPreRequisitos(trx, idModulo, preRequisitos);
+      if (campos) {
+        await trx("modulo_campo").where({ id_modulo: idModulo }).del();
+        await this._gravarCampos(trx, idModulo, campos);
+      }
+    });
 
-      // Adiciona novos campos
-      for (const campo of data.campos) {
-        if (!campo.id_campo) continue;
+    return this.getById(idModulo);
+  },
 
-        await CampoModel.linkToEntity(
-          "modulo",
-          id,
-          campo.id_campo,
-          campo.conteudo || "",
-          campo.label || "",
-          campo.ordem || 0
-        );
+  _idValido(id) {
+    const n = Number(id);
+    if (!Number.isInteger(n) || n <= 0) throw new ValidationError("ID inválido");
+    return n;
+  },
+
+  /** Próxima posição na trilha (o novo módulo entra no fim) */
+  async _proximaOrdem(trx = knex) {
+    const linha = await trx("modulo").max({ maior: "ordem" }).first();
+    return Number(linha?.maior || 0) + 1;
+  },
+
+  /** Conteúdos: nome, tipo de módulo, sem nomes repetidos e com conteúdo preenchido e válido */
+  async _validarCampos(campos) {
+    const permitidos = await CampoModel.getByModalidade("modulo");
+    // O quiz do módulo é vinculado à parte (POST /modulo/:id/quiz/:idQuiz), não é bloco de conteúdo
+    const tipos = new Map(
+      permitidos.filter((c) => c.tipo_campo !== "quiz").map((c) => [Number(c.id_campo), c.tipo_campo])
+    );
+    validarListaDeCampos(campos, { tiposPermitidos: tipos, oQue: "módulo", exigirUm: false });
+    validarConteudoDeModulo(campos, tipos);
+  },
+
+  async _gravarCampos(trx, idModulo, campos) {
+    if (!campos.length) return;
+    // A ordem é a da lista (a "ordem" de cada item é ignorada: repetida, batia no índice único)
+    await trx("modulo_campo").insert(
+      campos.map((c, i) => ({
+        id_modulo: idModulo,
+        id_campo: Number(c.id_campo),
+        label: String(c.label).trim(),
+        conteudo: conteudoParaTexto(c.conteudo).trim(),
+        ordem: i + 1,
+      }))
+    );
+  },
+
+  async _validarNivel(idNivel) {
+    if (idNivel === undefined || idNivel === null) return;
+    const nivel = await knex("nivel").where({ id_nivel: idNivel }).first();
+    if (!nivel) throw new ValidationError("O nível escolhido não existe mais. Atualize a página.");
+  },
+
+  /**
+   * Pré-requisitos sem repetição, existentes, sem o próprio módulo e sem ciclo
+   * (A exige B e B exige A travaria os dois para sempre).
+   */
+  async _validarPreRequisitos(idModulo, lista) {
+    const ids = [...new Set((lista || []).map(Number).filter((n) => Number.isInteger(n) && n > 0))];
+    if (!ids.length) return [];
+    if (idModulo && ids.includes(idModulo)) {
+      throw new ValidationError("Um módulo não pode ser pré-requisito dele mesmo.");
+    }
+    const existentes = await knex("modulo").whereIn("id_modulo", ids).select("id_modulo", "titulo");
+    if (existentes.length !== ids.length) {
+      throw new ValidationError("Algum pré-requisito escolhido não existe mais. Atualize a página.");
+    }
+    if (idModulo) {
+      const arestas = await knex("modulo_pre_requisito").select("id_modulo", "id_modulo_requerido");
+      const exige = new Map();
+      for (const a of arestas) {
+        if (a.id_modulo === idModulo) continue; // os do próprio módulo serão substituídos
+        if (!exige.has(a.id_modulo)) exige.set(a.id_modulo, []);
+        exige.get(a.id_modulo).push(a.id_modulo_requerido);
+      }
+      for (const inicio of ids) {
+        const pilha = [inicio];
+        const visto = new Set();
+        while (pilha.length) {
+          const atual = pilha.pop();
+          if (atual === idModulo) {
+            const nome = existentes.find((m) => m.id_modulo === inicio)?.titulo || "outro módulo";
+            throw new ValidationError(
+              `"${nome}" já depende deste módulo; usá-lo como pré-requisito travaria os dois.`
+            );
+          }
+          if (visto.has(atual)) continue;
+          visto.add(atual);
+          pilha.push(...(exige.get(atual) || []));
+        }
       }
     }
+    return ids;
+  },
 
-    return this.getById(id);
+  async _gravarPreRequisitos(trx, idModulo, ids) {
+    await trx("modulo_pre_requisito").where({ id_modulo: idModulo }).del();
+    if (ids.length) {
+      await trx("modulo_pre_requisito").insert(ids.map((r) => ({ id_modulo: idModulo, id_modulo_requerido: r })));
+    }
   },
 
   /**
@@ -334,6 +395,9 @@ const ModuloService = {
   async vincularQuiz(idModulo, idQuiz) {
     // Verifica se módulo existe
     await this.getById(idModulo);
+
+    const quiz = await knex("quiz").where({ id_quiz: idQuiz }).first();
+    if (!quiz) throw new NotFoundError("Quiz não encontrado");
 
     // Verifica se já existe vínculo
     const jaVinculado = await ModuloQuizModel.existeVinculo(idModulo, idQuiz);

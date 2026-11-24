@@ -19,7 +19,8 @@ export interface CreateModuloData {
   ordem?: number;
   ativo?: boolean;
   obrigatorio?: boolean;
-  id_nivel?: number;
+  /** null = não conta para nível (limpa o nível na edição) */
+  id_nivel?: number | null;
   pre_requisitos?: number[];
   campos?: CampoModulo[]; // Campos personalizados com conteúdo
 }

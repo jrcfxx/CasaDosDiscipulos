@@ -26,12 +26,15 @@ export interface Formulario {
   campos?: FormularioCampo[];
 }
 
+/** Na edição, só vai o que muda: { ativo } sozinho só liga/desliga o formulário */
 export interface FormularioCreateUpdate {
-  titulo: string;
+  titulo?: string;
   descricao?: string | null;
-  ativo: boolean;
+  ativo?: boolean;
   frequencia?: FrequenciaTipo;
   campos?: Array<{
+    /** id do campo já salvo: mantém as respostas ligadas a ele ao editar */
+    id?: number;
     id_campo: number;
     label: string;
     conteudo?: string | number | boolean | null;
@@ -59,6 +62,12 @@ const formularioService = {
   async update(id: number, data: FormularioCreateUpdate): Promise<Formulario> {
     const response = await apiClient.put<Formulario>(`/formulario/${id}`, data);
     return response.data;
+  },
+
+  /** Quantas respostas o formulário tem (para avisar antes de excluir) */
+  async totalRespostas(id: number): Promise<number> {
+    const response = await apiClient.get<{ total: number }>(`/formulario/${id}/total-respostas`);
+    return Number(response.data?.total) || 0;
   },
 
   async delete(id: number): Promise<void> {

@@ -76,6 +76,17 @@ class FormularioController {
     }
   }
 
+  /**
+   * Quantas respostas o formulário tem (a tela avisa antes de excluir)
+   * GET /api/formulario/:id/total-respostas
+   */
+  async totalRespostas(req, res, next) {
+    try {
+      res.status(HTTP_STATUS.OK).json({ total: await FormularioService.contarRespostas(req.params.id) });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export default new FormularioController();

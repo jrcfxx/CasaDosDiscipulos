@@ -11,6 +11,7 @@ import {
 const router = Router();
 
 router.get("/", verificarToken, authenticatedOnly, FormularioController.getAll);
+router.get("/:id/total-respostas", verificarToken, adminOnly, FormularioController.totalRespostas);
 router.get("/:id", verificarToken, authenticatedOnly, FormularioController.getById);
 router.post("/", verificarToken, adminOnly, validate(createFormularioSchema), FormularioController.create);
 router.put("/:id", verificarToken, adminOnly, validate(updateFormularioSchema), FormularioController.update);

@@ -23,6 +23,8 @@ import QuizField from "../components/fields/QuizField";
 import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
 import Icone from "../components/ui/Icone";
+import { erroDoModulo } from "../utils/validarModulo";
+import { getErrorMessage } from "../utils/errorUtils";
 
 /** Campo em edição na tela (o quiz vinculado entra como tipo "QUIZ") */
 type CampoEditor = { id: string; tipo: string; label: string; conteudo?: ValorCampo; campo?: Campo };
@@ -186,7 +188,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
   const showToast = (msg: string) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 2200);
+    setTimeout(() => setToast(null), 4000);
   };
 
   const [labelModalOpen, setLabelModalOpen] = useState(false);
@@ -194,8 +196,8 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
   const addField = (tipo: string) => {
     if (tipo === "QUIZ") {
-      if (selectedQuizId) {
-        showToast("Quiz já selecionado.");
+      if (fields.some((f) => f.tipo === "QUIZ")) {
+        showToast("O módulo já tem um bloco de quiz.");
         return;
       }
       setFields((prev) => [
@@ -211,6 +213,13 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
   const confirmAddField = (label: string) => {
     if (!label.trim()) return;
+    const repetido = fields.some(
+      (f) => f.tipo !== "QUIZ" && f.label.trim().toLocaleLowerCase("pt-BR") === label.trim().toLocaleLowerCase("pt-BR")
+    );
+    if (repetido) {
+      showToast(`Já existe um conteúdo chamado "${label.trim()}". Use outro nome.`);
+      return;
+    }
     const tipo = labelModalTipo;
     setLabelModalOpen(false);
     setLabelModalTipo(null);
@@ -249,9 +258,18 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
   };
 
   const onSave = async () => {
-    if (!moduleName.trim()) {
-      setError(true);
-      nameRef.current?.focus();
+    const problema = erroDoModulo({
+      titulo: moduleName,
+      conteudos: fields.filter((f) => f.tipo !== "QUIZ").map((f) => ({ tipo: f.tipo, label: f.label, conteudo: f.conteudo })),
+      temBlocoQuiz: fields.some((f) => f.tipo === "QUIZ"),
+      quizEscolhido: selectedQuizId,
+    });
+    if (problema) {
+      if (moduleName.trim().length < 3) {
+        setError(true);
+        nameRef.current?.focus();
+      }
+      showToast(problema);
       return;
     }
 
@@ -315,11 +333,12 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       );
 
       await moduloService.update(moduloId, {
-        titulo: moduleName,
-        descricao: moduleDescription,
+        titulo: moduleName.trim(),
+        descricao: moduleDescription.trim(),
         ordem: moduleOrder,
         obrigatorio,
-        id_nivel: obrigatorio && idNivel ? Number(idNivel) : undefined,
+        // null limpa o nível (antes "Nenhum" ou "Opcional" mantinham o nível antigo)
+        id_nivel: obrigatorio && idNivel ? Number(idNivel) : null,
         pre_requisitos: preRequisitos,
         campos: camposSemQuiz,
       });
@@ -352,7 +371,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       setTimeout(() => navigate("/admin/modulos"), 1000);
     } catch (err) {
       console.error(err);
-      showToast("Erro ao atualizar módulo.");
+      showToast(getErrorMessage(err, "Erro ao atualizar módulo."));
       setSalvando(false);
     }
   };
@@ -631,9 +650,9 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
       {toast && <div className="editar-modulo-toast">{toast}</div>}
       <InputModal
         open={labelModalOpen}
-        title="Label do campo"
-        label="Digite o label do campo"
-        placeholder="Ex: Nome completo"
+        title="Nome do conteúdo"
+        label="Como o conteúdo vai aparecer para o aluno"
+        placeholder="Ex: Aula 1 – Introdução"
         onConfirm={confirmAddField}
         onCancel={() => {
           setLabelModalOpen(false);

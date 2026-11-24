@@ -63,6 +63,8 @@ type AvailableField = {
 
 type LocalField = {
   uid: number;
+  /** id do campo já salvo (edição): mantém as respostas antigas ligadas a ele */
+  id?: number;
   id_campo: number;
   tipo: string;
   label: string;
@@ -233,22 +235,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
       const formulario = formularios.find((f) => f.id === id);
       if (!formulario) return;
 
-      const camposLimpos: FormularioCampo[] = (formulario.campos || []).map(
-        (campo, index) => ({
-          id_campo: campo.id_campo,
-          label: campo.label || "",
-          conteudo: campo.conteudo ?? "",
-          ordem: index,
-          obrigatorio: Boolean(campo.obrigatorio),
-        })
-      );
-
-      await formularioService.update(id, {
-        titulo: formulario.titulo,
-        descricao: formulario.descricao ?? null,
-        ativo: !isAtivo(formulario),
-        campos: camposLimpos,
-      });
+      // Só o status: reenviar título/campos aqui apagava a frequência e recriava os campos
+      await formularioService.update(id, { ativo: !isAtivo(formulario) });
 
       await fetchFormularios();
       if (selectedFormulario && selectedFormulario.id === id) {
@@ -268,7 +256,15 @@ export default function FormulariosSecretariaCelulasAdmin() {
     }
   };
 
-  const handleDeleteClick = (id: number) => {
+  const [respostasDoExcluido, setRespostasDoExcluido] = useState(0);
+  const handleDeleteClick = async (id: number) => {
+    let total = 0;
+    try {
+      total = await formularioService.totalRespostas(id);
+    } catch {
+      total = 0;
+    }
+    setRespostasDoExcluido(total);
     setFormularioToDelete(id);
     setShowConfirmDelete(true);
   };
@@ -394,10 +390,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
     tipo: string,
     label = "",
     conteudo: ValorCampo = "",
-    obrigatorio = false
+    obrigatorio = false,
+    id?: number
   ): LocalField => {
     return {
       uid: generateUid(),
+      id,
       id_campo,
       tipo,
       label,
@@ -416,6 +414,10 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   const confirmAddField = (label: string) => {
     if (!label.trim()) return;
+    if (fields.some((f) => f.label.trim().toLocaleLowerCase("pt-BR") === label.trim().toLocaleLowerCase("pt-BR"))) {
+      showToast(`Já existe um campo chamado "${label.trim()}". Use outro nome.`, "error");
+      return;
+    }
     const tipo = labelModalTipo;
     setLabelModalOpen(false);
     setLabelModalTipo(null);
@@ -443,6 +445,22 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
   const removeField = (uid: number) => {
     setFields((prev) => prev.filter((f) => f.uid !== uid));
+  };
+
+  /** Sobe (-1) ou desce (+1) o campo na ordem do formulário */
+  const moverCampo = (uid: number, direcao: -1 | 1) => {
+    setFields((prev) => {
+      const i = prev.findIndex((f) => f.uid === uid);
+      const j = i + direcao;
+      if (i < 0 || j < 0 || j >= prev.length) return prev;
+      const novo = [...prev];
+      [novo[i], novo[j]] = [novo[j], novo[i]];
+      return novo;
+    });
+  };
+
+  const renomearCampo = (uid: number, label: string) => {
+    setFields((prev) => prev.map((f) => (f.uid === uid ? { ...f, label } : f)));
   };
 
   const openCreateModal = () => {
@@ -491,7 +509,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
           tipo,
           c.label ?? `Campo ${idx + 1}`,
           conteudoLimpo,
-          Boolean(c.obrigatorio)
+          Boolean(c.obrigatorio),
+          c.id
         );
       });
 
@@ -515,46 +534,52 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const saveForm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!currentForm.nome.trim()) {
-      showToast("Título do formulário é obrigatório", "error");
+    const titulo = currentForm.nome.trim();
+    if (titulo.length < 3) {
+      showToast("O título precisa ter pelo menos 3 letras.", "error");
+      nameRef.current?.focus();
       return;
     }
-
-    // Remove duplicatas baseado em id_campo + label, mantendo apenas a última ocorrência
-    const seenKeys = new Map<string, number>();
-    const uniqueFields: LocalField[] = [];
-
-    fields.forEach((field) => {
-      const key = `${field.id_campo}_${field.label}`;
-      const existingIndex = seenKeys.get(key);
-
-      if (existingIndex !== undefined) {
-        // Substitui o campo existente pela versão mais recente
-        uniqueFields[existingIndex] = field;
-      } else {
-        seenKeys.set(key, uniqueFields.length);
-        uniqueFields.push(field);
+    if (fields.length === 0) {
+      showToast("Adicione pelo menos um campo ao formulário.", "error");
+      return;
+    }
+    const semNome = fields.findIndex((f) => !f.label.trim());
+    if (semNome >= 0) {
+      showToast(`O ${semNome + 1}º campo está sem nome.`, "error");
+      return;
+    }
+    const vistos = new Set<string>();
+    for (const f of fields) {
+      const chave = f.label.trim().toLocaleLowerCase("pt-BR");
+      if (vistos.has(chave)) {
+        showToast(`Há dois campos chamados "${f.label.trim()}". Use nomes diferentes.`, "error");
+        return;
       }
-    });
+      vistos.add(chave);
+    }
 
     // Processar uploads antes de montar o payload
-    const processedFields = await Promise.all(
-      uniqueFields.map(async (f) => {
-        let conteudo = f.conteudo ?? "";
-
-        // Se o conteúdo é um File (upload), fazer upload primeiro
-        if (conteudo instanceof File) {
-          try {
-            conteudo = await uploadCampo(conteudo);
-          } catch (error) {
-            showToast(`Erro ao fazer upload do arquivo: ${f.label}`, "error");
-            throw error;
+    let processedFields: LocalField[];
+    try {
+      processedFields = await Promise.all(
+        fields.map(async (f) => {
+          let conteudo = f.conteudo ?? "";
+          if (conteudo instanceof File) {
+            try {
+              conteudo = await uploadCampo(conteudo);
+            } catch (error) {
+              console.error(error);
+              throw new Error(`Não foi possível enviar o arquivo de "${f.label}".`);
+            }
           }
-        }
-
-        return { ...f, conteudo };
-      })
-    );
+          return { ...f, conteudo };
+        })
+      );
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Erro ao enviar arquivo", "error");
+      return;
+    }
 
     const camposPayload = processedFields.map((f, index) => {
       let conteudo: string | number | boolean | null = "";
@@ -564,8 +589,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
       else if (typeof v === "object") conteudo = JSON.stringify(v);
       else conteudo = String(v);
       return {
+        ...(f.id ? { id: f.id } : {}),
         id_campo: f.id_campo,
-        label: f.label ?? "",
+        label: f.label.trim(),
         conteudo,
         ordem: index,
         obrigatorio: Boolean(f.obrigatorio),
@@ -574,12 +600,13 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
     const freqVal = currentForm.frequencia;
     const payload: FormularioCreateUpdate = {
-      titulo: currentForm.nome,
-      descricao: currentForm.descricao || null,
+      titulo,
+      descricao: currentForm.descricao.trim() || null,
       ativo: Boolean(currentForm.ativo),
+      // Vazio = "sem frequência" (null); undefined deixaria a frequência antiga na edição
       frequencia: ["semanal", "quinzenal", "mensal", "bimestral"].includes(freqVal)
         ? (freqVal as FormularioCreateUpdate["frequencia"])
-        : undefined,
+        : null,
       campos: camposPayload,
     };
 
@@ -978,7 +1005,11 @@ export default function FormulariosSecretariaCelulasAdmin() {
       <ConfirmModal
         open={showConfirmDelete}
         title="Excluir formulário"
-        message="Tem certeza que deseja excluir este formulário? Esta ação não pode ser desfeita."
+        message={
+          respostasDoExcluido > 0
+            ? `Este formulário tem ${respostasDoExcluido} ${respostasDoExcluido === 1 ? "resposta" : "respostas"}, que serão apagadas junto e não voltam mais. Para só parar de receber respostas, desative o formulário em vez de excluir.`
+            : "Tem certeza que deseja excluir este formulário? Esta ação não pode ser desfeita."
+        }
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         variant="danger"
@@ -989,9 +1020,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
       <InputModal
         open={labelModalOpen}
-        title="Label do campo"
-        label="Digite o label do campo"
-        placeholder="Ex: Nome completo"
+        title="Nome do campo"
+        label="Como o campo vai aparecer para quem preenche"
+        placeholder="Ex: Quantas pessoas vieram?"
         onConfirm={confirmAddField}
         onCancel={() => {
           setLabelModalOpen(false);
@@ -1017,6 +1048,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
               <input
                 id="formModalTitulo"
                 ref={nameRef}
+                maxLength={255}
                 value={currentForm.nome}
                 onChange={(e) =>
                   setCurrentForm({ ...currentForm, nome: e.target.value })
@@ -1031,6 +1063,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                 onChange={(e) =>
                   setCurrentForm({ ...currentForm, descricao: e.target.value })
                 }
+                maxLength={1000}
                 rows={4}
               />
 
@@ -1074,11 +1107,43 @@ export default function FormulariosSecretariaCelulasAdmin() {
                   <p className="muted">Nenhum campo adicionado.</p>
                 )}
 
-                {fields.map((f) => {
-                  const Component = fieldOptions.find((o) => o.tipo === f.tipo)?.component;
+                {fields.map((f, idx) => {
+                  const opcao = fieldOptions.find((o) => o.tipo === f.tipo);
+                  const Component = opcao?.component;
                   if (!Component) return null;
                   return (
                     <div key={f.uid} className="field-wrapper">
+                      <div className="field-cabecalho">
+                        <span className="field-tipo">{opcao.label}</span>
+                        <input
+                          className="field-nome"
+                          value={f.label}
+                          onChange={(e) => renomearCampo(f.uid, e.target.value)}
+                          aria-label={`Nome do ${idx + 1}º campo`}
+                          placeholder="Nome do campo"
+                          maxLength={255}
+                        />
+                        <div className="field-ordem">
+                          <button
+                            type="button"
+                            onClick={() => moverCampo(f.uid, -1)}
+                            disabled={idx === 0}
+                            aria-label={`Subir "${f.label}"`}
+                            title="Subir"
+                          >
+                            <Icone nome="anterior" tamanho={14} className="field-ordem__seta" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moverCampo(f.uid, 1)}
+                            disabled={idx === fields.length - 1}
+                            aria-label={`Descer "${f.label}"`}
+                            title="Descer"
+                          >
+                            <Icone nome="proximo" tamanho={14} className="field-ordem__seta" />
+                          </button>
+                        </div>
+                      </div>
                       <div className="dynamic-field-row">
                         <div className="field-input-container">
                           <Component

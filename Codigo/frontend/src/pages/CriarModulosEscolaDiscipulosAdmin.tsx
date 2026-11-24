@@ -23,6 +23,7 @@ import VideoField from "../components/fields/VideoField";
 import QuizField from "../components/fields/QuizField";
 import type { ValorCampo } from "../types/campoConteudo";
 import Icone from "../components/ui/Icone";
+import { erroDoModulo } from "../utils/validarModulo";
 
 // Tipos de campos disponíveis
 const fieldOptions = [
@@ -53,6 +54,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [preRequisitos, setPreRequisitos] = useState<number[]>([]);
 
   const nameRef = useRef<HTMLInputElement>(null);
+  const ordemMexida = useRef(false);
 
   const [availableFields, setAvailableFields] = useState<Campo[]>([]);
   const [listaModulos, setListaModulos] = useState<{ id_modulo: number; titulo: string }[]>([]);
@@ -76,6 +78,10 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
       try {
         const mods = await moduloService.getAll();
         setListaModulos(mods.map((m) => ({ id_modulo: m.id_modulo, titulo: m.titulo })));
+        // Novo módulo entra no fim da trilha (antes vinha "1" e empatava com o primeiro)
+        if (!ordemMexida.current) {
+          setModuleOrder(mods.reduce((maior, m) => Math.max(maior, Number(m.ordem) || 0), 0) + 1);
+        }
       } catch {
         setListaModulos([]);
       }
@@ -95,9 +101,10 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
     loadNiveis();
   }, []);
 
-  const showToast = (msg: string) => {
+  // Erros ficam mais tempo na tela (dava tempo de ler só o começo)
+  const showToast = (msg: string, ms = 3500) => {
     setToast(msg);
-    window.setTimeout(() => setToast(null), 2200);
+    window.setTimeout(() => setToast(null), ms);
   };
 
   const [labelModalOpen, setLabelModalOpen] = useState(false);
@@ -105,8 +112,8 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
   const addField = (tipo: string) => {
     if (tipo === "QUIZ") {
-      if (selectedQuizId) {
-        showToast("Quiz já selecionado.");
+      if (fields.some((f) => f.tipo === "QUIZ")) {
+        showToast("O módulo já tem um bloco de quiz.");
         return;
       }
       setFields((prev) => [
@@ -122,6 +129,13 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
   const confirmAddField = (label: string) => {
     if (!label.trim()) return;
+    const repetido = fields.some(
+      (f) => f.tipo !== "QUIZ" && f.label.trim().toLocaleLowerCase("pt-BR") === label.trim().toLocaleLowerCase("pt-BR")
+    );
+    if (repetido) {
+      showToast(`Já existe um conteúdo chamado "${label.trim()}". Use outro nome.`);
+      return;
+    }
     const tipo = labelModalTipo;
     setLabelModalOpen(false);
     setLabelModalTipo(null);
@@ -155,10 +169,18 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
   };
 
   const onSave = async () => {
-    if (!moduleName.trim()) {
-      setError(true);
-      nameRef.current?.focus();
-      showToast("Nome do módulo é obrigatório");
+    const problema = erroDoModulo({
+      titulo: moduleName,
+      conteudos: fields.filter((f) => f.tipo !== "QUIZ").map((f) => ({ tipo: f.tipo, label: f.label, conteudo: f.conteudo })),
+      temBlocoQuiz: fields.some((f) => f.tipo === "QUIZ"),
+      quizEscolhido: selectedQuizId,
+    });
+    if (problema) {
+      if (moduleName.trim().length < 3) {
+        setError(true);
+        nameRef.current?.focus();
+      }
+      showToast(problema, 4500);
       return;
     }
 
@@ -201,8 +223,8 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
       // Criar módulo com campos
       const moduloData = {
-        titulo: moduleName,
-        descricao: moduleDescription || "",
+        titulo: moduleName.trim(),
+        descricao: moduleDescription.trim(),
         ordem: moduleOrder,
         ativo: isActive,
         obrigatorio,
@@ -222,13 +244,16 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
           );
         } catch (error) {
           console.error("Erro ao vincular quiz:", error);
-          showToast("Módulo criado, mas erro ao vincular quiz");
+          // O módulo já existe: segue para a edição dele (ficar aqui e salvar de novo criava outro igual)
+          showToast("Módulo criado, mas o quiz não foi vinculado. Escolha o quiz de novo na edição.", 4500);
+          setTimeout(() => navigate(`/admin/modulos/editar/${moduloCriado.id_modulo}`), 1500);
           return;
         }
       }
 
       showToast("Módulo criado com sucesso!");
 
+      // O botão segue em "Salvando…" até sair (antes dava para clicar de novo e criar outro igual)
       setTimeout(() => {
         navigate("/admin/modulos");
       }, 1000);
@@ -243,8 +268,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
         err.response?.data?.errors?.[0] ||
         "Erro ao criar módulo. Verifique os campos.";
 
-      showToast(errorMessage);
-    } finally {
+      showToast(errorMessage, 4500);
       setLoading(false);
     }
   };
@@ -276,6 +300,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
                 error ? "criar-modulo-input-error" : ""
               }`}
               placeholder="Digite o nome do módulo"
+              maxLength={255}
               value={moduleName}
               onChange={(e) => setModuleName(e.target.value)}
             />
@@ -287,6 +312,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
               id="moduleDescription"
               className="criar-modulo-input"
               placeholder="Digite a descrição do módulo"
+              maxLength={1000}
               value={moduleDescription}
               onChange={(e) => setModuleDescription(e.target.value)}
             />
@@ -300,7 +326,10 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
               className="criar-modulo-input"
               placeholder="Ordem do módulo"
               value={moduleOrder}
-              onChange={(e) => setModuleOrder(Number(e.target.value))}
+              onChange={(e) => {
+                ordemMexida.current = true;
+                setModuleOrder(Math.max(1, Number(e.target.value) || 1));
+              }}
               min="1"
             />
 
@@ -497,9 +526,9 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
 
       <InputModal
         open={labelModalOpen}
-        title="Label do campo"
-        label="Digite o label do campo"
-        placeholder="Ex: Nome completo"
+        title="Nome do conteúdo"
+        label="Como o conteúdo vai aparecer para o aluno"
+        placeholder="Ex: Aula 1 – Introdução"
         onConfirm={confirmAddField}
         onCancel={() => {
           setLabelModalOpen(false);

@@ -21,7 +21,8 @@
     "test:quiz": "node scripts/testQuiz.js",
     "test:formularios": "node scripts/testRelatorioFormulario.js",
     "test:auth": "node scripts/testAuth.js",
-    "qa:escala": "node scripts/qaEscalaApi.js"
+    "qa:escala": "node scripts/qaEscalaApi.js",
+    "qa:modulos-formularios": "node scripts/qaModuloFormulario.js"
   },
   "keywords": [],
   "author": "",

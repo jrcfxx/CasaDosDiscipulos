@@ -86,8 +86,10 @@ const CampoModel = {
     if (entity === "formulario") {
       baseSelect.push(`${config.table}.obrigatorio`);
     }
+    // Formulário: campos arquivados (removidos, mas com respostas antigas) não aparecem mais
+    const filtroArquivado = entity === "formulario" ? { [`${config.table}.arquivado`]: false } : {};
     return knex(config.table)
-      .where({ [config.idField]: entityId })
+      .where({ [config.idField]: entityId, ...filtroArquivado })
       .join(
         "campo_personalizado",
         `${config.table}.id_campo`,
