@@ -4,6 +4,8 @@ import multer from "multer";
 import otimizarImagem from "../middlewares/otimizarImagem.js";
 import verificarToken from "../middlewares/authMiddleware.js";
 import { adminOnly } from "../middlewares/checkRole.js";
+import validate from "../middlewares/validate.js";
+import { createEventoSchema, updateEventoSchema, reordenarEventosSchema } from "../validations/eventoValidation.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
@@ -85,9 +87,11 @@ router.post("/upload", verificarToken, adminOnly, (req, res, next) => {
 
 // CRUD - apenas admin
 router.get("/", verificarToken, adminOnly, EventoController.getAll);
+// Nova ordem do carrossel (arrastar na tela). Antes de "/:id" para não ser lida como um id.
+router.put("/ordem", verificarToken, adminOnly, validate(reordenarEventosSchema), EventoController.reordenar);
 router.get("/:id", verificarToken, adminOnly, EventoController.getById);
-router.post("/", verificarToken, adminOnly, EventoController.create);
-router.put("/:id", verificarToken, adminOnly, EventoController.update);
+router.post("/", verificarToken, adminOnly, validate(createEventoSchema), EventoController.create);
+router.put("/:id", verificarToken, adminOnly, validate(updateEventoSchema), EventoController.update);
 router.delete("/:id", verificarToken, adminOnly, EventoController.delete);
 
 export default router;

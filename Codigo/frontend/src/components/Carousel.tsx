@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Carousel.css";
-import { ASSETS_BASE } from "../config/api";
+import { urlImagemEvento } from "../services/eventoService";
 import Icone from "./ui/Icone";
 
 interface CarouselItem {
@@ -73,7 +73,7 @@ const Carousel: React.FC<CarouselProps> = ({
           {items.map((item) => (
             <div key={item.id_evento} className="carousel-slide">
               <img
-                src={`${ASSETS_BASE}${item.imagem_url}`}
+                src={urlImagemEvento(item.imagem_url)}
                 alt={item.titulo}
                 className="carousel-image"
                 loading="lazy"

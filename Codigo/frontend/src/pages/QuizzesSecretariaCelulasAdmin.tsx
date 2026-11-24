@@ -31,7 +31,7 @@ import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarRanking } from "../utils/exportacoes";
 import DarPontosModal from "../components/ui/DarPontosModal";
-import { isRecord, type Alternativa, type CampoDinamico, type CampoVinculado, type ValorCampo } from "../types/campoConteudo";
+import { isRecord, parseAlternativas, parseSelect, type Alternativa, type CampoDinamico, type CampoVinculado, type ValorCampo } from "../types/campoConteudo";
 import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 import { getMedalIcon } from "../utils/moduloConteudoUtils";
 import { useAcao } from "../hooks/useAcao";
@@ -77,6 +77,69 @@ type LocalField = {
   conteudo: ValorCampo;
 };
 
+/** Tipos que viram pergunta corrigida (valem pontos). Os demais só aparecem como conteúdo. */
+const TIPOS_PERGUNTA = ["multipla_escolha", "verdadeiro_falso", "discursiva", "checkbox", "select"];
+
+/** Explicação de cada tipo para o admin: o que o aluno vê e como preencher */
+const AJUDA_TIPO: Record<string, { rotulo: string; dica: string }> = {
+  multipla_escolha: {
+    rotulo: "Escreva a pergunta",
+    dica: "O aluno escolhe UMA alternativa. Crie pelo menos 2 alternativas e marque a bolinha ao lado da correta.",
+  },
+  checkbox: {
+    rotulo: "Escreva a pergunta",
+    dica: "O aluno pode marcar VÁRIAS alternativas. Crie pelo menos 2 e marque a caixinha de todas as corretas. Só pontua quem acertar exatamente todas.",
+  },
+  select: {
+    rotulo: "Escreva a pergunta",
+    dica: "O aluno escolhe uma opção numa lista suspensa. Adicione pelo menos 2 opções e marque qual é a correta.",
+  },
+  verdadeiro_falso: {
+    rotulo: "Escreva a afirmação",
+    dica: "Escreva uma afirmação (ex.: \"Jesus nasceu em Belém\"). Abaixo, escolha se ela é Verdadeira ou Falsa — essa é a resposta certa.",
+  },
+  discursiva: {
+    rotulo: "Escreva a pergunta",
+    dica: "O aluno responde escrevendo. Não há correção automática: qualquer resposta preenchida ganha os pontos.",
+  },
+  texto: { rotulo: "Título do trecho", dica: "Texto curto mostrado ao aluno (instrução, versículo). Não vale pontos." },
+  textarea: { rotulo: "Título do trecho", dica: "Texto longo mostrado ao aluno (explicação, leitura). Não vale pontos." },
+  numero: { rotulo: "Título", dica: "Um número mostrado ao aluno. Não vale pontos." },
+  data: { rotulo: "Título", dica: "Uma data mostrada ao aluno. Não vale pontos." },
+  link: { rotulo: "Título do link", dica: "Cole o endereço completo (começando com https://). O aluno verá o link. Não vale pontos." },
+  upload: { rotulo: "Título do arquivo", dica: "Envie um arquivo ou imagem para o aluno ver/baixar. Não vale pontos." },
+  video: { rotulo: "Título do vídeo", dica: "Cole o link do YouTube ou Vimeo. O aluno assiste antes de responder. Não vale pontos." },
+};
+
+/** Mensagem do primeiro problema que impede salvar, ou null se estiver tudo certo */
+function problemaDoQuiz(nome: string, campos: LocalField[]): string | null {
+  if (nome.trim().length < 3) return "O título do quiz precisa ter pelo menos 3 letras.";
+  if (!campos.some((c) => TIPOS_PERGUNTA.includes(c.tipo))) {
+    return "Adicione pelo menos uma pergunta (Múltipla Escolha, Verdadeiro/Falso, Checkbox, Seleção ou Discursiva).";
+  }
+  for (const [i, c] of campos.entries()) {
+    const nomeCampo = `"${c.label || `Campo ${i + 1}`}"`;
+    if (c.tipo === "multipla_escolha" || c.tipo === "checkbox") {
+      const alts = parseAlternativas(c.conteudo).alternativas;
+      if (alts.filter((a) => a.texto.trim()).length < 2) return `${nomeCampo}: escreva pelo menos 2 alternativas.`;
+      if (alts.some((a) => !a.texto.trim())) return `${nomeCampo}: há uma alternativa em branco. Preencha ou remova.`;
+      const certas = alts.filter((a) => a.correta).length;
+      if (certas === 0) return `${nomeCampo}: marque qual alternativa é a correta.`;
+    } else if (c.tipo === "select") {
+      const sel = parseSelect(c.conteudo);
+      if (sel.opcoes.length < 2) return `${nomeCampo}: adicione pelo menos 2 opções.`;
+      if (!sel.correta) return `${nomeCampo}: marque qual opção é a correta.`;
+    } else if (c.tipo === "link" || c.tipo === "video") {
+      const v = String(c.conteudo ?? "").trim();
+      if (!v) return `${nomeCampo}: cole o link.`;
+      if (!/^https?:\/\//i.test(v)) return `${nomeCampo}: o link precisa começar com https://`;
+    } else if (c.tipo === "upload") {
+      if (!c.conteudo) return `${nomeCampo}: escolha o arquivo ou remova o campo.`;
+    }
+  }
+  return null;
+}
+
 const initialFormState: QuizForm = {
   id: null,
   nome: "",
@@ -99,6 +162,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const [fields, setFields] = useState<LocalField[]>([]);
   const [toast, setToast] = useState<string | null>(null);
+  /** Erro mostrado dentro do modal, junto ao botão Salvar (o toast ficava atrás do modal) */
+  const [erroForm, setErroForm] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
 
   // Componentes de alternativas exigem `options`; ela chega via additionalProps no render
@@ -276,18 +341,28 @@ export default function QuizzesSecretariaCelulasAdmin() {
       conteudoInicial = "";
     } else if (tipo === "verdadeiro_falso") {
       conteudoInicial = "false";
-    } else if (tipo === "multipla_escolha") {
-      conteudoInicial = "A";
     } else if (tipo === "select" || tipo === "checkbox") {
       conteudoInicial = "";
     } else {
       conteudoInicial = "";
     }
 
+    setErroForm(null);
     setFields((prev) => [
       ...prev,
       createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
     ]);
+  };
+
+  const moverField = (uid: number, dir: -1 | 1) => {
+    setFields((prev) => {
+      const i = prev.findIndex((f) => f.uid === uid);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= prev.length) return prev;
+      const arr = [...prev];
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      return arr;
+    });
   };
 
   const removeField = (uid: number) => {
@@ -298,6 +373,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
     setCurrentForm(initialFormState);
     setQuizToEdit(null);
     setFields([]);
+    setErroForm(null);
     setShowFormModal(true);
     setTimeout(() => nameRef.current?.focus(), 100);
   };
@@ -361,6 +437,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
   const closeFormModal = () => {
     setShowFormModal(false);
+    setErroForm(null);
     setQuizToEdit(null);
     setCurrentForm(initialFormState);
     setFields([]);
@@ -371,48 +448,48 @@ export default function QuizzesSecretariaCelulasAdmin() {
   const saveForm = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!currentForm.nome.trim()) {
-      showToast("Título do quiz é obrigatório");
+    const problema = problemaDoQuiz(currentForm.nome, fields);
+    if (problema) {
+      setErroForm(problema);
       return;
     }
-
-    // Usar uid para preservar todos os campos (evita colapsar questões com mesmo tipo/label)
-    const uniqueFields = fields;
-
-    // Processar uploads antes de montar o payload
-    const processedFields = await Promise.all(
-      uniqueFields.map(async (f) => {
-        let conteudo = f.conteudo ?? "";
-
-        // Se o conteúdo é um File (upload), fazer upload primeiro
-        if (conteudo instanceof File) {
-          try {
-            conteudo = await uploadFile(conteudo);
-          } catch (error) {
-            showToast(`Erro ao fazer upload do arquivo: ${f.label}`);
-            throw error;
-          }
-        }
-
-        return { ...f, conteudo };
-      })
-    );
-
-    const camposPayload = processedFields.map((f, index) => ({
-      id_campo: f.id_campo,
-      label: f.label ?? "",
-      conteudo: f.conteudo ?? "",
-      ordem: index,
-    }));
-
-    const payload = {
-      titulo: currentForm.nome,
-      descricao: currentForm.descricao || null,
-      ativo: Boolean(currentForm.ativo),
-      campos: camposPayload,
-    };
+    setErroForm(null);
 
     try {
+      // Processar uploads antes de montar o payload
+      const processedFields = await Promise.all(
+        fields.map(async (f) => {
+          let conteudo = f.conteudo ?? "";
+
+          // Se o conteúdo é um File (upload), fazer upload primeiro
+          if (conteudo instanceof File) {
+            try {
+              conteudo = await uploadFile(conteudo);
+            } catch (error) {
+              console.error("Erro no upload:", error);
+              throw new Error(`Não foi possível enviar o arquivo de "${f.label}". Tente de novo ou use um arquivo menor.`);
+            }
+          }
+
+          return { ...f, conteudo };
+        })
+      );
+
+      const camposPayload = processedFields.map((f, index) => ({
+        id_campo: f.id_campo,
+        label: f.label ?? "",
+        // O banco guarda texto: Verdadeiro/Falso vira "true"/"false"
+        conteudo: typeof f.conteudo === "boolean" ? String(f.conteudo) : f.conteudo ?? "",
+        ordem: index,
+      }));
+
+      const payload = {
+        titulo: currentForm.nome.trim(),
+        descricao: currentForm.descricao || null,
+        ativo: Boolean(currentForm.ativo),
+        campos: camposPayload,
+      };
+
       if (quizToEdit) {
         await api.put(`/quiz/${quizToEdit}`, payload);
         await fetchQuizzes();
@@ -441,7 +518,11 @@ export default function QuizzesSecretariaCelulasAdmin() {
       const err = erro as ErroApi;
       console.error("Erro ao salvar quiz:", err);
 
-      let msg = "Erro ao salvar quiz";
+      let msg = err?.response
+        ? "Erro ao salvar quiz. Tente novamente."
+        : erro instanceof Error && erro.message.startsWith("Não foi possível")
+          ? erro.message
+          : "Sem conexão com o servidor. Verifique a internet e tente de novo.";
       if (
         err?.response?.data?.errors &&
         Array.isArray(err.response.data.errors)
@@ -451,7 +532,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
         msg = err.response.data.error;
       }
 
-      showToast(msg);
+      setErroForm(msg);
     }
   };
 
@@ -746,9 +827,20 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       <InputModal
         open={labelModalOpen}
-        title="Label do campo"
-        label="Digite o label do campo"
-        placeholder="Ex: Nome completo"
+        title={
+          labelModalTipo && TIPOS_PERGUNTA.includes(labelModalTipo)
+            ? "Nova pergunta"
+            : "Novo conteúdo"
+        }
+        label={(labelModalTipo && AJUDA_TIPO[labelModalTipo]?.rotulo) || "Título do campo"}
+        placeholder={
+          labelModalTipo === "verdadeiro_falso"
+            ? "Ex: Jesus nasceu em Belém"
+            : labelModalTipo && TIPOS_PERGUNTA.includes(labelModalTipo)
+              ? "Ex: Quem foi o primeiro rei de Israel?"
+              : "Ex: Leia antes de responder"
+        }
+        hint={(labelModalTipo && AJUDA_TIPO[labelModalTipo]?.dica) || undefined}
         onConfirm={confirmAddField}
         onCancel={() => {
           setLabelModalOpen(false);
@@ -762,13 +854,32 @@ export default function QuizzesSecretariaCelulasAdmin() {
           <div className="modal modal-large">
             <h2>{quizToEdit ? "Editar Quiz" : "Criar Novo Quiz"}</h2>
 
+            <details className="quiz-ajuda" open={!quizToEdit}>
+              <summary>Como montar um quiz</summary>
+              <ol>
+                <li>Dê um <strong>título</strong> (é o nome que o aluno vê).</li>
+                <li>
+                  Adicione as <strong>perguntas</strong> nos botões verdes. Cada pergunta vale 10 pontos.
+                  Em cada uma, <strong>marque a resposta certa</strong>.
+                </li>
+                <li>
+                  Se quiser, adicione <strong>conteúdo de apoio</strong> (texto, vídeo, link, arquivo) — aparece
+                  para o aluno na mesma ordem, mas não vale pontos.
+                </li>
+                <li>
+                  Clique em <strong>Salvar</strong>. Depois vincule o quiz a um módulo na tela de Módulos para os
+                  alunos responderem.
+                </li>
+              </ol>
+            </details>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 acaoSalvar.executar(() => saveForm());
               }}
             >
-              <label htmlFor="quizModalTitulo">Título</label>
+              <label htmlFor="quizModalTitulo">Título *</label>
               <input
                 id="quizModalTitulo"
                 ref={nameRef}
@@ -777,9 +888,15 @@ export default function QuizzesSecretariaCelulasAdmin() {
                   setCurrentForm({ ...currentForm, nome: e.target.value })
                 }
                 required
+                minLength={3}
+                placeholder="Ex: Quiz do Módulo 1 – Fundamentos da Fé"
+                aria-describedby="quizModalTituloDica"
               />
+              <p id="quizModalTituloDica" className="quiz-dica">
+                Nome que aparece para o aluno e na lista de quizzes (mínimo 3 letras).
+              </p>
 
-              <label htmlFor="quizModalDescricao">Descrição</label>
+              <label htmlFor="quizModalDescricao">Descrição (opcional)</label>
               <textarea
                 id="quizModalDescricao"
                 value={currentForm.descricao}
@@ -787,9 +904,14 @@ export default function QuizzesSecretariaCelulasAdmin() {
                   setCurrentForm({ ...currentForm, descricao: e.target.value })
                 }
                 rows={4}
+                placeholder="Ex: Responda depois de assistir à aula 1."
+                aria-describedby="quizModalDescricaoDica"
               />
+              <p id="quizModalDescricaoDica" className="quiz-dica">
+                Instrução mostrada ao aluno antes das perguntas.
+              </p>
 
-              <label htmlFor="quizModalAtivo">Ativo</label>
+              <label htmlFor="quizModalAtivo">Situação</label>
               <select
                 id="quizModalAtivo"
                 value={currentForm.ativo}
@@ -803,15 +925,22 @@ export default function QuizzesSecretariaCelulasAdmin() {
                 <option value={1}>Ativo</option>
                 <option value={0}>Inativo</option>
               </select>
+              <p className="quiz-dica">
+                <strong>Ativo</strong>: alunos podem responder. <strong>Inativo</strong>: fica salvo, mas escondido
+                dos alunos (use enquanto ainda está montando).
+              </p>
 
-              <h3>Campos do Quiz</h3>
+              <h3>Perguntas e conteúdo</h3>
+              <p className="quiz-dica">
+                Aparecem para o aluno nesta ordem. Use ↑ e ↓ para reorganizar.
+              </p>
 
               <div className="fields-container">
                 {fields.length === 0 && (
                   <p className="muted">Nenhum campo adicionado.</p>
                 )}
 
-                {fields.map((f) => {
+                {fields.map((f, idx) => {
                   const Component = fieldOptions.find(
                     (o) => o.tipo === f.tipo
                   )?.component;
@@ -830,6 +959,13 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
                   return (
                     <div key={f.uid} className="field-wrapper">
+                      <div className="quiz-campo-tipo">
+                        <span className={`quiz-campo-badge ${TIPOS_PERGUNTA.includes(f.tipo) ? "pergunta" : "apoio"}`}>
+                          {fieldOptions.find((o) => o.tipo === f.tipo)?.label}
+                          {TIPOS_PERGUNTA.includes(f.tipo) ? " · vale 10 pts" : " · não vale pontos"}
+                        </span>
+                        {AJUDA_TIPO[f.tipo] && <p className="quiz-dica">{AJUDA_TIPO[f.tipo].dica}</p>}
+                      </div>
                       <div className="dynamic-field-row">
                         <Component
                           id={String(f.uid)}
@@ -847,6 +983,28 @@ export default function QuizzesSecretariaCelulasAdmin() {
                           }
                           {...additionalProps}
                         />
+                        <div className="quiz-campo-ordem">
+                          <button
+                            type="button"
+                            className="field-move-btn"
+                            onClick={() => moverField(f.uid, -1)}
+                            disabled={idx === 0}
+                            title="Subir"
+                            aria-label="Subir campo"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="field-move-btn"
+                            onClick={() => moverField(f.uid, 1)}
+                            disabled={idx === fields.length - 1}
+                            title="Descer"
+                            aria-label="Descer campo"
+                          >
+                            ↓
+                          </button>
+                        </div>
                         <button
                           type="button"
                           className="field-remove-btn"
@@ -861,20 +1019,51 @@ export default function QuizzesSecretariaCelulasAdmin() {
                 })}
               </div>
 
+              <p className="quiz-grupo-titulo">Adicionar pergunta (vale pontos)</p>
               <div className="field-add-buttons">
-                {fieldOptions.map((opt) => (
-                  <button
-                    key={opt.tipo}
-                    type="button"
-                    onClick={() => addField(opt.tipo)}
-                  >
-                    + {opt.label}
-                  </button>
-                ))}
+                {fieldOptions
+                  .filter((opt) => TIPOS_PERGUNTA.includes(opt.tipo))
+                  .map((opt) => (
+                    <button
+                      key={opt.tipo}
+                      type="button"
+                      className="btn-add-pergunta"
+                      title={AJUDA_TIPO[opt.tipo]?.dica}
+                      onClick={() => addField(opt.tipo)}
+                    >
+                      + {opt.label}
+                    </button>
+                  ))}
+              </div>
+              <p className="quiz-grupo-titulo">Adicionar conteúdo de apoio (não vale pontos)</p>
+              <div className="field-add-buttons">
+                {fieldOptions
+                  .filter((opt) => !TIPOS_PERGUNTA.includes(opt.tipo))
+                  .map((opt) => (
+                    <button
+                      key={opt.tipo}
+                      type="button"
+                      title={AJUDA_TIPO[opt.tipo]?.dica}
+                      onClick={() => addField(opt.tipo)}
+                    >
+                      + {opt.label}
+                    </button>
+                  ))}
               </div>
 
+              {erroForm && (
+                <div className="quiz-erro-form" role="alert">
+                  {erroForm}
+                </div>
+              )}
+
               <div className="modal-actions">
-                <BotaoCarregando type="submit" className="save-btn" carregando={acaoSalvar.executando}>
+                <BotaoCarregando
+                  type="submit"
+                  className="save-btn"
+                  carregando={acaoSalvar.executando}
+                  textoCarregando={quizToEdit ? "Salvando alterações…" : "Criando quiz…"}
+                >
                   Salvar
                 </BotaoCarregando>
 

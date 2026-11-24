@@ -47,6 +47,14 @@ class EventoController {
     }
   }
 
+  async reordenar(req, res, next) {
+    try {
+      res.json(await EventoService.reordenar(req.body.ids));
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async delete(req, res, next) {
     try {
       await EventoService.delete(req.params.id);

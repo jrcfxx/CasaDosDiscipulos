@@ -1,4 +1,5 @@
 import api from "./apiClient";
+import { ASSETS_BASE } from "../config/api";
 
 export interface Evento {
   id_evento: number;
@@ -28,7 +29,22 @@ export async function getEventoById(id: number): Promise<Evento> {
   return data;
 }
 
-export async function criarEvento(body: Omit<Evento, "id_evento">): Promise<Evento> {
+/** Endereço da imagem: upload do site (/uploads/...) ou endereço completo (ex.: imagens de exemplo) */
+export function urlImagemEvento(imagemUrl: string | null | undefined): string {
+  if (!imagemUrl) return "";
+  return /^https?:\/\//i.test(imagemUrl) ? imagemUrl : `${ASSETS_BASE}${imagemUrl}`;
+}
+
+/** Dados que a tela envia; a ordem do carrossel é definida arrastando (reordenarEventos) */
+export type EventoForm = Pick<Evento, "titulo" | "imagem_url" | "ativo"> & { descricao?: string };
+
+/** Nova ordem do carrossel: todos os eventos, na ordem desejada */
+export async function reordenarEventos(ids: number[]): Promise<Evento[]> {
+  const { data } = await api.put<Evento[]>("/evento/ordem", { ids });
+  return data;
+}
+
+export async function criarEvento(body: EventoForm): Promise<Evento> {
   const { data } = await api.post<Evento>("/evento", body);
   return data;
 }

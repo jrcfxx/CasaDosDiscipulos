@@ -22,6 +22,16 @@ const TIPO_TO_QUIZ_QUESTAO = {
   discursiva: "discursiva",
 };
 
+/**
+ * O banco guarda o conteúdo como texto. Verdadeiro/Falso chega como boolean do formulário:
+ * sem converter, `true` virava "1" e a resposta certa era salva como "Falso".
+ */
+function conteudoComoTexto(conteudo) {
+  if (conteudo === null || conteudo === undefined) return "";
+  if (typeof conteudo === "boolean") return conteudo ? "true" : "false";
+  return String(conteudo);
+}
+
 class QuizService {
   /**
    * Sincroniza campos do quiz (tipo questão) para quiz_questao
@@ -92,7 +102,7 @@ class QuizService {
           { id: "v", texto: "Verdadeiro" },
           { id: "f", texto: "Falso" },
         ]);
-        resposta_correta = String(c.conteudo || "").toLowerCase() === "true" ? "v" : "f";
+        resposta_correta = ["true", "1"].includes(String(c.conteudo ?? "").toLowerCase()) ? "v" : "f";
       }
       // discursiva: opcoes e resposta_correta permanecem null
 
@@ -217,35 +227,42 @@ class QuizService {
       ativo: data.ativo ?? true,
     });
 
-    // Vincula campos se fornecidos
-    if (data.campos && Array.isArray(data.campos) && data.campos.length > 0) {
-      for (const campo of data.campos) {
-        if (!campo.id_campo) {
-          throw new ValidationError("Cada campo deve ter um id_campo válido");
+    try {
+      // Vincula campos se fornecidos
+      if (data.campos && Array.isArray(data.campos) && data.campos.length > 0) {
+        for (const [idx, campo] of data.campos.entries()) {
+          if (!campo.id_campo) {
+            throw new ValidationError("Cada campo deve ter um id_campo válido");
+          }
+
+          await CampoModel.linkToEntity(
+            "quiz",
+            novoQuiz.id_quiz,
+            campo.id_campo,
+            conteudoComoTexto(campo.conteudo),
+            campo.label || "",
+            // ordem única por quiz (índice único id_quiz+ordem)
+            idx
+          );
         }
-
-        await CampoModel.linkToEntity(
-          "quiz",
-          novoQuiz.id_quiz,
-          campo.id_campo,
-          campo.conteudo || "",
-          campo.label || "",
-          campo.ordem || 0
-        );
       }
+
+      // Busca campos vinculados
+      const camposVinculados = await CampoModel.getByEntity(
+        "quiz",
+        novoQuiz.id_quiz
+      );
+
+      // Sincroniza campos tipo questão para quiz_questao (para exibir na página de realizar módulo)
+      await this._syncCamposToQuestoes(novoQuiz.id_quiz, camposVinculados);
+
+      const questoes = await QuizQuestaoModel.getByQuiz(novoQuiz.id_quiz);
+      return { ...novoQuiz, questoes, campos: camposVinculados };
+    } catch (err) {
+      // Não deixa um quiz pela metade (sem perguntas) aparecendo na lista
+      await QuizModel.delete(novoQuiz.id_quiz).catch(() => {});
+      throw err;
     }
-
-    // Busca campos vinculados
-    const camposVinculados = await CampoModel.getByEntity(
-      "quiz",
-      novoQuiz.id_quiz
-    );
-
-    // Sincroniza campos tipo questão para quiz_questao (para exibir na página de realizar módulo)
-    await this._syncCamposToQuestoes(novoQuiz.id_quiz, camposVinculados);
-
-    const questoes = await QuizQuestaoModel.getByQuiz(novoQuiz.id_quiz);
-    return { ...novoQuiz, questoes, campos: camposVinculados };
   }
 
   /**
@@ -281,7 +298,8 @@ class QuizService {
       // Remove campos antigos
       await CampoModel.unlinkAllFromEntity("quiz", id);
 
-      // Adiciona novos campos
+      // Adiciona novos campos (ordem sequencial: índice único id_quiz+ordem)
+      let ordem = 0;
       for (const campo of data.campos) {
         if (!campo.id_campo) continue;
 
@@ -289,9 +307,9 @@ class QuizService {
           "quiz",
           id,
           campo.id_campo,
-          campo.conteudo || "",
+          conteudoComoTexto(campo.conteudo),
           campo.label || "",
-          campo.ordem ?? 0
+          ordem++
         );
       }
 
