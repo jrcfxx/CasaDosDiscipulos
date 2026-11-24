@@ -117,6 +117,15 @@ class QuizController {
    * Remove quiz permanentemente
    * DELETE /api/quiz/:id
    */
+  /** GET /quiz/:id/total-respostas — quantas respostas o quiz tem (aviso antes de excluir) */
+  async totalRespostas(req, res, next) {
+    try {
+      res.json(await QuizService.contarRespostas(req.params.id));
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async delete(req, res, next) {
     try {
       await QuizService.delete(req.params.id);

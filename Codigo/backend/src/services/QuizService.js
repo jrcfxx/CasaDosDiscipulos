@@ -1,3 +1,4 @@
+import knex from "../database/index.js";
 import QuizModel from "../models/QuizModel.js";
 import QuizQuestaoModel from "../models/QuizQuestaoModel.js";
 import CampoModel from "../models/CampoModel.js";
@@ -26,6 +27,28 @@ const TIPO_TO_QUIZ_QUESTAO = {
  * O banco guarda o conteúdo como texto. Verdadeiro/Falso chega como boolean do formulário:
  * sem converter, `true` virava "1" e a resposta certa era salva como "Falso".
  */
+function lerJson(v) {
+  if (!v) return null;
+  if (typeof v !== "string") return v;
+  try {
+    return JSON.parse(v);
+  } catch {
+    return null;
+  }
+}
+
+const normalizar = (t) => String(t ?? "").trim().replace(/\s+/g, " ").toLocaleLowerCase("pt-BR");
+
+/** Textos das alternativas + quais são certas, independente dos ids gravados */
+function assinaturaOpcoes(q) {
+  const ops = lerJson(q.opcoes) || [];
+  const certas = String(q.resposta_correta ?? "")
+    .split(",")
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean);
+  return JSON.stringify(ops.map((o) => [normalizar(o.texto), certas.includes(String(o.id).toLowerCase())]));
+}
+
 function conteudoComoTexto(conteudo) {
   if (conteudo === null || conteudo === undefined) return "";
   if (typeof conteudo === "boolean") return conteudo ? "true" : "false";
@@ -118,26 +141,89 @@ class QuizService {
     }
 
     const existentes = await QuizQuestaoModel.getByQuiz(id_quiz);
-    const mudou = (atual, nova) =>
-      ["tipo_questao", "enunciado", "ordem", "opcoes", "resposta_correta"].some(
-        (k) => String(atual[k] ?? "") !== String(nova[k] ?? "")
+
+    // Casa cada pergunta desejada com uma existente: primeiro pelo mesmo tipo + enunciado
+    // (reordenar ou tirar uma do meio não troca as respostas de pergunta), depois pela posição.
+    const usadas = new Set();
+    const par = new Array(desejadas.length).fill(null);
+    desejadas.forEach((d, i) => {
+      const achou = existentes.find(
+        (e) => !usadas.has(e.id_questao) && e.tipo_questao === d.tipo_questao && normalizar(e.enunciado) === normalizar(d.enunciado)
       );
+      if (achou) {
+        par[i] = achou;
+        usadas.add(achou.id_questao);
+      }
+    });
+    const livres = existentes.filter((e) => !usadas.has(e.id_questao));
+    desejadas.forEach((d, i) => {
+      if (!par[i] && livres.length) {
+        par[i] = livres.shift();
+        usadas.add(par[i].id_questao);
+      }
+    });
 
     for (let i = 0; i < desejadas.length; i++) {
-      const atual = existentes[i];
+      const atual = par[i];
+      const nova = desejadas[i];
       if (!atual) {
-        await QuizQuestaoModel.create(desejadas[i]);
-      } else if (mudou(atual, desejadas[i])) {
-        // Atualiza no lugar: o id (e as respostas ligadas a ele) é preservado
-        const { id_quiz: _ignorado, pontos: _p, ...patch } = desejadas[i];
-        await QuizQuestaoModel.update(atual.id_questao, patch);
+        await QuizQuestaoModel.create(nova);
+        continue;
       }
+      // Atualiza no lugar: o id (e as respostas ligadas a ele) é preservado
+      const patch = {};
+      if (atual.tipo_questao !== nova.tipo_questao) patch.tipo_questao = nova.tipo_questao;
+      if (String(atual.enunciado ?? "") !== nova.enunciado) patch.enunciado = nova.enunciado;
+      if (Number(atual.ordem) !== nova.ordem) patch.ordem = nova.ordem;
+      // Alternativas iguais (mesmos textos e mesma certa) ficam como estão, mesmo que os ids
+      // gravados sejam outros ("a" x "A"): trocar os ids desalinharia as respostas antigas.
+      if (assinaturaOpcoes(atual) !== assinaturaOpcoes(nova)) {
+        patch.opcoes = nova.opcoes;
+        patch.resposta_correta = nova.resposta_correta;
+      }
+      if (Object.keys(patch).length) await QuizQuestaoModel.update(atual.id_questao, patch);
     }
     // Perguntas removidas pelo admin na Secretaria
-    for (const sobra of existentes.slice(desejadas.length)) {
+    for (const sobra of existentes.filter((e) => !usadas.has(e.id_questao))) {
       await QuizQuestaoModel.delete(sobra.id_questao);
     }
   }
+
+  /**
+   * Quiz antigo (ou de exemplo) que tem perguntas mas nenhum campo: monta os campos a partir
+   * das perguntas para o admin ver e editar (antes aparecia "0 campos" e o editor vinha vazio).
+   */
+  async _camposDasQuestoes(questoes) {
+    if (!questoes.length) return [];
+    const tipos = new Map((await CampoModel.getByModalidade("quiz")).map((c) => [c.tipo_campo, c.id_campo]));
+    return questoes.map((q, i) => {
+      const ops = lerJson(q.opcoes) || [];
+      const certas = String(q.resposta_correta ?? "").split(",").map((x) => x.trim().toLowerCase());
+      let conteudo = "";
+      if (q.tipo_questao === "multipla_escolha" || q.tipo_questao === "checkbox") {
+        conteudo = JSON.stringify({
+          alternativas: ops.map((o) => ({ texto: o.texto || "", correta: certas.includes(String(o.id).toLowerCase()) })),
+        });
+      } else if (q.tipo_questao === "verdadeiro_falso") {
+        conteudo = String(q.resposta_correta).toLowerCase() === "v" ? "true" : "false";
+      }
+      return {
+        id: null,
+        id_campo: tipos.get(q.tipo_questao) ?? null,
+        tipo_campo: q.tipo_questao,
+        label: q.enunciado,
+        conteudo,
+        ordem: i,
+        derivado_das_questoes: true,
+      };
+    });
+  }
+
+  async _comCampos(quiz, campos, questoes) {
+    const efetivos = campos.length ? campos : await this._camposDasQuestoes(questoes);
+    return { ...quiz, questoes, campos: efetivos };
+  }
+
   /**
    * Busca todos os quizzes com suas questões e campos
    * @returns {Promise<Array>} Lista de quizzes com questões e campos
@@ -149,7 +235,7 @@ class QuizService {
       quizzes.map(async (quiz) => {
         const questoes = await QuizQuestaoModel.getByQuiz(quiz.id_quiz);
         const campos = await CampoModel.getByEntity("quiz", quiz.id_quiz);
-        return { ...quiz, questoes, campos };
+        return this._comCampos(quiz, campos, questoes);
       })
     );
 
@@ -184,7 +270,7 @@ class QuizService {
     }
 
     const questoes = await QuizQuestaoModel.getByQuiz(parsedId);
-    return { ...quiz, questoes, campos };
+    return this._comCampos(quiz, campos, questoes);
   }
 
   /**
@@ -198,7 +284,7 @@ class QuizService {
       quizzes.map(async (quiz) => {
         const questoes = await QuizQuestaoModel.getByQuiz(quiz.id_quiz);
         const campos = await CampoModel.getByEntity("quiz", quiz.id_quiz);
-        return { ...quiz, questoes, campos };
+        return this._comCampos(quiz, campos, questoes);
       })
     );
 
@@ -240,7 +326,7 @@ class QuizService {
             novoQuiz.id_quiz,
             campo.id_campo,
             conteudoComoTexto(campo.conteudo),
-            campo.label || "",
+            String(campo.label || "").trim(),
             // ordem única por quiz (índice único id_quiz+ordem)
             idx
           );
@@ -290,8 +376,8 @@ class QuizService {
     if (data.id_modulo !== undefined)
       dadosAtualizacao.id_modulo = data.id_modulo;
 
-    // Atualiza quiz
-    await QuizModel.update(id, dadosAtualizacao);
+    // Atualiza quiz (só se veio algo: salvar só as perguntas dava erro 500 com update vazio)
+    if (Object.keys(dadosAtualizacao).length) await QuizModel.update(id, dadosAtualizacao);
 
     // Se campos foram enviados, atualiza vínculos
     if (data.campos && Array.isArray(data.campos)) {
@@ -308,7 +394,7 @@ class QuizService {
           id,
           campo.id_campo,
           conteudoComoTexto(campo.conteudo),
-          campo.label || "",
+          String(campo.label || "").trim(),
           ordem++
         );
       }
@@ -348,6 +434,19 @@ class QuizService {
    * @returns {Promise<Object>} Quiz atualizado
    * @throws {NotFoundError} Se quiz não for encontrado
    */
+  /** Quantas respostas de alunos o quiz tem (a tela avisa antes de excluir: vão junto) */
+  async contarRespostas(id) {
+    const quiz = await QuizModel.getById(Number(id));
+    if (!quiz) throw new NotFoundError("Quiz não encontrado");
+    const questoes = await QuizQuestaoModel.getByQuiz(quiz.id_quiz);
+    if (!questoes.length) return { respostas: 0, alunos: 0 };
+    const [linha] = await knex("quiz_resposta")
+      .whereIn("id_questao", questoes.map((q) => q.id_questao))
+      .count({ respostas: "*" })
+      .countDistinct({ alunos: "id_usuario" });
+    return { respostas: Number(linha.respostas), alunos: Number(linha.alunos) };
+  }
+
   async toggleActive(id, ativo) {
     await this.getById(id);
 

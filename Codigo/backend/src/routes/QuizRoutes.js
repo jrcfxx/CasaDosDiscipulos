@@ -16,6 +16,7 @@ router.use(verificarToken);
 
 // CRUD de Quiz
 router.get("/", QuizController.getAll);
+router.get("/:id/total-respostas", adminOnly, QuizController.totalRespostas);
 router.get("/:id", QuizController.getById);
 router.post("/", adminOnly, validate(createQuizSchema), QuizController.create);
 router.put("/:id", adminOnly, validate(updateQuizSchema), QuizController.update);

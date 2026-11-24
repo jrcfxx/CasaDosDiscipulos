@@ -1,5 +1,26 @@
 import type { ErroApi } from "../utils/errorUtils";
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import FocusTrapComponent from "../components/ui/FocusTrap";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import "../style/QuizzesSecretariaCelulasAdmin.css";
 
 import Header from "../components/layout/Header";
@@ -36,7 +57,7 @@ import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 import { getMedalIcon } from "../utils/moduloConteudoUtils";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
-import Icone from "../components/ui/Icone";
+import Icone, { type NomeIcone } from "../components/ui/Icone";
 
 /* TYPES */
 type Quiz = {
@@ -75,6 +96,25 @@ type LocalField = {
   tipo: string;
   label: string;
   conteudo: ValorCampo;
+};
+
+/** Pontos de cada pergunta (fixo no servidor) */
+const PONTOS_POR_PERGUNTA = 10;
+
+/** Nome curto e ícone de cada tipo, para os cards e os botões de adicionar */
+const INFO_TIPO: Record<string, { nome: string; icone: NomeIcone; resumo: string }> = {
+  multipla_escolha: { nome: "Múltipla escolha", icone: "concluido", resumo: "Uma resposta certa" },
+  checkbox: { nome: "Várias respostas", icone: "check", resumo: "Mais de uma certa" },
+  select: { nome: "Lista de opções", icone: "abrir", resumo: "Escolhe numa lista" },
+  verdadeiro_falso: { nome: "Verdadeiro ou falso", icone: "alvo", resumo: "Afirmação certa ou errada" },
+  discursiva: { nome: "Resposta escrita", icone: "editar", resumo: "Sem correção automática" },
+  texto: { nome: "Texto curto", icone: "arquivo", resumo: "Instrução ou versículo" },
+  textarea: { nome: "Texto longo", icone: "livro", resumo: "Explicação ou leitura" },
+  video: { nome: "Vídeo", icone: "projecao", resumo: "YouTube ou Vimeo" },
+  link: { nome: "Link", icone: "proximo", resumo: "Página para consultar" },
+  upload: { nome: "Arquivo", icone: "imagem", resumo: "PDF ou imagem" },
+  numero: { nome: "Número", icone: "lista", resumo: "Valor para consulta" },
+  data: { nome: "Data", icone: "calendario", resumo: "Data para consulta" },
 };
 
 /** Tipos que viram pergunta corrigida (valem pontos). Os demais só aparecem como conteúdo. */
@@ -118,6 +158,11 @@ function problemaDoQuiz(nome: string, campos: LocalField[]): string | null {
     return "Adicione pelo menos uma pergunta (Múltipla Escolha, Verdadeiro/Falso, Checkbox, Seleção ou Discursiva).";
   }
   for (const [i, c] of campos.entries()) {
+    if (!c.label.trim()) {
+      return TIPOS_PERGUNTA.includes(c.tipo)
+        ? `O ${i + 1}º item está sem a pergunta escrita.`
+        : `O ${i + 1}º item está sem título.`;
+    }
     const nomeCampo = `"${c.label || `Campo ${i + 1}`}"`;
     if (c.tipo === "multipla_escolha" || c.tipo === "checkbox") {
       const alts = parseAlternativas(c.conteudo).alternativas;
@@ -138,6 +183,69 @@ function problemaDoQuiz(nome: string, campos: LocalField[]): string | null {
     }
   }
   return null;
+}
+
+/** Um item do quiz no editor: arrastado pela alça para mudar a ordem */
+function ItemQuiz({
+  item,
+  numero,
+  ehPergunta,
+  onRenomear,
+  onRemover,
+  children,
+}: {
+  item: LocalField;
+  numero: number;
+  ehPergunta: boolean;
+  onRenomear: (label: string) => void;
+  onRemover: () => void;
+  children: React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.uid });
+  const info = INFO_TIPO[item.tipo];
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`qz-item ${ehPergunta ? "qz-item--pergunta" : "qz-item--apoio"}${isDragging ? " qz-item--arrastando" : ""}`}
+    >
+      <div className="qz-item__topo">
+        <button
+          type="button"
+          className="qz-item__alca"
+          aria-label={`Arrastar "${item.label}" para mudar a ordem`}
+          title="Arraste para mudar a ordem"
+          {...attributes}
+          {...listeners}
+        >
+          <Icone nome="arrastar" tamanho={18} />
+        </button>
+        <span className="qz-item__numero" aria-hidden>
+          {ehPergunta ? numero : "•"}
+        </span>
+        <span className={`qz-selo ${ehPergunta ? "qz-selo--pergunta" : "qz-selo--apoio"}`}>
+          {info?.nome || item.tipo}
+          {ehPergunta ? ` · ${PONTOS_POR_PERGUNTA} pts` : " · apoio"}
+        </span>
+        <button type="button" className="qz-item__remover" onClick={onRemover} aria-label={`Remover "${item.label}"`} title="Remover">
+          <Icone nome="lixeira" tamanho={16} />
+        </button>
+      </div>
+      <label className="qz-rotulo" htmlFor={`qz-enunciado-${item.uid}`}>
+        {AJUDA_TIPO[item.tipo]?.rotulo || "Título"}
+      </label>
+      <input
+        id={`qz-enunciado-${item.uid}`}
+        className="qz-input qz-input--enunciado"
+        value={item.label}
+        maxLength={255}
+        onChange={(e) => onRenomear(e.target.value)}
+        placeholder={ehPergunta ? "Escreva a pergunta" : "Título do conteúdo"}
+      />
+      {AJUDA_TIPO[item.tipo] && <p className="qz-ajuda-tipo">{AJUDA_TIPO[item.tipo].dica}</p>}
+      <div className="qz-item__corpo field-wrapper">{children}</div>
+    </li>
+  );
 }
 
 const initialFormState: QuizForm = {
@@ -165,6 +273,15 @@ export default function QuizzesSecretariaCelulasAdmin() {
   /** Erro mostrado dentro do modal, junto ao botão Salvar (o toast ficava atrás do modal) */
   const [erroForm, setErroForm] = useState<string | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
+  /** Houve mudança no editor (pergunta antes de descartar) */
+  const [alterado, setAlterado] = useState(false);
+  const [confirmarDescarte, setConfirmarDescarte] = useState(false);
+  const [quizParaExcluir, setQuizParaExcluir] = useState<{ quiz: Quiz; respostas: number; alunos: number } | null>(null);
+  const sensores = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   // Componentes de alternativas exigem `options`; ela chega via additionalProps no render
   const fieldOptions = [
@@ -195,9 +312,9 @@ export default function QuizzesSecretariaCelulasAdmin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, ms = 3200) => {
     setToast(msg);
-    window.setTimeout(() => setToast(null), 2200);
+    window.setTimeout(() => setToast(null), ms);
   };
 
   const loadData = async () => {
@@ -252,42 +369,45 @@ export default function QuizzesSecretariaCelulasAdmin() {
   };
 
   const handleToggle = async (id: number) => {
+    const quiz = quizzes.find((q) => q.id === id);
+    if (!quiz) return;
+    const ativo = !quiz.ativo;
     try {
-      const quiz = quizzes.find((q) => q.id === id);
-      if (!quiz) return;
-
-      const camposLimpos = (quiz.campos || []).map(
-        (campo: CampoVinculado, index: number) => ({
-          id_campo: campo.id_campo,
-          label: campo.label || "",
-          conteudo: campo.conteudo || "",
-          ordem: index,
-        })
-      );
-
-      await api.put(`/quiz/${id}`, {
-        titulo: quiz.titulo,
-        descricao: quiz.descricao,
-        ativo: quiz.ativo === 1 ? false : true,
-        campos: camposLimpos,
-      });
-
-      await fetchQuizzes();
-
-      // Se o quiz alterado é o que está selecionado, atualizar a visualização
-      if (selectedQuiz && selectedQuiz.id === id) {
-        const res = await api.get(`/quiz/${id}`);
-        const q = res.data;
-        setSelectedQuiz({
-          id: q.id_quiz ?? q.id ?? id,
-          titulo: q.titulo,
-          descricao: q.descricao ?? "",
-          ativo: q.ativo ?? 1,
-          campos: q.campos ?? [],
-        });
-      }
+      // Só o status: reenviar as perguntas aqui recriava todos os campos do quiz
+      await api.put(`/quiz/${id}`, { ativo });
+      const atualizar = (q: Quiz) => (q.id === id ? { ...q, ativo: ativo ? 1 : 0 } : q);
+      setQuizzes((lista) => lista.map(atualizar));
+      setSelectedQuiz((sel) => (sel ? atualizar(sel) : sel));
+      showToast(ativo ? "Quiz liberado para os alunos." : "Quiz escondido dos alunos.");
     } catch (error) {
       console.error("Erro ao alternar quiz:", error);
+      showToast("Não foi possível alterar o quiz. Tente de novo.");
+    }
+  };
+
+  /** Excluir: avisa antes quantas respostas de alunos vão junto */
+  const pedirExclusao = async (quiz: Quiz) => {
+    try {
+      const { data } = await api.get(`/quiz/${quiz.id}/total-respostas`);
+      setQuizParaExcluir({ quiz, respostas: Number(data?.respostas) || 0, alunos: Number(data?.alunos) || 0 });
+    } catch {
+      setQuizParaExcluir({ quiz, respostas: 0, alunos: 0 });
+    }
+  };
+
+  const excluirQuiz = async () => {
+    if (!quizParaExcluir) return;
+    const id = quizParaExcluir.quiz.id;
+    try {
+      await api.delete(`/quiz/${id}`);
+      setQuizzes((lista) => lista.filter((q) => q.id !== id));
+      setSelectedQuiz((sel) => (sel?.id === id ? null : sel));
+      showToast("Quiz excluído.");
+    } catch (erro) {
+      const err = erro as ErroApi;
+      showToast(err?.response?.data?.error || "Não foi possível excluir o quiz.");
+    } finally {
+      setQuizParaExcluir(null);
     }
   };
 
@@ -348,25 +468,33 @@ export default function QuizzesSecretariaCelulasAdmin() {
     }
 
     setErroForm(null);
+    setAlterado(true);
     setFields((prev) => [
       ...prev,
       createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
     ]);
+    // Leva a tela até o item novo
+    setTimeout(() => document.querySelector(".qz-lista > li:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
   };
 
-  const moverField = (uid: number, dir: -1 | 1) => {
+  const aoSoltarItem = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
     setFields((prev) => {
-      const i = prev.findIndex((f) => f.uid === uid);
-      const j = i + dir;
-      if (i < 0 || j < 0 || j >= prev.length) return prev;
-      const arr = [...prev];
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-      return arr;
+      const de = prev.findIndex((f) => f.uid === active.id);
+      const para = prev.findIndex((f) => f.uid === over.id);
+      return arrayMove(prev, de, para);
     });
+    setAlterado(true);
   };
 
   const removeField = (uid: number) => {
     setFields((prev) => prev.filter((f) => f.uid !== uid));
+    setAlterado(true);
+  };
+
+  const atualizarItem = (uid: number, mudanca: Partial<LocalField>) => {
+    setFields((prev) => prev.map((f) => (f.uid === uid ? { ...f, ...mudanca } : f)));
+    setAlterado(true);
   };
 
   const openCreateModal = () => {
@@ -374,6 +502,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
     setQuizToEdit(null);
     setFields([]);
     setErroForm(null);
+    setAlterado(false);
     setShowFormModal(true);
     setTimeout(() => nameRef.current?.focus(), 100);
   };
@@ -426,6 +555,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
       });
 
       setFields(incomingFields);
+      setAlterado(false);
+      setErroForm(null);
       setQuizToEdit(q.id_quiz ?? q.id ?? id);
       setShowFormModal(true);
       setTimeout(() => nameRef.current?.focus(), 100);
@@ -435,7 +566,16 @@ export default function QuizzesSecretariaCelulasAdmin() {
     }
   };
 
+  /** Fechar o editor: com mudanças não salvas, pergunta antes */
+  const pedirFechar = () => {
+    if (acaoSalvar.executando) return;
+    if (alterado) setConfirmarDescarte(true);
+    else closeFormModal();
+  };
+
   const closeFormModal = () => {
+    setConfirmarDescarte(false);
+    setAlterado(false);
     setShowFormModal(false);
     setErroForm(null);
     setQuizToEdit(null);
@@ -477,7 +617,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       const camposPayload = processedFields.map((f, index) => ({
         id_campo: f.id_campo,
-        label: f.label ?? "",
+        label: (f.label ?? "").trim(),
         // O banco guarda texto: Verdadeiro/Falso vira "true"/"false"
         conteudo: typeof f.conteudo === "boolean" ? String(f.conteudo) : f.conteudo ?? "",
         ordem: index,
@@ -485,7 +625,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       const payload = {
         titulo: currentForm.nome.trim(),
-        descricao: currentForm.descricao || null,
+        descricao: currentForm.descricao.trim() || null,
         ativo: Boolean(currentForm.ativo),
         campos: camposPayload,
       };
@@ -511,7 +651,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
       } else {
         await api.post(`/quiz`, payload);
         await fetchQuizzes();
-        showToast("Quiz criado com sucesso!");
+        showToast("Quiz criado! Agora vincule-o a um módulo em Módulos para os alunos responderem.", 5000);
       }
       closeFormModal();
     } catch (erro) {
@@ -660,6 +800,293 @@ export default function QuizzesSecretariaCelulasAdmin() {
   };
 
 
+  const perguntasNoEditor = fields.filter((f) => TIPOS_PERGUNTA.includes(f.tipo)).length;
+  const tipoDoCampo = (c: CampoVinculado) =>
+    String(c.tipo_campo || availableFields.find((a) => a.id_campo === c.id_campo)?.tipo_campo || "");
+  const perguntasDo = (q: Quiz | null) => (q?.campos || []).filter((c) => TIPOS_PERGUNTA.includes(tipoDoCampo(c))).length;
+  const opcoesPergunta = fieldOptions.filter((o) => TIPOS_PERGUNTA.includes(o.tipo));
+  const opcoesApoio = fieldOptions.filter((o) => !TIPOS_PERGUNTA.includes(o.tipo));
+
+  const editor = showFormModal
+    ? createPortal(
+        <FocusTrapComponent
+          active={showFormModal && !labelModalOpen && !confirmarDescarte}
+          focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false, returnFocusOnDeactivate: true }}
+        >
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          <div
+            className="qz-fundo"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="qz-editor-titulo"
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && !labelModalOpen && !confirmarDescarte) pedirFechar();
+            }}
+          >
+            <div className="qz-editor">
+              <header className="qz-editor__topo">
+                <div>
+                  <p className="qz-editor__sobretitulo">Escola de Discípulos · Quiz</p>
+                  <h2 id="qz-editor-titulo">{quizToEdit ? "Editar quiz" : "Novo quiz"}</h2>
+                </div>
+                <button type="button" className="qz-fechar" onClick={pedirFechar} aria-label="Fechar">
+                  <Icone nome="fechar" tamanho={20} />
+                </button>
+              </header>
+
+              <form
+                className="qz-editor__form"
+                noValidate
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  acaoSalvar.executar(() => saveForm());
+                }}
+              >
+                <div className="qz-editor__rolagem">
+                  <details className="qz-passos" open={!quizToEdit}>
+                    <summary>
+                      <Icone nome="livro" tamanho={16} /> Como funciona o quiz
+                    </summary>
+                    <ol>
+                      <li>
+                        <strong>Dê um título</strong>
+                        <span>É o nome que o aluno vê no módulo.</span>
+                      </li>
+                      <li>
+                        <strong>Adicione as perguntas</strong>
+                        <span>
+                          Cada pergunta vale {PONTOS_POR_PERGUNTA} pontos. Em cada uma, marque a resposta certa.
+                        </span>
+                      </li>
+                      <li>
+                        <strong>Organize</strong>
+                        <span>Arraste pela alça <Icone nome="arrastar" tamanho={13} /> para mudar a ordem. O aluno vê nessa ordem.</span>
+                      </li>
+                      <li>
+                        <strong>Vincule a um módulo</strong>
+                        <span>Depois de salvar, escolha o quiz na tela de Módulos para os alunos responderem.</span>
+                      </li>
+                    </ol>
+                  </details>
+
+                  <section className="qz-secao" aria-labelledby="qz-secao-info">
+                    <h3 id="qz-secao-info" className="qz-secao__titulo">
+                      <span className="qz-secao__num">1</span> Informações
+                    </h3>
+                    <div className="qz-campo">
+                      <label className="qz-rotulo" htmlFor="quizModalTitulo">
+                        Título <span className="qz-obrigatorio">obrigatório</span>
+                      </label>
+                      <input
+                        id="quizModalTitulo"
+                        ref={nameRef}
+                        className="qz-input"
+                        value={currentForm.nome}
+                        maxLength={255}
+                        onChange={(e) => {
+                          setCurrentForm({ ...currentForm, nome: e.target.value });
+                          setAlterado(true);
+                        }}
+                        placeholder="Ex.: Quiz do Módulo 1 – Fundamentos da Fé"
+                        aria-describedby="quizModalTituloDica"
+                      />
+                      <p id="quizModalTituloDica" className="qz-dica">
+                        Nome que o aluno vê (mínimo 3 letras).
+                      </p>
+                    </div>
+                    <div className="qz-campo">
+                      <label className="qz-rotulo" htmlFor="quizModalDescricao">
+                        Instruções para o aluno <span className="qz-opcional">opcional</span>
+                      </label>
+                      <textarea
+                        id="quizModalDescricao"
+                        className="qz-input qz-input--area"
+                        value={currentForm.descricao}
+                        maxLength={2000}
+                        rows={3}
+                        onChange={(e) => {
+                          setCurrentForm({ ...currentForm, descricao: e.target.value });
+                          setAlterado(true);
+                        }}
+                        placeholder="Ex.: Responda depois de assistir à aula 1."
+                      />
+                    </div>
+                    <label className="qz-chave" htmlFor="quizModalAtivo">
+                      <input
+                        id="quizModalAtivo"
+                        type="checkbox"
+                        role="switch"
+                        checked={Boolean(currentForm.ativo)}
+                        onChange={(e) => {
+                          setCurrentForm({ ...currentForm, ativo: e.target.checked ? 1 : 0 });
+                          setAlterado(true);
+                        }}
+                      />
+                      <span className="qz-chave__trilho" aria-hidden />
+                      <span className="qz-chave__texto">
+                        <strong>{currentForm.ativo ? "Liberado para os alunos" : "Escondido dos alunos"}</strong>
+                        <small>
+                          {currentForm.ativo
+                            ? "Quem estiver no módulo vinculado já pode responder."
+                            : "Fica salvo, mas ninguém vê. Use enquanto ainda está montando."}
+                        </small>
+                      </span>
+                    </label>
+                  </section>
+
+                  <section className="qz-secao" aria-labelledby="qz-secao-perguntas">
+                    <div className="qz-secao__cabecalho">
+                      <h3 id="qz-secao-perguntas" className="qz-secao__titulo">
+                        <span className="qz-secao__num">2</span> Perguntas e conteúdo
+                      </h3>
+                      <span className="qz-resumo">
+                        {perguntasNoEditor} {perguntasNoEditor === 1 ? "pergunta" : "perguntas"} ·{" "}
+                        <strong>{perguntasNoEditor * PONTOS_POR_PERGUNTA} pontos</strong>
+                      </span>
+                    </div>
+                    <p className="qz-dica">
+                      O aluno vê nesta ordem. Arraste pela alça <Icone nome="arrastar" tamanho={13} /> para reorganizar.
+                      O conteúdo de apoio (texto, vídeo, link, arquivo) aparece entre as perguntas e não vale pontos.
+                    </p>
+
+                    {fields.length === 0 ? (
+                      <div className="qz-vazio">
+                        <Icone nome="lista" tamanho={30} />
+                        <p>Nenhuma pergunta ainda. Escolha um tipo abaixo para começar.</p>
+                      </div>
+                    ) : (
+                      <DndContext
+                        sensors={sensores}
+                        collisionDetection={closestCenter}
+                        onDragEnd={aoSoltarItem}
+                        accessibility={{
+                          screenReaderInstructions: {
+                            draggable:
+                              "Para mudar a ordem, aperte espaço ou Enter, use as setas e aperte espaço ou Enter de novo para soltar. Esc cancela.",
+                          },
+                          announcements: {
+                            onDragStart: () => "Item pego.",
+                            onDragOver: ({ over }) =>
+                              over ? `Sobre a posição ${fields.findIndex((f) => f.uid === over.id) + 1}.` : undefined,
+                            onDragEnd: ({ over }) =>
+                              over ? `Solto na posição ${fields.findIndex((f) => f.uid === over.id) + 1}.` : undefined,
+                            onDragCancel: () => "Cancelado. O item voltou ao lugar.",
+                          },
+                        }}
+                      >
+                        <SortableContext items={fields.map((f) => f.uid)} strategy={verticalListSortingStrategy}>
+                          <ol className="qz-lista">
+                            {fields.map((f) => {
+                              const Component = fieldOptions.find((o) => o.tipo === f.tipo)?.component;
+                              if (!Component) return null;
+                              const ehPergunta = TIPOS_PERGUNTA.includes(f.tipo);
+                              const numero = fields.slice(0, fields.indexOf(f) + 1).filter((x) => TIPOS_PERGUNTA.includes(x.tipo)).length;
+                              const extras: Record<string, unknown> =
+                                f.tipo === "select" || f.tipo === "multipla_escolha" || f.tipo === "checkbox" ? { options: [] } : {};
+                              return (
+                                <ItemQuiz
+                                  key={f.uid}
+                                  item={f}
+                                  numero={numero}
+                                  ehPergunta={ehPergunta}
+                                  onRenomear={(label) => atualizarItem(f.uid, { label })}
+                                  onRemover={() => removeField(f.uid)}
+                                >
+                                  <Component
+                                    id={String(f.uid)}
+                                    name={`campo_${f.uid}`}
+                                    label=""
+                                    value={f.conteudo}
+                                    onChange={(v: ValorCampo) => atualizarItem(f.uid, { conteudo: v })}
+                                    {...extras}
+                                  />
+                                </ItemQuiz>
+                              );
+                            })}
+                          </ol>
+                        </SortableContext>
+                      </DndContext>
+                    )}
+
+                    <div className="qz-adicionar">
+                      <p className="qz-adicionar__titulo">
+                        Adicionar pergunta <span>vale {PONTOS_POR_PERGUNTA} pontos</span>
+                      </p>
+                      <div className="qz-adicionar__grade">
+                        {opcoesPergunta.map((opt) => (
+                          <button
+                            key={opt.tipo}
+                            type="button"
+                            className="qz-tipo qz-tipo--pergunta"
+                            title={AJUDA_TIPO[opt.tipo]?.dica}
+                            onClick={() => addField(opt.tipo)}
+                          >
+                            <Icone nome={INFO_TIPO[opt.tipo]?.icone || "lista"} tamanho={18} />
+                            <span>
+                              <strong>{INFO_TIPO[opt.tipo]?.nome || opt.label}</strong>
+                              <small>{INFO_TIPO[opt.tipo]?.resumo}</small>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="qz-adicionar__titulo">
+                        Adicionar conteúdo de apoio <span>não vale pontos</span>
+                      </p>
+                      <div className="qz-adicionar__grade">
+                        {opcoesApoio.map((opt) => (
+                          <button
+                            key={opt.tipo}
+                            type="button"
+                            className="qz-tipo"
+                            title={AJUDA_TIPO[opt.tipo]?.dica}
+                            onClick={() => addField(opt.tipo)}
+                          >
+                            <Icone nome={INFO_TIPO[opt.tipo]?.icone || "arquivo"} tamanho={18} />
+                            <span>
+                              <strong>{INFO_TIPO[opt.tipo]?.nome || opt.label}</strong>
+                              <small>{INFO_TIPO[opt.tipo]?.resumo}</small>
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <footer className="qz-editor__rodape">
+                  {erroForm ? (
+                    <p className="qz-erro" role="alert">
+                      <Icone nome="alerta" tamanho={16} /> {erroForm}
+                    </p>
+                  ) : (
+                    <p className="qz-rodape-info">
+                      {perguntasNoEditor > 0
+                        ? `${perguntasNoEditor} ${perguntasNoEditor === 1 ? "pergunta" : "perguntas"} · ${perguntasNoEditor * PONTOS_POR_PERGUNTA} pontos no total`
+                        : "Adicione pelo menos uma pergunta para salvar."}
+                    </p>
+                  )}
+                  <div className="qz-editor__botoes">
+                    <button type="button" className="qz-btn qz-btn--fantasma" onClick={pedirFechar} disabled={acaoSalvar.executando}>
+                      Cancelar
+                    </button>
+                    <BotaoCarregando
+                      type="submit"
+                      className="qz-btn qz-btn--primario"
+                      carregando={acaoSalvar.executando}
+                      textoCarregando={quizToEdit ? "Salvando…" : "Criando…"}
+                    >
+                      {quizToEdit ? "Salvar alterações" : "Criar quiz"}
+                    </BotaoCarregando>
+                  </div>
+                </footer>
+              </form>
+            </div>
+          </div>
+        </FocusTrapComponent>,
+        document.body
+      )
+    : null;
+
   return (
     <div className="quizzes-page page-with-fixed-header">
       <Header />
@@ -679,26 +1106,28 @@ export default function QuizzesSecretariaCelulasAdmin() {
               {quizzes.map((quiz) => (
                 <div
                   key={quiz.id}
-                  className={`quiz-item ${
-                    selectedQuiz?.id === quiz.id ? "selected" : ""
-                  } ${!quiz.ativo ? "inactive" : ""}`}
+                  className={`quiz-item ${selectedQuiz?.id === quiz.id ? "selected" : ""} ${!quiz.ativo ? "inactive" : ""}`}
                   role="button"
                   tabIndex={0}
                   onClick={() => handleSelectQuiz(quiz)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectQuiz(quiz);
+                    }
+                  }}
                 >
                   <div className="quiz-item__info">
                     <span className="quiz-item__name">{quiz.titulo}</span>
                   </div>
                   <button
-                    className={`btn-status ${
-                      quiz.ativo ? "active" : "inactive"
-                    }`}
+                    className={`btn-status ${quiz.ativo ? "active" : "inactive"}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleToggle(quiz.id);
                     }}
-                    title={quiz.ativo ? "Desativar quiz" : "Ativar quiz"}
+                    title={quiz.ativo ? "Esconder dos alunos" : "Liberar para os alunos"}
+                    aria-label={`${quiz.titulo}: ${quiz.ativo ? "ativo, clique para esconder dos alunos" : "inativo, clique para liberar"}`}
                   >
                     {quiz.ativo ? "Ativo" : "Inativo"}
                   </button>
@@ -711,77 +1140,94 @@ export default function QuizzesSecretariaCelulasAdmin() {
           </aside>
 
           {/* Coluna central - Visualização do Quiz */}
-          <section
-            className="panel quizzes-center"
-            aria-label="Detalhes do quiz"
-          >
+          <section className="panel quizzes-center" aria-label="Detalhes do quiz">
             {selectedQuiz ? (
               <div className="quiz-card">
                 <div className="quiz-header">
                   <div className="quiz-title-area">
                     <h2 className="quiz-title">{selectedQuiz.titulo}</h2>
-                    <span
-                      className={`badge badge-${
-                        selectedQuiz.ativo ? "active" : "inactive"
-                      }`}
-                    >
-                      {selectedQuiz.ativo ? "Ativo" : "Inativo"}
+                    <span className={`badge badge-${selectedQuiz.ativo ? "active" : "inactive"}`}>
+                      {selectedQuiz.ativo ? "Liberado para os alunos" : "Escondido dos alunos"}
                     </span>
                   </div>
                   <div className="quiz-actions">
+                    <button className="btn-edit" onClick={() => openEditModal(selectedQuiz.id)}>
+                      <Icone nome="editar" tamanho={15} /> Editar
+                    </button>
                     <button
-                      className="btn-edit"
-                      onClick={() => openEditModal(selectedQuiz.id)}
+                      className="btn-excluir-quiz"
+                      onClick={() => pedirExclusao(selectedQuiz)}
+                      aria-label={`Excluir o quiz ${selectedQuiz.titulo}`}
+                      title="Excluir quiz"
                     >
-                      Editar
+                      <Icone nome="lixeira" tamanho={16} />
                     </button>
                   </div>
                 </div>
 
                 {selectedQuiz.descricao && (
                   <div className="quiz-description">
-                    <h3>Descrição</h3>
+                    <h3>Instruções para o aluno</h3>
                     <p>{selectedQuiz.descricao}</p>
                   </div>
                 )}
 
-                <div className="quiz-meta">
-                  <div className="meta-item">
-                    <span className="meta-label">Campos:</span>
-                    <span className="meta-value">
-                      {selectedQuiz.campos?.length || 0}
-                    </span>
+                <div className="qz-numeros">
+                  <div>
+                    <strong>{perguntasDo(selectedQuiz)}</strong>
+                    <span>{perguntasDo(selectedQuiz) === 1 ? "pergunta" : "perguntas"}</span>
+                  </div>
+                  <div>
+                    <strong>{perguntasDo(selectedQuiz) * PONTOS_POR_PERGUNTA}</strong>
+                    <span>pontos</span>
+                  </div>
+                  <div>
+                    <strong>{(selectedQuiz.campos?.length || 0) - perguntasDo(selectedQuiz)}</strong>
+                    <span>conteúdos de apoio</span>
                   </div>
                 </div>
+                <p className="qz-lembrete">
+                  <Icone nome="alerta" tamanho={15} /> Para os alunos responderem, o quiz precisa estar vinculado a um módulo
+                  (tela de Módulos → editar módulo → Quiz).
+                </p>
 
                 {selectedQuiz.campos && selectedQuiz.campos.length > 0 ? (
                   <div className="quiz-fields">
-                    <h3>Campos Personalizados</h3>
-                    <div className="campos-grid">
-                      {selectedQuiz.campos.map((campo, index) => (
-                        <div key={index} className="campo-card">
-                          <div className="campo-label">
-                            {campo.label || "Sem label"}
-                          </div>
-                          <div className="campo-conteudo">
-                            {formatarConteudoCampo(campo.conteudo)}
-                          </div>
-                          {campo.obrigatorio && (
-                            <span className="campo-required">Obrigatório</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <h3>Como o aluno vê</h3>
+                    <ol className="qz-previa">
+                      {selectedQuiz.campos.map((campo, index) => {
+                        const tipo = tipoDoCampo(campo);
+                        const ehPergunta = TIPOS_PERGUNTA.includes(tipo);
+                        return (
+                          <li key={index} className={`campo-card ${ehPergunta ? "campo-card--pergunta" : ""}`}>
+                            <span className={`qz-selo ${ehPergunta ? "qz-selo--pergunta" : "qz-selo--apoio"}`}>
+                              {INFO_TIPO[tipo]?.nome || "Conteúdo"}
+                              {ehPergunta ? ` · ${PONTOS_POR_PERGUNTA} pts` : ""}
+                            </span>
+                            <div className="campo-label">{campo.label || "Sem título"}</div>
+                            {tipo === "verdadeiro_falso" ? (
+                              <div className="campo-conteudo">
+                                Resposta certa: <strong>{String(campo.conteudo) === "true" ? "Verdadeiro" : "Falso"}</strong>
+                              </div>
+                            ) : tipo !== "discursiva" ? (
+                              <div className="campo-conteudo">{formatarConteudoCampo(campo.conteudo)}</div>
+                            ) : (
+                              <div className="campo-conteudo">O aluno responde escrevendo.</div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ol>
                   </div>
                 ) : (
                   <div className="quiz-empty">
-                    <p>Este quiz não possui campos cadastrados.</p>
+                    <p>Este quiz ainda não tem perguntas. Clique em Editar para adicionar.</p>
                   </div>
                 )}
               </div>
             ) : (
               <div className="quiz-placeholder">
-                <p>Selecione um quiz na lista para visualizar</p>
+                <p>Selecione um quiz na lista para ver as perguntas, ou crie um novo.</p>
               </div>
             )}
           </section>
@@ -801,11 +1247,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                     rotuloExcel="Excel"
                     onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
                   />
-                  <button
-                    type="button"
-                    className="ranking-btn-dar-pontos"
-                    onClick={() => setModalDarPontosAberto(true)}
-                  >
+                  <button type="button" className="ranking-btn-dar-pontos" onClick={() => setModalDarPontosAberto(true)}>
                     + Dar pontos
                   </button>
                 </div>
@@ -817,7 +1259,11 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       <Footer />
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
 
       <DarPontosModal
         open={modalDarPontosAberto}
@@ -825,12 +1271,14 @@ export default function QuizzesSecretariaCelulasAdmin() {
         onCancel={() => setModalDarPontosAberto(false)}
       />
 
+      {editor}
+
       <InputModal
         open={labelModalOpen}
         title={
           labelModalTipo && TIPOS_PERGUNTA.includes(labelModalTipo)
-            ? "Nova pergunta"
-            : "Novo conteúdo"
+            ? `Nova pergunta · ${INFO_TIPO[labelModalTipo]?.nome || ""}`
+            : `Novo conteúdo · ${(labelModalTipo && INFO_TIPO[labelModalTipo]?.nome) || ""}`
         }
         label={(labelModalTipo && AJUDA_TIPO[labelModalTipo]?.rotulo) || "Título do campo"}
         placeholder={
@@ -848,237 +1296,32 @@ export default function QuizzesSecretariaCelulasAdmin() {
         }}
       />
 
-      {/* FORM MODAL */}
-      {showFormModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
-            <h2>{quizToEdit ? "Editar Quiz" : "Criar Novo Quiz"}</h2>
+      <ConfirmModal
+        open={confirmarDescarte}
+        title="Descartar alterações?"
+        message="Você mudou este quiz e ainda não salvou. Se sair agora, as mudanças se perdem."
+        confirmLabel="Descartar"
+        cancelLabel="Continuar editando"
+        variant="danger"
+        onConfirm={closeFormModal}
+        onCancel={() => setConfirmarDescarte(false)}
+      />
 
-            <details className="quiz-ajuda" open={!quizToEdit}>
-              <summary>Como montar um quiz</summary>
-              <ol>
-                <li>Dê um <strong>título</strong> (é o nome que o aluno vê).</li>
-                <li>
-                  Adicione as <strong>perguntas</strong> nos botões verdes. Cada pergunta vale 10 pontos.
-                  Em cada uma, <strong>marque a resposta certa</strong>.
-                </li>
-                <li>
-                  Se quiser, adicione <strong>conteúdo de apoio</strong> (texto, vídeo, link, arquivo) — aparece
-                  para o aluno na mesma ordem, mas não vale pontos.
-                </li>
-                <li>
-                  Clique em <strong>Salvar</strong>. Depois vincule o quiz a um módulo na tela de Módulos para os
-                  alunos responderem.
-                </li>
-              </ol>
-            </details>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                acaoSalvar.executar(() => saveForm());
-              }}
-            >
-              <label htmlFor="quizModalTitulo">Título *</label>
-              <input
-                id="quizModalTitulo"
-                ref={nameRef}
-                value={currentForm.nome}
-                onChange={(e) =>
-                  setCurrentForm({ ...currentForm, nome: e.target.value })
-                }
-                required
-                minLength={3}
-                placeholder="Ex: Quiz do Módulo 1 – Fundamentos da Fé"
-                aria-describedby="quizModalTituloDica"
-              />
-              <p id="quizModalTituloDica" className="quiz-dica">
-                Nome que aparece para o aluno e na lista de quizzes (mínimo 3 letras).
-              </p>
-
-              <label htmlFor="quizModalDescricao">Descrição (opcional)</label>
-              <textarea
-                id="quizModalDescricao"
-                value={currentForm.descricao}
-                onChange={(e) =>
-                  setCurrentForm({ ...currentForm, descricao: e.target.value })
-                }
-                rows={4}
-                placeholder="Ex: Responda depois de assistir à aula 1."
-                aria-describedby="quizModalDescricaoDica"
-              />
-              <p id="quizModalDescricaoDica" className="quiz-dica">
-                Instrução mostrada ao aluno antes das perguntas.
-              </p>
-
-              <label htmlFor="quizModalAtivo">Situação</label>
-              <select
-                id="quizModalAtivo"
-                value={currentForm.ativo}
-                onChange={(e) =>
-                  setCurrentForm({
-                    ...currentForm,
-                    ativo: Number(e.target.value),
-                  })
-                }
-              >
-                <option value={1}>Ativo</option>
-                <option value={0}>Inativo</option>
-              </select>
-              <p className="quiz-dica">
-                <strong>Ativo</strong>: alunos podem responder. <strong>Inativo</strong>: fica salvo, mas escondido
-                dos alunos (use enquanto ainda está montando).
-              </p>
-
-              <h3>Perguntas e conteúdo</h3>
-              <p className="quiz-dica">
-                Aparecem para o aluno nesta ordem. Use ↑ e ↓ para reorganizar.
-              </p>
-
-              <div className="fields-container">
-                {fields.length === 0 && (
-                  <p className="muted">Nenhum campo adicionado.</p>
-                )}
-
-                {fields.map((f, idx) => {
-                  const Component = fieldOptions.find(
-                    (o) => o.tipo === f.tipo
-                  )?.component;
-                  if (!Component) return null;
-
-                  // Propriedades adicionais para campos específicos
-                  const additionalProps: Record<string, unknown> = {};
-
-                  if (
-                    f.tipo === "select" ||
-                    f.tipo === "multipla_escolha" ||
-                    f.tipo === "checkbox"
-                  ) {
-                    additionalProps.options = [];
-                  }
-
-                  return (
-                    <div key={f.uid} className="field-wrapper">
-                      <div className="quiz-campo-tipo">
-                        <span className={`quiz-campo-badge ${TIPOS_PERGUNTA.includes(f.tipo) ? "pergunta" : "apoio"}`}>
-                          {fieldOptions.find((o) => o.tipo === f.tipo)?.label}
-                          {TIPOS_PERGUNTA.includes(f.tipo) ? " · vale 10 pts" : " · não vale pontos"}
-                        </span>
-                        {AJUDA_TIPO[f.tipo] && <p className="quiz-dica">{AJUDA_TIPO[f.tipo].dica}</p>}
-                      </div>
-                      <div className="dynamic-field-row">
-                        <Component
-                          id={String(f.uid)}
-                          name={`campo_${f.uid}`}
-                          label={f.label}
-                          value={f.conteudo}
-                          onChange={(v: ValorCampo) =>
-                            setFields((prev) =>
-                              prev.map((fld) =>
-                                fld.uid === f.uid
-                                  ? { ...fld, conteudo: v }
-                                  : fld
-                              )
-                            )
-                          }
-                          {...additionalProps}
-                        />
-                        <div className="quiz-campo-ordem">
-                          <button
-                            type="button"
-                            className="field-move-btn"
-                            onClick={() => moverField(f.uid, -1)}
-                            disabled={idx === 0}
-                            title="Subir"
-                            aria-label="Subir campo"
-                          >
-                            ↑
-                          </button>
-                          <button
-                            type="button"
-                            className="field-move-btn"
-                            onClick={() => moverField(f.uid, 1)}
-                            disabled={idx === fields.length - 1}
-                            title="Descer"
-                            aria-label="Descer campo"
-                          >
-                            ↓
-                          </button>
-                        </div>
-                        <button
-                          type="button"
-                          className="field-remove-btn"
-                          onClick={() => removeField(f.uid)}
-                          title="Remover campo"
-                        >
-                          <Icone nome="fechar" tamanho={16} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <p className="quiz-grupo-titulo">Adicionar pergunta (vale pontos)</p>
-              <div className="field-add-buttons">
-                {fieldOptions
-                  .filter((opt) => TIPOS_PERGUNTA.includes(opt.tipo))
-                  .map((opt) => (
-                    <button
-                      key={opt.tipo}
-                      type="button"
-                      className="btn-add-pergunta"
-                      title={AJUDA_TIPO[opt.tipo]?.dica}
-                      onClick={() => addField(opt.tipo)}
-                    >
-                      + {opt.label}
-                    </button>
-                  ))}
-              </div>
-              <p className="quiz-grupo-titulo">Adicionar conteúdo de apoio (não vale pontos)</p>
-              <div className="field-add-buttons">
-                {fieldOptions
-                  .filter((opt) => !TIPOS_PERGUNTA.includes(opt.tipo))
-                  .map((opt) => (
-                    <button
-                      key={opt.tipo}
-                      type="button"
-                      title={AJUDA_TIPO[opt.tipo]?.dica}
-                      onClick={() => addField(opt.tipo)}
-                    >
-                      + {opt.label}
-                    </button>
-                  ))}
-              </div>
-
-              {erroForm && (
-                <div className="quiz-erro-form" role="alert">
-                  {erroForm}
-                </div>
-              )}
-
-              <div className="modal-actions">
-                <BotaoCarregando
-                  type="submit"
-                  className="save-btn"
-                  carregando={acaoSalvar.executando}
-                  textoCarregando={quizToEdit ? "Salvando alterações…" : "Criando quiz…"}
-                >
-                  Salvar
-                </BotaoCarregando>
-
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={closeFormModal}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={!!quizParaExcluir}
+        title="Excluir quiz"
+        message={
+          quizParaExcluir && quizParaExcluir.respostas > 0
+            ? `"${quizParaExcluir.quiz.titulo}" já foi respondido por ${quizParaExcluir.alunos} ${quizParaExcluir.alunos === 1 ? "aluno" : "alunos"} (${quizParaExcluir.respostas} respostas). Excluir apaga essas respostas e não tem volta. Para só esconder dos alunos, deixe o quiz Inativo.`
+            : `Excluir "${quizParaExcluir?.quiz.titulo || "este quiz"}"? Esta ação não pode ser desfeita.`
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={excluirQuiz}
+        textoCarregando="Excluindo…"
+        onCancel={() => setQuizParaExcluir(null)}
+      />
     </div>
   );
 }
