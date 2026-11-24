@@ -50,7 +50,7 @@ const StaffUser: React.FC = () => {
         {!erro && !estrutura && <p className="staff-pagina__carregando">Carregando…</p>}
         {estrutura && <StaffOrganograma estrutura={estrutura} mostrarCabecalho={false} />}
 
-        <p className="staff-pagina__voltar">
+        <p className="staff-pagina__voltar no-print">
           <Link to={isAdmin ? "/portal/admin" : "/portal/usuario"}>← Voltar ao Portal</Link>
         </p>
       </main>
