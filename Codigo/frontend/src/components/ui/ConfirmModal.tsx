@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import FocusTrapComponent from "./FocusTrap";
 import "./ConfirmModal.css";
 
@@ -66,7 +67,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
   if (!open) return null;
 
-  return (
+  // No fim do <body>: este modal costuma abrir por cima de outro (ex.: "Nome do campo" sobre o
+  // editor de formulário). Com a mesma camada, o que vinha antes no HTML ficava escondido embaixo.
+  return createPortal(
     <FocusTrapComponent
       active={open}
       focusTrapOptions={{
@@ -126,7 +129,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
       </div>
       </div>
-    </FocusTrapComponent>
+    </FocusTrapComponent>,
+    document.body
   );
 };
 
