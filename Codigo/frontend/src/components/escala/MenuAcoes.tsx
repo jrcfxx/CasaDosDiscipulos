@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from "react";
+import Icone from "../ui/Icone";
 
 export interface ItemMenu {
   rotulo: string;
@@ -56,7 +57,7 @@ const MenuAcoes: React.FC<{ rotulo?: string; itens: ItemMenu[]; alinhar?: "esque
         onClick={() => setAberto((v) => !v)}
       >
         {rotulo}
-        <span aria-hidden className="esc-menu__seta">▾</span>
+        <Icone nome="abrir" tamanho={14} className="esc-menu__seta" />
       </button>
       {aberto && (
         <div

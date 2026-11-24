@@ -6,6 +6,7 @@ import "../../style/RelatorioFormulario.css";
 import BotoesExportar from "../ui/BotoesExportar";
 import { exportarRelatorioFormulario } from "../../utils/exportacoes";
 import { exportarPdf } from "../../utils/exportarPdf";
+import Icone from "../ui/Icone";
 
 interface Props {
   idFormulario: number;
@@ -235,7 +236,16 @@ const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia, titulo
                                       : `${unidade} em andamento`
                                 }
                               >
-                                {s.situacao === "enviado" ? (s.envios > 1 ? `✓${s.envios}` : "✓") : s.situacao === "faltou" ? "✕" : "·"}
+                                {s.situacao === "enviado" ? (
+                                  <>
+                                    <Icone nome="check" tamanho={15} />
+                                    {s.envios > 1 && s.envios}
+                                  </>
+                                ) : s.situacao === "faltou" ? (
+                                  <Icone nome="fechar" tamanho={15} />
+                                ) : (
+                                  "·"
+                                )}
                               </span>
                               <span className="sr-only">
                                 {s.situacao === "enviado" ? "enviado" : s.situacao === "faltou" ? "não enviado" : "em andamento"}
@@ -271,8 +281,8 @@ const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia, titulo
               </div>
               {freq && (
                 <p className="rel-legenda">
-                  <span className="rel-marca--enviado">✓</span> enviado
-                  <span className="rel-marca--faltou">✕</span> não enviado
+                  <span className="rel-marca--enviado"><Icone nome="check" tamanho={13} /></span> enviado
+                  <span className="rel-marca--faltou"><Icone nome="fechar" tamanho={13} /></span> não enviado
                   <span className="rel-marca--aguardando">·</span> {unidade} em andamento (ainda não conta como atraso)
                 </p>
               )}

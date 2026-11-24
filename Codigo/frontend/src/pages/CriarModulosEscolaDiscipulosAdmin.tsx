@@ -22,6 +22,7 @@ import UploadField from "../components/fields/UploadField";
 import VideoField from "../components/fields/VideoField";
 import QuizField from "../components/fields/QuizField";
 import type { ValorCampo } from "../types/campoConteudo";
+import Icone from "../components/ui/Icone";
 
 // Tipos de campos disponíveis
 const fieldOptions = [
@@ -402,7 +403,7 @@ const CriarModulosEscolaDiscipulosAdmin: React.FC = () => {
                     title="Remover campo"
                     type="button"
                   >
-                    ×
+                    <Icone nome="fechar" tamanho={18} />
                   </button>
                   <FieldComponent
                     name={f.id}

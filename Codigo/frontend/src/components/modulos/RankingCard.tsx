@@ -7,6 +7,7 @@
 import React from "react";
 import { getMedalIcon } from "../../utils/moduloConteudoUtils";
 import { ASSETS_BASE } from "../../config/api";
+import Icone, { type NomeIcone } from "../ui/Icone";
 
 export type RankItem = {
   id_usuario: number;
@@ -33,39 +34,48 @@ export function deveMostrarPosicao(dados: MinhaPosicao): boolean {
   return dados.pontuacao > 0 && dados.posicao <= LIMITE_POSICAO_VISIVEL;
 }
 
+/** Ícone que acompanha a mensagem do ranking (no lugar dos emojis do texto) */
+export function iconeDaPosicao(dados: MinhaPosicao): NomeIcone {
+  if (dados.pontuacao === 0 && dados.posicao > 1) return "foguete";
+  if (dados.posicao === 1) return "trofeu";
+  if (dados.posicao <= 3) return "chama";
+  if (dados.posicao <= 10) return "estrela";
+  return "subindo";
+}
+
 export function getMensagemMotivacional(dados: MinhaPosicao): string {
   const { posicao, pontuacao, pontuacao_primeiro, pontuacao_anterior } = dados;
   const ptsPara1 = Math.max(0, pontuacao_primeiro - pontuacao);
   const ptsParaAnterior = pontuacao_anterior != null ? pontuacao_anterior - pontuacao : null;
 
   if (pontuacao === 0 && posicao > 1) {
-    return "Conclua seu primeiro módulo para entrar no ranking! 🚀";
+    return "Conclua seu primeiro módulo para entrar no ranking!";
   }
   if (posicao > LIMITE_POSICAO_VISIVEL) {
     const ptsParaSubir = ptsParaAnterior != null && ptsParaAnterior > 0 ? ptsParaAnterior : null;
     return ptsParaSubir
-      ? `Você já tem ${pontuacao} pontos! Com mais ${ptsParaSubir} você passa mais uma pessoa. Continue! 🌱`
-      : `Você já tem ${pontuacao} pontos! Cada módulo concluído te faz subir. Continue! 🌱`;
+      ? `Você já tem ${pontuacao} pontos! Com mais ${ptsParaSubir} você passa mais uma pessoa. Continue!`
+      : `Você já tem ${pontuacao} pontos! Cada módulo concluído te faz subir. Continue!`;
   }
   if (posicao === 1) {
-    return "Você está em 1º lugar! Parabéns, continue assim! 🏆";
+    return "Você está em 1º lugar! Parabéns, continue assim!";
   }
   if (posicao === 2) {
-    return `Você está em 2º lugar! Falta apenas ${ptsPara1} ponto${ptsPara1 !== 1 ? "s" : ""} para alcançar o 1º. Vamos lá! 💪`;
+    return `Você está em 2º lugar! Falta apenas ${ptsPara1} ponto${ptsPara1 !== 1 ? "s" : ""} para alcançar o 1º. Vamos lá!`;
   }
   if (posicao === 3) {
     const parte2 = ptsParaAnterior != null && ptsParaAnterior > 0
       ? `Faltam ${ptsParaAnterior} pts para o 2º e `
       : "";
-    return `Você está em 3º lugar! ${parte2}${ptsPara1} pts para o 1º. Continue! 🔥`;
+    return `Você está em 3º lugar! ${parte2}${ptsPara1} pts para o 1º. Continue!`;
   }
   if (posicao <= 5) {
-    return `Você está em ${posicao}º lugar. Faltam ${ptsPara1} pontos para o top 3. Não desista! 🌟`;
+    return `Você está em ${posicao}º lugar. Faltam ${ptsPara1} pontos para o top 3. Não desista!`;
   }
   if (posicao <= 10) {
-    return `Você está em ${posicao}º lugar. Os primeiros lugares estão a ${ptsPara1} pontos. Continue avançando! 📈`;
+    return `Você está em ${posicao}º lugar. Os primeiros lugares estão a ${ptsPara1} pontos. Continue avançando!`;
   }
-  return `Você está em ${posicao}º lugar. Cada módulo concluído te aproxima do top 10. Vamos! 🎯`;
+  return `Você está em ${posicao}º lugar. Cada módulo concluído te aproxima do top 10. Vamos!`;
 }
 
 interface RankingCardProps {
@@ -148,7 +158,10 @@ export default function RankingCard({
               )}
             </p>
           )}
-          <p className="ranking-mensagem-motivacional">{mensagem}</p>
+          <p className="ranking-mensagem-motivacional">
+            <Icone nome={minhaPosicao ? iconeDaPosicao(minhaPosicao) : "estrela"} tamanho={16} />
+            <span>{mensagem}</span>
+          </p>
         </div>
       )}
       <div className="ranking-list">

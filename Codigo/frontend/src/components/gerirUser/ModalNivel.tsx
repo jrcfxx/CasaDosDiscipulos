@@ -1,6 +1,7 @@
 import React from "react";
 import type { NivelModal } from "./tipos";
 import BotaoCarregando from "../ui/BotaoCarregando";
+import Icone from "../../components/ui/Icone";
 
 interface Props {
   nivelModal: NivelModal;
@@ -16,7 +17,7 @@ const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSa
       <div className="modal">
         <div className="cd-modal-header">
           <div className="cd-modal-header-content">
-            <span className="cd-modal-icon" aria-hidden>🎓</span>
+            <span className="cd-modal-icon" aria-hidden><Icone nome="formatura" tamanho={26} /></span>
             <div>
               <h2 className="cd-modal-title">
                 {nivelModal.id_nivel ? "Editar Nível" : "Novo Nível"}
@@ -36,7 +37,7 @@ const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSa
             title="Fechar"
             aria-label="Fechar"
           >
-            ×
+            <Icone nome="fechar" tamanho={18} />
           </button>
         </div>
 

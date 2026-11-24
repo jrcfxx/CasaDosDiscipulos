@@ -6,27 +6,27 @@ import { getLimitesPorArea } from "../config/ministerioCampos.js";
  */
 
 export const SLOT_META = {
-  vocal: { nome: "Vocal", icone: "🎤", ordem: 1 },
-  violao: { nome: "Violão", icone: "🎸", ordem: 2 },
-  guitarra: { nome: "Guitarra", icone: "🎸", ordem: 3 },
-  baixo: { nome: "Baixo", icone: "🎸", ordem: 4 },
-  teclado: { nome: "Teclado", icone: "🎹", ordem: 5 },
-  piano: { nome: "Piano", icone: "🎹", ordem: 6 },
-  bateria: { nome: "Bateria", icone: "🥁", ordem: 7 },
-  percussao: { nome: "Percussão", icone: "🥁", ordem: 8 },
-  violino: { nome: "Violino", icone: "🎻", ordem: 9 },
-  violoncelo: { nome: "Violoncelo", icone: "🎻", ordem: 10 },
-  saxofone: { nome: "Saxofone", icone: "🎷", ordem: 11 },
-  trompete: { nome: "Trompete", icone: "🎺", ordem: 12 },
-  outro: { nome: "Outro", icone: "🎵", ordem: 99 },
-  operador_som: { nome: "Operador de som", icone: "🔊", ordem: 1 },
-  projecao: { nome: "Projeção", icone: "📽️", ordem: 2 },
-  transmissao: { nome: "Transmissão", icone: "📡", ordem: 3 },
-  mesa: { nome: "Mesa de som", icone: "🎚️", ordem: 4 },
-  portaria: { nome: "Portaria", icone: "🚪", ordem: 1 },
-  boas_vindas: { nome: "Boas-vindas", icone: "🤝", ordem: 2 },
-  cadastro: { nome: "Cadastro", icone: "📝", ordem: 3 },
-  coordenacao: { nome: "Coordenação", icone: "📋", ordem: 4 },
+  vocal: { nome: "Vocal", icone: "microfone", ordem: 1 },
+  violao: { nome: "Violão", icone: "guitarra", ordem: 2 },
+  guitarra: { nome: "Guitarra", icone: "guitarra", ordem: 3 },
+  baixo: { nome: "Baixo", icone: "guitarra", ordem: 4 },
+  teclado: { nome: "Teclado", icone: "teclado", ordem: 5 },
+  piano: { nome: "Piano", icone: "teclado", ordem: 6 },
+  bateria: { nome: "Bateria", icone: "bateria", ordem: 7 },
+  percussao: { nome: "Percussão", icone: "bateria", ordem: 8 },
+  violino: { nome: "Violino", icone: "musica", ordem: 9 },
+  violoncelo: { nome: "Violoncelo", icone: "musica", ordem: 10 },
+  saxofone: { nome: "Saxofone", icone: "musica", ordem: 11 },
+  trompete: { nome: "Trompete", icone: "musica", ordem: 12 },
+  outro: { nome: "Outro", icone: "musica", ordem: 99 },
+  operador_som: { nome: "Operador de som", icone: "som", ordem: 1 },
+  projecao: { nome: "Projeção", icone: "projecao", ordem: 2 },
+  transmissao: { nome: "Transmissão", icone: "transmissao", ordem: 3 },
+  mesa: { nome: "Mesa de som", icone: "mesa", ordem: 4 },
+  portaria: { nome: "Portaria", icone: "porta", ordem: 1 },
+  boas_vindas: { nome: "Boas-vindas", icone: "acolhida", ordem: 2 },
+  cadastro: { nome: "Cadastro", icone: "cadastro", ordem: 3 },
+  coordenacao: { nome: "Coordenação", icone: "coordenacao", ordem: 4 },
 };
 
 export const SLOTS_PADRAO_AREA = {
@@ -61,9 +61,9 @@ export function chaveSlotDeDetalhes(areaNome, detalhes) {
 
 export function metaSlot(chave, areaNome) {
   if (chave === "_geral") {
-    return { nome: areaNome || "Equipe", icone: "📋", ordem: 0 };
+    return { nome: areaNome || "Equipe", icone: "equipe", ordem: 0 };
   }
-  return SLOT_META[chave] || { nome: chave, icone: "•", ordem: 50 };
+  return SLOT_META[chave] || { nome: chave, icone: "musica", ordem: 50 };
 }
 
 export function horaDeDatetime(value) {

@@ -3,6 +3,7 @@ import { SelectFieldProps } from "../../types";
 import { parseAlternativas, type ConteudoAlternativas } from "../../types/campoConteudo";
 import "../../style/tokens.css";
 import "../../style/form.css";
+import Icone from "../../components/ui/Icone";
 
 /**
  * CheckboxField Component
@@ -120,7 +121,7 @@ const CheckboxField: React.FC<SelectFieldProps> = ({
               disabled={disabled || data.alternativas.length <= 1}
               title="Remover alternativa"
             >
-              ✕
+              <Icone nome="fechar" tamanho={16} />
             </button>
           </div>
         ))}

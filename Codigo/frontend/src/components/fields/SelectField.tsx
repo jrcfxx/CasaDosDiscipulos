@@ -3,6 +3,7 @@ import { SelectFieldProps } from "../../types";
 import { parseSelect, type ConteudoSelect } from "../../types/campoConteudo";
 import "../../style/tokens.css";
 import "../../style/form.css";
+import Icone from "../../components/ui/Icone";
 
 /**
  * SelectField Component
@@ -103,7 +104,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
                 disabled={disabled}
                 title="Remover opção"
               >
-                ✕
+                <Icone nome="fechar" tamanho={16} />
               </button>
             </div>
           ))}

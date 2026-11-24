@@ -36,6 +36,7 @@ import { exportarRespostasFormulario } from "../utils/exportacoes";
 import type { ResumoCampoResposta } from "../services/formularioRespostaService";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
+import Icone from "../components/ui/Icone";
 
 /* TYPES */
 type Formulario = {
@@ -363,7 +364,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
               </div>
             ) : null}
             <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="upload-link">
-              📄 {fileName}
+              <Icone nome="arquivo" tamanho={16} /> {fileName}
             </a>
           </div>
         );
@@ -910,8 +911,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
                               </span>
                               <span className="resposta-toggle">
                                 {expandedRespostaId === r.id_resposta
-                                  ? "▼"
-                                  : "▶"}
+                                  ? <Icone nome="abrir" tamanho={16} />
+                                  : <Icone nome="proximo" tamanho={16} />}
                               </span>
                             </div>
                             {expandedRespostaId === r.id_resposta &&
@@ -1113,7 +1114,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                           onClick={() => removeField(f.uid)}
                           title="Remover campo"
                         >
-                          ✕
+                          <Icone nome="fechar" tamanho={16} />
                         </button>
                       </div>
                     </div>

@@ -12,6 +12,7 @@ import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarCelulas } from "../utils/exportacoes";
+import Icone from "../components/ui/Icone";
 
 interface CelulaModal extends CelulaCreateUpdate {
   id_celula?: number;
@@ -344,7 +345,7 @@ export default function GerirCelulas() {
           <div className="modal">
             <div className="cd-modal-header">
               <div className="cd-modal-header-content">
-                <span className="cd-modal-icon" aria-hidden>🏠</span>
+                <span className="cd-modal-icon" aria-hidden><Icone nome="casa" tamanho={26} /></span>
                 <div>
                   <h2 className="cd-modal-title">
                     {celulaModal.id_celula ? "Editar Célula" : "Nova Célula"}
@@ -363,7 +364,7 @@ export default function GerirCelulas() {
                 title="Fechar"
                 aria-label="Fechar"
               >
-                ×
+                <Icone nome="fechar" tamanho={18} />
               </button>
             </div>
 
@@ -400,7 +401,7 @@ export default function GerirCelulas() {
               <span>Líderes *</span>
               <div className="lideres-select-wrapper">
                 <div className="lideres-search">
-                  <span className="lideres-search-icon" aria-hidden>🔍</span>
+                  <span className="lideres-search-icon" aria-hidden><Icone nome="busca" tamanho={16} /></span>
                   <input
                     type="text"
                     placeholder="Buscar líder pelo nome..."

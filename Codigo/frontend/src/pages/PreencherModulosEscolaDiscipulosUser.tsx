@@ -10,6 +10,7 @@ import quizService, { type Quiz, type QuizQuestao } from "../services/quizServic
 import { getUploadUrl } from "../services/uploadService";
 import { ASSETS_BASE } from "../config/api";
 import type { Modulo, Campo } from "../types";
+import Icone from "../components/ui/Icone";
 
 const QUESTOES_TIPOS = ["multipla_escolha", "verdadeiro_falso", "discursiva", "checkbox", "select"];
 
@@ -536,7 +537,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
           {quiz?.questoes?.length ? (
             resultado?.atingiu_50 ? (
               <div className="quiz-resultado quiz-resultado-sucesso">
-                <div className="quiz-resultado-icon">🏆</div>
+                <div className="quiz-resultado-icon"><Icone nome="trofeu" tamanho={44} /></div>
                 <h2>Parabéns! Módulo concluído!</h2>
                 <p className="quiz-resultado-subtitulo">
                   Você acertou e está pronto para o próximo desafio.
@@ -565,7 +566,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
               </div>
             ) : resultado && !resultado.atingiu_50 ? (
               <div className="quiz-resultado quiz-resultado-falha">
-                <div className="quiz-resultado-icon quiz-icon-falha">🎯</div>
+                <div className="quiz-resultado-icon quiz-icon-falha"><Icone nome="alvo" tamanho={44} /></div>
                 <h2>Tente novamente!</h2>
                 <p className="quiz-resultado-subtitulo">
                   Você precisa de pelo menos 50% para passar. Revise as questões erradas abaixo.
@@ -582,7 +583,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
 
                 {resultado.questoes_erradas && resultado.questoes_erradas.length > 0 && (
                   <div className="quiz-questoes-erradas">
-                    <h3>📋 Questões que você errou</h3>
+                    <h3><Icone nome="lista" tamanho={18} /> Questões que você errou</h3>
                     {resultado.questoes_erradas.map((q, idx) => (
                       <div key={q.id_questao} className="quiz-questao-errada">
                         <p className="quiz-errada-enunciado">{idx + 1}. {q.enunciado}</p>

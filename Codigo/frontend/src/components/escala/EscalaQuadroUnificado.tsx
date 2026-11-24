@@ -22,6 +22,7 @@ import {
   permiteParalelismoMinisterios,
 } from "../../utils/ministerioParalelismo";
 import { faixaHorario, formatarTelefone, plural, rotuloStatus } from "../../utils/escalaDatas";
+import Icone, { existeIcone } from "../ui/Icone";
 
 export interface MoverUnificadoPayload {
   membroEscalaOrigemId: number;
@@ -207,7 +208,7 @@ export function SlotDrop({
     >
       <div className="quadro-slot-header">
         <span>
-          {slot.icone} {slot.nome}
+          {existeIcone(slot.icone) && <Icone nome={slot.icone} tamanho={14} />} {slot.nome}
           {slot.limite != null ? ` (${slot.atual}/${slot.limite})` : ` (${slot.atual})`}
         </span>
         {isOver && invalido && <span className="drop-hint erro">Conflito</span>}

@@ -10,6 +10,7 @@ import {
   getFileNameFromPath,
   isImagePath,
 } from "../services/uploadService";
+import Icone from "../components/ui/Icone";
 
 export function formatarConteudoCampo(conteudo: unknown): React.ReactNode {
   if (conteudo == null || conteudo === "") return "Sem conteúdo";
@@ -42,7 +43,7 @@ export function formatarConteudoCampo(conteudo: unknown): React.ReactNode {
             </div>
           ) : null}
           <a href={url} target="_blank" rel="noopener noreferrer">
-            📄 {fileName}
+            <Icone nome="arquivo" tamanho={16} /> {fileName}
           </a>
         </div>
       );

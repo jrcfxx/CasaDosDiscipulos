@@ -64,6 +64,7 @@ import type { Ministerio } from "../services/ministerioService";
 import ModalEvento, { type FormEvento } from "../components/escala/ModalEvento";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
+import Icone from "../components/ui/Icone";
 
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -1025,13 +1026,13 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
             <div className="esc-ferramentas">
               <div className="esc-periodo">
                 <button type="button" className="esc-icone" onClick={navegarAnterior} aria-label="Período anterior">
-                  ‹
+                  <Icone nome="anterior" tamanho={20} />
                 </button>
                 <h2 className="esc-periodo__titulo" aria-live="polite">
                   {navLabel}
                 </h2>
                 <button type="button" className="esc-icone" onClick={navegarProximo} aria-label="Próximo período">
-                  ›
+                  <Icone nome="proximo" tamanho={20} />
                 </button>
                 <button
                   type="button"
@@ -1137,7 +1138,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                                 : undefined
                             }
                           >
-                            {ativo ? "✓ " : ""}
+                            {ativo && <Icone nome="check" tamanho={14} />}
                             {m.nome}
                           </button>
                         );
@@ -1292,7 +1293,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                 )}
               </div>
               <button type="button" className="btn-fechar-dashboard" onClick={fecharEvento} title="Fechar">
-                ×
+                <Icone nome="fechar" tamanho={18} />
               </button>
             </div>
 

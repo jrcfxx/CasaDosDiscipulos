@@ -1,6 +1,7 @@
 import React from "react";
 import type { Ministerio } from "../../services/ministerioService";
 import BotaoCarregando from "../ui/BotaoCarregando";
+import Icone from "../../components/ui/Icone";
 
 /** Dados do formulário de evento da escala (criar/editar) */
 export interface FormEvento {
@@ -43,7 +44,7 @@ const ModalEvento: React.FC<Props> = ({
         <div className="modal-evento-header">
           <div className="modal-evento-header-content">
             <span className="modal-evento-icon" aria-hidden>
-              📅
+              <Icone nome="calendario" tamanho={22} />
             </span>
             <div>
               <h2 id="modal-evento-titulo" className="modal-evento-title">
@@ -62,7 +63,7 @@ const ModalEvento: React.FC<Props> = ({
             onClick={onFechar}
             aria-label="Fechar"
           >
-            ×
+            <Icone nome="fechar" tamanho={18} />
           </button>
         </div>
         <form onSubmit={onSalvar} className="modal-evento-form">

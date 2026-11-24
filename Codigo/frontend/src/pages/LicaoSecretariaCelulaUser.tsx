@@ -7,6 +7,7 @@ import Footer from "../components/layout/Footer";
 import licaoService, { type Licao } from "../services/licaoService";
 import { ASSETS_BASE } from "../config/api";
 import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
+import Icone from "../components/ui/Icone";
 
 const LicaoSecretariaCelulaUser: React.FC = () => {
   const [licoes, setLicoes] = useState<Licao[]>([]);
@@ -87,7 +88,7 @@ const LicaoSecretariaCelulaUser: React.FC = () => {
                 fontSize: "0.9rem",
               }}
             >
-              📄 Baixar {fileName}
+              <Icone nome="arquivo" tamanho={16} /> Baixar {fileName}
             </a>
           </div>
         );

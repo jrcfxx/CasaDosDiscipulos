@@ -11,6 +11,7 @@ import falaAiService, {
 import { ASSETS_BASE } from "../config/api";
 import { useAuth } from "../hooks/useAuth";
 import "../style/FalaAiDiscipulo.css";
+import Icone from "../components/ui/Icone";
 
 const getAvatarUrl = (foto: string | null) =>
   foto?.startsWith("http") ? foto : foto ? `${ASSETS_BASE}${foto}` : null;
@@ -231,7 +232,7 @@ const FalaAiDiscipulo: React.FC = () => {
                   {/* Seção Palavra do dia */}
                   <section className="fala-ai-section" aria-labelledby="sec-palavra">
                     <h2 id="sec-palavra" className="fala-ai-section__titulo">
-                      <span className="fala-ai-section__icone">☀</span>
+                      <span className="fala-ai-section__icone"><Icone nome="sol" tamanho={20} /></span>
                       Palavra do dia
                       {podePublicar && (
                         <Link
@@ -264,7 +265,7 @@ const FalaAiDiscipulo: React.FC = () => {
                   {/* Seção Devocional */}
                   <section className="fala-ai-section" aria-labelledby="sec-devocional">
                     <h2 id="sec-devocional" className="fala-ai-section__titulo">
-                      <span className="fala-ai-section__icone">📖</span>
+                      <span className="fala-ai-section__icone"><Icone nome="livro" tamanho={20} /></span>
                       Devocional
                       {podePublicar && (
                         <Link

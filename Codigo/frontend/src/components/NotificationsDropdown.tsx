@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import notificacaoService, { Notificacao } from "../services/notificacaoService";
 import escalaService, { EscalaEventoCompleto } from "../services/escalaService";
 import "../style/NotificationsDropdown.css";
+import Icone from "../components/ui/Icone";
 
 function formatarData(s: string) {
   const d = new Date(s);
@@ -153,7 +154,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, 
           </div>
         ) : notificacoes.length === 0 ? (
           <div className="notif-dropdown-empty">
-            <span className="notif-empty-icon">🔔</span>
+            <span className="notif-empty-icon"><Icone nome="notificacao" tamanho={30} /></span>
             <p>Nenhuma notificação</p>
           </div>
         ) : (
@@ -170,7 +171,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, 
                 {n.mensagem && <span className="notif-item-msg">{n.mensagem}</span>}
                 <span className="notif-item-time">{formatarData(n.data_criacao)}</span>
               </div>
-              {n.tipo === "escalado" && <span className="notif-item-badge">✓</span>}
+              {n.tipo === "escalado" && <span className="notif-item-badge"><Icone nome="check" tamanho={12} /></span>}
             </button>
           ))
         )}
@@ -187,7 +188,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({ onClose, 
             <div className="notif-modal-header">
               <h3 id="notif-modal-title">{detalheNotif.titulo}</h3>
               <button type="button" className="notif-modal-close" onClick={fecharDetalhe} aria-label="Fechar">
-                ×
+                <Icone nome="fechar" tamanho={18} />
               </button>
             </div>
             {loadingDetalhe ? (

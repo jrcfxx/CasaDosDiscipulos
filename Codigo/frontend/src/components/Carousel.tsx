@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./Carousel.css";
 import { ASSETS_BASE } from "../config/api";
+import Icone from "./ui/Icone";
 
 interface CarouselItem {
   id_evento: number;
@@ -94,14 +95,14 @@ const Carousel: React.FC<CarouselProps> = ({
               onClick={goToPrevious}
               aria-label="Slide anterior"
             >
-              ‹
+              <Icone nome="anterior" tamanho={20} />
             </button>
             <button
               className="carousel-button carousel-button-next"
               onClick={goToNext}
               aria-label="Próximo slide"
             >
-              ›
+              <Icone nome="proximo" tamanho={20} />
             </button>
           </>
         )}

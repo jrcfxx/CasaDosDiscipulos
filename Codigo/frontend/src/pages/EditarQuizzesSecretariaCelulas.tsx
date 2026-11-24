@@ -6,6 +6,7 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Toast from "../components/ui/Toast";
 import ConfirmModal from "../components/ui/ConfirmModal";
+import Icone from "../components/ui/Icone";
 
 type Campo = { id: number; rotulo: string };
 
@@ -77,7 +78,7 @@ export default function EditarQuizzesSecretariaCelulas() {
 
   // --- SALVAR (simula update) ---
   const salvarAlteracoes = () => {
-    setToast("Alterações salvas com sucesso ✅");
+    setToast("Alterações salvas com sucesso");
   };
 
   const excluirFormulario = () => {
@@ -168,7 +169,7 @@ export default function EditarQuizzesSecretariaCelulas() {
                           className="cf-mini danger"
                           onClick={() => removerCampo(c.id)}
                         >
-                          ✕
+                          <Icone nome="fechar" tamanho={16} />
                         </button>
                       </div>
                     </div>
@@ -226,7 +227,7 @@ export default function EditarQuizzesSecretariaCelulas() {
               <div className="cf-right-row">
                 <span className="cf-right-text">Liberar para alunos</span>
                 <span className="cf-eye" aria-hidden>
-                  👁
+                  <Icone nome="olho" tamanho={18} />
                 </span>
               </div>
               <div className="cf-right-rule" />

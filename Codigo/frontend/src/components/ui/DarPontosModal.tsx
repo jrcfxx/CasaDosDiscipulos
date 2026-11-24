@@ -7,6 +7,7 @@ import React, { useEffect, useState, useRef } from "react";
 import FocusTrapComponent from "./FocusTrap";
 import usuarioService from "../../services/usuarioService";
 import "./DarPontosModal.css";
+import Icone from "./Icone";
 
 
 export interface DarPontosModalProps {
@@ -180,7 +181,7 @@ const DarPontosModal: React.FC<DarPontosModalProps> = ({
                   title="Limpar seleção"
                   aria-label="Limpar seleção"
                 >
-                  ×
+                  <Icone nome="fechar" tamanho={18} />
                 </button>
               )}
               {mostrarLista && (

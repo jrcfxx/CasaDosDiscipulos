@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import escalaService, { EscalasPessoa } from "../../services/escalaService";
 import { getErrorMessage } from "../../utils/errorUtils";
 import "./ModalBuscaPessoa.css";
+import Icone from "../ui/Icone";
 
 interface Props {
   usuarios: { id_usuario: number; nome: string }[];
@@ -86,7 +87,7 @@ const ModalBuscaPessoa: React.FC<Props> = ({
             onClick={onClose}
             aria-label="Fechar"
           >
-            ×
+            <Icone nome="fechar" tamanho={18} />
           </button>
         </div>
 

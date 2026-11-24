@@ -4,6 +4,7 @@ import { formatarTelefoneInput } from "../../utils/telefoneUtils";
 import type { Ministerio } from "../../services/ministerioService";
 import type { Nivel, UsuarioModal } from "./tipos";
 import BotaoCarregando from "../ui/BotaoCarregando";
+import Icone from "../../components/ui/Icone";
 
 /** Ícone de mostrar/ocultar senha */
 const IconeOlho: React.FC<{ visivel: boolean }> = ({ visivel }) =>
@@ -88,7 +89,7 @@ const ModalUsuario: React.FC<Props> = ({
       <div className="modal modal-usuario">
         <div className="cd-modal-header">
           <div className="cd-modal-header-content">
-            <span className="cd-modal-icon" aria-hidden>👤</span>
+            <span className="cd-modal-icon" aria-hidden><Icone nome="pessoa" tamanho={26} /></span>
             <div>
               <h2 className="cd-modal-title">
                 {usuarioModal.id_usuario ? "Editar Usuário" : "Novo Usuário"}
@@ -108,7 +109,7 @@ const ModalUsuario: React.FC<Props> = ({
             title="Fechar"
             aria-label="Fechar"
           >
-            ×
+            <Icone nome="fechar" tamanho={18} />
           </button>
         </div>
 

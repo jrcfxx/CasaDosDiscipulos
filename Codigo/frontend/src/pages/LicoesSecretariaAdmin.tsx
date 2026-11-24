@@ -25,6 +25,7 @@ import VideoField from "../components/fields/VideoField";
 import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
+import Icone from "../components/ui/Icone";
 
 /* TYPES */
 type LicaoForm = {
@@ -229,7 +230,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
               rel="noopener noreferrer"
               className="upload-link"
             >
-              📄 {fileName}
+              <Icone nome="arquivo" tamanho={16} /> {fileName}
             </a>
           </div>
         );
@@ -673,7 +674,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
                           onClick={() => removeField(f.uid)}
                           title="Remover campo"
                         >
-                          ✕
+                          <Icone nome="fechar" tamanho={16} />
                         </button>
                       </div>
                     </div>

@@ -22,6 +22,7 @@ import VideoField from "../components/fields/VideoField";
 import QuizField from "../components/fields/QuizField";
 import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
+import Icone from "../components/ui/Icone";
 
 /** Campo em edição na tela (o quiz vinculado entra como tipo "QUIZ") */
 type CampoEditor = { id: string; tipo: string; label: string; conteudo?: ValorCampo; campo?: Campo };
@@ -517,7 +518,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
                         title="Remover campo"
                         type="button"
                       >
-                        ×
+                        <Icone nome="fechar" tamanho={18} />
                       </button>
                       <QuizField
                         name={`quiz-${f.id}`}
@@ -543,7 +544,7 @@ const EditarModulosEscolaDiscipulosAdmin: React.FC = () => {
                       title="Remover campo"
                       type="button"
                     >
-                      ×
+                      <Icone nome="fechar" tamanho={18} />
                     </button>
                     <FieldComponent
                       name={`field-${f.id}`}

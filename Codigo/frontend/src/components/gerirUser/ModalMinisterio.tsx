@@ -2,6 +2,7 @@ import React from "react";
 import type { Ministerio } from "../../services/ministerioService";
 import type { MinisterioModal, Usuario } from "./tipos";
 import BotaoCarregando from "../ui/BotaoCarregando";
+import Icone from "../../components/ui/Icone";
 
 interface Props {
   ministerioModal: MinisterioModal;
@@ -31,7 +32,7 @@ const ModalMinisterio: React.FC<Props> = ({
       <div className="modal-ministerio">
         <div className="modal-ministerio-header cd-modal-header">
           <div className="modal-ministerio-header-content cd-modal-header-content">
-            <span className="modal-ministerio-icon cd-modal-icon" aria-hidden>⛪</span>
+            <span className="modal-ministerio-icon cd-modal-icon" aria-hidden><Icone nome="igreja" tamanho={26} /></span>
             <div>
               <h2 className="modal-ministerio-title cd-modal-title">
                 {ministerioModal.id_ministerio ? "Editar Ministério" : "Novo Ministério"}
@@ -51,7 +52,7 @@ const ModalMinisterio: React.FC<Props> = ({
             title="Fechar"
             aria-label="Fechar"
           >
-            ×
+            <Icone nome="fechar" tamanho={18} />
           </button>
         </div>
         <div className="modal-ministerio-body">

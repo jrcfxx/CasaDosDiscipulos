@@ -7,6 +7,7 @@ import escalaService, {
 } from "../../services/escalaService";
 import { getErrorMessage } from "../../utils/errorUtils";
 import "./EscalaTemplatesModal.css";
+import Icone from "../ui/Icone";
 
 type ToastVariant = "success" | "error" | "info";
 type View = "lista" | "form" | "aplicar";
@@ -407,7 +408,7 @@ const EscalaTemplatesModal: React.FC<Props> = ({
               </div>
             </div>
             <button type="button" className="modal-tpl-close" onClick={onClose} aria-label="Fechar">
-              ×
+              <Icone nome="fechar" tamanho={18} />
             </button>
           </div>
 

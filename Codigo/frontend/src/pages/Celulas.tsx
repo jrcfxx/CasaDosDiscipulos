@@ -7,6 +7,7 @@ import celulaService, {
 } from "../services/celulaService";
 import heroCelulas from "../assets/celulas/hero-celulas.jpg";
 import "../style/Celulas.css";
+import Icone from "../components/ui/Icone";
 
 const DIA_LABEL: Record<string, string> = {
   segunda: "Segunda-feira",
@@ -46,7 +47,7 @@ function CelulaCard({ celula }: { celula: Celula }) {
       <div className="celula-card__media">
         <img src={img} alt={`Célula ${celula.nome}`} loading="lazy" />
         <div className="celula-card__badge" aria-hidden="true">
-          <span className="celula-card__badge-icon">⌕</span>
+          <span className="celula-card__badge-icon"><Icone nome="busca" tamanho={13} /></span>
           <span>
             Célula de <strong>{categoriaCurta}</strong>
           </span>
@@ -133,7 +134,7 @@ const Celulas: React.FC = () => {
           <div className="celulas-hero__content">
             <label className="celulas-search" htmlFor="busca-celula">
               <span className="celulas-search__icon" aria-hidden>
-                ⌕
+                <Icone nome="busca" tamanho={18} />
               </span>
               <input
                 id="busca-celula"

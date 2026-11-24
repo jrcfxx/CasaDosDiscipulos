@@ -36,6 +36,7 @@ import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 import { getMedalIcon } from "../utils/moduloConteudoUtils";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
+import Icone from "../components/ui/Icone";
 
 /* TYPES */
 type Quiz = {
@@ -509,7 +510,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                 fontSize: "0.9rem",
               }}
             >
-              📄 {fileName}
+              <Icone nome="arquivo" tamanho={16} /> {fileName}
             </a>
           </div>
         );
@@ -852,7 +853,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                           onClick={() => removeField(f.uid)}
                           title="Remover campo"
                         >
-                          ✕
+                          <Icone nome="fechar" tamanho={16} />
                         </button>
                       </div>
                     </div>

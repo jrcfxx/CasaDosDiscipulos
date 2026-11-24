@@ -10,6 +10,7 @@ import { exportarRanking } from "../utils/exportacoes";
 import { useAuth } from "../hooks/useAuth";
 import { formatarConteudoCampo } from "../utils/moduloConteudoUtils";
 import moduloService from "../services/moduloService";
+import Icone from "../components/ui/Icone";
 
 type ModuloComProgresso = {
   id_modulo: number;
@@ -160,8 +161,8 @@ const ModulosEscolaDiscipulosUser: React.FC = () => {
                       {isOpcional(m.obrigatorio) && (
                         <span className="mod-item__opcional-badge" title="Módulo opcional">Opcional</span>
                       )}
-                      {concluido && <span style={{ marginLeft: "0.5rem" }}>✓</span>}
-                      {!disponivel && <span style={{ marginLeft: "0.5rem" }}>🔒</span>}
+                      {concluido && <span className="modulo-estado modulo-estado--ok" title="Concluído"><Icone nome="concluido" tamanho={16} /></span>}
+                      {!disponivel && <span className="modulo-estado" title="Bloqueado"><Icone nome="cadeado" tamanho={15} /></span>}
                     </div>
                   </div>
                 );

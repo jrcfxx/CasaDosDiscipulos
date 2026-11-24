@@ -18,6 +18,7 @@ import { valorUpload, type ValorCampo } from "../types/campoConteudo";
 import RelatorioFormulario from "../components/formularios/RelatorioFormulario";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarRespostasFormulario } from "../utils/exportacoes";
+import Icone from "../components/ui/Icone";
 
 type Formulario = {
   id_formulario: number;
@@ -138,7 +139,7 @@ export default function FormulariosSecretariaCelulasLeader() {
             <img src={url} alt={fileName} style={{ maxWidth: 200, maxHeight: 200 }} />
           )}
           <a href={url} target="_blank" rel="noopener noreferrer">
-            📄 {fileName}
+            <Icone nome="arquivo" tamanho={16} /> {fileName}
           </a>
         </div>
       );

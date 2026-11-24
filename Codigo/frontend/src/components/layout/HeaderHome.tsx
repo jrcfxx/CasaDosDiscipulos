@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import logoCasa from "../../assets/logo_mark.png";
 import "../../style/layout.css";
+import Icone from "../../components/ui/Icone";
 
 /**
  * Header minimalista para Home e Sobre nós - estilo Central
@@ -67,7 +68,7 @@ const HeaderHome: React.FC = () => {
           aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
           onClick={() => setMenuAberto((v) => !v)}
         >
-          <span aria-hidden>{menuAberto ? "✕" : "☰"}</span>
+          <Icone nome={menuAberto ? "fechar" : "menu"} tamanho={22} />
         </button>
       </div>
     </header>

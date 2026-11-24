@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAccessibility } from "../../contexts/AccessibilityContext";
 import "./AccessibilityBar.css";
+import Icone from "../../components/ui/Icone";
 
 /**
  * Barra de recursos de acessibilidade (tamanho do texto, alto contraste).
@@ -44,7 +45,7 @@ const AccessibilityBar: React.FC = () => {
         title="Recursos de acessibilidade (tamanho do texto, alto contraste)"
       >
         <span className="a11y-bar__icon" aria-hidden>
-          ♿
+          <Icone nome="acessibilidade" tamanho={22} />
         </span>
       </button>
       {open && (

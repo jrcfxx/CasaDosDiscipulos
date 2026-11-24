@@ -567,7 +567,7 @@ const UsuarioService = {
     await NotificacaoModel.create({
       id_usuario,
       tipo: "pontuacao_manual",
-      titulo: `Parabéns! Você ganhou ${pts} ponto${pts !== 1 ? "s" : ""}! 🎉`,
+      titulo: `Parabéns! Você ganhou ${pts} ponto${pts !== 1 ? "s" : ""}!`,
       mensagem: `Por: ${motivoStr}\n\nConfira sua posição no ranking!`,
       area_nome: null,
       id_escala_evento: null,
