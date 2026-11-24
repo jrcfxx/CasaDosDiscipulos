@@ -104,8 +104,13 @@ async function main() {
   const attAmanda = r.dados?.id_escala_atribuicao;
   r = await api("admin", "POST", "/escala/atribuicoes", { id_escala_area: M(paralelo), id_usuario: IDS.membroMidia, detalhes: {} });
   ok(r.status === 409 && r.bruto?.confirmavel === true, "mesma pessoa em 2 eventos no mesmo horário: conflito confirmável", `status ${r.status} ${JSON.stringify(r.bruto).slice(0, 160)}`);
+  r = await api("admin", "POST", "/escala/atribuicoes", { id_escala_area: L(culto), id_usuario: IDS.membroLouvor, detalhes: { instrumento: "violao" }, confirmarConflitos: true });
+  ok(r.status === 409 && r.bruto?.confirmavel === false, "mesma pessoa 2x na MESMA função: bloqueado mesmo confirmando", `status ${r.status}`);
+  r = await api("admin", "POST", "/escala/atribuicoes", { id_escala_area: L(culto), id_usuario: IDS.membroLouvor, detalhes: { instrumento: "vocal" } });
+  ok(r.status === 409 && r.bruto?.confirmavel === true, "outra função no mesmo ministério: pede confirmação", `status ${r.status} ${JSON.stringify(r.bruto).slice(0, 160)}`);
   r = await api("admin", "POST", "/escala/atribuicoes", { id_escala_area: L(culto), id_usuario: IDS.membroLouvor, detalhes: { instrumento: "vocal" }, confirmarConflitos: true });
-  ok(r.status === 409, "mesma pessoa 2x na mesma área: bloqueado mesmo confirmando", `status ${r.status}`);
+  ok(r.status === 201, "confirmando, a pessoa fica em violão e vocal", `status ${r.status}`);
+  if (r.dados?.id_escala_atribuicao) await api("admin", "DELETE", `/escala/atribuicoes/${r.dados.id_escala_atribuicao}`);
   r = await api("admin", "POST", "/escala/atribuicoes", { id_escala_area: L(culto), id_usuario: IDS.membroMidia, detalhes: { instrumento: "vocal" } });
   ok(r.status === 409 && (r.bruto?.conflitos || []).some((c) => c.tipo === "fora_do_ministerio" || c.tipo === "duplo_instrumento"), "pessoa da Mídia no Louvor do mesmo evento: conflito (fora do ministério / 2 áreas)", `status ${r.status} ${JSON.stringify(r.bruto?.conflitos?.map((c) => c.tipo))}`);
   r = await api("liderLouvor", "POST", "/escala/atribuicoes", { id_escala_area: M(culto), id_usuario: IDS.membroMidia, detalhes: {} });
@@ -179,7 +184,7 @@ async function main() {
   ok(contAno >= 1, "culto aparece na visão do ano", String(contAno));
   // totais coerentes: preenchidas = pessoas no culto
   const cultoMes = novAdmin.eventos.find((e) => e.nome === "QA Culto Domingo");
-  const pessoasCulto = Object.values(cultoMes?.instrumentos || {}).reduce((n, s) => n + s.membros.length, 0);
+  const pessoasCulto = new Set(Object.values(cultoMes?.instrumentos || {}).flatMap((s) => s.membros.map((m) => m.usuario?.id))).size;
   ok(cultoMes?.totais?.totalPessoas === pessoasCulto, "total de pessoas do evento confere com as áreas", `${cultoMes?.totais?.totalPessoas} vs ${pessoasCulto}`);
   const semMinMes = novAdmin.eventos.find((e) => e.nome === "QA Sem ministério");
   ok(!!semMinMes, "evento sem ministério aparece no mês");
@@ -208,7 +213,7 @@ async function main() {
   r = await api("liderLouvor", "PUT", "/escala/mover-membro", { membroEscalaOrigemId: attAmanda, escalaDestinoId: paralelo.id_escala_evento, instrumentoDestino: "_geral", id_escala_area: M(paralelo) });
   ok(r.status === 403, "líder do Louvor não move gente da Mídia", `status ${r.status}`);
   r = await api("admin", "POST", "/escala/mover-membro-validar", { membroEscalaOrigemId: attLucas, escalaDestinoId: virada.id_escala_evento, instrumentoDestino: "violao", id_escala_area: L(virada) });
-  ok(r.status === 200 && (r.bruto?.conflitos || r.dados?.conflitos || []).some((c) => c.tipo === "mesma_area"), "mover Lucas para evento onde já está no Louvor: aponta 'mesma área'", `status ${r.status} ${JSON.stringify(r.bruto).slice(0, 200)}`);
+  ok(r.status === 200 && (r.bruto?.conflitos || r.dados?.conflitos || []).some((c) => c.tipo === "mesma_area" || c.tipo === "mesma_funcao"), "mover Lucas para evento onde já está no Louvor: aponta a função repetida", `status ${r.status} ${JSON.stringify(r.bruto).slice(0, 200)}`);
   r = await api("thaisSemToken", "GET", "/escala/minhas");
   ok(r.status === 401, "sem login: 401", `status ${r.status}`);
 

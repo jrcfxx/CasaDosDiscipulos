@@ -1,6 +1,23 @@
 import EscalaRepository from "../repository/EscalaRepository.js";
 import MinisterioModel from "../models/MinisterioModel.js";
 import { getConfigPorArea, getLimitesPorArea } from "../config/ministerioCampos.js";
+import { chaveSlotDeDetalhes, metaSlot } from "../utils/escalaUnificada.js";
+
+function lerDetalhes(d) {
+  if (!d) return null;
+  if (typeof d === "object") return d;
+  try {
+    return JSON.parse(d);
+  } catch {
+    return null;
+  }
+}
+
+/** "Louvor (Vocal)" — ou só "Louvor" quando não há função definida */
+function areaComFuncao(areaNome, chave) {
+  const nome = areaNome || "esta área";
+  return chave && chave !== "_geral" ? `${nome} (${metaSlot(chave, areaNome).nome})` : nome;
+}
 
 /**
  * Validações de conflito e regras de negócio da Escala
@@ -41,7 +58,8 @@ class ValidadorEscala {
       idEvento,
       idAtribuicaoExcluir,
       idMinisterioDestino,
-      idArea
+      idArea,
+      { areaNome, detalhes }
     );
     if (!duploArea.valido) conflitos.push(duploArea);
 
@@ -103,7 +121,8 @@ class ValidadorEscala {
 
   /**
    * Mesma pessoa duas vezes no mesmo evento:
-   * - na MESMA área/ministério (ex.: violão e teclado no Louvor): "mesma_area", nunca permitido;
+   * - na MESMA função da mesma área (vocal e vocal): "mesma_funcao", nunca permitido;
+   * - em outra função do mesmo ministério (guitarra e vocal no Louvor): "mesma_area", exceção confirmável;
    * - em ministérios diferentes sem paralelismo: "duplo_instrumento", exceção confirmável.
    */
   async validarConflitoMesmoEvento(
@@ -111,7 +130,8 @@ class ValidadorEscala {
     idEvento,
     idAtribuicaoExcluir = null,
     idMinisterioDestino = null,
-    idAreaDestino = null
+    idAreaDestino = null,
+    { areaNome = null, detalhes = null } = {}
   ) {
     const existentes = await EscalaRepository.listarEscalasUsuarioNoEvento(
       idUsuario,
@@ -131,13 +151,30 @@ class ValidadorEscala {
       return (areaDestino && Number(e.id_escala_area) === areaDestino) || (origem && destino && origem === destino);
     });
     if (mesmaArea.length) {
-      const nome = mesmaArea[0].area_nome || "esta área";
+      const chaveDestino = chaveSlotDeDetalhes(areaNome || mesmaArea[0].area_nome, lerDetalhes(detalhes));
+      const comFuncao = mesmaArea.map((e) => ({
+        ...e,
+        chave: chaveSlotDeDetalhes(e.area_nome, lerDetalhes(e.detalhes)),
+      }));
+      const mesmaFuncao = comFuncao.find(
+        (e) => areaDestino && Number(e.id_escala_area) === areaDestino && e.chave === chaveDestino
+      );
+      if (mesmaFuncao) {
+        return {
+          tipo: "mesma_funcao",
+          valido: false,
+          mensagem: `Esta pessoa já está escalada em ${areaComFuncao(mesmaFuncao.area_nome, mesmaFuncao.chave)} neste evento.`,
+          sugestao: "Escolha outra função ou outra pessoa.",
+          detalhe: mesmaFuncao,
+        };
+      }
+      const onde = comFuncao.map((e) => areaComFuncao(e.area_nome, e.chave)).join(", ");
       return {
         tipo: "mesma_area",
         valido: false,
-        mensagem: `Esta pessoa já está escalada em ${nome} neste evento.`,
-        sugestao: `Para trocar a função, edite a escala dela em ${nome} ou arraste-a para a nova função.`,
-        detalhe: mesmaArea[0],
+        mensagem: `Esta pessoa já está escalada em ${onde} neste evento.`,
+        sugestao: "Confirme se ela vai mesmo fazer mais de uma função.",
+        detalhe: comFuncao[0],
       };
     }
 

@@ -3,6 +3,7 @@ import type { SlotInstrumento } from "../services/escalaService";
 export interface GrupoArea {
   id_escala_area: number;
   areaNome: string;
+  id_ministerio?: number | null;
   entradas: [string, SlotInstrumento][];
   /** Pessoas escaladas na área (todas as funções) */
   atual: number;
@@ -21,7 +22,14 @@ export function agruparPorArea(entradas: [string, SlotInstrumento][]): GrupoArea
   for (const [chave, slot] of ordenadas) {
     let g = porArea.get(slot.id_escala_area);
     if (!g) {
-      g = { id_escala_area: slot.id_escala_area, areaNome: slot.areaNome, entradas: [], atual: 0, limite: 0 };
+      g = {
+        id_escala_area: slot.id_escala_area,
+        areaNome: slot.areaNome,
+        id_ministerio: slot.id_ministerio ?? null,
+        entradas: [],
+        atual: 0,
+        limite: 0,
+      };
       porArea.set(slot.id_escala_area, g);
       grupos.push(g);
     }

@@ -96,24 +96,36 @@ async function main() {
   const domingo = await evento(admin, "Culto Domingo", "2032-03-07 19:00:00", "2032-03-07 21:00:00", [mLouvor, mMidia, mSom], [nomeLouvor, nomeMidia, nomeSom]);
   const [aLouvor, aMidia, aSom] = domingo.areas;
 
-  // ---------- 1. Mesma pessoa duas vezes na mesma área ----------
+  // ---------- 1. Mesma pessoa em duas funções do mesmo ministério ----------
   await EscalaService.addAtribuicao(aLouvor.id_escala_area, ana, admin, ADMIN, { instrumento: "violao" });
-  let e = await erroDe(() => EscalaService.addAtribuicao(aLouvor.id_escala_area, ana, admin, ADMIN, { instrumento: "vocal" }));
-  ok(e?.statusCode === 409, "mesma pessoa 2x na MESMA área é bloqueada");
-  e = await erroDe(() =>
-    EscalaService.addAtribuicao(aLouvor.id_escala_area, ana, admin, ADMIN, { instrumento: "vocal" }, { confirmarConflitos: true })
+  // A MESMA função duas vezes nunca passa, nem confirmando
+  let e = await erroDe(() =>
+    EscalaService.addAtribuicao(aLouvor.id_escala_area, ana, admin, ADMIN, { instrumento: "violao" }, { confirmarConflitos: true })
   );
-  ok(e?.statusCode === 409, "…e nem com confirmação passa");
-  // A pré-validação (usada pela tela antes de salvar) não pode oferecer "continuar mesmo assim"
+  ok(e?.statusCode === 409 && e.confirmavel === false, "mesma pessoa 2x na MESMA função é bloqueada, mesmo confirmando");
+  // Outra função do mesmo ministério: exceção que o líder confirma (ex.: guitarra e vocal)
   const pre = await EscalaService.validarAtribuicao(domingo.id, {
     id_escala_area: aLouvor.id_escala_area,
     id_usuario: ana,
     detalhes: { instrumento: "vocal" },
   });
   ok(
-    pre.conflitos?.some((c) => c.tipo === "mesma_area") && pre.confirmavel === false,
-    "pré-validação: mesma área = 'mesma_area', sem opção de confirmar"
+    pre.conflitos?.some((c) => c.tipo === "mesma_area" && /Violão/.test(c.mensagem)) && pre.confirmavel === true,
+    "pré-validação: outra função no mesmo ministério = 'mesma_area' confirmável, dizendo a função atual"
   );
+  e = await erroDe(() => EscalaService.addAtribuicao(aLouvor.id_escala_area, ana, admin, ADMIN, { instrumento: "vocal" }));
+  ok(e?.statusCode === 409 && e.confirmavel === true, "sem confirmar, a segunda função pede confirmação");
+  const vocal = await EscalaService.addAtribuicao(
+    aLouvor.id_escala_area, ana, admin, ADMIN, { instrumento: "vocal" }, { confirmarConflitos: true }
+  );
+  ok(!!vocal?.id_escala_atribuicao, "confirmando, ela fica em violão E vocal no Louvor");
+  // Editar o vocal para violão (que ela já faz) é bloqueado
+  e = await erroDe(() =>
+    EscalaService.updateAtribuicao(vocal.id_escala_atribuicao, { instrumento: "violao" }, admin, ADMIN, { confirmarConflitos: true })
+  );
+  ok(e?.statusCode === 409, "trocar a 2ª função para a que ela já faz é bloqueado");
+  await EscalaService.removeAtribuicao(vocal.id_escala_atribuicao, admin, ADMIN);
+  ok((await contarNoEvento(ana, domingo.id)) === 1, "removida a 2ª função, ela volta a estar 1x no evento");
 
   // ---------- 2. Mesma pessoa em duas áreas do mesmo evento ----------
   e = await erroDe(() => EscalaService.addAtribuicao(aSom.id_escala_area, ana, admin, ADMIN, null));

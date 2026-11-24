@@ -2623,25 +2623,48 @@
   border-color: rgba(244, 176, 2, 0.5);
 }
 
-/* ==================== Área com várias funções (ex.: Louvor: vocal, violão, bateria…) ==================== */
+/* ==================== Áreas da escala (um cartão por ministério) ====================
+   Sem cores novas: o mesmo teal discreto da marca para todos. A separação vem do cartão
+   (borda + faixa à esquerda) e as funções ficam recuadas sob uma linha-guia. */
 .quadro-area {
-  margin-top: 0.65rem;
+  margin-top: 0.6rem;
   padding: 0.5rem 0.55rem 0.55rem;
   border-radius: 10px;
-  border: 1px solid rgba(95, 178, 191, 0.22);
-  background: rgba(95, 178, 191, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(95, 178, 191, 0.55);
+  background: rgba(255, 255, 255, 0.025);
   min-width: 0;
 }
 
 .quadro-area.compacto {
-  margin-top: 0.35rem;
-  padding: 0.3rem;
+  margin-top: 0.45rem;
+  padding: 0.3rem 0.3rem 0.35rem;
+}
+
+/* Ministério com uma função só: o próprio cartão faz o papel do bloco */
+.quadro-area--simples {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.quadro-area.quadro-area--simples > .quadro-slot {
+  margin-top: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(95, 178, 191, 0.55);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.semana-evento .quadro-area--simples {
+  margin-top: 0.45rem;
 }
 
 .quadro-area__titulo {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   font-size: 0.82rem;
   font-weight: 700;
   color: #ebebeb;
@@ -2650,6 +2673,7 @@
 
 .quadro-area.compacto .quadro-area__titulo {
   font-size: 0.66rem;
+  padding-bottom: 0.25rem;
 }
 
 .quadro-area__titulo .icone {
@@ -2667,7 +2691,7 @@
 
 .quadro-area__total {
   font-variant-numeric: tabular-nums;
-  color: rgba(235, 235, 235, 0.7);
+  color: rgba(235, 235, 235, 0.6);
   flex-shrink: 0;
 }
 
@@ -2675,21 +2699,24 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
+  margin-left: 0.2rem;
   padding-left: 0.45rem;
-  border-left: 2px solid rgba(95, 178, 191, 0.3);
+  border-left: 1px solid rgba(95, 178, 191, 0.25);
   min-width: 0;
 }
 
 .quadro-area .quadro-slot--sub {
   margin-top: 0;
   padding: 0.35rem 0.45rem;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
 }
 
 .quadro-area .quadro-slot--sub .quadro-slot-header {
   font-size: 0.74rem;
   font-weight: 600;
+  color: rgba(235, 235, 235, 0.85);
   margin-bottom: 0.3rem;
 }
 
@@ -2698,5 +2725,6 @@
 }
 
 .semana-evento .quadro-area .quadro-area__funcoes {
+  margin-left: 0.1rem;
   padding-left: 0.25rem;
 }

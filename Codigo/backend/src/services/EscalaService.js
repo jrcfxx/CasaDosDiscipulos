@@ -42,7 +42,13 @@ import { getLimitesPorArea } from "../config/ministerioCampos.js";
  * a pessoa já está em outra função do mesmo evento, em outro evento no mesmo horário,
  * ou a função já atingiu o limite de vagas. Valor inválido de função nunca é confirmável.
  */
-const CONFLITOS_CONFIRMAVEIS = new Set(["duplo_evento", "duplo_instrumento", "limite", "fora_do_ministerio"]);
+const CONFLITOS_CONFIRMAVEIS = new Set([
+  "duplo_evento",
+  "duplo_instrumento",
+  "mesma_area",
+  "limite",
+  "fora_do_ministerio",
+]);
 
 /** Data "AAAA-MM-DD" que existe no calendário (recusa 2026-02-30, "abc"…) com 400 em vez de 500 */
 function exigirDataIso(data) {
@@ -55,6 +61,17 @@ function exigirDataIso(data) {
 }
 
 class EscalaService {
+  /** detalhes vêm do banco como texto JSON (ou já como objeto) */
+  _lerDetalhes(d) {
+    if (!d) return null;
+    if (typeof d === "object") return d;
+    try {
+      return JSON.parse(d);
+    } catch {
+      return null;
+    }
+  }
+
   // ---------- Eventos ----------
   async getEventos(filters = {}, idUsuario = null, tipoUsuario = null) {
     let eventos = await EscalaRepository.listarEventos(filters);
@@ -387,11 +404,6 @@ class EscalaService {
       await this._assertUsuarioNoMinisterioDoLider(parsedUsuario, idUsuarioLogado, area);
     }
 
-    const jaNaArea = await knex("escala_atribuicao")
-      .where({ id_escala_area: parsedArea, id_usuario: parsedUsuario })
-      .first();
-    if (jaNaArea) throw new ConflictError("Esta pessoa já está escalada nesta área");
-
     const evento = await EscalaRepository.buscarEventoPorId(area.id_escala_evento);
     const { conflitos } = await ValidadorEscala.validarTodosConflitos({
       idUsuario: parsedUsuario,
@@ -436,7 +448,7 @@ class EscalaService {
       return atrib;
     } catch (err) {
       if (err?.code === "ER_DUP_ENTRY") {
-        throw new ConflictError("Esta pessoa já está escalada nesta área");
+        throw new ConflictError("Esta pessoa já está escalada nesta função");
       }
       throw err;
     }
@@ -468,7 +480,18 @@ class EscalaService {
       detalhesObj,
       parsed
     );
-    this._avaliarConflitos([limite], confirmarConflitos);
+    // Quem faz duas funções na área não pode ser trocado para a outra que já faz
+    const mesmoEvento = await ValidadorEscala.validarConflitoMesmoEvento(
+      atribuicao.id_usuario,
+      atribuicao.id_escala_evento,
+      parsed,
+      area?.id_ministerio ?? null,
+      atribuicao.id_escala_area,
+      { areaNome: atribuicao.area_nome, detalhes: detalhesObj }
+    );
+    const conflitosEdicao = [limite];
+    if (mesmoEvento.tipo === "mesma_funcao" && !mesmoEvento.valido) conflitosEdicao.push(mesmoEvento);
+    this._avaliarConflitos(conflitosEdicao, confirmarConflitos);
 
     const evento = await EscalaRepository.buscarEventoPorId(atribuicao.id_escala_evento);
     const row = await knex.transaction(async (trx) => {
@@ -1266,10 +1289,11 @@ class EscalaService {
       idMinisterioDestino: areaDestino.id_ministerio ?? null,
     });
     if (!valido) {
-      // Mesma área: trocar de função não é "duplo instrumento"
+      // Mesma área: trocar de função não é "duplo instrumento" nem nova exceção de várias funções
+      // (se ela já faz duas, isso foi confirmado antes); só a mesma função repetida é que barra
       const relevantes =
         areaDestino.id_escala_area === atribuicao.id_escala_area
-          ? conflitos.filter((c) => c.tipo !== "duplo_instrumento")
+          ? conflitos.filter((c) => c.tipo !== "duplo_instrumento" && c.tipo !== "mesma_area")
           : conflitos;
       this._avaliarConflitos(relevantes, forcarMovimento);
     }
@@ -1427,7 +1451,8 @@ class EscalaService {
           const conflito = await EscalaRepository.buscarConflitoHorario(
             attr.id_usuario,
             novo.data_hora,
-            novo.data_hora_fim
+            novo.data_hora_fim,
+            { idEventoExcluir: novo.id_escala_evento }
           );
           if (conflito) {
             warnings.push({
@@ -1584,7 +1609,8 @@ class EscalaService {
           const conflito = await EscalaRepository.buscarConflitoHorario(
             slot.id_usuario,
             evento.data_hora,
-            evento.data_hora_fim
+            evento.data_hora_fim,
+            { idEventoExcluir: evento.id_escala_evento }
           );
           if (conflito) {
             warnings.push({
@@ -1690,6 +1716,14 @@ class EscalaService {
         err.conflitos = bloqueios.map((c) => ({ tipo: c.tipo, mensagem: c.mensagem }));
         err.confirmavel = false;
         throw err;
+      }
+      // Já existe a mesma pessoa na mesma função dessa área: nada a restaurar
+      const naArea = await knex("escala_atribuicao")
+        .where({ id_escala_area: a.id_escala_area, id_usuario: a.id_usuario })
+        .select("detalhes");
+      const chave = chaveSlotDeDetalhes(area?.nome || a.area_nome, this._lerDetalhes(a.detalhes));
+      if (naArea.some((r) => chaveSlotDeDetalhes(area?.nome || a.area_nome, this._lerDetalhes(r.detalhes)) === chave)) {
+        return;
       }
       try {
         await EscalaRepository.criarAtribuicao({

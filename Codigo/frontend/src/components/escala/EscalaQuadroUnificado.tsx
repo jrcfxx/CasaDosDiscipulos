@@ -287,12 +287,21 @@ export function SlotsPorArea({
             onRemoverMembro={onRemoverMembro}
           />
         );
-        if (g.entradas.length === 1) return slotDrop(g.entradas[0]);
+        if (g.entradas.length === 1) {
+          return (
+            <section key={`area-${g.id_escala_area}`} className="quadro-area quadro-area--simples">
+              {slotDrop(g.entradas[0])}
+            </section>
+          );
+        }
         // "_geral" vazio dentro de área com funções não precisa aparecer (só ocupa espaço)
         const visiveis = g.entradas.filter(([, s]) => s.tipo !== "_geral" || s.membros.length > 0);
         const icone = iconeDaArea(g);
         return (
-          <section key={`area-${g.id_escala_area}`} className={`quadro-area${compacto ? " compacto" : ""}`}>
+          <section
+            key={`area-${g.id_escala_area}`}
+            className={`quadro-area${compacto ? " compacto" : ""}`}
+          >
             <header className="quadro-area__titulo">
               {existeIcone(icone) && <Icone nome={icone} tamanho={compacto ? 14 : 16} />}
               <span className="quadro-area__nome">{g.areaNome}</span>

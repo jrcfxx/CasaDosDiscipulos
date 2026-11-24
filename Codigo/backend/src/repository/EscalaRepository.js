@@ -340,7 +340,8 @@ const EscalaRepository = {
         "a.id_escala_atribuicao",
         "ar.id_escala_area",
         "ar.nome as area_nome",
-        "ar.id_ministerio"
+        "ar.id_ministerio",
+        "a.detalhes"
       );
     if (idAtribuicaoExcluir) {
       q = q.where("a.id_escala_atribuicao", "!=", idAtribuicaoExcluir);

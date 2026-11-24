@@ -1325,7 +1325,9 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
 
             <p className="esc-modal-meta">
               {plural(
-                eventoSelecionado.areas?.reduce((acc, ar) => acc + (ar.atribuicoes?.length ?? 0), 0) ?? 0,
+                new Set(
+                  (eventoSelecionado.areas || []).flatMap((ar) => (ar.atribuicoes || []).map((at) => at.id_usuario))
+                ).size,
                 "pessoa escalada",
                 "pessoas escaladas"
               )}{" "}

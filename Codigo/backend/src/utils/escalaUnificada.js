@@ -212,7 +212,10 @@ export function formatarEventoUnificado(evento, { incluirSlotsVazios = true } = 
       vagasTotal,
       vagasPreenchidas,
       vagasDisponiveis: Math.max(0, vagasTotal - vagasPreenchidas),
-      totalPessoas: vagasPreenchidas,
+      // Pessoas diferentes (quem faz duas funções conta uma vez; as funções estão em vagasPreenchidas)
+      totalPessoas: new Set(
+        Object.values(instrumentos).flatMap((sl) => (sl.membros || []).map((m) => m.usuario?.id))
+      ).size,
     },
   };
 }
