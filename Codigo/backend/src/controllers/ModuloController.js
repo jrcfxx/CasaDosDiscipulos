@@ -100,6 +100,24 @@ const ModuloController = {
    * Alterna status ativo/inativo do módulo
    * DELETE /api/modulo/:id
    */
+  /** PUT /modulo/ordem — { ids: [...] } todos os módulos na nova ordem da trilha */
+  async reordenar(req, res, next) {
+    try {
+      res.status(HTTP_STATUS.OK).json(await ModuloService.reordenar(req.body?.ids));
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /** GET /modulo/:id/total-progresso — quantos alunos começaram/concluíram (aviso antes de excluir) */
+  async totalProgresso(req, res, next) {
+    try {
+      res.status(HTTP_STATUS.OK).json(await ModuloService.contarProgresso(req.params.id));
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async destroy(req, res, next) {
     try {
       const modulo = await ModuloService.toggleActive(req.params.id);

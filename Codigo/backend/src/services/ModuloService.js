@@ -266,6 +266,38 @@ const ModuloService = {
     return this.getById(idModulo);
   },
 
+  /**
+   * Nova ordem da trilha: a lista com TODOS os módulos, na ordem desejada.
+   * Recusa lista incompleta ou repetida (salvar metade embaralharia o resto).
+   */
+  async reordenar(ids) {
+    const lista = (Array.isArray(ids) ? ids : []).map(Number);
+    if (!lista.length || lista.some((n) => !Number.isInteger(n) || n <= 0) || new Set(lista).size !== lista.length) {
+      throw new ValidationError("Lista de módulos inválida.");
+    }
+    const existentes = (await knex("modulo").select("id_modulo")).map((m) => m.id_modulo);
+    if (existentes.length !== lista.length || existentes.some((id) => !lista.includes(id))) {
+      throw new ValidationError("A lista de módulos mudou. Atualize a página e arraste de novo.");
+    }
+    await knex.transaction(async (trx) => {
+      for (const [i, id] of lista.entries()) {
+        await trx("modulo").where({ id_modulo: id }).update({ ordem: i + 1 });
+      }
+    });
+    return this.getAll();
+  },
+
+  /** Quantos alunos começaram e quantos concluíram o módulo */
+  async contarProgresso(id) {
+    const idModulo = this._idValido(id);
+    await this.getById(idModulo);
+    const linhas = await knex("usuario_modulo").where({ id_modulo: idModulo }).select("status");
+    return {
+      alunos: linhas.length,
+      concluidos: linhas.filter((l) => String(l.status).toLowerCase().startsWith("conclu")).length,
+    };
+  },
+
   _idValido(id) {
     const n = Number(id);
     if (!Number.isInteger(n) || n <= 0) throw new ValidationError("ID inválido");

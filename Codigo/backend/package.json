@@ -24,7 +24,8 @@
     "qa:escala": "node scripts/qaEscalaApi.js",
     "qa:modulos-formularios": "node scripts/qaModuloFormulario.js",
     "qa:eventos": "node scripts/qaEventos.js",
-    "qa:quiz": "node scripts/qaQuiz.js"
+    "qa:quiz": "node scripts/qaQuiz.js",
+    "qa:licoes": "node scripts/qaLicoes.js"
   },
   "keywords": [],
   "author": "",

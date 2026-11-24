@@ -4,13 +4,13 @@ import Joi from "joi";
  * Schema de validação para criação de lição
  */
 export const createLicaoSchema = Joi.object({
-  titulo: Joi.string().min(3).max(255).required().messages({
+  titulo: Joi.string().trim().min(3).max(255).required().messages({
     "string.empty": "Título da lição é obrigatório",
     "string.min": "Título deve ter no mínimo 3 caracteres",
     "string.max": "Título deve ter no máximo 255 caracteres",
   }),
 
-  descricao: Joi.string().allow(null, "").max(1000).messages({
+  descricao: Joi.string().trim().allow(null, "").max(1000).messages({
     "string.max": "Descrição deve ter no máximo 1000 caracteres",
   }),
 
@@ -29,7 +29,7 @@ export const createLicaoSchema = Joi.object({
           "any.required": "ID do campo é obrigatório",
         }),
 
-        label: Joi.string().required().messages({
+        label: Joi.string().trim().max(255).required().messages({
           "string.empty": "Label do campo é obrigatório",
         }),
 
@@ -43,12 +43,12 @@ export const createLicaoSchema = Joi.object({
  * Schema de validação para atualização de lição
  */
 export const updateLicaoSchema = Joi.object({
-  titulo: Joi.string().min(3).max(255).messages({
+  titulo: Joi.string().trim().min(3).max(255).messages({
     "string.min": "Título deve ter no mínimo 3 caracteres",
     "string.max": "Título deve ter no máximo 255 caracteres",
   }),
 
-  descricao: Joi.string().allow(null, "").max(1000),
+  descricao: Joi.string().trim().allow(null, "").max(1000),
 
   ordem: Joi.number().integer().min(0).messages({
     "number.base": "Ordem deve ser um número",

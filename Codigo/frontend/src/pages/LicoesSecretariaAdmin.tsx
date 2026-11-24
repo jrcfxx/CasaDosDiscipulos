@@ -1,474 +1,403 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "../style/LicoesSecretariaAdmin.css";
+import "../style/editorCasa.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import InputModal from "../components/ui/InputModal";
 import Toast from "../components/ui/Toast";
 import ConfirmModal from "../components/ui/ConfirmModal";
+import FocusTrapComponent from "../components/ui/FocusTrap";
+import BotaoCarregando from "../components/ui/BotaoCarregando";
+import Icone from "../components/ui/Icone";
+import EditorBlocos, { TIPOS_CONTEUDO, blocosDosCampos, type BlocoConteudo } from "../components/conteudo/EditorBlocos";
+import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
 
-import licaoService, {
-  Licao,
-  LicaoCampo,
-} from "../services/licaoService";
+import licaoService, { Licao } from "../services/licaoService";
 import campoService from "../services/campoService";
 import { uploadCampo, isImagePath } from "../services/uploadService";
 import { ASSETS_BASE } from "../config/api";
-import { generateUid } from "../utils/generateUid";
-
-import TextField from "../components/fields/TextField";
-import NumberField from "../components/fields/NumberField";
-import DateField from "../components/fields/DateField";
-import LinkField from "../components/fields/LinkField";
-import UploadField from "../components/fields/UploadField";
-import VideoField from "../components/fields/VideoField";
-import type { CampoDinamico, ValorCampo } from "../types/campoConteudo";
 import { useAcao } from "../hooks/useAcao";
-import BotaoCarregando from "../components/ui/BotaoCarregando";
-import Icone from "../components/ui/Icone";
+import { erroDoModulo } from "../utils/validarModulo";
+import { getErrorMessage } from "../utils/errorUtils";
 
-/* TYPES */
-type LicaoForm = {
-  id: number | null;
-  nome: string;
-  descricao: string;
-  ativo: number;
-  arquivo: File | null;
-};
+type TipoDisponivel = { id_campo: number; tipo_campo: string };
+const isAtivo = (l: Licao) => l.ativo === 1 || l.ativo === true;
+const nomeDoTipo = (tipo: string) => TIPOS_CONTEUDO.find((t) => t.tipo === tipo)?.nome || "Conteúdo";
 
-type AvailableField = {
-  id_campo: number;
-  tipo_campo: string;
-};
-
-type LocalField = {
-  uid: number;
-  id_campo: number;
-  tipo: string;
-  label: string;
-  conteudo: ValorCampo;
-};
-
-const initialFormState: LicaoForm = {
-  id: null,
-  nome: "",
-  descricao: "",
-  ativo: 1,
-  arquivo: null,
-};
-
-const fieldOptions = [
-  { label: "Texto", tipo: "texto", component: TextField as CampoDinamico },
-  { label: "Número", tipo: "numero", component: NumberField as CampoDinamico },
-  { label: "Data", tipo: "data", component: DateField as CampoDinamico },
-  { label: "Link", tipo: "link", component: LinkField as CampoDinamico },
-  { label: "Upload", tipo: "upload", component: UploadField as CampoDinamico },
-  { label: "Vídeo", tipo: "video", component: VideoField as CampoDinamico },
-];
+/** Mostra o conteúdo de um bloco no painel: imagem/arquivo, vídeo, link ou texto */
+function ConteudoNoPainel({ valor }: { valor: unknown }) {
+  const texto = valor === null || valor === undefined ? "" : String(valor);
+  if (!texto) return <span className="licao-sem-conteudo">Sem conteúdo</span>;
+  if (texto.startsWith("/uploads/")) {
+    const nome = texto.split("/").pop() || "arquivo";
+    const url = `${ASSETS_BASE}${texto}`;
+    return (
+      <div className="upload-preview-campo">
+        {isImagePath(texto) && <img src={url} alt={nome} className="licao-previa-imagem" />}
+        <a href={url} target="_blank" rel="noopener noreferrer" className="upload-link">
+          <Icone nome="arquivo" tamanho={16} /> {nome}
+        </a>
+      </div>
+    );
+  }
+  if (/(youtube\.com|youtu\.be|vimeo\.com|\.mp4|\.webm|\.ogg)/i.test(texto)) return <>{renderVideoPreview(texto)}</>;
+  if (/^https?:\/\//i.test(texto)) {
+    return (
+      <a href={texto} target="_blank" rel="noopener noreferrer" className="upload-link">
+        {texto}
+      </a>
+    );
+  }
+  return <p className="licao-texto">{texto}</p>;
+}
 
 const LicoesSecretariaAdmin: React.FC = () => {
   const acaoSalvar = useAcao();
   const [licoes, setLicoes] = useState<Licao[]>([]);
-  const [selectedLicao, setSelectedLicao] = useState<Licao | null>(null);
-  const [availableFields, setAvailableFields] = useState<AvailableField[]>([]);
+  const [selecionada, setSelecionada] = useState<Licao | null>(null);
+  const [tipos, setTipos] = useState<TipoDisponivel[]>([]);
   const [loading, setLoading] = useState(false);
+  const [aviso, setAviso] = useState<{ texto: string; tipo: "success" | "error" | "info" } | null>(null);
+  const [paraExcluir, setParaExcluir] = useState<Licao | null>(null);
 
-  const [showFormModal, setShowFormModal] = useState(false);
-  const [licaoToEdit, setLicaoToEdit] = useState<number | null>(null);
-  const [currentForm, setCurrentForm] = useState<LicaoForm>(initialFormState);
+  // Editor
+  const [editorAberto, setEditorAberto] = useState(false);
+  const [idEditando, setIdEditando] = useState<number | null>(null);
+  const [titulo, setTitulo] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [ativo, setAtivo] = useState(true);
+  const [blocos, setBlocos] = useState<BlocoConteudo[]>([]);
+  const [erro, setErro] = useState<string | null>(null);
+  const [alterado, setAlterado] = useState(false);
+  const [confirmarDescarte, setConfirmarDescarte] = useState(false);
+  const tituloRef = useRef<HTMLInputElement | null>(null);
 
-  const [fields, setFields] = useState<LocalField[]>([]);
-  const [toast, setToast] = useState<string | null>(null);
-  const [toastVariant, setToastVariant] = useState<"success" | "error" | "info">("info");
-  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-  const [licaoToDelete, setLicaoToDelete] = useState<number | null>(null);
-  const nameRef = useRef<HTMLInputElement | null>(null);
-
-  const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
-    setToast(msg);
-    setToastVariant(variant);
-  };
+  const avisar = (texto: string, tipo: "success" | "error" | "info" = "success") => setAviso({ texto, tipo });
+  const tipoPorId = (id: number) => tipos.find((t) => t.id_campo === id)?.tipo_campo;
 
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    (async () => {
+      setLoading(true);
+      try {
+        const [lista, campos] = await Promise.all([licaoService.getAll(), campoService.getByModalidade("licao")]);
+        setLicoes(lista || []);
+        setSelecionada((sel) => sel ?? (lista || [])[0] ?? null);
+        setTipos((campos || []).map((c) => ({ id_campo: c.id_campo, tipo_campo: String(c.tipo_campo) })));
+      } catch (e) {
+        avisar(getErrorMessage(e, "Não foi possível carregar as lições."), "error");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const recarregar = async (manterId?: number) => {
+    const lista = await licaoService.getAll();
+    setLicoes(lista || []);
+    setSelecionada((sel) => {
+      const id = manterId ?? sel?.id_licao;
+      return (lista || []).find((l) => l.id_licao === id) ?? (lista || [])[0] ?? null;
+    });
+  };
+
+  const alternar = async (l: Licao) => {
+    const novo = !isAtivo(l);
     try {
-      await Promise.all([fetchLicoes(), fetchAvailableFields()]);
+      // Só o status (antes mandava tudo e o servidor apagava e recriava os conteúdos)
+      await licaoService.update(l.id_licao, { ativo: novo });
+      const mudar = (x: Licao) => (x.id_licao === l.id_licao ? { ...x, ativo: novo ? 1 : 0 } : x);
+      setLicoes((lista) => lista.map(mudar));
+      setSelecionada((sel) => (sel ? mudar(sel) : sel));
+      avisar(novo ? "Lição liberada para os líderes." : "Lição escondida dos líderes.");
+    } catch (e) {
+      avisar(getErrorMessage(e, "Não foi possível alterar a lição."), "error");
+    }
+  };
+
+  const excluir = async () => {
+    if (!paraExcluir) return;
+    try {
+      await licaoService.delete(paraExcluir.id_licao);
+      await recarregar();
+      avisar("Lição excluída.");
+    } catch (e) {
+      avisar(getErrorMessage(e, "Não foi possível excluir a lição."), "error");
     } finally {
-      setLoading(false);
+      setParaExcluir(null);
     }
   };
 
-  const fetchLicoes = async () => {
-    try {
-      const data = await licaoService.getAll();
-      const mapped: Licao[] = (data || []).map((l) => ({
-        ...l,
-        id_licao: l.id_licao,
-        titulo: l.titulo,
-        descricao: l.descricao ?? "",
-        ativo: l.ativo ?? 1,
-        campos: l.campos ?? [],
-      }));
-      setLicoes(mapped);
-      if (mapped.length > 0 && !selectedLicao) {
-        setSelectedLicao(mapped[0]);
-      }
-    } catch (err) {
-      console.error("Erro ao buscar lições:", err);
-      showToast("Erro ao carregar lições", "error");
-    }
+  const abrirNova = () => {
+    setIdEditando(null);
+    setTitulo("");
+    setDescricao("");
+    setAtivo(true);
+    setBlocos([]);
+    setErro(null);
+    setAlterado(false);
+    setEditorAberto(true);
+    setTimeout(() => tituloRef.current?.focus(), 80);
   };
 
-  const fetchAvailableFields = async () => {
-    try {
-      const data = await campoService.getByModalidade("licao");
-      setAvailableFields(data || []);
-    } catch (err) {
-      console.error("Erro ao buscar campos disponíveis:", err);
-      showToast("Erro ao carregar campos", "error");
-    }
-  };
-
-  const handleToggle = async (id: number) => {
-    try {
-      const licao = licoes.find((l) => l.id_licao === id);
-      if (!licao) return;
-
-      const camposLimpos: LicaoCampo[] = (licao.campos || []).map((campo) => ({
-        id_campo: campo.id_campo,
-        label: campo.label || "",
-        conteudo: campo.conteudo ?? "",
-      }));
-
-      const novoAtivo = !!(licao.ativo === 1 || licao.ativo === true);
-      await licaoService.update(id, {
-        titulo: licao.titulo,
-        descricao: licao.descricao ?? null,
-        ativo: !novoAtivo,
-        campos: camposLimpos,
-      });
-
-      await fetchLicoes();
-      if (selectedLicao && selectedLicao.id_licao === id) {
-        const updated = await licaoService.getById(id);
-        setSelectedLicao({
-          ...updated,
-          ativo: updated.ativo ?? 1,
-          campos: updated.campos ?? [],
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao alternar lição:", error);
-      showToast("Erro ao alternar status da lição", "error");
-    }
-  };
-
-  const handleDeleteClick = (id: number) => {
-    setLicaoToDelete(id);
-    setShowConfirmDelete(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!licaoToDelete) return;
-    const id = licaoToDelete;
-    try {
-      await licaoService.delete(id);
-      if (selectedLicao?.id_licao === id) {
-        setSelectedLicao(null);
-      }
-      await fetchLicoes();
-      showToast("Lição excluída com sucesso", "success");
-    } catch (err) {
-      console.error("Erro ao excluir lição:", err);
-      showToast("Erro ao excluir lição", "error");
-    } finally {
-      // fecha só depois de terminar: o modal mostra o andamento
-      setShowConfirmDelete(false);
-      setLicaoToDelete(null);
-    }
-  };
-
-  const handleSelectLicao = (licao: Licao) => {
-    setSelectedLicao(licao);
-  };
-
-  const buildUploadUrl = (path: string) => {
-    if (!path || !path.startsWith("/")) return "";
-    return `${ASSETS_BASE}${path}`;
-  };
-
-  const formatarConteudoCampo = (conteudo: unknown): React.ReactNode => {
-    if (conteudo === null || conteudo === undefined) return "Sem conteúdo";
-
-    let parsed = conteudo;
-    if (typeof conteudo === "string") {
-      if (conteudo.startsWith("/uploads/") || conteudo.includes("/uploads/")) {
-        const fileName = conteudo.split("/").pop() || "arquivo";
-        const isImage = isImagePath(conteudo);
-        const fullUrl = buildUploadUrl(conteudo);
-
-        return (
-          <div className="upload-preview-campo">
-            {isImage && fullUrl ? (
-              <div>
-                <img
-                  src={fullUrl}
-                  alt={fileName}
-                  style={{ maxWidth: "200px", maxHeight: "200px", borderRadius: "4px" }}
-                />
-                <br />
-              </div>
-            ) : null}
-            <a
-              href={fullUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="upload-link"
-            >
-              <Icone nome="arquivo" tamanho={16} /> {fileName}
-            </a>
-          </div>
-        );
-      }
-
-      const videoUrlRegex = /(youtube\.com|youtu\.be|vimeo\.com|\.mp4|\.webm|\.ogg)/i;
-      if (videoUrlRegex.test(conteudo)) {
-        return renderVideoPreview(conteudo);
-      }
-
-      try {
-        parsed = JSON.parse(conteudo);
-      } catch {
-        return conteudo;
-      }
-    }
-
-    if (typeof parsed !== "object" || parsed === null) {
-      return String(conteudo);
-    }
-    return <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>;
-  };
-
-  const renderVideoPreview = (url: string): React.ReactNode => {
-    const convertToEmbedUrl = (videoUrl: string): string | null => {
-      try {
-        const youtubeRegex =
-          /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
-        const youtubeMatch = videoUrl.match(youtubeRegex);
-        if (youtubeMatch?.[1]) return `https://www.youtube.com/embed/${youtubeMatch[1]}?cc_load_policy=1`;
-
-        const vimeoMatch = videoUrl.match(/vimeo\.com\/(\d+)/);
-        if (vimeoMatch?.[1]) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-
-        if (/\.(mp4|webm|ogg)$/i.test(videoUrl)) return videoUrl;
-        return null;
-      } catch {
-        return null;
-      }
-    };
-
-    const embedUrl = convertToEmbedUrl(url);
-    if (!embedUrl) {
-      return (
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          {url}
-        </a>
-      );
-    }
-
-    const isDirectVideo = /\.(mp4|webm|ogg)$/i.test(embedUrl);
-
-    return (
-      <div className="video-preview-campo" style={{ marginTop: "0.5rem" }}>
-        {isDirectVideo ? (
-          <video controls aria-label="Vídeo" style={{ width: "100%", maxWidth: "400px", height: "auto", borderRadius: "8px" }}>
-            <source src={embedUrl} type="video/mp4" />
-            <track kind="captions" srcLang="pt-BR" label="Legendas" />
-            Seu navegador não suporta o elemento de vídeo.
-          </video>
-        ) : (
-          <iframe
-            src={embedUrl}
-            style={{ width: "100%", maxWidth: "400px", height: "225px", border: "none", borderRadius: "8px" }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="Video preview"
-          />
-        )}
-      </div>
-    );
-  };
-
-  const createLocalField = (
-    id_campo: number,
-    tipo: string,
-    label = "",
-    conteudo: ValorCampo = ""
-  ): LocalField => ({
-    uid: generateUid(),
-    id_campo,
-    tipo,
-    label,
-    conteudo,
-  });
-
-  const [labelModalOpen, setLabelModalOpen] = useState(false);
-  const [labelModalTipo, setLabelModalTipo] = useState<string | null>(null);
-
-  const addField = (tipo: string) => {
-    setLabelModalTipo(tipo);
-    setLabelModalOpen(true);
-  };
-
-  const confirmAddField = (label: string) => {
-    if (!label.trim()) return;
-    const tipo = labelModalTipo;
-    setLabelModalOpen(false);
-    setLabelModalTipo(null);
-
-    const campo = availableFields.find(
-      (c) => String(c.tipo_campo).toLowerCase() === tipo?.toLowerCase()
-    );
-    if (!campo) {
-      showToast(`Nenhum campo disponível para o tipo ${tipo}`);
-      return;
-    }
-
-    let conteudoInicial: ValorCampo = "";
-    if (tipo === "numero") conteudoInicial = 0;
-    else if (tipo === "data") conteudoInicial = "";
-
-    setFields((prev) => [...prev, createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial)]);
-  };
-
-  const removeField = (uid: number) => {
-    setFields((prev) => prev.filter((f) => f.uid !== uid));
-  };
-
-  const openCreateModal = () => {
-    setCurrentForm(initialFormState);
-    setLicaoToEdit(null);
-    setFields([]);
-    setShowFormModal(true);
-    setTimeout(() => nameRef.current?.focus(), 100);
-  };
-
-  const openEditModal = async (id: number) => {
+  const abrirEdicao = async (id: number) => {
     try {
       const l = await licaoService.getById(id);
-
-      setCurrentForm({
-        id: l.id_licao,
-        nome: l.titulo ?? "",
-        descricao: l.descricao ?? "",
-        ativo: l.ativo === 1 || l.ativo === true ? 1 : 0,
-        arquivo: null,
-      });
-
-      const incomingFields = (l.campos ?? []).map((c, idx) =>
-        createLocalField(
-          c.id_campo,
-          availableFields.find((f) => f.id_campo === c.id_campo)?.tipo_campo ?? "texto",
-          c.label ?? `Campo ${idx + 1}`,
-          c.conteudo ?? ""
-        )
-      );
-
-      setFields(incomingFields);
-      setLicaoToEdit(l.id_licao);
-      setShowFormModal(true);
-      setTimeout(() => nameRef.current?.focus(), 100);
-    } catch (err) {
-      console.error("Erro ao carregar lição:", err);
-      showToast("Erro ao carregar lição para edição", "error");
+      setIdEditando(l.id_licao);
+      setTitulo(l.titulo ?? "");
+      setDescricao(l.descricao ?? "");
+      setAtivo(isAtivo(l));
+      setBlocos(blocosDosCampos(l.campos ?? [], tipoPorId));
+      setErro(null);
+      setAlterado(false);
+      setEditorAberto(true);
+      setTimeout(() => tituloRef.current?.focus(), 80);
+    } catch (e) {
+      avisar(getErrorMessage(e, "Não foi possível abrir a lição."), "error");
     }
   };
 
-  const closeFormModal = () => {
-    setShowFormModal(false);
-    setLicaoToEdit(null);
-    setCurrentForm(initialFormState);
-    setFields([]);
+  const fechar = () => {
+    setConfirmarDescarte(false);
+    setEditorAberto(false);
+    setAlterado(false);
   };
 
-  const saveForm = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const pedirFechar = () => {
+    if (acaoSalvar.executando) return;
+    if (alterado) setConfirmarDescarte(true);
+    else fechar();
+  };
 
-    if (!currentForm.nome.trim()) {
-      showToast("Título da lição é obrigatório", "error");
+  const mudou = () => {
+    setAlterado(true);
+    setErro(null);
+  };
+
+  const salvar = async () => {
+    const problema =
+      blocos.length === 0
+        ? titulo.trim().length < 3
+          ? "O título precisa ter pelo menos 3 letras."
+          : "Adicione pelo menos um conteúdo à lição."
+        : erroDoModulo({ titulo, conteudos: blocos.map((b) => ({ tipo: b.tipo, label: b.label, conteudo: b.conteudo })) });
+    if (problema) {
+      setErro(problema.replace("nome do módulo", "título da lição"));
+      if (titulo.trim().length < 3) tituloRef.current?.focus();
       return;
     }
-
-    const processedFields = await Promise.all(
-      fields.map(async (f) => {
-        let conteudo = f.conteudo ?? "";
-
+    try {
+      const campos = [];
+      for (const b of blocos) {
+        let conteudo = b.conteudo;
         if (conteudo instanceof File) {
           try {
             conteudo = await uploadCampo(conteudo);
-          } catch (error) {
-            showToast(`Erro ao fazer upload do arquivo: ${f.label}`, "error");
-            throw error;
+          } catch (e) {
+            throw new Error(`Não foi possível enviar o arquivo de "${b.label}". ${getErrorMessage(e, "")}`.trim());
           }
         }
-
-        return { ...f, conteudo };
-      })
-    );
-
-    const camposPayload: LicaoCampo[] = processedFields.map((f) => {
-      let conteudo: string | number | boolean | null = "";
-      const v = f.conteudo;
-      if (v === null || v === undefined) conteudo = "";
-      else if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") conteudo = v;
-      else if (typeof v === "object") conteudo = JSON.stringify(v);
-      else conteudo = String(v);
-      return { id_campo: f.id_campo, label: f.label ?? "", conteudo };
-    });
-
-    const payload = {
-      titulo: currentForm.nome,
-      descricao: currentForm.descricao || null,
-      ativo: Boolean(currentForm.ativo),
-      campos: camposPayload,
-    };
-
-    try {
-      if (licaoToEdit) {
-        await licaoService.update(licaoToEdit, payload);
-        await fetchLicoes();
-        if (selectedLicao && selectedLicao.id_licao === licaoToEdit) {
-          const updated = await licaoService.getById(licaoToEdit);
-          setSelectedLicao({ ...updated, campos: updated.campos ?? [] });
-        }
-        showToast("Lição atualizada com sucesso!", "success");
+        campos.push({ id_campo: b.id_campo, label: b.label.trim(), conteudo: typeof conteudo === "string" || typeof conteudo === "number" ? conteudo : "" });
+      }
+      const dados = { titulo: titulo.trim(), descricao: descricao.trim() || null, ativo, campos };
+      if (idEditando) {
+        await licaoService.update(idEditando, dados);
+        await recarregar(idEditando);
+        avisar("Lição salva.");
       } else {
-        await licaoService.create(payload);
-        await fetchLicoes();
-        showToast("Lição criada com sucesso!", "success");
+        const nova = await licaoService.create(dados);
+        await recarregar(nova.id_licao);
+        avisar(ativo ? "Lição criada. Os líderes já podem ver em Lições." : "Lição criada (escondida dos líderes por enquanto).");
       }
-      closeFormModal();
-    } catch (err: unknown) {
-      console.error("Erro ao salvar lição:", err);
-      const errObj = err as { response?: { data?: { errors?: string[]; error?: string } } };
-      let msg = "Erro ao salvar lição";
-      const errors = errObj?.response?.data?.errors;
-      const errorStr = errObj?.response?.data?.error;
-      if (Array.isArray(errors)) {
-        msg = errors.join(", ");
-      } else if (errorStr) {
-        msg = errorStr;
-      }
-      showToast(msg, "error");
+      fechar();
+    } catch (e) {
+      setErro(getErrorMessage(e, "Não foi possível salvar a lição."));
     }
   };
 
-  const isAtivo = (l: Licao) => l.ativo === 1 || l.ativo === true;
+  const qtd = (l: Licao | null) => l?.campos?.length || 0;
+
+  const editor = editorAberto
+    ? createPortal(
+        <FocusTrapComponent
+          active={editorAberto && !confirmarDescarte}
+          focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false, returnFocusOnDeactivate: true }}
+        >
+          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+          <div
+            className="ec-fundo"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ec-licao-titulo"
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && !confirmarDescarte) pedirFechar();
+            }}
+          >
+            <div className="ec-editor">
+              <header className="ec-editor__topo">
+                <div>
+                  <p className="ec-editor__sobretitulo">Secretaria das Células · Lição</p>
+                  <h2 id="ec-licao-titulo">{idEditando ? "Editar lição" : "Nova lição"}</h2>
+                </div>
+                <button type="button" className="ec-fechar" onClick={pedirFechar} aria-label="Fechar">
+                  <Icone nome="fechar" tamanho={20} />
+                </button>
+              </header>
+
+              <form
+                className="ec-editor__form"
+                noValidate
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  acaoSalvar.executar(salvar);
+                }}
+              >
+                <div className="ec-editor__rolagem">
+                  <details className="ec-passos" open={!idEditando}>
+                    <summary>
+                      <Icone nome="livro" tamanho={16} /> Como funciona a lição
+                    </summary>
+                    <ol>
+                      <li>
+                        <strong>Dê um título</strong>
+                        <span>É o tema que o líder vê na lista de lições (ex.: "Semana 12 – Perdão").</span>
+                      </li>
+                      <li>
+                        <strong>Monte o material</strong>
+                        <span>Vídeo, texto do ensino, perguntas para a célula, PDF de apoio…</span>
+                      </li>
+                      <li>
+                        <strong>Organize</strong>
+                        <span>
+                          Arraste pela alça <Icone nome="arrastar" tamanho={13} /> para mudar a ordem. O líder vê nessa ordem.
+                        </span>
+                      </li>
+                      <li>
+                        <strong>Libere</strong>
+                        <span>Com a lição liberada, os líderes de célula veem em Lições para usar na reunião.</span>
+                      </li>
+                    </ol>
+                  </details>
+
+                  <section className="ec-secao" aria-labelledby="ec-licao-info">
+                    <h3 id="ec-licao-info" className="ec-secao__titulo">
+                      <span className="ec-secao__num">1</span> Informações
+                    </h3>
+                    <div className="ec-campo">
+                      <label className="ec-rotulo" htmlFor="licaoTitulo">
+                        Título <span className="ec-obrigatorio">obrigatório</span>
+                      </label>
+                      <input
+                        id="licaoTitulo"
+                        ref={tituloRef}
+                        className="ec-input"
+                        maxLength={255}
+                        value={titulo}
+                        onChange={(e) => {
+                          setTitulo(e.target.value);
+                          mudou();
+                        }}
+                        placeholder="Ex.: Semana 12 – O poder do perdão"
+                      />
+                    </div>
+                    <div className="ec-campo">
+                      <label className="ec-rotulo" htmlFor="licaoDescricao">
+                        Resumo para o líder <span className="ec-opcional">opcional</span>
+                      </label>
+                      <textarea
+                        id="licaoDescricao"
+                        className="ec-input ec-input--area"
+                        maxLength={1000}
+                        rows={3}
+                        value={descricao}
+                        onChange={(e) => {
+                          setDescricao(e.target.value);
+                          mudou();
+                        }}
+                        placeholder="Ex.: Objetivo da reunião e como conduzir a conversa."
+                      />
+                    </div>
+                    <label className="ec-chave" htmlFor="licaoAtivo">
+                      <input
+                        id="licaoAtivo"
+                        type="checkbox"
+                        role="switch"
+                        checked={ativo}
+                        onChange={(e) => {
+                          setAtivo(e.target.checked);
+                          mudou();
+                        }}
+                      />
+                      <span className="ec-chave__trilho" aria-hidden />
+                      <span className="ec-chave__texto">
+                        <strong>{ativo ? "Liberada para os líderes" : "Escondida dos líderes"}</strong>
+                        <small>
+                          {ativo
+                            ? "Os líderes de célula veem esta lição em Lições assim que você salvar."
+                            : "Fica salva, mas os líderes não veem. Use enquanto ainda está montando."}
+                        </small>
+                      </span>
+                    </label>
+                  </section>
+
+                  <section className="ec-secao" aria-labelledby="ec-licao-conteudo">
+                    <div className="ec-secao__cabecalho">
+                      <h3 id="ec-licao-conteudo" className="ec-secao__titulo">
+                        <span className="ec-secao__num">2</span> Material da lição
+                      </h3>
+                      <span className="ec-resumo">
+                        {blocos.length} {blocos.length === 1 ? "conteúdo" : "conteúdos"}
+                      </span>
+                    </div>
+                    <p className="ec-dica">
+                      O líder vê nesta ordem. Arraste pela alça <Icone nome="arrastar" tamanho={13} /> para reorganizar.
+                    </p>
+                    <EditorBlocos
+                      blocos={blocos}
+                      onChange={(novos) => {
+                        setBlocos(novos);
+                        mudou();
+                      }}
+                      tiposDisponiveis={tipos.filter((t) => t.tipo_campo !== "quiz")}
+                      quem="o líder"
+                      onIndisponivel={() => avisar("Esse tipo de conteúdo não está disponível.", "error")}
+                    />
+                  </section>
+                </div>
+
+                <footer className="ec-editor__rodape">
+                  {erro ? (
+                    <p className="ec-erro" role="alert">
+                      <Icone nome="alerta" tamanho={16} /> {erro}
+                    </p>
+                  ) : (
+                    <p className="ec-rodape-info">
+                      {blocos.length
+                        ? `${blocos.length} ${blocos.length === 1 ? "conteúdo" : "conteúdos"} · ${ativo ? "liberada" : "escondida"}`
+                        : "Adicione pelo menos um conteúdo para salvar."}
+                    </p>
+                  )}
+                  <div className="ec-editor__botoes">
+                    <button type="button" className="ec-btn ec-btn--fantasma" onClick={pedirFechar} disabled={acaoSalvar.executando}>
+                      Cancelar
+                    </button>
+                    <BotaoCarregando
+                      type="submit"
+                      className="ec-btn ec-btn--primario"
+                      carregando={acaoSalvar.executando}
+                      textoCarregando={idEditando ? "Salvando…" : "Criando…"}
+                    >
+                      {idEditando ? "Salvar alterações" : "Criar lição"}
+                    </BotaoCarregando>
+                  </div>
+                </footer>
+              </form>
+            </div>
+          </div>
+        </FocusTrapComponent>,
+        document.body
+      )
+    : null;
 
   return (
     <div className="licoes-page page-with-fixed-header">
@@ -485,94 +414,116 @@ const LicoesSecretariaAdmin: React.FC = () => {
               <span className="count">{licoes.length}</span>
             </div>
             <div className="list">
-              {licoes.map((licao) => (
+              {licoes.map((l) => (
                 <div
-                  key={licao.id_licao}
-                  className={`licao-item ${selectedLicao?.id_licao === licao.id_licao ? "selected" : ""} ${!isAtivo(licao) ? "inactive" : ""}`}
+                  key={l.id_licao}
+                  className={`licao-item ${selecionada?.id_licao === l.id_licao ? "selected" : ""} ${!isAtivo(l) ? "inactive" : ""}`}
                   role="button"
                   tabIndex={0}
-                  onClick={() => handleSelectLicao(licao)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
+                  onClick={() => setSelecionada(l)}
+                  onKeyDown={(e) => {
+                    if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                      e.preventDefault();
+                      setSelecionada(l);
+                    }
+                  }}
                 >
                   <div className="licao-item__info">
-                    <span className="licao-item__name">{licao.titulo}</span>
+                    <span className="licao-item__name">{l.titulo}</span>
                   </div>
                   <button
-                    className={`btn-status ${isAtivo(licao) ? "active" : "inactive"}`}
-                    onClick={(e) => { e.stopPropagation(); handleToggle(licao.id_licao); }}
-                    title={isAtivo(licao) ? "Desativar lição" : "Ativar lição"}
+                    className={`btn-status ${isAtivo(l) ? "active" : "inactive"}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      alternar(l);
+                    }}
+                    title={isAtivo(l) ? "Esconder dos líderes" : "Liberar para os líderes"}
                   >
-                    {isAtivo(licao) ? "Ativo" : "Inativo"}
+                    {isAtivo(l) ? "Ativo" : "Inativo"}
                   </button>
                 </div>
               ))}
+              {!loading && licoes.length === 0 && <p className="licao-lista-vazia">Nenhuma lição ainda.</p>}
             </div>
-            <button className="btn-create" onClick={openCreateModal}>
+            <button className="btn-create" onClick={abrirNova}>
               + Criar lição
             </button>
           </aside>
 
           <section className="panel licoes-center" aria-label="Detalhes da lição">
-            {selectedLicao ? (
+            {selecionada ? (
               <div className="licao-card">
                 <div className="licao-header">
                   <div className="licao-title-area">
-                    <h2 className="licao-title">{selectedLicao.titulo}</h2>
-                    <span className={`badge badge-${isAtivo(selectedLicao) ? "active" : "inactive"}`}>
-                      {isAtivo(selectedLicao) ? "Ativo" : "Inativo"}
+                    <h2 className="licao-title">{selecionada.titulo}</h2>
+                    <span className={`badge badge-${isAtivo(selecionada) ? "active" : "inactive"}`}>
+                      {isAtivo(selecionada) ? "Liberada para os líderes" : "Escondida dos líderes"}
                     </span>
                   </div>
                   <div className="licao-actions">
-                    <button className="btn-edit" onClick={() => openEditModal(selectedLicao.id_licao)}>
-                      Editar
+                    <button className="btn-edit" onClick={() => abrirEdicao(selecionada.id_licao)}>
+                      <Icone nome="editar" tamanho={15} /> Editar
                     </button>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDeleteClick(selectedLicao.id_licao)}
-                    >
+                    <button className="btn-delete" onClick={() => setParaExcluir(selecionada)}>
                       Excluir
                     </button>
                   </div>
                 </div>
 
-                {selectedLicao.descricao && (
+                {selecionada.descricao && (
                   <div className="licao-description">
-                    <h3>Descrição</h3>
-                    <p>{selectedLicao.descricao}</p>
+                    <h3>Resumo para o líder</h3>
+                    <p>{selecionada.descricao}</p>
                   </div>
                 )}
 
-                <div className="licao-meta">
-                  <div className="meta-item">
-                    <span className="meta-label">Campos</span>
-                    <span className="meta-value">{selectedLicao.campos?.length || 0}</span>
+                <div className="ec-numeros">
+                  <div>
+                    <strong>{qtd(selecionada)}</strong>
+                    <span>{qtd(selecionada) === 1 ? "conteúdo" : "conteúdos"}</span>
+                  </div>
+                  <div>
+                    <strong>{(selecionada.campos || []).filter((c) => (c.tipo_campo || tipoPorId(c.id_campo)) === "video").length}</strong>
+                    <span>vídeos</span>
+                  </div>
+                  <div>
+                    <strong className="ec-numeros__texto">{isAtivo(selecionada) ? "Liberada" : "Escondida"}</strong>
+                    <span>para os líderes</span>
                   </div>
                 </div>
+                <p className="ec-lembrete">
+                  <Icone nome="alerta" tamanho={15} />
+                  {isAtivo(selecionada)
+                    ? "Os líderes de célula veem esta lição em Lições, na ordem abaixo."
+                    : "Escondida: os líderes não veem. Ative pelo botão da lista ou em Editar."}
+                </p>
 
-                {selectedLicao.campos && selectedLicao.campos.length > 0 ? (
+                {qtd(selecionada) > 0 ? (
                   <div className="licao-fields">
-                    <h3>Campos personalizados</h3>
-                    <div className="campos-grid">
-                      {selectedLicao.campos.map((campo, index) => (
-                        <div key={index} className="campo-card">
-                          <div className="campo-label">{campo.label || "Sem label"}</div>
+                    <h3>Como o líder vê</h3>
+                    <ol className="ec-previa">
+                      {(selecionada.campos || []).map((c, i) => (
+                        <li key={i} className="campo-card campo-card--pergunta">
+                          <span className="ec-selo ec-selo--pergunta">
+                            {i + 1}. {nomeDoTipo(String(c.tipo_campo || tipoPorId(c.id_campo) || ""))}
+                          </span>
+                          <div className="campo-label">{c.label || "Sem título"}</div>
                           <div className="campo-conteudo">
-                            {formatarConteudoCampo(campo.conteudo)}
+                            <ConteudoNoPainel valor={c.conteudo} />
                           </div>
-                          {campo.obrigatorio && <span className="campo-required">Obrigatório</span>}
-                        </div>
+                        </li>
                       ))}
-                    </div>
+                    </ol>
                   </div>
                 ) : (
                   <div className="licao-empty">
-                    <p>Esta lição não possui campos cadastrados.</p>
+                    <p>Esta lição ainda não tem conteúdo. Clique em Editar para montar o material.</p>
                   </div>
                 )}
               </div>
             ) : (
               <div className="licao-placeholder">
-                <p>Selecione uma lição na lista para visualizar</p>
+                <p>Selecione uma lição na lista, ou crie uma nova.</p>
               </div>
             )}
           </section>
@@ -581,125 +532,30 @@ const LicoesSecretariaAdmin: React.FC = () => {
 
       <Footer />
 
-      {toast && (
-        <Toast message={toast} onClose={() => setToast(null)} variant={toastVariant} />
-      )}
-
-      <InputModal
-        open={labelModalOpen}
-        title="Label do campo"
-        label="Digite o label do campo"
-        placeholder="Ex: Nome completo"
-        onConfirm={confirmAddField}
-        onCancel={() => { setLabelModalOpen(false); setLabelModalTipo(null); }}
-      />
+      {editor}
 
       <ConfirmModal
-        open={showConfirmDelete}
+        open={confirmarDescarte}
+        title="Descartar alterações?"
+        message="Você mudou esta lição e ainda não salvou. Se sair agora, as mudanças se perdem."
+        confirmLabel="Descartar"
+        cancelLabel="Continuar editando"
+        variant="danger"
+        onConfirm={fechar}
+        onCancel={() => setConfirmarDescarte(false)}
+      />
+      <ConfirmModal
+        open={!!paraExcluir}
         title="Excluir lição"
-        message="Tem certeza que deseja excluir esta lição? Esta ação não pode ser desfeita."
+        message={`Excluir "${paraExcluir?.titulo ?? ""}"? Ela some para os líderes e não tem volta. Para só esconder, deixe a lição Inativa.`}
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         variant="danger"
-        onConfirm={handleConfirmDelete}
+        onConfirm={excluir}
         textoCarregando="Excluindo…"
-        onCancel={() => { setShowConfirmDelete(false); setLicaoToDelete(null); }}
+        onCancel={() => setParaExcluir(null)}
       />
-
-      {showFormModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
-            <h2>{licaoToEdit ? "Editar lição" : "Criar nova lição"}</h2>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                acaoSalvar.executar(() => saveForm());
-              }}
-            >
-              <label htmlFor="licaoModalTitulo">Título</label>
-              <input
-                id="licaoModalTitulo"
-                ref={nameRef}
-                value={currentForm.nome}
-                onChange={(e) => setCurrentForm({ ...currentForm, nome: e.target.value })}
-                required
-              />
-
-              <label htmlFor="licaoModalDescricao">Descrição</label>
-              <textarea
-                id="licaoModalDescricao"
-                value={currentForm.descricao}
-                onChange={(e) => setCurrentForm({ ...currentForm, descricao: e.target.value })}
-                rows={4}
-              />
-
-              <label htmlFor="licaoModalAtivo">Ativo</label>
-              <select
-                id="licaoModalAtivo"
-                value={currentForm.ativo}
-                onChange={(e) => setCurrentForm({ ...currentForm, ativo: Number(e.target.value) })}
-              >
-                <option value={1}>Ativo</option>
-                <option value={0}>Inativo</option>
-              </select>
-
-              <h3>Campos da lição</h3>
-
-              <div className="fields-container">
-                {fields.length === 0 && <p className="muted">Nenhum campo adicionado.</p>}
-
-                {fields.map((f) => {
-                  const Component = fieldOptions.find((o) => o.tipo === f.tipo)?.component;
-                  if (!Component) return null;
-                  return (
-                    <div key={f.uid} className="field-wrapper">
-                      <div className="dynamic-field-row">
-                        <Component
-                          id={String(f.uid)}
-                          name={`campo_${f.uid}`}
-                          label={f.label}
-                          value={f.conteudo}
-                          onChange={(v: ValorCampo) =>
-                            setFields((prev) =>
-                              prev.map((fld) =>
-                                fld.uid === f.uid ? { ...fld, conteudo: v } : fld
-                              )
-                            )
-                          }
-                        />
-                        <button
-                          type="button"
-                          className="field-remove-btn"
-                          onClick={() => removeField(f.uid)}
-                          title="Remover campo"
-                        >
-                          <Icone nome="fechar" tamanho={16} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="field-add-buttons">
-                {fieldOptions.map((opt) => (
-                  <button key={opt.tipo} type="button" onClick={() => addField(opt.tipo)}>
-                    + {opt.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="modal-actions">
-                <BotaoCarregando type="submit" className="save-btn" carregando={acaoSalvar.executando}>Salvar</BotaoCarregando>
-                <button type="button" className="cancel-btn" onClick={closeFormModal}>
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {aviso && <Toast message={aviso.texto} onClose={() => setAviso(null)} variant={aviso.tipo} />}
     </div>
   );
 };

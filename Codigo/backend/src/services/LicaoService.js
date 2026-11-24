@@ -1,99 +1,109 @@
 import LicaoModel from "../models/LicaoModel.js";
 import CampoModel from "../models/CampoModel.js";
-import AppError from "../utils/AppError.js";
+import { NotFoundError, ValidationError } from "../utils/AppError.js";
 import knex from "../database/index.js";
+import {
+  conteudoParaTexto,
+  idDaRota,
+  validarConteudoDeModulo,
+  validarListaDeCampos,
+} from "../utils/camposEntidade.js";
+
+/** Tipos que podem entrar numa lição (o quiz não: ele é das Escola de Discípulos/módulos) */
+async function tiposDeLicao() {
+  const permitidos = await CampoModel.getByModalidade("licao");
+  return new Map(permitidos.filter((c) => c.tipo_campo !== "quiz").map((c) => [Number(c.id_campo), c.tipo_campo]));
+}
+
+/** Conteúdos: pelo menos um, com título, sem títulos repetidos e com o conteúdo preenchido/válido */
+async function validarCampos(campos) {
+  const tipos = await tiposDeLicao();
+  validarListaDeCampos(campos, { tiposPermitidos: tipos, oQue: "lição" });
+  validarConteudoDeModulo(campos, tipos);
+}
+
+async function gravarCampos(trx, idLicao, campos) {
+  await trx("licao_campo").where({ id_licao: idLicao }).del();
+  if (!campos.length) return;
+  // A ordem é a da lista enviada
+  await trx("licao_campo").insert(
+    campos.map((c, i) => ({
+      id_licao: idLicao,
+      id_campo: Number(c.id_campo),
+      label: String(c.label).trim(),
+      conteudo: conteudoParaTexto(c.conteudo).trim(),
+      ordem: i,
+    }))
+  );
+}
 
 class LicaoService {
-  async getAll() {
-    const licoes = await LicaoModel.getAll();
-
-    const completas = await Promise.all(
-      licoes.map(async (l) => {
-        const campos = await CampoModel.getByOption("licao", l.id_licao);
-        return { ...l, campos };
-      })
+  async getAll({ somenteAtivas = false } = {}) {
+    const todas = await LicaoModel.getAll();
+    const licoes = somenteAtivas ? todas.filter((l) => l.ativo === 1 || l.ativo === true) : todas;
+    return Promise.all(
+      licoes.map(async (l) => ({ ...l, campos: await CampoModel.getByOption("licao", l.id_licao) }))
     );
-
-    return completas;
   }
 
-  async getById(id) {
-    const licao = await LicaoModel.getById(id);
-    if (!licao) throw new AppError("Lição não encontrada", 404);
-
-    const campos = await CampoModel.getByOption("licao", id);
-
-    return { ...licao, campos };
+  async getById(id, { somenteAtivas = false } = {}) {
+    const idNum = idDaRota(id, "lição");
+    const licao = await LicaoModel.getById(idNum);
+    if (!licao || (somenteAtivas && !(licao.ativo === 1 || licao.ativo === true))) {
+      throw new NotFoundError("Lição não encontrada");
+    }
+    return { ...licao, campos: await CampoModel.getByOption("licao", idNum) };
   }
 
   async create(data) {
-    if (!data.titulo) throw new AppError("Título é obrigatório", 400);
+    const titulo = String(data.titulo ?? "").trim();
+    if (titulo.length < 3) throw new ValidationError("O título precisa ter pelo menos 3 letras.");
+    const campos = Array.isArray(data.campos) ? data.campos : [];
+    await validarCampos(campos);
 
-    const novaLicao = await LicaoModel.create({
-      titulo: data.titulo,
-      descricao: data.descricao,
-      ativo: data.ativo,
+    // Tudo ou nada: um conteúdo inválido não deixa uma lição pela metade
+    const idLicao = await knex.transaction(async (trx) => {
+      const [id] = await trx("licao").insert({
+        titulo,
+        descricao: String(data.descricao ?? "").trim() || null,
+        ativo: data.ativo ?? true,
+      });
+      await gravarCampos(trx, id, campos);
+      return id;
     });
-
-    if (data.campos && data.campos.length > 0) {
-      for (let i = 0; i < data.campos.length; i++) {
-        const campo = data.campos[i];
-        await CampoModel.linkToEntity(
-          "licao",
-          novaLicao.id_licao,
-          campo.id_campo,
-          campo.conteudo || "",
-          campo.label || "",
-          i
-        );
-      }
-    }
-
-    const camposVinculados = await CampoModel.getByOption(
-      "licao",
-      novaLicao.id_licao
-    );
-
-    return { ...novaLicao, campos: camposVinculados };
+    return this.getById(idLicao);
   }
 
+  /**
+   * Edita só o que vier: { ativo } sozinho só liga/desliga. Antes os conteúdos eram apagados em
+   * toda edição e só recriados se viessem junto (desativar sem mandar os campos esvaziava a lição).
+   */
   async update(id, data) {
-    const rowsAffected = await LicaoModel.update(id, {
-      titulo: data.titulo,
-      descricao: data.descricao,
-      ativo: data.ativo,
-    });
+    const idNum = idDaRota(id, "lição");
+    const existe = await LicaoModel.getById(idNum);
+    if (!existe) throw new NotFoundError("Lição não encontrada");
 
-    if (!rowsAffected) throw new AppError("Lição não encontrada", 404);
-
-    // remove campos antigos
-    await knex("licao_campo").where({ id_licao: id }).del();
-
-    // recriar campos
-    if (data.campos && data.campos.length > 0) {
-      for (let i = 0; i < data.campos.length; i++) {
-        const campo = data.campos[i];
-        await CampoModel.linkToEntity(
-          "licao",
-          id,
-          campo.id_campo,
-          campo.conteudo || "",
-          campo.label || "",
-          i
-        );
-      }
+    const dados = {};
+    if (data.titulo !== undefined) {
+      dados.titulo = String(data.titulo).trim();
+      if (dados.titulo.length < 3) throw new ValidationError("O título precisa ter pelo menos 3 letras.");
     }
+    if (data.descricao !== undefined) dados.descricao = String(data.descricao ?? "").trim() || null;
+    if (data.ativo !== undefined) dados.ativo = data.ativo;
+    const campos = Array.isArray(data.campos) ? data.campos : null;
+    if (campos) await validarCampos(campos);
 
-    // Buscar a lição atualizada
-    const licaoAtualizada = await LicaoModel.getById(id);
-    const camposVinculados = await CampoModel.getByOption("licao", id);
-
-    return { ...licaoAtualizada, campos: camposVinculados };
+    await knex.transaction(async (trx) => {
+      if (Object.keys(dados).length) await trx("licao").where({ id_licao: idNum }).update(dados);
+      if (campos) await gravarCampos(trx, idNum, campos);
+    });
+    return this.getById(idNum);
   }
 
   async delete(id) {
-    const deleted = await LicaoModel.delete(id);
-    if (!deleted) throw new AppError("Lição não encontrada", 404);
+    const idNum = idDaRota(id, "lição");
+    const deleted = await LicaoModel.delete(idNum);
+    if (!deleted) throw new NotFoundError("Lição não encontrada");
     return deleted;
   }
 }

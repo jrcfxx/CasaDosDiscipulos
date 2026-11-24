@@ -1,6 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import "../style/ModulosEscolaDiscipulosAdmin.css";
+import "../style/editorCasa.css";
+import Icone from "../components/ui/Icone";
+import { getErrorMessage } from "../utils/errorUtils";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -15,13 +36,112 @@ import moduloService, { type QuizVinculado } from "../services/moduloService";
 import usuarioService from "../services/usuarioService";
 import { Modulo } from "../types";
 
+/** Item da lista de módulos: arrastado pela alça para mudar a ordem da trilha */
+function ItemModulo({
+  modulo,
+  posicao,
+  selecionado,
+  onSelecionar,
+  onAlternar,
+}: {
+  modulo: Modulo;
+  posicao: number;
+  selecionado: boolean;
+  onSelecionar: () => void;
+  onAlternar: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: modulo.id_modulo });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`mod-item ${selecionado ? "selected" : ""} ${!modulo.ativo ? "inactive" : ""}${isDragging ? " mod-item--arrastando" : ""}`}
+      role="button"
+      tabIndex={0}
+      onClick={onSelecionar}
+      onKeyDown={(e) => {
+        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onSelecionar();
+        }
+      }}
+    >
+      <div className="mod-item__info">
+        <button
+          type="button"
+          className="mod-item__alca"
+          aria-label={`Arrastar "${modulo.titulo}" para mudar a ordem da trilha (posição ${posicao})`}
+          title="Arraste para mudar a ordem"
+          onClick={(e) => e.stopPropagation()}
+          {...attributes}
+          {...listeners}
+        >
+          <Icone nome="arrastar" tamanho={16} />
+        </button>
+        <span className="mod-item__ordem">{posicao}</span>
+        <span className="mod-item__name">{modulo.titulo}</span>
+        {modulo.obrigatorio === false && <span className="mod-item__opcional-badge">Opcional</span>}
+      </div>
+      <button
+        className={`btn-status ${modulo.ativo ? "active" : "inactive"}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAlternar();
+        }}
+        title={modulo.ativo ? "Esconder dos discípulos" : "Liberar para os discípulos"}
+      >
+        {modulo.ativo ? "Ativo" : "Inativo"}
+      </button>
+    </div>
+  );
+}
+
 const ModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [modulos, setModulos] = useState<Modulo[]>([]);
   const [selectedModulo, setSelectedModulo] = useState<Modulo | null>(null);
   const [quizVinculado, setQuizVinculado] = useState<QuizVinculado | null>(null);
   const [ranking, setRanking] = useState<RankItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [salvandoOrdem, setSalvandoOrdem] = useState(false);
+  const [progressoExcluir, setProgressoExcluir] = useState<{ alunos: number; concluidos: number } | null>(null);
   const navigate = useNavigate();
+  const sensores = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  /** Solta o módulo: mostra a nova ordem na hora e salva; se falhar, volta como estava */
+  const aoSoltar = async ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const antes = modulos;
+    const nova = arrayMove(
+      antes,
+      antes.findIndex((m) => m.id_modulo === active.id),
+      antes.findIndex((m) => m.id_modulo === over.id)
+    );
+    setModulos(nova);
+    setSalvandoOrdem(true);
+    try {
+      await moduloService.reordenar(nova.map((m) => m.id_modulo));
+      setToast("Ordem da trilha salva.");
+    } catch (error) {
+      setModulos(antes);
+      setToast(`Erro: ${getErrorMessage(error, "não foi possível salvar a nova ordem.")}`);
+    } finally {
+      setSalvandoOrdem(false);
+    }
+  };
+
+  const pedirExclusao = async () => {
+    if (!selectedModulo) return;
+    try {
+      setProgressoExcluir(await moduloService.totalProgresso(selectedModulo.id_modulo));
+    } catch {
+      setProgressoExcluir({ alunos: 0, concluidos: 0 });
+    }
+    setShowConfirmExcluir(true);
+  };
 
   useEffect(() => {
     loadData();
@@ -139,42 +259,46 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
               <h2>Módulos</h2>
               <span className="count">{modulos.length}</span>
             </div>
-            <div className="list">
-              {modulos.map((modulo) => (
-                <div
-                  key={modulo.id_modulo}
-                  className={`mod-item ${
-                    selectedModulo?.id_modulo === modulo.id_modulo
-                      ? "selected"
-                      : ""
-                  } ${!modulo.ativo ? "inactive" : ""}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleSelectModulo(modulo)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
-                >
-                  <div className="mod-item__info">
-                    <span className="mod-item__ordem">#{modulo.ordem}</span>
-                    <span className="mod-item__name">{modulo.titulo}</span>
-                    {modulo.obrigatorio === false && (
-                      <span className="mod-item__opcional-badge">Opcional</span>
-                    )}
-                  </div>
-                  <button
-                    className={`btn-status ${
-                      modulo.ativo ? "active" : "inactive"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggle(modulo.id_modulo);
-                    }}
-                    title={modulo.ativo ? "Desativar módulo" : "Ativar módulo"}
-                  >
-                    {modulo.ativo ? "Ativo" : "Inativo"}
-                  </button>
+            {modulos.length > 1 && (
+              <p className="mod-lista-dica">
+                <Icone nome="arrastar" tamanho={13} />
+                {salvandoOrdem ? "Salvando a ordem…" : "Arraste pela alça para mudar a ordem da trilha."}
+              </p>
+            )}
+            <DndContext
+              sensors={sensores}
+              collisionDetection={closestCenter}
+              onDragEnd={aoSoltar}
+              accessibility={{
+                screenReaderInstructions: {
+                  draggable:
+                    "Para mudar a ordem, aperte espaço ou Enter, use as setas e aperte espaço ou Enter de novo para soltar. Esc cancela.",
+                },
+                announcements: {
+                  onDragStart: () => "Módulo pego.",
+                  onDragOver: ({ over }) =>
+                    over ? `Sobre a posição ${modulos.findIndex((m) => m.id_modulo === over.id) + 1}.` : undefined,
+                  onDragEnd: ({ over }) =>
+                    over ? `Solto na posição ${modulos.findIndex((m) => m.id_modulo === over.id) + 1}.` : undefined,
+                  onDragCancel: () => "Cancelado. O módulo voltou ao lugar.",
+                },
+              }}
+            >
+              <SortableContext items={modulos.map((m) => m.id_modulo)} strategy={verticalListSortingStrategy}>
+                <div className="list">
+                  {modulos.map((modulo, i) => (
+                    <ItemModulo
+                      key={modulo.id_modulo}
+                      modulo={modulo}
+                      posicao={i + 1}
+                      selecionado={selectedModulo?.id_modulo === modulo.id_modulo}
+                      onSelecionar={() => handleSelectModulo(modulo)}
+                      onAlternar={() => handleToggle(modulo.id_modulo)}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
             <button
               className="btn-create"
               onClick={() => navigate("/admin/modulos/criar")}
@@ -198,7 +322,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                         selectedModulo.ativo ? "active" : "inactive"
                       }`}
                     >
-                      {selectedModulo.ativo ? "Ativo" : "Inativo"}
+                      {selectedModulo.ativo ? "Liberado para os discípulos" : "Escondido dos discípulos"}
                     </span>
                   </div>
                   <div className="module-header-actions">
@@ -214,7 +338,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                     </button>
                     <button
                       className="btn-excluir"
-                      onClick={() => setShowConfirmExcluir(true)}
+                      onClick={pedirExclusao}
                       disabled={excluindo}
                       title="Excluir módulo permanentemente"
                      aria-busy={excluindo}>
@@ -230,58 +354,38 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                   </div>
                 )}
 
-                <div className="module-meta">
-                  {selectedModulo.obrigatorio === false && (
-                    <div className="meta-item">
-                      <span className="meta-label">Tipo:</span>
-                      <span className="meta-value meta-value-opcional">Opcional</span>
-                    </div>
-                  )}
-                  {selectedModulo.obrigatorio !== false && selectedModulo.id_nivel != null && (
-                    <div className="meta-item">
-                      <span className="meta-label">Nível:</span>
-                      <span className="meta-value">{selectedModulo.nivel_nome ?? `#${selectedModulo.id_nivel}`}</span>
-                    </div>
-                  )}
-                  {(selectedModulo.pre_requisitos?.length ?? 0) > 0 && (
-                    <div className="meta-item meta-item-block">
-                      <span className="meta-label">Pré-requisitos:</span>
-                      <span className="meta-value">
-                        {modulos
-                          .filter((m) => selectedModulo.pre_requisitos?.includes(m.id_modulo))
-                          .map((m) => m.titulo)
-                          .join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  <div className="meta-item">
-                    <span className="meta-label">Ordem:</span>
-                    <span className="meta-value">{selectedModulo.ordem}</span>
+                <div className="ec-numeros">
+                  <div>
+                    <strong>{modulos.findIndex((m) => m.id_modulo === selectedModulo.id_modulo) + 1}º</strong>
+                    <span>na trilha</span>
                   </div>
-                  <div className="meta-item">
-                    <span className="meta-label">Campos:</span>
-                    <span className="meta-value">
-                      {selectedModulo.campos?.length || 0}
-                    </span>
+                  <div>
+                    <strong>{selectedModulo.campos?.length || 0}</strong>
+                    <span>{(selectedModulo.campos?.length || 0) === 1 ? "conteúdo" : "conteúdos"}</span>
                   </div>
-                  <div className="meta-item">
-                    <span className="meta-label">Quiz:</span>
-                    <span className="meta-value">
-                      {quizVinculado ? (
-                        <span className="quiz-linked">
-                          {quizVinculado.titulo ||
-                            `Quiz #${quizVinculado.id_quiz}`}
-                        </span>
-                      ) : (
-                        <span className="quiz-none">Nenhum</span>
-                      )}
-                    </span>
+                  <div>
+                    <strong className="ec-numeros__texto">{quizVinculado ? "Com quiz" : "Sem quiz"}</strong>
+                    <span>{quizVinculado?.titulo || "conclusão manual"}</span>
                   </div>
                 </div>
+                <p className="ec-lembrete">
+                  <Icone nome="alerta" tamanho={15} />
+                  {selectedModulo.obrigatorio === false
+                    ? "Opcional: o discípulo faz quando quiser; não bloqueia outros módulos e não conta para o nível."
+                    : (selectedModulo.pre_requisitos?.length ?? 0) > 0
+                      ? `Obrigatório: libera depois de concluir ${modulos
+                          .filter((m) => selectedModulo.pre_requisitos?.includes(m.id_modulo))
+                          .map((m) => `"${m.titulo}"`)
+                          .join(", ")}.`
+                      : "Obrigatório: libera quando o discípulo concluir os módulos obrigatórios anteriores na trilha."}
+                  {selectedModulo.obrigatorio !== false && selectedModulo.id_nivel != null
+                    ? ` Ao concluir, chega ao nível ${selectedModulo.nivel_nome ?? `#${selectedModulo.id_nivel}`}.`
+                    : ""}
+                </p>
 
                 {selectedModulo.campos && selectedModulo.campos.length > 0 ? (
                   <div className="module-fields">
-                    <h3>Campos Personalizados</h3>
+                    <h3>Conteúdo das aulas</h3>
                     <div className="campos-grid">
                       {selectedModulo.campos.map((campo, index) => (
                         <div key={index} className="campo-card">
@@ -300,7 +404,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                   </div>
                 ) : (
                   <div className="module-empty">
-                    <p>Este módulo não possui campos cadastrados.</p>
+                    <p>Este módulo ainda não tem conteúdo. Clique em Editar para adicionar vídeos, textos e arquivos.</p>
                   </div>
                 )}
               </div>
@@ -349,8 +453,12 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
       />
       <ConfirmModal
         open={showConfirmExcluir}
-        title="Tem certeza?"
-        message={`O módulo "${selectedModulo?.titulo ?? ""}" será excluído permanentemente. Esta ação não pode ser desfeita.`}
+        title="Excluir módulo"
+        message={
+          progressoExcluir && progressoExcluir.alunos > 0
+            ? `"${selectedModulo?.titulo ?? ""}" já foi começado por ${progressoExcluir.alunos} ${progressoExcluir.alunos === 1 ? "discípulo" : "discípulos"} (${progressoExcluir.concluidos} concluíram). Excluir apaga esse progresso e não tem volta. Para só tirar da trilha, deixe o módulo Inativo.`
+            : `Excluir "${selectedModulo?.titulo ?? ""}"? Esta ação não pode ser desfeita.`
+        }
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         variant="danger"
@@ -362,7 +470,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
         <Toast
           message={toast}
           onClose={() => setToast(null)}
-          variant={toast.includes("Erro") ? "error" : "success"}
+          variant={toast.startsWith("Erro") ? "error" : "success"}
         />
       )}
     </div>

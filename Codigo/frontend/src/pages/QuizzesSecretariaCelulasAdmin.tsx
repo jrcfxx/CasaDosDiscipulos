@@ -26,7 +26,7 @@ import "../style/editorCasa.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import InputModal from "../components/ui/InputModal";
+import ConstrutorPergunta, { TIPOS_CONSTRUIDOS } from "../components/quiz/ConstrutorPergunta";
 
 import api from "../services/apiClient";
 import { uploadCampo } from "../services/uploadService";
@@ -169,11 +169,22 @@ function problemaDoQuiz(nome: string, campos: LocalField[]): string | null {
       const alts = parseAlternativas(c.conteudo).alternativas;
       if (alts.filter((a) => a.texto.trim()).length < 2) return `${nomeCampo}: escreva pelo menos 2 alternativas.`;
       if (alts.some((a) => !a.texto.trim())) return `${nomeCampo}: há uma alternativa em branco. Preencha ou remova.`;
+      if (new Set(alts.map((a) => a.texto.trim().toLocaleLowerCase("pt-BR"))).size !== alts.length) {
+        return `${nomeCampo}: há duas alternativas iguais.`;
+      }
       const certas = alts.filter((a) => a.correta).length;
       if (certas === 0) return `${nomeCampo}: marque qual alternativa é a correta.`;
+    } else if (c.tipo === "verdadeiro_falso") {
+      if (!["true", "false"].includes(String(c.conteudo ?? "").toLowerCase())) {
+        return `${nomeCampo}: marque se a afirmação é Verdadeira ou Falsa.`;
+      }
     } else if (c.tipo === "select") {
       const sel = parseSelect(c.conteudo);
-      if (sel.opcoes.length < 2) return `${nomeCampo}: adicione pelo menos 2 opções.`;
+      if (sel.opcoes.filter((o) => o.trim()).length < 2) return `${nomeCampo}: adicione pelo menos 2 opções.`;
+      if (sel.opcoes.some((o) => !o.trim())) return `${nomeCampo}: há uma opção em branco. Preencha ou remova.`;
+      if (new Set(sel.opcoes.map((o) => o.trim().toLocaleLowerCase("pt-BR"))).size !== sel.opcoes.length) {
+        return `${nomeCampo}: há duas opções iguais.`;
+      }
       if (!sel.correta) return `${nomeCampo}: marque qual opção é a correta.`;
     } else if (c.tipo === "link" || c.tipo === "video") {
       const v = String(c.conteudo ?? "").trim();
@@ -241,9 +252,17 @@ function ItemQuiz({
         value={item.label}
         maxLength={255}
         onChange={(e) => onRenomear(e.target.value)}
-        placeholder={ehPergunta ? "Escreva a pergunta" : "Título do conteúdo"}
+        placeholder={
+          item.tipo === "verdadeiro_falso"
+            ? "Ex.: Jesus nasceu em Belém"
+            : ehPergunta
+              ? "Ex.: Quem foi o primeiro rei de Israel?"
+              : "Título do conteúdo"
+        }
       />
-      {AJUDA_TIPO[item.tipo] && <p className="ec-ajuda-tipo">{AJUDA_TIPO[item.tipo].dica}</p>}
+      {AJUDA_TIPO[item.tipo] && !TIPOS_CONSTRUIDOS.includes(item.tipo) && (
+        <p className="ec-ajuda-tipo">{AJUDA_TIPO[item.tipo].dica}</p>
+      )}
       <div className="ec-item__corpo field-wrapper">{children}</div>
     </li>
   );
@@ -431,51 +450,22 @@ export default function QuizzesSecretariaCelulasAdmin() {
     };
   };
 
-  const [labelModalOpen, setLabelModalOpen] = useState(false);
-  const [labelModalTipo, setLabelModalTipo] = useState<string | null>(null);
-
+  /** Clicou num tipo: a pergunta entra no fim da lista já com o cursor no texto dela */
   const addField = (tipo: string) => {
-    setLabelModalTipo(tipo);
-    setLabelModalOpen(true);
-  };
-
-  const confirmAddField = (label: string) => {
-    if (!label.trim()) return;
-    const tipo = labelModalTipo;
-    setLabelModalOpen(false);
-    setLabelModalTipo(null);
-
-    const campo = availableFields.find(
-      (c) => String(c.tipo_campo).toLowerCase() === tipo!.toLowerCase()
-    );
+    const campo = availableFields.find((c) => String(c.tipo_campo).toLowerCase() === tipo.toLowerCase());
     if (!campo) {
-      showToast(`Nenhum campo disponível para o tipo ${tipo}`);
+      showToast(`Esse tipo (${INFO_TIPO[tipo]?.nome || tipo}) não está disponível.`);
       return;
     }
-
-    let conteudoInicial: ValorCampo = "";
-
-    // Define conteúdo inicial baseado no tipo de campo
-    if (tipo === "numero") {
-      conteudoInicial = 0;
-    } else if (tipo === "data") {
-      conteudoInicial = "";
-    } else if (tipo === "verdadeiro_falso") {
-      conteudoInicial = "false";
-    } else if (tipo === "select" || tipo === "checkbox") {
-      conteudoInicial = "";
-    } else {
-      conteudoInicial = "";
-    }
-
+    const novo = createLocalField(campo.id_campo, tipo, "", tipo === "numero" ? 0 : "");
     setErroForm(null);
     setAlterado(true);
-    setFields((prev) => [
-      ...prev,
-      createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
-    ]);
-    // Leva a tela até o item novo
-    setTimeout(() => document.querySelector(".ec-lista > li:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+    setFields((prev) => [...prev, novo]);
+    setTimeout(() => {
+      const input = document.getElementById(`ec-enunciado-${novo.uid}`) as HTMLInputElement | null;
+      input?.scrollIntoView({ behavior: "smooth", block: "center" });
+      input?.focus({ preventScroll: true });
+    }, 80);
   };
 
   const aoSoltarItem = ({ active, over }: DragEndEvent) => {
@@ -811,7 +801,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
   const editor = showFormModal
     ? createPortal(
         <FocusTrapComponent
-          active={showFormModal && !labelModalOpen && !confirmarDescarte}
+          active={showFormModal && !confirmarDescarte}
           focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false, returnFocusOnDeactivate: true }}
         >
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
@@ -821,7 +811,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
             aria-modal="true"
             aria-labelledby="ec-editor-titulo"
             onKeyDown={(e) => {
-              if (e.key === "Escape" && !labelModalOpen && !confirmarDescarte) pedirFechar();
+              if (e.key === "Escape" && !confirmarDescarte) pedirFechar();
             }}
           >
             <div className="ec-editor">
@@ -993,14 +983,23 @@ export default function QuizzesSecretariaCelulasAdmin() {
                                   onRenomear={(label) => atualizarItem(f.uid, { label })}
                                   onRemover={() => removeField(f.uid)}
                                 >
-                                  <Component
-                                    id={String(f.uid)}
-                                    name={`campo_${f.uid}`}
-                                    label=""
-                                    value={f.conteudo}
-                                    onChange={(v: ValorCampo) => atualizarItem(f.uid, { conteudo: v })}
-                                    {...extras}
-                                  />
+                                  {TIPOS_CONSTRUIDOS.includes(f.tipo) ? (
+                                    <ConstrutorPergunta
+                                      id={f.uid}
+                                      tipo={f.tipo}
+                                      valor={f.conteudo}
+                                      onChange={(v) => atualizarItem(f.uid, { conteudo: v })}
+                                    />
+                                  ) : (
+                                    <Component
+                                      id={String(f.uid)}
+                                      name={`campo_${f.uid}`}
+                                      label=""
+                                      value={f.conteudo}
+                                      onChange={(v: ValorCampo) => atualizarItem(f.uid, { conteudo: v })}
+                                      {...extras}
+                                    />
+                                  )}
                                 </ItemQuiz>
                               );
                             })}
@@ -1274,28 +1273,6 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       {editor}
 
-      <InputModal
-        open={labelModalOpen}
-        title={
-          labelModalTipo && TIPOS_PERGUNTA.includes(labelModalTipo)
-            ? `Nova pergunta · ${INFO_TIPO[labelModalTipo]?.nome || ""}`
-            : `Novo conteúdo · ${(labelModalTipo && INFO_TIPO[labelModalTipo]?.nome) || ""}`
-        }
-        label={(labelModalTipo && AJUDA_TIPO[labelModalTipo]?.rotulo) || "Título do campo"}
-        placeholder={
-          labelModalTipo === "verdadeiro_falso"
-            ? "Ex: Jesus nasceu em Belém"
-            : labelModalTipo && TIPOS_PERGUNTA.includes(labelModalTipo)
-              ? "Ex: Quem foi o primeiro rei de Israel?"
-              : "Ex: Leia antes de responder"
-        }
-        hint={(labelModalTipo && AJUDA_TIPO[labelModalTipo]?.dica) || undefined}
-        onConfirm={confirmAddField}
-        onCancel={() => {
-          setLabelModalOpen(false);
-          setLabelModalTipo(null);
-        }}
-      />
 
       <ConfirmModal
         open={confirmarDescarte}

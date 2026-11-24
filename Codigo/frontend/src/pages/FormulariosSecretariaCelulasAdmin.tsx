@@ -24,7 +24,6 @@ import "../style/editorCasa.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import InputModal from "../components/ui/InputModal";
 import Toast from "../components/ui/Toast";
 import ConfirmModal from "../components/ui/ConfirmModal";
 
@@ -557,47 +556,22 @@ export default function FormulariosSecretariaCelulasAdmin() {
     };
   };
 
-  const [labelModalOpen, setLabelModalOpen] = useState(false);
-  const [labelModalTipo, setLabelModalTipo] = useState<string | null>(null);
-
+  /** Clicou num tipo: a pergunta entra no fim da lista já com o cursor no texto dela */
   const addField = (tipo: string) => {
-    setLabelModalTipo(tipo);
-    setLabelModalOpen(true);
-  };
-
-  const confirmAddField = (label: string) => {
-    if (!label.trim()) return;
-    if (fields.some((f) => f.label.trim().toLocaleLowerCase("pt-BR") === label.trim().toLocaleLowerCase("pt-BR"))) {
-      showToast(`Já existe um campo chamado "${label.trim()}". Use outro nome.`, "error");
-      return;
-    }
-    const tipo = labelModalTipo;
-    setLabelModalOpen(false);
-    setLabelModalTipo(null);
-
-    const campo = availableFields.find(
-      (c) => String(c.tipo_campo).toLowerCase() === tipo!.toLowerCase()
-    );
+    const campo = availableFields.find((c) => String(c.tipo_campo).toLowerCase() === tipo.toLowerCase());
     if (!campo) {
-      showToast(`Nenhum campo disponível para o tipo ${tipo}`);
+      showToast(`Esse tipo (${INFO_CAMPO[tipo]?.nome || tipo}) não está disponível.`, "error");
       return;
     }
-
-    let conteudoInicial: ValorCampo = "";
-    if (tipo === "numero") {
-      conteudoInicial = 0;
-    } else if (tipo === "data") {
-      conteudoInicial = "";
-    }
-
+    const novo = createLocalField(campo.id_campo, tipo, "", tipo === "numero" ? 0 : "");
     setErroForm(null);
     setAlterado(true);
-    setFields((prev) => [
-      ...prev,
-      createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
-    ]);
-    // Leva a tela até o campo novo
-    setTimeout(() => document.querySelector(".ec-lista > li:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+    setFields((prev) => [...prev, novo]);
+    setTimeout(() => {
+      const input = document.getElementById(`ec-nome-${novo.uid}`) as HTMLInputElement | null;
+      input?.scrollIntoView({ behavior: "smooth", block: "center" });
+      input?.focus({ preventScroll: true });
+    }, 80);
   };
 
   const removeField = (uid: number) => {
@@ -1199,24 +1173,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
         onCancel={() => { setShowConfirmDelete(false); setFormularioToDelete(null); }}
       />
 
-      <InputModal
-        open={labelModalOpen}
-        title={`Nova pergunta${labelModalTipo && INFO_CAMPO[labelModalTipo] ? ` · ${INFO_CAMPO[labelModalTipo].nome}` : ""}`}
-        label="Pergunta que o líder vai ver"
-        hint={(labelModalTipo && INFO_CAMPO[labelModalTipo]?.dica) || undefined}
-        placeholder="Ex: Quantas pessoas vieram?"
-        onConfirm={confirmAddField}
-        onCancel={() => {
-          setLabelModalOpen(false);
-          setLabelModalTipo(null);
-        }}
-      />
 
       {/* EDITOR DE FORMULÁRIO (no fim do <body>, por cima de tudo) */}
       {showFormModal &&
         createPortal(
           <FocusTrapComponent
-            active={showFormModal && !labelModalOpen && !confirmarDescarte}
+            active={showFormModal && !confirmarDescarte}
             focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false, returnFocusOnDeactivate: true }}
           >
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
@@ -1226,7 +1188,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
               aria-modal="true"
               aria-labelledby="ec-form-titulo"
               onKeyDown={(e) => {
-                if (e.key === "Escape" && !labelModalOpen && !confirmarDescarte) pedirFechar();
+                if (e.key === "Escape" && !confirmarDescarte) pedirFechar();
               }}
             >
               <div className="ec-editor">

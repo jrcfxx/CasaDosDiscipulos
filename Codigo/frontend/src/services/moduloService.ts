@@ -89,6 +89,17 @@ const moduloService = {
   /**
    * Exclui módulo permanentemente
    */
+  /** Nova ordem da trilha: todos os módulos, na ordem desejada */
+  async reordenar(ids: number[]): Promise<void> {
+    await apiClient.put("/modulo/ordem", { ids });
+  },
+
+  /** Quantos discípulos começaram/concluíram (aviso antes de excluir) */
+  async totalProgresso(id: number): Promise<{ alunos: number; concluidos: number }> {
+    const response = await apiClient.get(`/modulo/${id}/total-progresso`);
+    return { alunos: Number(response.data?.alunos) || 0, concluidos: Number(response.data?.concluidos) || 0 };
+  },
+
   async deletePermanente(id: number): Promise<void> {
     await apiClient.delete(`/modulo/${id}/permanente`);
   },

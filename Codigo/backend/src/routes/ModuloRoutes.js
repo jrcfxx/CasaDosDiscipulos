@@ -23,6 +23,9 @@ router.get("/ranking/completo", adminAndLeader, ModuloController.rankingCompleto
 router.post("/:id/iniciar", ModuloController.iniciar);
 router.post("/:id/concluir", ModuloController.concluir);
 router.get("/:id/progresso", ModuloController.getProgresso);
+// Nova ordem da trilha (arrastar na lista). Antes de "/:id" para não ser lida como um id.
+router.put("/ordem", adminOnly, ModuloController.reordenar);
+router.get("/:id/total-progresso", adminOnly, ModuloController.totalProgresso);
 router.get("/:id", ModuloController.show);
 router.get("/:id/quiz", ModuloController.getQuizVinculado);
 router.post("/", adminOnly, validate(createModuloSchema), ModuloController.store);

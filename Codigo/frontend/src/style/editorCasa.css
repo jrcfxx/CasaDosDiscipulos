@@ -105,6 +105,7 @@
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
+  gap: 0.3rem;
   padding: 0.18rem 0.6rem;
   border-radius: 999px;
   font-size: 0.7rem;
@@ -941,5 +942,547 @@
 @media (max-width: 640px) {
   .ec-item__topo {
     flex-wrap: wrap;
+  }
+}
+
+/* ======================================================================
+   Editor como página (módulos): mesmo visual, sem fundo escurecido;
+   o rodapé com Salvar fica grudado embaixo da tela enquanto rola
+   ====================================================================== */
+.ec-pagina {
+  background: var(--color-bg, #020202);
+  padding: 1.5rem 1rem 3rem;
+  font-family: var(--font-primary, "Montserrat", sans-serif);
+}
+
+.ec-editor.ec-editor--pagina {
+  width: min(960px, 100%);
+  max-height: none;
+  margin: 0 auto;
+  overflow: visible;
+  animation: none;
+}
+
+.ec-editor--pagina .ec-editor__topo {
+  border-radius: 18px 18px 0 0;
+}
+
+.ec-editor--pagina .ec-editor__topo h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ec-editor--pagina .ec-editor__rolagem {
+  overflow: visible;
+}
+
+.ec-editor--pagina .ec-editor__rodape {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  border-radius: 0 0 18px 18px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.ec-carregando {
+  text-align: center;
+  color: #ebebeb;
+  padding: 4rem 1rem;
+}
+
+/* Escolha em cartões (ex.: obrigatório x opcional) */
+.ec-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.ec-opcao {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--n-200, #dcdfdf);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ec-opcao input {
+  margin-top: 0.2rem;
+  accent-color: #02869b;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.ec-opcao span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ec-opcao strong {
+  font-size: 0.9rem;
+  color: #2b2f30;
+}
+
+.ec-opcao small {
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--n-600, #5c6263);
+}
+
+.ec-opcao--marcada {
+  border-color: #02869b;
+  background: #f1f8f9;
+}
+
+.ec-opcao:focus-within {
+  outline: 2px solid #02869b;
+  outline-offset: 2px;
+}
+
+/* Lista de marcar (ex.: pré-requisitos) */
+.ec-checklist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.ec-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--n-200, #dcdfdf);
+  background: #fff;
+  font-size: 0.82rem;
+  color: #2b2f30;
+  cursor: pointer;
+}
+
+.ec-check input {
+  margin: 0;
+  accent-color: #02869b;
+}
+
+.ec-check--marcado {
+  border-color: rgba(2, 134, 155, 0.5);
+  background: rgba(2, 134, 155, 0.08);
+  color: #00626f;
+  font-weight: 600;
+}
+
+.ec-check:focus-within {
+  outline: 2px solid #02869b;
+  outline-offset: 2px;
+}
+
+.ec-secao__titulo .ec-opcional {
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .ec-pagina {
+    padding: 0.75rem 0 2rem;
+  }
+
+  .ec-editor.ec-editor--pagina {
+    border-radius: 0;
+  }
+
+  .ec-editor--pagina .ec-editor__topo,
+  .ec-editor--pagina .ec-editor__rodape {
+    border-radius: 0;
+  }
+
+  .ec-opcoes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ======================================================================
+   Lista de módulos: alça de arrastar e posição na trilha
+   ====================================================================== */
+.mod-item__alca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  opacity: 0.65;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mod-item__alca:hover,
+.mod-item__alca:focus-visible {
+  opacity: 1;
+  border-color: rgba(2, 134, 155, 0.35);
+  background: rgba(2, 134, 155, 0.08);
+}
+
+.mod-item__alca:focus-visible {
+  outline: 2px solid #02869b;
+  outline-offset: 1px;
+}
+
+.mod-item--arrastando {
+  position: relative;
+  z-index: 5;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.mod-lista-dica {
+  margin: 0.75rem 1rem 0.25rem;
+  padding: 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--n-600, #5c6263);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.mod-lista-dica .icone {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #02869b;
+}
+
+/* ======================================================================
+   Construtor de pergunta do quiz (components/quiz/ConstrutorPergunta)
+   ====================================================================== */
+.cp {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.cp__instrucao {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--n-600, #5c6263);
+}
+
+.cp__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.cp__alt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.45rem 0.4rem 0.4rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--n-200, #dcdfdf);
+  background: #fff;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cp__alt:focus-within {
+  border-color: #02869b;
+}
+
+.cp__alt--certa {
+  border-color: #2f9e6e;
+  background: #f0faf5;
+}
+
+.cp__letra {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: var(--n-100, #ebebeb);
+  color: #2b2f30;
+}
+
+.cp__alt--certa .cp__letra {
+  background: #2f9e6e;
+  color: #fff;
+}
+
+.ec-editor .field-wrapper .cp__input,
+.ec-editor .cp__input,
+.cp__input {
+  flex: 1;
+  min-width: 0;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0.45rem 0.25rem !important;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #2b2f30 !important;
+}
+
+.cp__input:focus {
+  outline: none;
+}
+
+.cp__input::placeholder {
+  color: var(--n-400, #9ba1a2);
+}
+
+.cp__certa {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--n-300, #c4c8c9);
+  background: #fff;
+  color: var(--n-600, #5c6263);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.cp__certa:hover {
+  border-color: #2f9e6e;
+  color: #1f7a52;
+}
+
+.cp__certa--sim {
+  background: #2f9e6e;
+  border-color: #2f9e6e;
+  color: #fff;
+}
+
+.cp__certa--sim:hover {
+  color: #fff;
+}
+
+.cp__remover {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--n-500, #737a7b);
+  cursor: pointer;
+}
+
+.cp__remover:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.cp__remover:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.cp__certa:focus-visible,
+.cp__remover:focus-visible,
+.cp__adicionar:focus-visible {
+  outline: 2px solid #02869b;
+  outline-offset: 2px;
+}
+
+.cp__rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.cp__adicionar {
+  border: 1.5px dashed var(--n-300, #c4c8c9);
+  background: transparent;
+  color: #00626f;
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cp__adicionar:hover {
+  border-color: #02869b;
+  background: #f1f8f9;
+}
+
+.cp__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #9a6b00;
+}
+
+.cp__status--ok {
+  color: #1f7a52;
+}
+
+/* Verdadeiro ou falso */
+.cp__vf {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.cp__vf-opcao {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--n-200, #dcdfdf);
+  background: #fff;
+  cursor: pointer;
+  color: #2b2f30;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cp__vf-opcao input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.cp__vf-opcao .icone {
+  flex-shrink: 0;
+  color: var(--n-400, #9ba1a2);
+}
+
+.cp__vf-opcao span {
+  display: flex;
+  flex-direction: column;
+}
+
+.cp__vf-opcao strong {
+  font-size: 0.92rem;
+}
+
+.cp__vf-opcao small {
+  font-size: 0.72rem;
+  color: var(--n-600, #5c6263);
+}
+
+.cp__vf-opcao:focus-within {
+  outline: 2px solid #02869b;
+  outline-offset: 2px;
+}
+
+.cp__vf-opcao--marcada.cp__vf-opcao--true {
+  border-color: #2f9e6e;
+  background: #f0faf5;
+}
+
+.cp__vf-opcao--marcada.cp__vf-opcao--true .icone {
+  color: #2f9e6e;
+}
+
+.cp__vf-opcao--marcada.cp__vf-opcao--false {
+  border-color: #c2410c;
+  background: #fff5ef;
+}
+
+.cp__vf-opcao--marcada.cp__vf-opcao--false .icone {
+  color: #c2410c;
+}
+
+/* Resposta escrita */
+.cp__aviso {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  background: #f1f8f9;
+  border: 1px solid #cfe7eb;
+  color: #12323a;
+}
+
+.cp__aviso .icone {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #02869b;
+}
+
+.cp__aviso p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.cp__previa {
+  border-radius: 12px;
+  border: 1px dashed var(--n-300, #c4c8c9);
+  background: var(--n-50, #f6f7f7);
+  padding: 0.55rem 0.7rem 0.7rem;
+}
+
+.cp__previa-rotulo {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--n-500, #737a7b);
+}
+
+.cp__previa-caixa {
+  min-height: 70px;
+  border-radius: 10px;
+  border: 1.5px solid var(--n-200, #dcdfdf);
+  background: #fff;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--n-400, #9ba1a2);
+}
+
+@media (max-width: 560px) {
+  .cp__alt {
+    flex-wrap: wrap;
+  }
+
+  .cp__alt .cp__input {
+    flex-basis: calc(100% - 80px);
+  }
+
+  .cp__certa {
+    margin-left: 38px;
+  }
+
+  .cp__vf {
+    grid-template-columns: 1fr;
   }
 }

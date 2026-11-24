@@ -22,7 +22,8 @@ const ModuloModel = {
         "created_at",
         "updated_at"
       )
-      .orderBy("ordem", "asc");
+      .orderBy("ordem", "asc")
+      .orderBy("id_modulo", "asc");
   },
 
   /**

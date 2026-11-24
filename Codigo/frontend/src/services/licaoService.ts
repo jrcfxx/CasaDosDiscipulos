@@ -7,6 +7,7 @@ import apiClient from "./apiClient";
 
 export interface LicaoCampo {
   id_campo: number;
+  tipo_campo?: string;
   label: string;
   conteudo?: string | number | boolean | null;
   obrigatorio?: boolean;
@@ -20,11 +21,12 @@ export interface Licao {
   campos?: LicaoCampo[];
 }
 
+/** Na edição, só vai o que muda: { ativo } sozinho só liga/desliga a lição */
 export interface LicaoCreateUpdate {
-  titulo: string;
+  titulo?: string;
   descricao?: string | null;
-  ativo: boolean;
-  campos: LicaoCampo[];
+  ativo?: boolean;
+  campos?: LicaoCampo[];
 }
 
 const licaoService = {

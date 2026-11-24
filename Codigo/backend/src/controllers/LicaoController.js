@@ -1,9 +1,13 @@
 import LicaoService from "../services/LicaoService.js";
+import { USER_TYPES } from "../utils/constants.js";
+
+/** Só o admin vê lições inativas (as outras pessoas veem só as liberadas) */
+const veInativas = (req) => req.usuario?.tipo === USER_TYPES.ADMIN;
 
 class LicaoController {
   async getAll(req, res, next) {
     try {
-      res.json(await LicaoService.getAll());
+      res.json(await LicaoService.getAll({ somenteAtivas: !veInativas(req) }));
     } catch (err) {
       next(err);
     }
@@ -11,7 +15,7 @@ class LicaoController {
 
   async getById(req, res, next) {
     try {
-      const licao = await LicaoService.getById(req.params.id);
+      const licao = await LicaoService.getById(req.params.id, { somenteAtivas: !veInativas(req) });
       res.json(licao);
     } catch (err) {
       next(err);

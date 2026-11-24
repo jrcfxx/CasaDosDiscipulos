@@ -185,6 +185,23 @@ async function main() {
   r = await api("POST", `/modulo/${modA?.id_modulo}/quiz/999999`);
   ok(r.status === 404 || r.status === 400, "vincular quiz inexistente: 400/404", resumo(r));
 
+  console.log("\n== 5b. Módulo: ordem da trilha arrastando");
+  const todosMod = ((await api("GET", "/modulo")).bruto || []).map((m) => m.id_modulo);
+  const invertidos = [...todosMod].reverse();
+  r = await api("PUT", "/modulo/ordem", { ids: invertidos });
+  ok(r.status === 200, "salvar nova ordem da trilha", resumo(r));
+  const depoisMod = ((await api("GET", "/modulo")).bruto || []).map((m) => m.id_modulo);
+  ok(JSON.stringify(depoisMod) === JSON.stringify(invertidos), "a lista volta na ordem salva", JSON.stringify(depoisMod.slice(0, 5)));
+  r = await api("PUT", "/modulo/ordem", { ids: invertidos.slice(1) });
+  ok(r.status === 400, "ordem faltando módulo: 400", resumo(r));
+  r = await api("PUT", "/modulo/ordem", { ids: todosMod });
+  ok(r.status === 200, "voltar a ordem original", resumo(r));
+  r = await api("GET", `/modulo/${modA?.id_modulo}/total-progresso`);
+  ok(r.status === 200 && r.bruto?.alunos === 0, "contagem de alunos para o aviso de excluir", resumo(r));
+  r = await api("POST", "/modulo", { titulo: "QA Sem ordem" });
+  const semOrdem = r.bruto?.dados || r.bruto;
+  ok(r.status === 201 && Number(semOrdem?.ordem) >= todosMod.length, "módulo novo sem ordem entra no fim da trilha", `ordem ${semOrdem?.ordem}`);
+
   console.log("\n== 6. Módulo: exclusão");
   r = await api("DELETE", `/modulo/${modA?.id_modulo}/permanente`);
   ok(r.status === 200 || r.status === 204, "excluir módulo que é pré-requisito de outro", resumo(r));
