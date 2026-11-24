@@ -1,5 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import FocusTrapComponent from "../components/ui/FocusTrap";
 import "../style/FormulariosSecretariaCelulasAdmin.css";
+import "../style/editorCasa.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -36,7 +57,7 @@ import { exportarRespostasFormulario } from "../utils/exportacoes";
 import type { ResumoCampoResposta } from "../services/formularioRespostaService";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
-import Icone from "../components/ui/Icone";
+import Icone, { type NomeIcone } from "../components/ui/Icone";
 
 /* TYPES */
 type Formulario = {
@@ -100,6 +121,128 @@ const initialFormState: FormularioForm = {
   frequencia: "",
 };
 
+/** Cada tipo de campo: nome, ícone e o que o líder faz nele */
+const INFO_CAMPO: Record<string, { nome: string; icone: NomeIcone; resumo: string; dica: string }> = {
+  texto: {
+    nome: "Texto curto",
+    icone: "arquivo",
+    resumo: "Uma linha",
+    dica: "O líder escreve uma resposta curta (ex.: nome do anfitrião, tema da reunião).",
+  },
+  textarea: {
+    nome: "Texto longo",
+    icone: "livro",
+    resumo: "Várias linhas",
+    dica: "O líder escreve um relato maior (ex.: pedidos de oração, observações da reunião).",
+  },
+  numero: {
+    nome: "Número",
+    icone: "lista",
+    resumo: "Somado no relatório",
+    dica: "O líder digita um número (ex.: quantos vieram, visitantes, oferta). O Relatório soma esses números.",
+  },
+  data: {
+    nome: "Data",
+    icone: "calendario",
+    resumo: "Dia da reunião",
+    dica: "O líder escolhe uma data. Se for a data da reunião, o Relatório usa ela (e não o dia do envio) para saber de qual semana é o envio.",
+  },
+  link: {
+    nome: "Link",
+    icone: "proximo",
+    resumo: "Endereço de página",
+    dica: "O líder cola um endereço (ex.: link de fotos da reunião).",
+  },
+  upload: {
+    nome: "Arquivo",
+    icone: "imagem",
+    resumo: "Foto ou PDF",
+    dica: "O líder envia uma foto ou arquivo (ex.: foto da célula).",
+  },
+  video: {
+    nome: "Vídeo",
+    icone: "projecao",
+    resumo: "Link do YouTube",
+    dica: "O líder cola o link de um vídeo.",
+  },
+};
+
+/** O que cada frequência significa para o líder e para o Relatório */
+const AJUDA_FREQUENCIA: Record<string, string> = {
+  "": "Sem prazo: o líder envia quando quiser e o Relatório não aponta atrasos.",
+  semanal: "Uma vez por semana (domingo a sábado). Quem não enviar na semana aparece como \"faltou\" no Relatório.",
+  quinzenal: "Uma vez a cada duas semanas. Quem não enviar na quinzena aparece como \"faltou\".",
+  mensal: "Uma vez por mês. Quem não enviar no mês aparece como \"faltou\".",
+  bimestral: "Uma vez a cada dois meses. Quem não enviar no bimestre aparece como \"faltou\".",
+};
+
+/** Um campo no editor: arrastado pela alça para mudar a ordem */
+function ItemFormulario({
+  item,
+  numero,
+  onRenomear,
+  onObrigatorio,
+  onRemover,
+  children,
+}: {
+  item: { uid: number; tipo: string; label: string; obrigatorio?: boolean };
+  numero: number;
+  onRenomear: (label: string) => void;
+  onObrigatorio: (v: boolean) => void;
+  onRemover: () => void;
+  children: React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.uid });
+  const info = INFO_CAMPO[item.tipo];
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`ec-item ec-item--pergunta${isDragging ? " ec-item--arrastando" : ""}`}
+    >
+      <div className="ec-item__topo">
+        <button
+          type="button"
+          className="ec-item__alca"
+          aria-label={`Arrastar "${item.label}" para mudar a ordem`}
+          title="Arraste para mudar a ordem"
+          {...attributes}
+          {...listeners}
+        >
+          <Icone nome="arrastar" tamanho={18} />
+        </button>
+        <span className="ec-item__numero" aria-hidden>
+          {numero}
+        </span>
+        <span className="ec-selo ec-selo--pergunta">{info?.nome || item.tipo}</span>
+        <label className="ec-obrig">
+          <input type="checkbox" checked={Boolean(item.obrigatorio)} onChange={(e) => onObrigatorio(e.target.checked)} />
+          <span>Obrigatório</span>
+        </label>
+        <button type="button" className="ec-item__remover" onClick={onRemover} aria-label={`Remover "${item.label}"`} title="Remover">
+          <Icone nome="lixeira" tamanho={16} />
+        </button>
+      </div>
+      <label className="ec-rotulo" htmlFor={`ec-nome-${item.uid}`}>
+        Pergunta que o líder vê
+      </label>
+      <input
+        id={`ec-nome-${item.uid}`}
+        className="ec-input ec-input--enunciado"
+        value={item.label}
+        maxLength={255}
+        onChange={(e) => onRenomear(e.target.value)}
+        placeholder="Ex.: Quantas pessoas vieram?"
+      />
+      {info && <p className="ec-ajuda-tipo">{info.dica}</p>}
+      <div className="ec-item__previa">
+        <span className="ec-item__previa-rotulo">Prévia do que o líder preenche</span>
+        <div className="ec-item__corpo field-wrapper">{children}</div>
+      </div>
+    </li>
+  );
+}
+
 /** A lista mostra "Reunião 11 nov" quando o formulário tem a data da reunião; senão a data é a do envio */
 function rotuloDataReferencia(r: { resumo?: ResumoCampoResposta[] }) {
   const campo = (r.resumo || []).find((c) => c.tipo === "data" && c.valor);
@@ -125,6 +268,16 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [formularioToDelete, setFormularioToDelete] = useState<number | null>(null);
   const nameRef = useRef<HTMLInputElement | null>(null);
+  /** Houve mudança no editor (pergunta antes de descartar) */
+  const [alterado, setAlterado] = useState(false);
+  const [confirmarDescarte, setConfirmarDescarte] = useState(false);
+  /** Erro mostrado no rodapé do editor (o aviso flutuante ficava longe do botão Salvar) */
+  const [erroForm, setErroForm] = useState<string | null>(null);
+  const sensores = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const [respostas, setRespostas] = useState<Resposta[]>([]);
   const [respostasLoading, setRespostasLoading] = useState(false);
@@ -437,36 +590,50 @@ export default function FormulariosSecretariaCelulasAdmin() {
       conteudoInicial = "";
     }
 
+    setErroForm(null);
+    setAlterado(true);
     setFields((prev) => [
       ...prev,
       createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
     ]);
+    // Leva a tela até o campo novo
+    setTimeout(() => document.querySelector(".ec-lista > li:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
   };
 
   const removeField = (uid: number) => {
     setFields((prev) => prev.filter((f) => f.uid !== uid));
+    setAlterado(true);
   };
 
-  /** Sobe (-1) ou desce (+1) o campo na ordem do formulário */
-  const moverCampo = (uid: number, direcao: -1 | 1) => {
+  const aoSoltarCampo = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
     setFields((prev) => {
-      const i = prev.findIndex((f) => f.uid === uid);
-      const j = i + direcao;
-      if (i < 0 || j < 0 || j >= prev.length) return prev;
-      const novo = [...prev];
-      [novo[i], novo[j]] = [novo[j], novo[i]];
-      return novo;
+      const de = prev.findIndex((f) => f.uid === active.id);
+      const para = prev.findIndex((f) => f.uid === over.id);
+      return arrayMove(prev, de, para);
     });
+    setAlterado(true);
   };
 
-  const renomearCampo = (uid: number, label: string) => {
-    setFields((prev) => prev.map((f) => (f.uid === uid ? { ...f, label } : f)));
+  const atualizarCampo = (uid: number, mudanca: Partial<LocalField>) => {
+    setFields((prev) => prev.map((f) => (f.uid === uid ? { ...f, ...mudanca } : f)));
+    setErroForm(null);
+    setAlterado(true);
+  };
+
+  /** Fechar o editor: com mudanças não salvas, pergunta antes */
+  const pedirFechar = () => {
+    if (acaoSalvar.executando) return;
+    if (alterado) setConfirmarDescarte(true);
+    else closeFormModal();
   };
 
   const openCreateModal = () => {
     setCurrentForm(initialFormState);
     setFormularioToEdit(null);
     setFields([]);
+    setAlterado(false);
+    setErroForm(null);
     setShowFormModal(true);
     setTimeout(() => nameRef.current?.focus(), 100);
   };
@@ -515,6 +682,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
       });
 
       setFields(incomingFields);
+      setAlterado(false);
+      setErroForm(null);
       setFormularioToEdit(f.id_formulario);
       setShowFormModal(true);
       setTimeout(() => nameRef.current?.focus(), 100);
@@ -525,6 +694,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
   };
 
   const closeFormModal = () => {
+    setConfirmarDescarte(false);
+    setAlterado(false);
+    setErroForm(null);
     setShowFormModal(false);
     setFormularioToEdit(null);
     setCurrentForm(initialFormState);
@@ -536,24 +708,24 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
     const titulo = currentForm.nome.trim();
     if (titulo.length < 3) {
-      showToast("O título precisa ter pelo menos 3 letras.", "error");
+      setErroForm("O título precisa ter pelo menos 3 letras.");
       nameRef.current?.focus();
       return;
     }
     if (fields.length === 0) {
-      showToast("Adicione pelo menos um campo ao formulário.", "error");
+      setErroForm("Adicione pelo menos um campo ao formulário.");
       return;
     }
     const semNome = fields.findIndex((f) => !f.label.trim());
     if (semNome >= 0) {
-      showToast(`O ${semNome + 1}º campo está sem nome.`, "error");
+      setErroForm(`O ${semNome + 1}º campo está sem a pergunta escrita.`);
       return;
     }
     const vistos = new Set<string>();
     for (const f of fields) {
       const chave = f.label.trim().toLocaleLowerCase("pt-BR");
       if (vistos.has(chave)) {
-        showToast(`Há dois campos chamados "${f.label.trim()}". Use nomes diferentes.`, "error");
+        setErroForm(`Há dois campos chamados "${f.label.trim()}". Use nomes diferentes.`);
         return;
       }
       vistos.add(chave);
@@ -577,7 +749,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
         })
       );
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Erro ao enviar arquivo", "error");
+      setErroForm(error instanceof Error ? error.message : "Erro ao enviar arquivo");
       return;
     }
 
@@ -629,7 +801,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
       } else {
         await formularioService.create(payload);
         await fetchFormularios();
-        showToast("Formulário criado com sucesso!", "success");
+        showToast("Formulário criado! Os líderes já podem preencher em Formulários.", "success");
       }
       closeFormModal();
     } catch (err: unknown) {
@@ -640,7 +812,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
       const errorStr = errObj?.response?.data?.error;
       if (Array.isArray(errors)) msg = errors.join(", ");
       else if (errorStr) msg = errorStr;
-      showToast(msg, "error");
+      setErroForm(msg);
     }
   };
 
@@ -730,7 +902,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                       {selectedFormulario.titulo}
                     </h2>
                     <span className={`badge badge-${isAtivo(selectedFormulario) ? "active" : "inactive"}`}>
-                      {isAtivo(selectedFormulario) ? "Ativo" : "Inativo"}
+                      {isAtivo(selectedFormulario) ? "Aberto para os líderes" : "Fechado para os líderes"}
                     </span>
                   </div>
                   <div className="formulario-actions">
@@ -745,49 +917,58 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
                 {selectedFormulario.descricao && (
                   <div className="formulario-description">
-                    <h3>Descrição</h3>
+                    <h3>Instruções para o líder</h3>
                     <p>{selectedFormulario.descricao}</p>
                   </div>
                 )}
 
-                <div className="formulario-meta">
-                  <div className="meta-item">
-                    <span className="meta-label">Campos:</span>
-                    <span className="meta-value">
-                      {selectedFormulario.campos?.length || 0}
-                    </span>
+                <div className="ec-numeros">
+                  <div>
+                    <strong>{selectedFormulario.campos?.length || 0}</strong>
+                    <span>{(selectedFormulario.campos?.length || 0) === 1 ? "pergunta" : "perguntas"}</span>
                   </div>
-                  <div className="meta-item">
-                    <span className="meta-label">Frequência:</span>
-                    <span className="meta-value">
+                  <div>
+                    <strong>{(selectedFormulario.campos || []).filter((c) => c.obrigatorio).length}</strong>
+                    <span>obrigatórias</span>
+                  </div>
+                  <div>
+                    <strong className="ec-numeros__texto">
                       {FREQUENCIA_OPCOES.find((o) => o.value === (selectedFormulario.frequencia ?? ""))?.label ?? "Sem frequência"}
-                    </span>
+                    </strong>
+                    <span>frequência</span>
                   </div>
                 </div>
+                <p className="ec-lembrete">
+                  <Icone nome="alerta" tamanho={15} />
+                  {isAtivo(selectedFormulario)
+                    ? AJUDA_FREQUENCIA[selectedFormulario.frequencia ?? ""] ?? AJUDA_FREQUENCIA[""]
+                    : "Fechado: os líderes não veem este formulário. Ative em Editar quando quiser receber envios."}
+                </p>
 
-                {selectedFormulario.campos &&
-                selectedFormulario.campos.length > 0 ? (
+                {selectedFormulario.campos && selectedFormulario.campos.length > 0 ? (
                   <div className="formulario-fields">
-                    <h3>Campos Personalizados</h3>
-                    <div className="campos-grid">
-                      {selectedFormulario.campos.map((campo, index) => (
-                        <div key={index} className="campo-card">
-                          <div className="campo-label">
-                            {campo.label || "Sem label"}
-                          </div>
-                          <div className="campo-conteudo">
-                            {formatarConteudoCampo(campo.conteudo)}
-                          </div>
-                          {campo.obrigatorio && (
-                            <span className="campo-required">Obrigatório</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <h3>Como o líder vê</h3>
+                    <ol className="ec-previa">
+                      {selectedFormulario.campos.map((campo, index) => {
+                        const tipo = String(
+                          campo.tipo_campo || availableFields.find((a) => a.id_campo === campo.id_campo)?.tipo_campo || ""
+                        );
+                        return (
+                          <li key={index} className="campo-card campo-card--pergunta">
+                            <span className="ec-selo ec-selo--pergunta">
+                              {index + 1}. {INFO_CAMPO[tipo]?.nome || "Campo"}
+                              {campo.obrigatorio ? " · obrigatório" : ""}
+                            </span>
+                            <div className="campo-label">{campo.label || "Sem título"}</div>
+                            <div className="campo-conteudo">{INFO_CAMPO[tipo]?.dica}</div>
+                          </li>
+                        );
+                      })}
+                    </ol>
                   </div>
                 ) : (
                   <div className="formulario-empty">
-                    <p>Este formulário não possui campos cadastrados.</p>
+                    <p>Este formulário ainda não tem perguntas. Clique em Editar para montar.</p>
                   </div>
                 )}
                   </>
@@ -1020,8 +1201,9 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
       <InputModal
         open={labelModalOpen}
-        title="Nome do campo"
-        label="Como o campo vai aparecer para quem preenche"
+        title={`Nova pergunta${labelModalTipo && INFO_CAMPO[labelModalTipo] ? ` · ${INFO_CAMPO[labelModalTipo].nome}` : ""}`}
+        label="Pergunta que o líder vai ver"
+        hint={(labelModalTipo && INFO_CAMPO[labelModalTipo]?.dica) || undefined}
         placeholder="Ex: Quantas pessoas vieram?"
         onConfirm={confirmAddField}
         onCancel={() => {
@@ -1030,192 +1212,293 @@ export default function FormulariosSecretariaCelulasAdmin() {
         }}
       />
 
-      {/* FORM MODAL */}
-      {showFormModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
-            <h2>
-              {formularioToEdit ? "Editar Formulário" : "Criar Novo Formulário"}
-            </h2>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                acaoSalvar.executar(() => saveForm());
+      {/* EDITOR DE FORMULÁRIO (no fim do <body>, por cima de tudo) */}
+      {showFormModal &&
+        createPortal(
+          <FocusTrapComponent
+            active={showFormModal && !labelModalOpen && !confirmarDescarte}
+            focusTrapOptions={{ allowOutsideClick: true, escapeDeactivates: false, returnFocusOnDeactivate: true }}
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
+              className="ec-fundo"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="ec-form-titulo"
+              onKeyDown={(e) => {
+                if (e.key === "Escape" && !labelModalOpen && !confirmarDescarte) pedirFechar();
               }}
             >
-              <label htmlFor="formModalTitulo">Título</label>
-              <input
-                id="formModalTitulo"
-                ref={nameRef}
-                maxLength={255}
-                value={currentForm.nome}
-                onChange={(e) =>
-                  setCurrentForm({ ...currentForm, nome: e.target.value })
-                }
-                required
-              />
-
-              <label htmlFor="formModalDescricao">Descrição</label>
-              <textarea
-                id="formModalDescricao"
-                value={currentForm.descricao}
-                onChange={(e) =>
-                  setCurrentForm({ ...currentForm, descricao: e.target.value })
-                }
-                maxLength={1000}
-                rows={4}
-              />
-
-              <label htmlFor="formModalAtivo">Ativo</label>
-              <select
-                id="formModalAtivo"
-                value={currentForm.ativo}
-                onChange={(e) =>
-                  setCurrentForm({
-                    ...currentForm,
-                    ativo: Number(e.target.value),
-                  })
-                }
-              >
-                <option value={1}>Ativo</option>
-                <option value={0}>Inativo</option>
-              </select>
-
-              <label htmlFor="formModalFrequencia">Frequência de envio esperada</label>
-              <select
-                id="formModalFrequencia"
-                value={currentForm.frequencia}
-                onChange={(e) =>
-                  setCurrentForm({
-                    ...currentForm,
-                    frequencia: e.target.value,
-                  })
-                }
-              >
-                {FREQUENCIA_OPCOES.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-
-              <h3>Campos do Formulário</h3>
-
-              <div className="fields-container">
-                {fields.length === 0 && (
-                  <p className="muted">Nenhum campo adicionado.</p>
-                )}
-
-                {fields.map((f, idx) => {
-                  const opcao = fieldOptions.find((o) => o.tipo === f.tipo);
-                  const Component = opcao?.component;
-                  if (!Component) return null;
-                  return (
-                    <div key={f.uid} className="field-wrapper">
-                      <div className="field-cabecalho">
-                        <span className="field-tipo">{opcao.label}</span>
-                        <input
-                          className="field-nome"
-                          value={f.label}
-                          onChange={(e) => renomearCampo(f.uid, e.target.value)}
-                          aria-label={`Nome do ${idx + 1}º campo`}
-                          placeholder="Nome do campo"
-                          maxLength={255}
-                        />
-                        <div className="field-ordem">
-                          <button
-                            type="button"
-                            onClick={() => moverCampo(f.uid, -1)}
-                            disabled={idx === 0}
-                            aria-label={`Subir "${f.label}"`}
-                            title="Subir"
-                          >
-                            <Icone nome="anterior" tamanho={14} className="field-ordem__seta" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moverCampo(f.uid, 1)}
-                            disabled={idx === fields.length - 1}
-                            aria-label={`Descer "${f.label}"`}
-                            title="Descer"
-                          >
-                            <Icone nome="proximo" tamanho={14} className="field-ordem__seta" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="dynamic-field-row">
-                        <div className="field-input-container">
-                          <Component
-                            id={String(f.uid)}
-                            name={`campo_${f.uid}`}
-                            label={f.label}
-                            value={f.conteudo}
-                            onChange={(v: ValorCampo) =>
-                              setFields((prev) =>
-                                prev.map((fld) => (fld.uid === f.uid ? { ...fld, conteudo: v } : fld))
-                              )
-                            }
-                          />
-                          <label className="field-obrigatorio-checkbox">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(f.obrigatorio)}
-                              onChange={(e) =>
-                                setFields((prev) =>
-                                  prev.map((fld) =>
-                                    fld.uid === f.uid ? { ...fld, obrigatorio: e.target.checked } : fld
-                                  )
-                                )
-                              }
-                              aria-label="Campo obrigatório"
-                            />
-                            <span>Obrigatório</span>
-                          </label>
-                        </div>
-                        <button
-                          type="button"
-                          className="field-remove-btn"
-                          onClick={() => removeField(f.uid)}
-                          title="Remover campo"
-                        >
-                          <Icone nome="fechar" tamanho={16} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="field-add-buttons">
-                {fieldOptions.map((opt) => (
-                  <button
-                    key={opt.tipo}
-                    type="button"
-                    onClick={() => addField(opt.tipo)}
-                  >
-                    + {opt.label}
+              <div className="ec-editor">
+                <header className="ec-editor__topo">
+                  <div>
+                    <p className="ec-editor__sobretitulo">Secretaria das Células · Formulário</p>
+                    <h2 id="ec-form-titulo">{formularioToEdit ? "Editar formulário" : "Novo formulário"}</h2>
+                  </div>
+                  <button type="button" className="ec-fechar" onClick={pedirFechar} aria-label="Fechar">
+                    <Icone nome="fechar" tamanho={20} />
                   </button>
-                ))}
-              </div>
+                </header>
 
-              <div className="modal-actions">
-                <BotaoCarregando type="submit" className="save-btn" carregando={acaoSalvar.executando}>
-                  Salvar
-                </BotaoCarregando>
-
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={closeFormModal}
+                <form
+                  className="ec-editor__form"
+                  noValidate
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    acaoSalvar.executar(() => saveForm());
+                  }}
                 >
-                  Cancelar
-                </button>
+                  <div className="ec-editor__rolagem">
+                    <details className="ec-passos" open={!formularioToEdit}>
+                      <summary>
+                        <Icone nome="livro" tamanho={16} /> Como funciona o formulário
+                      </summary>
+                      <ol>
+                        <li>
+                          <strong>Dê um título e a frequência</strong>
+                          <span>A frequência diz de quanto em quanto tempo cada célula deve enviar.</span>
+                        </li>
+                        <li>
+                          <strong>Monte as perguntas</strong>
+                          <span>Cada campo é uma pergunta que o líder responde. Marque as que não podem ficar em branco.</span>
+                        </li>
+                        <li>
+                          <strong>Organize</strong>
+                          <span>
+                            Arraste pela alça <Icone nome="arrastar" tamanho={13} /> para mudar a ordem. O líder vê nessa ordem.
+                          </span>
+                        </li>
+                        <li>
+                          <strong>Acompanhe</strong>
+                          <span>Com o formulário ativo, os líderes preenchem em Formulários. Veja os envios nas abas Respostas e Relatório.</span>
+                        </li>
+                      </ol>
+                    </details>
+
+                    <section className="ec-secao" aria-labelledby="ec-form-secao-info">
+                      <h3 id="ec-form-secao-info" className="ec-secao__titulo">
+                        <span className="ec-secao__num">1</span> Informações
+                      </h3>
+                      <div className="ec-campo">
+                        <label className="ec-rotulo" htmlFor="formModalTitulo">
+                          Título <span className="ec-obrigatorio">obrigatório</span>
+                        </label>
+                        <input
+                          id="formModalTitulo"
+                          ref={nameRef}
+                          className="ec-input"
+                          maxLength={255}
+                          value={currentForm.nome}
+                          onChange={(e) => {
+                            setCurrentForm({ ...currentForm, nome: e.target.value });
+                            setAlterado(true);
+                            setErroForm(null);
+                          }}
+                          placeholder="Ex.: Relatório semanal da célula"
+                        />
+                        <p className="ec-dica">Nome que os líderes veem na lista de formulários (mínimo 3 letras).</p>
+                      </div>
+                      <div className="ec-campo">
+                        <label className="ec-rotulo" htmlFor="formModalDescricao">
+                          Instruções para o líder <span className="ec-opcional">opcional</span>
+                        </label>
+                        <textarea
+                          id="formModalDescricao"
+                          className="ec-input ec-input--area"
+                          value={currentForm.descricao}
+                          maxLength={1000}
+                          rows={3}
+                          onChange={(e) => {
+                            setCurrentForm({ ...currentForm, descricao: e.target.value });
+                            setAlterado(true);
+                          }}
+                          placeholder="Ex.: Envie até domingo à noite, depois da reunião."
+                        />
+                      </div>
+                      <div className="ec-campo">
+                        <label className="ec-rotulo" htmlFor="formModalFrequencia">
+                          Frequência de envio
+                        </label>
+                        <select
+                          id="formModalFrequencia"
+                          className="ec-input"
+                          value={currentForm.frequencia}
+                          onChange={(e) => {
+                            setCurrentForm({ ...currentForm, frequencia: e.target.value });
+                            setAlterado(true);
+                          }}
+                          aria-describedby="formModalFrequenciaDica"
+                        >
+                          {FREQUENCIA_OPCOES.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                        <p id="formModalFrequenciaDica" className="ec-dica">
+                          {AJUDA_FREQUENCIA[currentForm.frequencia] ?? AJUDA_FREQUENCIA[""]}
+                        </p>
+                      </div>
+                      <label className="ec-chave" htmlFor="formModalAtivo">
+                        <input
+                          id="formModalAtivo"
+                          type="checkbox"
+                          role="switch"
+                          checked={Boolean(currentForm.ativo)}
+                          onChange={(e) => {
+                            setCurrentForm({ ...currentForm, ativo: e.target.checked ? 1 : 0 });
+                            setAlterado(true);
+                          }}
+                        />
+                        <span className="ec-chave__trilho" aria-hidden />
+                        <span className="ec-chave__texto">
+                          <strong>{currentForm.ativo ? "Aberto para os líderes" : "Fechado para os líderes"}</strong>
+                          <small>
+                            {currentForm.ativo
+                              ? "Aparece para os líderes de célula preencherem."
+                              : "Fica salvo com as respostas antigas, mas ninguém preenche. Use enquanto ainda está montando."}
+                          </small>
+                        </span>
+                      </label>
+                    </section>
+
+                    <section className="ec-secao" aria-labelledby="ec-form-secao-campos">
+                      <div className="ec-secao__cabecalho">
+                        <h3 id="ec-form-secao-campos" className="ec-secao__titulo">
+                          <span className="ec-secao__num">2</span> Perguntas do formulário
+                        </h3>
+                        <span className="ec-resumo">
+                          {fields.length} {fields.length === 1 ? "pergunta" : "perguntas"} ·{" "}
+                          <strong>
+                            {fields.filter((f) => f.obrigatorio).length}{" "}
+                            {fields.filter((f) => f.obrigatorio).length === 1 ? "obrigatória" : "obrigatórias"}
+                          </strong>
+                        </span>
+                      </div>
+                      <p className="ec-dica">
+                        O líder responde nesta ordem. Arraste pela alça <Icone nome="arrastar" tamanho={13} /> para reorganizar.
+                        Mudar o texto de uma pergunta mantém as respostas que já foram enviadas.
+                      </p>
+
+                      {fields.length === 0 ? (
+                        <div className="ec-vazio">
+                          <Icone nome="lista" tamanho={30} />
+                          <p>Nenhuma pergunta ainda. Escolha um tipo abaixo para começar.</p>
+                        </div>
+                      ) : (
+                        <DndContext
+                          sensors={sensores}
+                          collisionDetection={closestCenter}
+                          onDragEnd={aoSoltarCampo}
+                          accessibility={{
+                            screenReaderInstructions: {
+                              draggable:
+                                "Para mudar a ordem, aperte espaço ou Enter, use as setas e aperte espaço ou Enter de novo para soltar. Esc cancela.",
+                            },
+                            announcements: {
+                              onDragStart: () => "Pergunta pega.",
+                              onDragOver: ({ over }) =>
+                                over ? `Sobre a posição ${fields.findIndex((f) => f.uid === over.id) + 1}.` : undefined,
+                              onDragEnd: ({ over }) =>
+                                over ? `Solta na posição ${fields.findIndex((f) => f.uid === over.id) + 1}.` : undefined,
+                              onDragCancel: () => "Cancelado. A pergunta voltou ao lugar.",
+                            },
+                          }}
+                        >
+                          <SortableContext items={fields.map((f) => f.uid)} strategy={verticalListSortingStrategy}>
+                            <ol className="ec-lista">
+                              {fields.map((f, idx) => {
+                                const Component = fieldOptions.find((o) => o.tipo === f.tipo)?.component;
+                                if (!Component) return null;
+                                return (
+                                  <ItemFormulario
+                                    key={f.uid}
+                                    item={f}
+                                    numero={idx + 1}
+                                    onRenomear={(label) => atualizarCampo(f.uid, { label })}
+                                    onObrigatorio={(obrigatorio) => atualizarCampo(f.uid, { obrigatorio })}
+                                    onRemover={() => removeField(f.uid)}
+                                  >
+                                    {/* Só mostra como fica: o líder começa sempre com o campo vazio */}
+                                    <Component id={`previa-${f.uid}`} name={`previa_${f.uid}`} label="" value="" onChange={() => {}} disabled />
+                                  </ItemFormulario>
+                                );
+                              })}
+                            </ol>
+                          </SortableContext>
+                        </DndContext>
+                      )}
+
+                      <div className="ec-adicionar">
+                        <p className="ec-adicionar__titulo">
+                          Adicionar pergunta <span>escolha o tipo de resposta</span>
+                        </p>
+                        <div className="ec-adicionar__grade">
+                          {fieldOptions.map((opt) => (
+                            <button
+                              key={opt.tipo}
+                              type="button"
+                              className="ec-tipo ec-tipo--pergunta"
+                              title={INFO_CAMPO[opt.tipo]?.dica}
+                              onClick={() => addField(opt.tipo)}
+                            >
+                              <Icone nome={INFO_CAMPO[opt.tipo]?.icone || "lista"} tamanho={18} />
+                              <span>
+                                <strong>{INFO_CAMPO[opt.tipo]?.nome || opt.label}</strong>
+                                <small>{INFO_CAMPO[opt.tipo]?.resumo}</small>
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+
+                  <footer className="ec-editor__rodape">
+                    {erroForm ? (
+                      <p className="ec-erro" role="alert">
+                        <Icone nome="alerta" tamanho={16} /> {erroForm}
+                      </p>
+                    ) : (
+                      <p className="ec-rodape-info">
+                        {fields.length > 0
+                          ? `${fields.length} ${fields.length === 1 ? "pergunta" : "perguntas"} · ${
+                              FREQUENCIA_OPCOES.find((o) => o.value === currentForm.frequencia)?.label ?? "Sem frequência"
+                            }`
+                          : "Adicione pelo menos uma pergunta para salvar."}
+                      </p>
+                    )}
+                    <div className="ec-editor__botoes">
+                      <button type="button" className="ec-btn ec-btn--fantasma" onClick={pedirFechar} disabled={acaoSalvar.executando}>
+                        Cancelar
+                      </button>
+                      <BotaoCarregando
+                        type="submit"
+                        className="ec-btn ec-btn--primario"
+                        carregando={acaoSalvar.executando}
+                        textoCarregando={formularioToEdit ? "Salvando…" : "Criando…"}
+                      >
+                        {formularioToEdit ? "Salvar alterações" : "Criar formulário"}
+                      </BotaoCarregando>
+                    </div>
+                  </footer>
+                </form>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+          </FocusTrapComponent>,
+          document.body
+        )}
+
+      <ConfirmModal
+        open={confirmarDescarte}
+        title="Descartar alterações?"
+        message="Você mudou este formulário e ainda não salvou. Se sair agora, as mudanças se perdem."
+        confirmLabel="Descartar"
+        cancelLabel="Continuar editando"
+        variant="danger"
+        onConfirm={closeFormModal}
+        onCancel={() => setConfirmarDescarte(false)}
+      />
     </div>
   );
 }

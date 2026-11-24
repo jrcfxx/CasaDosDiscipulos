@@ -22,6 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import FocusTrapComponent from "../components/ui/FocusTrap";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import "../style/QuizzesSecretariaCelulasAdmin.css";
+import "../style/editorCasa.css";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -207,12 +208,12 @@ function ItemQuiz({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`qz-item ${ehPergunta ? "qz-item--pergunta" : "qz-item--apoio"}${isDragging ? " qz-item--arrastando" : ""}`}
+      className={`ec-item ${ehPergunta ? "ec-item--pergunta" : "ec-item--apoio"}${isDragging ? " ec-item--arrastando" : ""}`}
     >
-      <div className="qz-item__topo">
+      <div className="ec-item__topo">
         <button
           type="button"
-          className="qz-item__alca"
+          className="ec-item__alca"
           aria-label={`Arrastar "${item.label}" para mudar a ordem`}
           title="Arraste para mudar a ordem"
           {...attributes}
@@ -220,30 +221,30 @@ function ItemQuiz({
         >
           <Icone nome="arrastar" tamanho={18} />
         </button>
-        <span className="qz-item__numero" aria-hidden>
+        <span className="ec-item__numero" aria-hidden>
           {ehPergunta ? numero : "•"}
         </span>
-        <span className={`qz-selo ${ehPergunta ? "qz-selo--pergunta" : "qz-selo--apoio"}`}>
+        <span className={`ec-selo ${ehPergunta ? "ec-selo--pergunta" : "ec-selo--apoio"}`}>
           {info?.nome || item.tipo}
           {ehPergunta ? ` · ${PONTOS_POR_PERGUNTA} pts` : " · apoio"}
         </span>
-        <button type="button" className="qz-item__remover" onClick={onRemover} aria-label={`Remover "${item.label}"`} title="Remover">
+        <button type="button" className="ec-item__remover" onClick={onRemover} aria-label={`Remover "${item.label}"`} title="Remover">
           <Icone nome="lixeira" tamanho={16} />
         </button>
       </div>
-      <label className="qz-rotulo" htmlFor={`qz-enunciado-${item.uid}`}>
+      <label className="ec-rotulo" htmlFor={`ec-enunciado-${item.uid}`}>
         {AJUDA_TIPO[item.tipo]?.rotulo || "Título"}
       </label>
       <input
-        id={`qz-enunciado-${item.uid}`}
-        className="qz-input qz-input--enunciado"
+        id={`ec-enunciado-${item.uid}`}
+        className="ec-input ec-input--enunciado"
         value={item.label}
         maxLength={255}
         onChange={(e) => onRenomear(e.target.value)}
         placeholder={ehPergunta ? "Escreva a pergunta" : "Título do conteúdo"}
       />
-      {AJUDA_TIPO[item.tipo] && <p className="qz-ajuda-tipo">{AJUDA_TIPO[item.tipo].dica}</p>}
-      <div className="qz-item__corpo field-wrapper">{children}</div>
+      {AJUDA_TIPO[item.tipo] && <p className="ec-ajuda-tipo">{AJUDA_TIPO[item.tipo].dica}</p>}
+      <div className="ec-item__corpo field-wrapper">{children}</div>
     </li>
   );
 }
@@ -474,7 +475,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
       createLocalField(campo.id_campo, tipo!, label.trim(), conteudoInicial),
     ]);
     // Leva a tela até o item novo
-    setTimeout(() => document.querySelector(".qz-lista > li:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+    setTimeout(() => document.querySelector(".ec-lista > li:last-child")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
   };
 
   const aoSoltarItem = ({ active, over }: DragEndEvent) => {
@@ -815,35 +816,35 @@ export default function QuizzesSecretariaCelulasAdmin() {
         >
           {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
           <div
-            className="qz-fundo"
+            className="ec-fundo"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="qz-editor-titulo"
+            aria-labelledby="ec-editor-titulo"
             onKeyDown={(e) => {
               if (e.key === "Escape" && !labelModalOpen && !confirmarDescarte) pedirFechar();
             }}
           >
-            <div className="qz-editor">
-              <header className="qz-editor__topo">
+            <div className="ec-editor">
+              <header className="ec-editor__topo">
                 <div>
-                  <p className="qz-editor__sobretitulo">Escola de Discípulos · Quiz</p>
-                  <h2 id="qz-editor-titulo">{quizToEdit ? "Editar quiz" : "Novo quiz"}</h2>
+                  <p className="ec-editor__sobretitulo">Escola de Discípulos · Quiz</p>
+                  <h2 id="ec-editor-titulo">{quizToEdit ? "Editar quiz" : "Novo quiz"}</h2>
                 </div>
-                <button type="button" className="qz-fechar" onClick={pedirFechar} aria-label="Fechar">
+                <button type="button" className="ec-fechar" onClick={pedirFechar} aria-label="Fechar">
                   <Icone nome="fechar" tamanho={20} />
                 </button>
               </header>
 
               <form
-                className="qz-editor__form"
+                className="ec-editor__form"
                 noValidate
                 onSubmit={(e) => {
                   e.preventDefault();
                   acaoSalvar.executar(() => saveForm());
                 }}
               >
-                <div className="qz-editor__rolagem">
-                  <details className="qz-passos" open={!quizToEdit}>
+                <div className="ec-editor__rolagem">
+                  <details className="ec-passos" open={!quizToEdit}>
                     <summary>
                       <Icone nome="livro" tamanho={16} /> Como funciona o quiz
                     </summary>
@@ -869,18 +870,18 @@ export default function QuizzesSecretariaCelulasAdmin() {
                     </ol>
                   </details>
 
-                  <section className="qz-secao" aria-labelledby="qz-secao-info">
-                    <h3 id="qz-secao-info" className="qz-secao__titulo">
-                      <span className="qz-secao__num">1</span> Informações
+                  <section className="ec-secao" aria-labelledby="ec-secao-info">
+                    <h3 id="ec-secao-info" className="ec-secao__titulo">
+                      <span className="ec-secao__num">1</span> Informações
                     </h3>
-                    <div className="qz-campo">
-                      <label className="qz-rotulo" htmlFor="quizModalTitulo">
-                        Título <span className="qz-obrigatorio">obrigatório</span>
+                    <div className="ec-campo">
+                      <label className="ec-rotulo" htmlFor="quizModalTitulo">
+                        Título <span className="ec-obrigatorio">obrigatório</span>
                       </label>
                       <input
                         id="quizModalTitulo"
                         ref={nameRef}
-                        className="qz-input"
+                        className="ec-input"
                         value={currentForm.nome}
                         maxLength={255}
                         onChange={(e) => {
@@ -890,17 +891,17 @@ export default function QuizzesSecretariaCelulasAdmin() {
                         placeholder="Ex.: Quiz do Módulo 1 – Fundamentos da Fé"
                         aria-describedby="quizModalTituloDica"
                       />
-                      <p id="quizModalTituloDica" className="qz-dica">
+                      <p id="quizModalTituloDica" className="ec-dica">
                         Nome que o aluno vê (mínimo 3 letras).
                       </p>
                     </div>
-                    <div className="qz-campo">
-                      <label className="qz-rotulo" htmlFor="quizModalDescricao">
-                        Instruções para o aluno <span className="qz-opcional">opcional</span>
+                    <div className="ec-campo">
+                      <label className="ec-rotulo" htmlFor="quizModalDescricao">
+                        Instruções para o aluno <span className="ec-opcional">opcional</span>
                       </label>
                       <textarea
                         id="quizModalDescricao"
-                        className="qz-input qz-input--area"
+                        className="ec-input ec-input--area"
                         value={currentForm.descricao}
                         maxLength={2000}
                         rows={3}
@@ -911,7 +912,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                         placeholder="Ex.: Responda depois de assistir à aula 1."
                       />
                     </div>
-                    <label className="qz-chave" htmlFor="quizModalAtivo">
+                    <label className="ec-chave" htmlFor="quizModalAtivo">
                       <input
                         id="quizModalAtivo"
                         type="checkbox"
@@ -922,8 +923,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
                           setAlterado(true);
                         }}
                       />
-                      <span className="qz-chave__trilho" aria-hidden />
-                      <span className="qz-chave__texto">
+                      <span className="ec-chave__trilho" aria-hidden />
+                      <span className="ec-chave__texto">
                         <strong>{currentForm.ativo ? "Liberado para os alunos" : "Escondido dos alunos"}</strong>
                         <small>
                           {currentForm.ativo
@@ -934,23 +935,23 @@ export default function QuizzesSecretariaCelulasAdmin() {
                     </label>
                   </section>
 
-                  <section className="qz-secao" aria-labelledby="qz-secao-perguntas">
-                    <div className="qz-secao__cabecalho">
-                      <h3 id="qz-secao-perguntas" className="qz-secao__titulo">
-                        <span className="qz-secao__num">2</span> Perguntas e conteúdo
+                  <section className="ec-secao" aria-labelledby="ec-secao-perguntas">
+                    <div className="ec-secao__cabecalho">
+                      <h3 id="ec-secao-perguntas" className="ec-secao__titulo">
+                        <span className="ec-secao__num">2</span> Perguntas e conteúdo
                       </h3>
-                      <span className="qz-resumo">
+                      <span className="ec-resumo">
                         {perguntasNoEditor} {perguntasNoEditor === 1 ? "pergunta" : "perguntas"} ·{" "}
                         <strong>{perguntasNoEditor * PONTOS_POR_PERGUNTA} pontos</strong>
                       </span>
                     </div>
-                    <p className="qz-dica">
+                    <p className="ec-dica">
                       O aluno vê nesta ordem. Arraste pela alça <Icone nome="arrastar" tamanho={13} /> para reorganizar.
                       O conteúdo de apoio (texto, vídeo, link, arquivo) aparece entre as perguntas e não vale pontos.
                     </p>
 
                     {fields.length === 0 ? (
-                      <div className="qz-vazio">
+                      <div className="ec-vazio">
                         <Icone nome="lista" tamanho={30} />
                         <p>Nenhuma pergunta ainda. Escolha um tipo abaixo para começar.</p>
                       </div>
@@ -975,7 +976,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                         }}
                       >
                         <SortableContext items={fields.map((f) => f.uid)} strategy={verticalListSortingStrategy}>
-                          <ol className="qz-lista">
+                          <ol className="ec-lista">
                             {fields.map((f) => {
                               const Component = fieldOptions.find((o) => o.tipo === f.tipo)?.component;
                               if (!Component) return null;
@@ -1008,16 +1009,16 @@ export default function QuizzesSecretariaCelulasAdmin() {
                       </DndContext>
                     )}
 
-                    <div className="qz-adicionar">
-                      <p className="qz-adicionar__titulo">
+                    <div className="ec-adicionar">
+                      <p className="ec-adicionar__titulo">
                         Adicionar pergunta <span>vale {PONTOS_POR_PERGUNTA} pontos</span>
                       </p>
-                      <div className="qz-adicionar__grade">
+                      <div className="ec-adicionar__grade">
                         {opcoesPergunta.map((opt) => (
                           <button
                             key={opt.tipo}
                             type="button"
-                            className="qz-tipo qz-tipo--pergunta"
+                            className="ec-tipo ec-tipo--pergunta"
                             title={AJUDA_TIPO[opt.tipo]?.dica}
                             onClick={() => addField(opt.tipo)}
                           >
@@ -1029,15 +1030,15 @@ export default function QuizzesSecretariaCelulasAdmin() {
                           </button>
                         ))}
                       </div>
-                      <p className="qz-adicionar__titulo">
+                      <p className="ec-adicionar__titulo">
                         Adicionar conteúdo de apoio <span>não vale pontos</span>
                       </p>
-                      <div className="qz-adicionar__grade">
+                      <div className="ec-adicionar__grade">
                         {opcoesApoio.map((opt) => (
                           <button
                             key={opt.tipo}
                             type="button"
-                            className="qz-tipo"
+                            className="ec-tipo"
                             title={AJUDA_TIPO[opt.tipo]?.dica}
                             onClick={() => addField(opt.tipo)}
                           >
@@ -1053,25 +1054,25 @@ export default function QuizzesSecretariaCelulasAdmin() {
                   </section>
                 </div>
 
-                <footer className="qz-editor__rodape">
+                <footer className="ec-editor__rodape">
                   {erroForm ? (
-                    <p className="qz-erro" role="alert">
+                    <p className="ec-erro" role="alert">
                       <Icone nome="alerta" tamanho={16} /> {erroForm}
                     </p>
                   ) : (
-                    <p className="qz-rodape-info">
+                    <p className="ec-rodape-info">
                       {perguntasNoEditor > 0
                         ? `${perguntasNoEditor} ${perguntasNoEditor === 1 ? "pergunta" : "perguntas"} · ${perguntasNoEditor * PONTOS_POR_PERGUNTA} pontos no total`
                         : "Adicione pelo menos uma pergunta para salvar."}
                     </p>
                   )}
-                  <div className="qz-editor__botoes">
-                    <button type="button" className="qz-btn qz-btn--fantasma" onClick={pedirFechar} disabled={acaoSalvar.executando}>
+                  <div className="ec-editor__botoes">
+                    <button type="button" className="ec-btn ec-btn--fantasma" onClick={pedirFechar} disabled={acaoSalvar.executando}>
                       Cancelar
                     </button>
                     <BotaoCarregando
                       type="submit"
-                      className="qz-btn qz-btn--primario"
+                      className="ec-btn ec-btn--primario"
                       carregando={acaoSalvar.executando}
                       textoCarregando={quizToEdit ? "Salvando…" : "Criando…"}
                     >
@@ -1172,7 +1173,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                   </div>
                 )}
 
-                <div className="qz-numeros">
+                <div className="ec-numeros">
                   <div>
                     <strong>{perguntasDo(selectedQuiz)}</strong>
                     <span>{perguntasDo(selectedQuiz) === 1 ? "pergunta" : "perguntas"}</span>
@@ -1186,7 +1187,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                     <span>conteúdos de apoio</span>
                   </div>
                 </div>
-                <p className="qz-lembrete">
+                <p className="ec-lembrete">
                   <Icone nome="alerta" tamanho={15} /> Para os alunos responderem, o quiz precisa estar vinculado a um módulo
                   (tela de Módulos → editar módulo → Quiz).
                 </p>
@@ -1194,13 +1195,13 @@ export default function QuizzesSecretariaCelulasAdmin() {
                 {selectedQuiz.campos && selectedQuiz.campos.length > 0 ? (
                   <div className="quiz-fields">
                     <h3>Como o aluno vê</h3>
-                    <ol className="qz-previa">
+                    <ol className="ec-previa">
                       {selectedQuiz.campos.map((campo, index) => {
                         const tipo = tipoDoCampo(campo);
                         const ehPergunta = TIPOS_PERGUNTA.includes(tipo);
                         return (
                           <li key={index} className={`campo-card ${ehPergunta ? "campo-card--pergunta" : ""}`}>
-                            <span className={`qz-selo ${ehPergunta ? "qz-selo--pergunta" : "qz-selo--apoio"}`}>
+                            <span className={`ec-selo ${ehPergunta ? "ec-selo--pergunta" : "ec-selo--apoio"}`}>
                               {INFO_TIPO[tipo]?.nome || "Conteúdo"}
                               {ehPergunta ? ` · ${PONTOS_POR_PERGUNTA} pts` : ""}
                             </span>
