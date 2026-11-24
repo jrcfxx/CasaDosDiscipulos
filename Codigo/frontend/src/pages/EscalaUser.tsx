@@ -881,10 +881,17 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
   };
 
-  const exportarPdfEscala = () =>
-    exportarPdf(`Escala – ${modoMeus ? "Meus ministérios – " : ""}${navLabel}`, {
-      paisagem: visao !== "agenda" && visao !== "dia",
-    });
+  const exportarPdfEscala = async () => {
+    try {
+      showToast("Gerando o PDF…", "info");
+      await exportarPdf(`Escala – ${modoMeus ? "Meus ministérios – " : ""}${navLabel}`, {
+        paisagem: visao !== "agenda" && visao !== "dia",
+      });
+      showToast("PDF baixado.", "success");
+    } catch {
+      showToast("Não foi possível gerar o PDF.", "error");
+    }
+  };
 
   const abrirBuscaPessoa = async () => {
     try {

@@ -55,21 +55,10 @@ class EscalaService {
       eventos = eventos.filter((e) => e.status !== ESCALA_STATUS.RASCUNHO);
     }
 
-    if (tipoUsuario === USER_TYPES.LEADER && idUsuario) {
-      const meusMinisterios = await MinisterioModel.getMinisteriosByUsuario(idUsuario);
-      const idsMeus = new Set(meusMinisterios.map((m) => m.id_ministerio));
-      // Líder vê os eventos dos ministérios que lidera + os eventos em que está escalado
-      const idsEscalado = new Set(await EscalaRepository.idsEventosDoUsuario(idUsuario));
-      const idsEventos = eventos.map((e) => e.id_escala_evento);
-      const mapa = await EscalaRepository.mapearMinisteriosPorEventos(idsEventos);
-      eventos = eventos.filter((e) => {
-        if (idsEscalado.has(e.id_escala_evento) && e.status !== ESCALA_STATUS.RASCUNHO) {
-          return true;
-        }
-        const ids = mapa.get(e.id_escala_evento) || [];
-        return ids.some((id) => idsMeus.has(id));
-      });
-    }
+    // Líderes veem (e exportam) a escala da igreja inteira, como no calendário. O que eles
+    // NÃO podem é editar áreas de ministérios que não lideram: isso é checado em cada alteração
+    // (_assertUsuarioNoMinisterioDoLider / podeGerenciar por área).
+    void idUsuario;
     return eventos;
   }
 
