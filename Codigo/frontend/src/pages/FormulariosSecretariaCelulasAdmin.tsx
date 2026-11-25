@@ -21,9 +21,15 @@ import { CSS } from "@dnd-kit/utilities";
 import FocusTrapComponent from "../components/ui/FocusTrap";
 import "../style/FormulariosSecretariaCelulasAdmin.css";
 import "../style/editorCasa.css";
+import PaginaSecretaria, {
+  DetalheSecretaria,
+  DetalheVazio,
+  ItemSecretaria,
+  ListaSecretaria,
+  filtrarItens,
+  type FiltroStatus,
+} from "../components/secretaria/PaginaSecretaria";
 
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
 import Toast from "../components/ui/Toast";
 import ConfirmModal from "../components/ui/ConfirmModal";
 
@@ -253,6 +259,8 @@ export default function FormulariosSecretariaCelulasAdmin() {
   const [formularios, setFormularios] = useState<Formulario[]>([]);
   const [selectedFormulario, setSelectedFormulario] =
     useState<Formulario | null>(null);
+  const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState<FiltroStatus>("todos");
   const [availableFields, setAvailableFields] = useState<AvailableField[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -790,63 +798,82 @@ export default function FormulariosSecretariaCelulasAdmin() {
     }
   };
 
+  const formulariosVisiveis = filtrarItens(formularios, busca, filtro, (f) => f.titulo, isAtivo);
+  const abertos = formularios.filter(isAtivo).length;
+  const rotuloFrequencia = (f: Formulario) =>
+    FREQUENCIA_OPCOES.find((o) => o.value === (f.frequencia ?? ""))?.label ?? "Sem frequência";
+
   return (
-    <div className="formularios-page page-with-fixed-header">
-      <Header />
-      <main id="main-content" className="page" tabIndex={-1}>
-        <h1 className="page-title">Secretaria das Células</h1>
-
-        {loading && <p className="loading-message">Carregando...</p>}
-
-        <section className="formularios-layout">
-          {/* Coluna esquerda - Lista de Formulários */}
-          <aside
-            className="panel formularios-left"
-            aria-label="Lista de formulários"
+    <>
+      <PaginaSecretaria
+        area="Secretaria das Células"
+        titulo="Formulários"
+        icone="lista"
+        descricao="Relatórios que os líderes de célula preenchem (ex.: presença da semana). Acompanhe quem enviou em Respostas e veja os números em Relatório."
+        acao={{ rotulo: "Novo formulário", onClick: openCreateModal }}
+        numeros={[
+          { valor: formularios.length, rotulo: formularios.length === 1 ? "formulário" : "formulários" },
+          { valor: abertos, rotulo: abertos === 1 ? "aberto" : "abertos" },
+          { valor: formularios.length - abertos, rotulo: "fechados" },
+        ]}
+      >
+        <div className="sc-corpo">
+          <ListaSecretaria
+            titulo="Formulários"
+            total={formularios.length}
+            busca={busca}
+            onBusca={setBusca}
+            filtro={filtro}
+            onFiltro={setFiltro}
+            placeholderBusca="Buscar formulário pelo nome"
+            vazio={
+              loading
+                ? "Carregando…"
+                : formularios.length
+                  ? "Nenhum formulário com esse filtro."
+                  : "Nenhum formulário ainda. Crie o primeiro no botão Novo formulário."
+            }
+            quantidadeVisivel={formulariosVisiveis.length}
           >
-            <div className="list-header">
-              <h2>Formulários</h2>
-              <span className="count">{formularios.length}</span>
-            </div>
-            <div className="list">
-              {formularios.map((formulario) => (
-                <div
+            {formulariosVisiveis.map((formulario) => {
+              const n = formulario.campos?.length || 0;
+              return (
+                <ItemSecretaria
                   key={formulario.id}
-                  className={`formulario-item ${
-                    selectedFormulario?.id === formulario.id ? "selected" : ""
-                  } ${!isAtivo(formulario) ? "inactive" : ""}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleSelectFormulario(formulario)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
-                >
-                  <div className="formulario-item__info">
-                    <span className="formulario-item__name">
-                      {formulario.titulo}
-                    </span>
-                  </div>
-                  <button
-                    className={`btn-status ${isAtivo(formulario) ? "active" : "inactive"}`}
-                    onClick={(e) => { e.stopPropagation(); handleToggle(formulario.id); }}
-                    title={isAtivo(formulario) ? "Desativar formulário" : "Ativar formulário"}
-                  >
-                    {isAtivo(formulario) ? "Ativo" : "Inativo"}
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button className="btn-create" onClick={openCreateModal}>
-              + CRIAR FORMULÁRIO
-            </button>
-          </aside>
+                  titulo={formulario.titulo}
+                  meta={`${n} ${n === 1 ? "pergunta" : "perguntas"} · ${rotuloFrequencia(formulario)}`}
+                  ativo={isAtivo(formulario)}
+                  selecionado={selectedFormulario?.id === formulario.id}
+                  icone="lista"
+                  onSelecionar={() => handleSelectFormulario(formulario)}
+                  onAlternar={() => handleToggle(formulario.id)}
+                />
+              );
+            })}
+          </ListaSecretaria>
 
-          {/* Coluna direita - Visualização do Formulário */}
-          <section
-            className="panel formularios-center"
-            aria-label="Detalhes do formulário"
-          >
-            {selectedFormulario ? (
-              <div className="formulario-card">
+          {selectedFormulario ? (
+            <DetalheSecretaria
+              titulo={selectedFormulario.titulo}
+              ativo={isAtivo(selectedFormulario)}
+              status={`${isAtivo(selectedFormulario) ? "Aberto para os líderes" : "Fechado para os líderes"} · ${rotuloFrequencia(selectedFormulario)}`}
+              acoes={
+                <>
+                  <button type="button" className="sc-btn sc-btn--primario" onClick={() => openEditModal(selectedFormulario.id)}>
+                    <Icone nome="editar" tamanho={15} /> Editar formulário
+                  </button>
+                  <button
+                    type="button"
+                    className="sc-btn sc-btn--perigo"
+                    onClick={() => handleDeleteClick(selectedFormulario.id)}
+                    aria-label={`Excluir o formulário ${selectedFormulario.titulo}`}
+                    title="Excluir formulário"
+                  >
+                    <Icone nome="lixeira" tamanho={16} />
+                  </button>
+                </>
+              }
+            >
                 <div className="formulario-tabs">
                   <button
                     className={abaAtiva === "formulario" ? "active" : ""}
@@ -870,30 +897,11 @@ export default function FormulariosSecretariaCelulasAdmin() {
 
                 {abaAtiva === "formulario" && (
                   <>
-                <div className="formulario-header">
-                  <div className="formulario-title-area">
-                    <h2 className="formulario-title">
-                      {selectedFormulario.titulo}
-                    </h2>
-                    <span className={`badge badge-${isAtivo(selectedFormulario) ? "active" : "inactive"}`}>
-                      {isAtivo(selectedFormulario) ? "Aberto para os líderes" : "Fechado para os líderes"}
-                    </span>
-                  </div>
-                  <div className="formulario-actions">
-                    <button className="btn-edit" onClick={() => openEditModal(selectedFormulario.id)}>
-                      Editar
-                    </button>
-                    <button className="btn-delete" onClick={() => handleDeleteClick(selectedFormulario.id)}>
-                      Excluir
-                    </button>
-                  </div>
-                </div>
-
                 {selectedFormulario.descricao && (
-                  <div className="formulario-description">
-                    <h3>Instruções para o líder</h3>
-                    <p>{selectedFormulario.descricao}</p>
-                  </div>
+                  <p className="sc-descricao">
+                    <strong>Instruções para o líder</strong>
+                    {selectedFormulario.descricao}
+                  </p>
                 )}
 
                 <div className="ec-numeros">
@@ -919,9 +927,11 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     : "Fechado: os líderes não veem este formulário. Ative em Editar quando quiser receber envios."}
                 </p>
 
+                <h3 className="sc-subtitulo">
+                  <Icone nome="olho" tamanho={17} /> Como o líder vê
+                </h3>
                 {selectedFormulario.campos && selectedFormulario.campos.length > 0 ? (
                   <div className="formulario-fields">
-                    <h3>Como o líder vê</h3>
                     <ol className="ec-previa">
                       {selectedFormulario.campos.map((campo, index) => {
                         const tipo = String(
@@ -941,9 +951,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     </ol>
                   </div>
                 ) : (
-                  <div className="formulario-empty">
-                    <p>Este formulário ainda não tem perguntas. Clique em Editar para montar.</p>
-                  </div>
+                  <p className="sc-vazio-conteudo">Este formulário ainda não tem perguntas. Clique em Editar formulário para montar.</p>
                 )}
                   </>
                 )}
@@ -1143,17 +1151,16 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     titulo={selectedFormulario.titulo}
                   />
                 )}
-              </div>
-            ) : (
-              <div className="formulario-placeholder">
-                <p>Selecione um formulário na lista para visualizar</p>
-              </div>
-            )}
-          </section>
-        </section>
-      </main>
-
-      <Footer />
+            </DetalheSecretaria>
+          ) : (
+            <DetalheVazio
+              icone="lista"
+              texto={formularios.length ? "Escolha um formulário na lista para ver as perguntas, as respostas e o relatório." : "Ainda não há formulários. Crie o primeiro para os líderes preencherem."}
+              acao={{ rotulo: "Novo formulário", onClick: openCreateModal }}
+            />
+          )}
+        </div>
+      </PaginaSecretaria>
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} variant={toastVariant} />}
 
@@ -1461,6 +1468,6 @@ export default function FormulariosSecretariaCelulasAdmin() {
         onConfirm={closeFormModal}
         onCancel={() => setConfirmarDescarte(false)}
       />
-    </div>
+    </>
   );
 }

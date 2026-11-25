@@ -21,11 +21,17 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import FocusTrapComponent from "../components/ui/FocusTrap";
 import ConfirmModal from "../components/ui/ConfirmModal";
+import PaginaSecretaria, {
+  DetalheSecretaria,
+  DetalheVazio,
+  ItemSecretaria,
+  ListaSecretaria,
+  filtrarItens,
+  type FiltroStatus,
+} from "../components/secretaria/PaginaSecretaria";
 import "../style/QuizzesSecretariaCelulasAdmin.css";
 import "../style/editorCasa.css";
 
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
 import ConstrutorPergunta, { TIPOS_CONSTRUIDOS } from "../components/quiz/ConstrutorPergunta";
 
 import api from "../services/apiClient";
@@ -279,6 +285,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
   const acaoSalvar = useAcao();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+  const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState<FiltroStatus>("todos");
   const [availableFields, setAvailableFields] = useState<AvailableField[]>([]);
   const [ranking, setRanking] = useState<RankItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -1087,153 +1095,140 @@ export default function QuizzesSecretariaCelulasAdmin() {
       )
     : null;
 
+  const quizzesVisiveis = filtrarItens(quizzes, busca, filtro, (q) => q.titulo, (q) => Boolean(q.ativo));
+  const ativosQuiz = quizzes.filter((q) => q.ativo).length;
+
   return (
-    <div className="quizzes-page page-with-fixed-header">
-      <Header />
-      <main id="main-content" className="page" tabIndex={-1}>
-        <h1 className="page-title">Secretaria das Células</h1>
-
-        {loading && <p className="loading-message">Carregando...</p>}
-
-        <section className="quizzes-layout">
-          {/* Coluna esquerda - Lista de Quizzes */}
-          <aside className="panel quizzes-left" aria-label="Lista de quizzes">
-            <div className="list-header">
-              <h2>Quizzes</h2>
-              <span className="count">{quizzes.length}</span>
-            </div>
-            <div className="list">
-              {quizzes.map((quiz) => (
-                <div
+    <>
+      <PaginaSecretaria
+        area="Escola de Discípulos"
+        titulo="Quizzes"
+        icone="concluido"
+        descricao="Perguntas que o discípulo responde para concluir um módulo e ganhar pontos. Monte o quiz aqui e depois escolha-o no módulo."
+        acao={{ rotulo: "Novo quiz", onClick: openCreateModal }}
+        numeros={[
+          { valor: quizzes.length, rotulo: quizzes.length === 1 ? "quiz" : "quizzes" },
+          { valor: ativosQuiz, rotulo: ativosQuiz === 1 ? "liberado" : "liberados" },
+          { valor: quizzes.length - ativosQuiz, rotulo: "escondidos" },
+        ]}
+      >
+        <div className="sc-corpo sc-corpo--com-ranking">
+          <ListaSecretaria
+            titulo="Quizzes"
+            total={quizzes.length}
+            busca={busca}
+            onBusca={setBusca}
+            filtro={filtro}
+            onFiltro={setFiltro}
+            placeholderBusca="Buscar quiz pelo nome"
+            vazio={loading ? "Carregando…" : quizzes.length ? "Nenhum quiz com esse filtro." : "Nenhum quiz ainda. Crie o primeiro no botão Novo quiz."}
+            quantidadeVisivel={quizzesVisiveis.length}
+          >
+            {quizzesVisiveis.map((quiz) => {
+              const n = perguntasDo(quiz);
+              return (
+                <ItemSecretaria
                   key={quiz.id}
-                  className={`quiz-item ${selectedQuiz?.id === quiz.id ? "selected" : ""} ${!quiz.ativo ? "inactive" : ""}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleSelectQuiz(quiz)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleSelectQuiz(quiz);
-                    }
-                  }}
-                >
-                  <div className="quiz-item__info">
-                    <span className="quiz-item__name">{quiz.titulo}</span>
-                  </div>
-                  <button
-                    className={`btn-status ${quiz.ativo ? "active" : "inactive"}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggle(quiz.id);
-                    }}
-                    title={quiz.ativo ? "Esconder dos alunos" : "Liberar para os alunos"}
-                    aria-label={`${quiz.titulo}: ${quiz.ativo ? "ativo, clique para esconder dos alunos" : "inativo, clique para liberar"}`}
-                  >
-                    {quiz.ativo ? "Ativo" : "Inativo"}
+                  titulo={quiz.titulo}
+                  meta={`${n} ${n === 1 ? "pergunta" : "perguntas"} · ${n * PONTOS_POR_PERGUNTA} pts`}
+                  ativo={Boolean(quiz.ativo)}
+                  selecionado={selectedQuiz?.id === quiz.id}
+                  icone="concluido"
+                  onSelecionar={() => handleSelectQuiz(quiz)}
+                  onAlternar={() => handleToggle(quiz.id)}
+                />
+              );
+            })}
+          </ListaSecretaria>
+
+          {selectedQuiz ? (
+            <DetalheSecretaria
+              titulo={selectedQuiz.titulo}
+              ativo={Boolean(selectedQuiz.ativo)}
+              status={selectedQuiz.ativo ? "Liberado para os alunos" : "Escondido dos alunos"}
+              acoes={
+                <>
+                  <button type="button" className="sc-btn sc-btn--primario" onClick={() => openEditModal(selectedQuiz.id)}>
+                    <Icone nome="editar" tamanho={15} /> Editar quiz
                   </button>
-                </div>
-              ))}
-            </div>
-            <button className="btn-create" onClick={openCreateModal}>
-              + CRIAR QUIZ
-            </button>
-          </aside>
-
-          {/* Coluna central - Visualização do Quiz */}
-          <section className="panel quizzes-center" aria-label="Detalhes do quiz">
-            {selectedQuiz ? (
-              <div className="quiz-card">
-                <div className="quiz-header">
-                  <div className="quiz-title-area">
-                    <h2 className="quiz-title">{selectedQuiz.titulo}</h2>
-                    <span className={`badge badge-${selectedQuiz.ativo ? "active" : "inactive"}`}>
-                      {selectedQuiz.ativo ? "Liberado para os alunos" : "Escondido dos alunos"}
-                    </span>
-                  </div>
-                  <div className="quiz-actions">
-                    <button className="btn-edit" onClick={() => openEditModal(selectedQuiz.id)}>
-                      <Icone nome="editar" tamanho={15} /> Editar
-                    </button>
-                    <button
-                      className="btn-excluir-quiz"
-                      onClick={() => pedirExclusao(selectedQuiz)}
-                      aria-label={`Excluir o quiz ${selectedQuiz.titulo}`}
-                      title="Excluir quiz"
-                    >
-                      <Icone nome="lixeira" tamanho={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {selectedQuiz.descricao && (
-                  <div className="quiz-description">
-                    <h3>Instruções para o aluno</h3>
-                    <p>{selectedQuiz.descricao}</p>
-                  </div>
-                )}
-
-                <div className="ec-numeros">
-                  <div>
-                    <strong>{perguntasDo(selectedQuiz)}</strong>
-                    <span>{perguntasDo(selectedQuiz) === 1 ? "pergunta" : "perguntas"}</span>
-                  </div>
-                  <div>
-                    <strong>{perguntasDo(selectedQuiz) * PONTOS_POR_PERGUNTA}</strong>
-                    <span>pontos</span>
-                  </div>
-                  <div>
-                    <strong>{(selectedQuiz.campos?.length || 0) - perguntasDo(selectedQuiz)}</strong>
-                    <span>conteúdos de apoio</span>
-                  </div>
-                </div>
-                <p className="ec-lembrete">
-                  <Icone nome="alerta" tamanho={15} /> Para os alunos responderem, o quiz precisa estar vinculado a um módulo
-                  (tela de Módulos → editar módulo → Quiz).
+                  <button
+                    type="button"
+                    className="sc-btn sc-btn--perigo"
+                    onClick={() => pedirExclusao(selectedQuiz)}
+                    aria-label={`Excluir o quiz ${selectedQuiz.titulo}`}
+                    title="Excluir quiz"
+                  >
+                    <Icone nome="lixeira" tamanho={16} />
+                  </button>
+                </>
+              }
+            >
+              {selectedQuiz.descricao && (
+                <p className="sc-descricao">
+                  <strong>Instruções para o aluno</strong>
+                  {selectedQuiz.descricao}
                 </p>
-
-                {selectedQuiz.campos && selectedQuiz.campos.length > 0 ? (
-                  <div className="quiz-fields">
-                    <h3>Como o aluno vê</h3>
-                    <ol className="ec-previa">
-                      {selectedQuiz.campos.map((campo, index) => {
-                        const tipo = tipoDoCampo(campo);
-                        const ehPergunta = TIPOS_PERGUNTA.includes(tipo);
-                        return (
-                          <li key={index} className={`campo-card ${ehPergunta ? "campo-card--pergunta" : ""}`}>
-                            <span className={`ec-selo ${ehPergunta ? "ec-selo--pergunta" : "ec-selo--apoio"}`}>
-                              {INFO_TIPO[tipo]?.nome || "Conteúdo"}
-                              {ehPergunta ? ` · ${PONTOS_POR_PERGUNTA} pts` : ""}
-                            </span>
-                            <div className="campo-label">{campo.label || "Sem título"}</div>
-                            {tipo === "verdadeiro_falso" ? (
-                              <div className="campo-conteudo">
-                                Resposta certa: <strong>{String(campo.conteudo) === "true" ? "Verdadeiro" : "Falso"}</strong>
-                              </div>
-                            ) : tipo !== "discursiva" ? (
-                              <div className="campo-conteudo">{formatarConteudoCampo(campo.conteudo)}</div>
-                            ) : (
-                              <div className="campo-conteudo">O aluno responde escrevendo.</div>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  </div>
-                ) : (
-                  <div className="quiz-empty">
-                    <p>Este quiz ainda não tem perguntas. Clique em Editar para adicionar.</p>
-                  </div>
-                )}
+              )}
+              <div className="ec-numeros">
+                <div>
+                  <strong>{perguntasDo(selectedQuiz)}</strong>
+                  <span>{perguntasDo(selectedQuiz) === 1 ? "pergunta" : "perguntas"}</span>
+                </div>
+                <div>
+                  <strong>{perguntasDo(selectedQuiz) * PONTOS_POR_PERGUNTA}</strong>
+                  <span>pontos no total</span>
+                </div>
+                <div>
+                  <strong>{(selectedQuiz.campos?.length || 0) - perguntasDo(selectedQuiz)}</strong>
+                  <span>conteúdos de apoio</span>
+                </div>
               </div>
-            ) : (
-              <div className="quiz-placeholder">
-                <p>Selecione um quiz na lista para ver as perguntas, ou crie um novo.</p>
-              </div>
-            )}
-          </section>
+              <p className="ec-lembrete">
+                <Icone nome="alerta" tamanho={15} /> Para os alunos responderem, o quiz precisa estar escolhido em um módulo
+                (Módulos → Editar módulo → Quiz do módulo).
+              </p>
 
-          {/* Coluna direita - Ranking */}
-          <aside className="panel quizzes-right" aria-label="Ranking">
+              <h3 className="sc-subtitulo">
+                <Icone nome="olho" tamanho={17} /> Como o aluno vê
+              </h3>
+              {selectedQuiz.campos && selectedQuiz.campos.length > 0 ? (
+                <ol className="ec-previa">
+                  {selectedQuiz.campos.map((campo, index) => {
+                    const tipo = tipoDoCampo(campo);
+                    const ehPergunta = TIPOS_PERGUNTA.includes(tipo);
+                    return (
+                      <li key={index} className={`campo-card ${ehPergunta ? "campo-card--pergunta" : ""}`}>
+                        <span className={`ec-selo ${ehPergunta ? "ec-selo--pergunta" : "ec-selo--apoio"}`}>
+                          {index + 1}. {INFO_TIPO[tipo]?.nome || "Conteúdo"}
+                          {ehPergunta ? ` · ${PONTOS_POR_PERGUNTA} pts` : ""}
+                        </span>
+                        <div className="campo-label">{campo.label || "Sem título"}</div>
+                        {tipo === "verdadeiro_falso" ? (
+                          <div className="campo-conteudo">
+                            Resposta certa: <strong>{String(campo.conteudo) === "true" ? "Verdadeiro" : "Falso"}</strong>
+                          </div>
+                        ) : tipo !== "discursiva" ? (
+                          <div className="campo-conteudo">{formatarConteudoCampo(campo.conteudo)}</div>
+                        ) : (
+                          <div className="campo-conteudo">O aluno responde escrevendo.</div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              ) : (
+                <p className="sc-vazio-conteudo">Este quiz ainda não tem perguntas. Clique em Editar quiz para adicionar.</p>
+              )}
+            </DetalheSecretaria>
+          ) : (
+            <DetalheVazio
+              icone="concluido"
+              texto={quizzes.length ? "Escolha um quiz na lista para ver as perguntas." : "Ainda não há quizzes. Crie o primeiro para usar nos módulos."}
+              acao={{ rotulo: "Novo quiz", onClick: openCreateModal }}
+            />
+          )}
+
+          <aside className="sc-lateral" aria-label="Ranking">
             <RankingCard
               ranking={ranking}
               limit={20}
@@ -1254,10 +1249,8 @@ export default function QuizzesSecretariaCelulasAdmin() {
               }
             />
           </aside>
-        </section>
-      </main>
-
-      <Footer />
+        </div>
+      </PaginaSecretaria>
 
       {toast && (
         <div className="toast" role="status">
@@ -1300,6 +1293,6 @@ export default function QuizzesSecretariaCelulasAdmin() {
         textoCarregando="Excluindo…"
         onCancel={() => setQuizParaExcluir(null)}
       />
-    </div>
+    </>
   );
 }

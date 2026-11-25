@@ -2,9 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import "../style/LicoesSecretariaAdmin.css";
 import "../style/editorCasa.css";
+import PaginaSecretaria, {
+  DetalheSecretaria,
+  DetalheVazio,
+  ItemSecretaria,
+  ListaSecretaria,
+  filtrarItens,
+  type FiltroStatus,
+} from "../components/secretaria/PaginaSecretaria";
 
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
 import Toast from "../components/ui/Toast";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import FocusTrapComponent from "../components/ui/FocusTrap";
@@ -56,6 +62,8 @@ const LicoesSecretariaAdmin: React.FC = () => {
   const acaoSalvar = useAcao();
   const [licoes, setLicoes] = useState<Licao[]>([]);
   const [selecionada, setSelecionada] = useState<Licao | null>(null);
+  const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState<FiltroStatus>("todos");
   const [tipos, setTipos] = useState<TipoDisponivel[]>([]);
   const [loading, setLoading] = useState(false);
   const [aviso, setAviso] = useState<{ texto: string; tipo: "success" | "error" | "info" } | null>(null);
@@ -399,138 +407,129 @@ const LicoesSecretariaAdmin: React.FC = () => {
       )
     : null;
 
+  const licoesVisiveis = filtrarItens(licoes, busca, filtro, (l) => l.titulo, isAtivo);
+  const liberadas = licoes.filter(isAtivo).length;
+
   return (
-    <div className="licoes-page page-with-fixed-header">
-      <Header />
-      <main id="main-content" className="licoes-main" tabIndex={-1}>
-        <h1 className="licoes-title">Secretaria das Células – Lições</h1>
+    <>
+      <PaginaSecretaria
+        area="Secretaria das Células"
+        titulo="Lições"
+        icone="livro"
+        descricao="O material das reuniões de célula. Os líderes veem as lições liberadas e usam na reunião: vídeo, ensino, perguntas e arquivos de apoio."
+        acao={{ rotulo: "Nova lição", onClick: abrirNova }}
+        numeros={[
+          { valor: licoes.length, rotulo: licoes.length === 1 ? "lição" : "lições" },
+          { valor: liberadas, rotulo: liberadas === 1 ? "liberada" : "liberadas" },
+          { valor: licoes.length - liberadas, rotulo: "escondidas" },
+        ]}
+      >
+        <div className="sc-corpo">
+          <ListaSecretaria
+            titulo="Lições"
+            total={licoes.length}
+            busca={busca}
+            onBusca={setBusca}
+            filtro={filtro}
+            onFiltro={setFiltro}
+            placeholderBusca="Buscar lição pelo título"
+            vazio={loading ? "Carregando…" : licoes.length ? "Nenhuma lição com esse filtro." : "Nenhuma lição ainda. Crie a primeira no botão Nova lição."}
+            quantidadeVisivel={licoesVisiveis.length}
+          >
+            {licoesVisiveis.map((l) => (
+              <ItemSecretaria
+                key={l.id_licao}
+                titulo={l.titulo}
+                meta={`${qtd(l)} ${qtd(l) === 1 ? "conteúdo" : "conteúdos"}`}
+                ativo={isAtivo(l)}
+                selecionado={selecionada?.id_licao === l.id_licao}
+                icone="livro"
+                onSelecionar={() => setSelecionada(l)}
+                onAlternar={() => alternar(l)}
+              />
+            ))}
+          </ListaSecretaria>
 
-        {loading && <p className="loading-message">Carregando...</p>}
-
-        <section className="licoes-layout">
-          <aside className="panel licoes-left" aria-label="Lista de lições">
-            <div className="list-header">
-              <h2>Lições</h2>
-              <span className="count">{licoes.length}</span>
-            </div>
-            <div className="list">
-              {licoes.map((l) => (
-                <div
-                  key={l.id_licao}
-                  className={`licao-item ${selecionada?.id_licao === l.id_licao ? "selected" : ""} ${!isAtivo(l) ? "inactive" : ""}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setSelecionada(l)}
-                  onKeyDown={(e) => {
-                    if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
-                      e.preventDefault();
-                      setSelecionada(l);
-                    }
-                  }}
-                >
-                  <div className="licao-item__info">
-                    <span className="licao-item__name">{l.titulo}</span>
-                  </div>
-                  <button
-                    className={`btn-status ${isAtivo(l) ? "active" : "inactive"}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      alternar(l);
-                    }}
-                    title={isAtivo(l) ? "Esconder dos líderes" : "Liberar para os líderes"}
-                  >
-                    {isAtivo(l) ? "Ativo" : "Inativo"}
+          {selecionada ? (
+            <DetalheSecretaria
+              titulo={selecionada.titulo}
+              ativo={isAtivo(selecionada)}
+              status={isAtivo(selecionada) ? "Liberada para os líderes" : "Escondida dos líderes"}
+              acoes={
+                <>
+                  <button type="button" className="sc-btn sc-btn--primario" onClick={() => abrirEdicao(selecionada.id_licao)}>
+                    <Icone nome="editar" tamanho={15} /> Editar lição
                   </button>
-                </div>
-              ))}
-              {!loading && licoes.length === 0 && <p className="licao-lista-vazia">Nenhuma lição ainda.</p>}
-            </div>
-            <button className="btn-create" onClick={abrirNova}>
-              + Criar lição
-            </button>
-          </aside>
-
-          <section className="panel licoes-center" aria-label="Detalhes da lição">
-            {selecionada ? (
-              <div className="licao-card">
-                <div className="licao-header">
-                  <div className="licao-title-area">
-                    <h2 className="licao-title">{selecionada.titulo}</h2>
-                    <span className={`badge badge-${isAtivo(selecionada) ? "active" : "inactive"}`}>
-                      {isAtivo(selecionada) ? "Liberada para os líderes" : "Escondida dos líderes"}
-                    </span>
-                  </div>
-                  <div className="licao-actions">
-                    <button className="btn-edit" onClick={() => abrirEdicao(selecionada.id_licao)}>
-                      <Icone nome="editar" tamanho={15} /> Editar
-                    </button>
-                    <button className="btn-delete" onClick={() => setParaExcluir(selecionada)}>
-                      Excluir
-                    </button>
-                  </div>
-                </div>
-
-                {selecionada.descricao && (
-                  <div className="licao-description">
-                    <h3>Resumo para o líder</h3>
-                    <p>{selecionada.descricao}</p>
-                  </div>
-                )}
-
-                <div className="ec-numeros">
-                  <div>
-                    <strong>{qtd(selecionada)}</strong>
-                    <span>{qtd(selecionada) === 1 ? "conteúdo" : "conteúdos"}</span>
-                  </div>
-                  <div>
-                    <strong>{(selecionada.campos || []).filter((c) => (c.tipo_campo || tipoPorId(c.id_campo)) === "video").length}</strong>
-                    <span>vídeos</span>
-                  </div>
-                  <div>
-                    <strong className="ec-numeros__texto">{isAtivo(selecionada) ? "Liberada" : "Escondida"}</strong>
-                    <span>para os líderes</span>
-                  </div>
-                </div>
-                <p className="ec-lembrete">
-                  <Icone nome="alerta" tamanho={15} />
-                  {isAtivo(selecionada)
-                    ? "Os líderes de célula veem esta lição em Lições, na ordem abaixo."
-                    : "Escondida: os líderes não veem. Ative pelo botão da lista ou em Editar."}
+                  <button
+                    type="button"
+                    className="sc-btn sc-btn--perigo"
+                    onClick={() => setParaExcluir(selecionada)}
+                    aria-label={`Excluir a lição ${selecionada.titulo}`}
+                    title="Excluir lição"
+                  >
+                    <Icone nome="lixeira" tamanho={16} />
+                  </button>
+                </>
+              }
+            >
+              {selecionada.descricao && (
+                <p className="sc-descricao">
+                  <strong>Resumo para o líder</strong>
+                  {selecionada.descricao}
                 </p>
-
-                {qtd(selecionada) > 0 ? (
-                  <div className="licao-fields">
-                    <h3>Como o líder vê</h3>
-                    <ol className="ec-previa">
-                      {(selecionada.campos || []).map((c, i) => (
-                        <li key={i} className="campo-card campo-card--pergunta">
-                          <span className="ec-selo ec-selo--pergunta">
-                            {i + 1}. {nomeDoTipo(String(c.tipo_campo || tipoPorId(c.id_campo) || ""))}
-                          </span>
-                          <div className="campo-label">{c.label || "Sem título"}</div>
-                          <div className="campo-conteudo">
-                            <ConteudoNoPainel valor={c.conteudo} />
-                          </div>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                ) : (
-                  <div className="licao-empty">
-                    <p>Esta lição ainda não tem conteúdo. Clique em Editar para montar o material.</p>
-                  </div>
-                )}
+              )}
+              <div className="ec-numeros">
+                <div>
+                  <strong>{qtd(selecionada)}</strong>
+                  <span>{qtd(selecionada) === 1 ? "conteúdo" : "conteúdos"}</span>
+                </div>
+                <div>
+                  <strong>{(selecionada.campos || []).filter((c) => (c.tipo_campo || tipoPorId(c.id_campo)) === "video").length}</strong>
+                  <span>vídeos</span>
+                </div>
+                <div>
+                  <strong className="ec-numeros__texto">{isAtivo(selecionada) ? "Liberada" : "Escondida"}</strong>
+                  <span>para os líderes</span>
+                </div>
               </div>
-            ) : (
-              <div className="licao-placeholder">
-                <p>Selecione uma lição na lista, ou crie uma nova.</p>
-              </div>
-            )}
-          </section>
-        </section>
-      </main>
+              <p className="ec-lembrete">
+                <Icone nome="alerta" tamanho={15} />
+                {isAtivo(selecionada)
+                  ? "Os líderes de célula veem esta lição em Lições, na ordem abaixo."
+                  : "Escondida: os líderes não veem. Ative pelo botão da lista ou em Editar."}
+              </p>
 
-      <Footer />
+
+              <h3 className="sc-subtitulo">
+                <Icone nome="olho" tamanho={17} /> Como o líder vê
+              </h3>
+              {qtd(selecionada) > 0 ? (
+              <ol className="ec-previa">
+                {(selecionada.campos || []).map((c, i) => (
+                  <li key={i} className="campo-card campo-card--pergunta">
+                    <span className="ec-selo ec-selo--pergunta">
+                      {i + 1}. {nomeDoTipo(String(c.tipo_campo || tipoPorId(c.id_campo) || ""))}
+                    </span>
+                    <div className="campo-label">{c.label || "Sem título"}</div>
+                    <div className="campo-conteudo">
+                      <ConteudoNoPainel valor={c.conteudo} />
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              ) : (
+                <p className="sc-vazio-conteudo">Esta lição ainda não tem conteúdo. Clique em Editar lição para montar o material.</p>
+              )}
+            </DetalheSecretaria>
+          ) : (
+            <DetalheVazio
+              icone="livro"
+              texto={licoes.length ? "Escolha uma lição na lista para ver o material." : "Ainda não há lições. Crie a primeira para os líderes usarem na célula."}
+              acao={{ rotulo: "Nova lição", onClick: abrirNova }}
+            />
+          )}
+        </div>
+      </PaginaSecretaria>
 
       {editor}
 
@@ -556,7 +555,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
         onCancel={() => setParaExcluir(null)}
       />
       {aviso && <Toast message={aviso.texto} onClose={() => setAviso(null)} variant={aviso.tipo} />}
-    </div>
+    </>
   );
 };
 

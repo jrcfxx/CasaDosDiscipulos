@@ -21,10 +21,19 @@ import { CSS } from "@dnd-kit/utilities";
 import "../style/ModulosEscolaDiscipulosAdmin.css";
 import "../style/editorCasa.css";
 import Icone from "../components/ui/Icone";
+import PaginaSecretaria, {
+  DetalheSecretaria,
+  DetalheVazio,
+  ItemSecretaria,
+  ListaSecretaria,
+  filtrarItens,
+  type FiltroStatus,
+} from "../components/secretaria/PaginaSecretaria";
+import { TIPOS_CONTEUDO } from "../components/conteudo/EditorBlocos";
+
+const NOME_TIPO: Record<string, string> = Object.fromEntries(TIPOS_CONTEUDO.map((t) => [t.tipo, t.nome]));
 import { getErrorMessage } from "../utils/errorUtils";
 
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarRanking } from "../utils/exportacoes";
@@ -41,64 +50,61 @@ function ItemModulo({
   modulo,
   posicao,
   selecionado,
+  podeArrastar,
   onSelecionar,
   onAlternar,
 }: {
   modulo: Modulo;
   posicao: number;
   selecionado: boolean;
+  podeArrastar: boolean;
   onSelecionar: () => void;
   onAlternar: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: modulo.id_modulo });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: modulo.id_modulo,
+    disabled: !podeArrastar,
+  });
+  const n = modulo.campos?.length || 0;
   return (
-    <div
+    <ItemSecretaria
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`mod-item ${selecionado ? "selected" : ""} ${!modulo.ativo ? "inactive" : ""}${isDragging ? " mod-item--arrastando" : ""}`}
-      role="button"
-      tabIndex={0}
-      onClick={onSelecionar}
-      onKeyDown={(e) => {
-        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          onSelecionar();
-        }
-      }}
-    >
-      <div className="mod-item__info">
+      arrastando={isDragging}
+      titulo={modulo.titulo}
+      meta={`${n} ${n === 1 ? "conteúdo" : "conteúdos"}`}
+      selo={modulo.obrigatorio === false ? "Opcional" : undefined}
+      ativo={Boolean(modulo.ativo)}
+      selecionado={selecionado}
+      icone="formatura"
+      onSelecionar={onSelecionar}
+      onAlternar={onAlternar}
+      antes={
         <button
           type="button"
-          className="mod-item__alca"
-          aria-label={`Arrastar "${modulo.titulo}" para mudar a ordem da trilha (posição ${posicao})`}
-          title="Arraste para mudar a ordem"
-          onClick={(e) => e.stopPropagation()}
+          className="sc-item__alca"
+          aria-label={
+            podeArrastar
+              ? `Arrastar "${modulo.titulo}" para mudar a ordem da trilha (posição ${posicao})`
+              : `Posição ${posicao} na trilha (limpe a busca e o filtro para reordenar)`
+          }
+          title={podeArrastar ? "Arraste para mudar a ordem" : "Limpe a busca e o filtro para reordenar"}
           {...attributes}
           {...listeners}
         >
-          <Icone nome="arrastar" tamanho={16} />
+          {podeArrastar && <Icone nome="arrastar" tamanho={15} />}
+          <span className="sc-item__posicao">{posicao}</span>
         </button>
-        <span className="mod-item__ordem">{posicao}</span>
-        <span className="mod-item__name">{modulo.titulo}</span>
-        {modulo.obrigatorio === false && <span className="mod-item__opcional-badge">Opcional</span>}
-      </div>
-      <button
-        className={`btn-status ${modulo.ativo ? "active" : "inactive"}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onAlternar();
-        }}
-        title={modulo.ativo ? "Esconder dos discípulos" : "Liberar para os discípulos"}
-      >
-        {modulo.ativo ? "Ativo" : "Inativo"}
-      </button>
-    </div>
+      }
+    />
   );
 }
 
 const ModulosEscolaDiscipulosAdmin: React.FC = () => {
   const [modulos, setModulos] = useState<Modulo[]>([]);
   const [selectedModulo, setSelectedModulo] = useState<Modulo | null>(null);
+  const [busca, setBusca] = useState("");
+  const [filtro, setFiltro] = useState<FiltroStatus>("todos");
   const [quizVinculado, setQuizVinculado] = useState<QuizVinculado | null>(null);
   const [ranking, setRanking] = useState<RankItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -244,27 +250,48 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
     await fetchRanking();
   };
 
+  const filtrando = busca.trim() !== "" || filtro !== "todos";
+  const modulosVisiveis = filtrarItens(modulos, busca, filtro, (m) => m.titulo, (m) => Boolean(m.ativo));
+  const ativosMod = modulos.filter((m) => m.ativo).length;
+
   return (
-    <div className="modulos-page page-with-fixed-header">
-      <Header />
-      <main id="main-content" className="page" tabIndex={-1}>
-        <h1 className="page-title">Escola de Discípulos</h1>
-
-        {loading && <p className="loading-message">Carregando...</p>}
-
-        <section className="modules-layout">
-          {/* Coluna esquerda - Lista de Módulos */}
-          <aside className="panel modules-left" aria-label="Lista de módulos">
-            <div className="list-header">
-              <h2>Módulos</h2>
-              <span className="count">{modulos.length}</span>
-            </div>
-            {modulos.length > 1 && (
-              <p className="mod-lista-dica">
-                <Icone nome="arrastar" tamanho={13} />
-                {salvandoOrdem ? "Salvando a ordem…" : "Arraste pela alça para mudar a ordem da trilha."}
-              </p>
-            )}
+    <>
+      <PaginaSecretaria
+        area="Escola de Discípulos"
+        titulo="Módulos"
+        icone="formatura"
+        descricao="A trilha de formação do discípulo. Cada módulo reúne aulas (vídeos, textos, arquivos) e pode ter um quiz. A ordem da lista é a ordem da trilha."
+        acao={{ rotulo: "Novo módulo", onClick: () => navigate("/admin/modulos/criar") }}
+        numeros={[
+          { valor: modulos.length, rotulo: modulos.length === 1 ? "módulo" : "módulos" },
+          { valor: ativosMod, rotulo: ativosMod === 1 ? "liberado" : "liberados" },
+          { valor: modulos.filter((m) => m.obrigatorio === false).length, rotulo: "opcionais" },
+        ]}
+      >
+        <div className="sc-corpo sc-corpo--com-ranking">
+          <ListaSecretaria
+            titulo="Trilha"
+            total={modulos.length}
+            busca={busca}
+            onBusca={setBusca}
+            filtro={filtro}
+            onFiltro={setFiltro}
+            placeholderBusca="Buscar módulo pelo nome"
+            dica={
+              modulos.length > 1 ? (
+                <>
+                  <Icone nome="arrastar" tamanho={13} />
+                  {salvandoOrdem
+                    ? "Salvando a ordem…"
+                    : filtrando
+                      ? "Limpe a busca e o filtro para reordenar."
+                      : "Arraste pela alça para mudar a ordem da trilha."}
+                </>
+              ) : undefined
+            }
+            vazio={loading ? "Carregando…" : modulos.length ? "Nenhum módulo com esse filtro." : "Nenhum módulo ainda. Crie o primeiro no botão Novo módulo."}
+            quantidadeVisivel={modulosVisiveis.length}
+          >
             <DndContext
               sensors={sensores}
               collisionDetection={closestCenter}
@@ -284,139 +311,116 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
                 },
               }}
             >
-              <SortableContext items={modulos.map((m) => m.id_modulo)} strategy={verticalListSortingStrategy}>
-                <div className="list">
-                  {modulos.map((modulo, i) => (
-                    <ItemModulo
-                      key={modulo.id_modulo}
-                      modulo={modulo}
-                      posicao={i + 1}
-                      selecionado={selectedModulo?.id_modulo === modulo.id_modulo}
-                      onSelecionar={() => handleSelectModulo(modulo)}
-                      onAlternar={() => handleToggle(modulo.id_modulo)}
-                    />
-                  ))}
-                </div>
+              <SortableContext items={modulosVisiveis.map((m) => m.id_modulo)} strategy={verticalListSortingStrategy}>
+                {modulosVisiveis.map((modulo) => (
+                  <ItemModulo
+                    key={modulo.id_modulo}
+                    modulo={modulo}
+                    posicao={modulos.findIndex((m) => m.id_modulo === modulo.id_modulo) + 1}
+                    selecionado={selectedModulo?.id_modulo === modulo.id_modulo}
+                    podeArrastar={!filtrando}
+                    onSelecionar={() => handleSelectModulo(modulo)}
+                    onAlternar={() => handleToggle(modulo.id_modulo)}
+                  />
+                ))}
               </SortableContext>
             </DndContext>
-            <button
-              className="btn-create"
-              onClick={() => navigate("/admin/modulos/criar")}
+          </ListaSecretaria>
+
+          {selectedModulo ? (
+            <DetalheSecretaria
+              titulo={selectedModulo.titulo}
+              ativo={Boolean(selectedModulo.ativo)}
+              status={`${selectedModulo.ativo ? "Liberado para os discípulos" : "Escondido dos discípulos"} · ${
+                selectedModulo.obrigatorio === false ? "opcional" : "obrigatório"
+              }`}
+              acoes={
+                <>
+                  <button
+                    type="button"
+                    className="sc-btn sc-btn--primario"
+                    onClick={() => navigate(`/admin/modulos/editar/${selectedModulo.id_modulo}`)}
+                  >
+                    <Icone nome="editar" tamanho={15} /> Editar módulo
+                  </button>
+                  <button
+                    type="button"
+                    className="sc-btn sc-btn--perigo"
+                    onClick={pedirExclusao}
+                    disabled={excluindo}
+                    aria-busy={excluindo}
+                    aria-label={`Excluir o módulo ${selectedModulo.titulo}`}
+                    title="Excluir módulo"
+                  >
+                    {excluindo ? <span className="btn-spinner" aria-hidden /> : <Icone nome="lixeira" tamanho={16} />}
+                  </button>
+                </>
+              }
             >
-              + CRIAR MÓDULO
-            </button>
-          </aside>
-
-          {/* Coluna central - Visualização do Módulo */}
-          <section
-            className="panel modules-center"
-            aria-label="Detalhes do módulo"
-          >
-            {selectedModulo ? (
-              <div className="module-card">
-                <div className="module-header">
-                  <div className="module-title-area">
-                    <h2 className="module-title">{selectedModulo.titulo}</h2>
-                    <span
-                      className={`badge badge-${
-                        selectedModulo.ativo ? "active" : "inactive"
-                      }`}
-                    >
-                      {selectedModulo.ativo ? "Liberado para os discípulos" : "Escondido dos discípulos"}
-                    </span>
-                  </div>
-                  <div className="module-header-actions">
-                    <button
-                      className="btn-edit"
-                      onClick={() =>
-                        navigate(
-                          `/admin/modulos/editar/${selectedModulo.id_modulo}`
-                        )
-                      }
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className="btn-excluir"
-                      onClick={pedirExclusao}
-                      disabled={excluindo}
-                      title="Excluir módulo permanentemente"
-                     aria-busy={excluindo}>
-                      {excluindo ? <><span className="btn-spinner" aria-hidden />Excluindo…</> : "Excluir"}
-                    </button>
-                  </div>
-                </div>
-
-                {selectedModulo.descricao && (
-                  <div className="module-description">
-                    <h3>Descrição</h3>
-                    <p>{selectedModulo.descricao}</p>
-                  </div>
-                )}
-
-                <div className="ec-numeros">
-                  <div>
-                    <strong>{modulos.findIndex((m) => m.id_modulo === selectedModulo.id_modulo) + 1}º</strong>
-                    <span>na trilha</span>
-                  </div>
-                  <div>
-                    <strong>{selectedModulo.campos?.length || 0}</strong>
-                    <span>{(selectedModulo.campos?.length || 0) === 1 ? "conteúdo" : "conteúdos"}</span>
-                  </div>
-                  <div>
-                    <strong className="ec-numeros__texto">{quizVinculado ? "Com quiz" : "Sem quiz"}</strong>
-                    <span>{quizVinculado?.titulo || "conclusão manual"}</span>
-                  </div>
-                </div>
-                <p className="ec-lembrete">
-                  <Icone nome="alerta" tamanho={15} />
-                  {selectedModulo.obrigatorio === false
-                    ? "Opcional: o discípulo faz quando quiser; não bloqueia outros módulos e não conta para o nível."
-                    : (selectedModulo.pre_requisitos?.length ?? 0) > 0
-                      ? `Obrigatório: libera depois de concluir ${modulos
-                          .filter((m) => selectedModulo.pre_requisitos?.includes(m.id_modulo))
-                          .map((m) => `"${m.titulo}"`)
-                          .join(", ")}.`
-                      : "Obrigatório: libera quando o discípulo concluir os módulos obrigatórios anteriores na trilha."}
-                  {selectedModulo.obrigatorio !== false && selectedModulo.id_nivel != null
-                    ? ` Ao concluir, chega ao nível ${selectedModulo.nivel_nome ?? `#${selectedModulo.id_nivel}`}.`
-                    : ""}
+              {selectedModulo.descricao && (
+                <p className="sc-descricao">
+                  <strong>Descrição</strong>
+                  {selectedModulo.descricao}
                 </p>
-
-                {selectedModulo.campos && selectedModulo.campos.length > 0 ? (
-                  <div className="module-fields">
-                    <h3>Conteúdo das aulas</h3>
-                    <div className="campos-grid">
-                      {selectedModulo.campos.map((campo, index) => (
-                        <div key={index} className="campo-card">
-                          <div className="campo-label">
-                            {campo.label || "Sem label"}
-                          </div>
-                          <div className="campo-conteudo">
-                            {formatarConteudoCampo(campo.conteudo)}
-                          </div>
-                          {campo.obrigatorio && (
-                            <span className="campo-required">Obrigatório</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="module-empty">
-                    <p>Este módulo ainda não tem conteúdo. Clique em Editar para adicionar vídeos, textos e arquivos.</p>
-                  </div>
-                )}
+              )}
+            <div className="ec-numeros">
+              <div>
+                <strong>{modulos.findIndex((m) => m.id_modulo === selectedModulo.id_modulo) + 1}º</strong>
+                <span>na trilha</span>
               </div>
-            ) : (
-              <div className="module-placeholder">
-                <p>Selecione um módulo na lista para visualizar</p>
+              <div>
+                <strong>{selectedModulo.campos?.length || 0}</strong>
+                <span>{(selectedModulo.campos?.length || 0) === 1 ? "conteúdo" : "conteúdos"}</span>
               </div>
-            )}
-          </section>
+              <div>
+                <strong className="ec-numeros__texto">{quizVinculado ? "Com quiz" : "Sem quiz"}</strong>
+                <span>{quizVinculado?.titulo || "conclusão manual"}</span>
+              </div>
+            </div>
+            <p className="ec-lembrete">
+              <Icone nome="alerta" tamanho={15} />
+              {selectedModulo.obrigatorio === false
+                ? "Opcional: o discípulo faz quando quiser; não bloqueia outros módulos e não conta para o nível."
+                : (selectedModulo.pre_requisitos?.length ?? 0) > 0
+                  ? `Obrigatório: libera depois de concluir ${modulos
+                      .filter((m) => selectedModulo.pre_requisitos?.includes(m.id_modulo))
+                      .map((m) => `"${m.titulo}"`)
+                      .join(", ")}.`
+                  : "Obrigatório: libera quando o discípulo concluir os módulos obrigatórios anteriores na trilha."}
+              {selectedModulo.obrigatorio !== false && selectedModulo.id_nivel != null
+                ? ` Ao concluir, chega ao nível ${selectedModulo.nivel_nome ?? `#${selectedModulo.id_nivel}`}.`
+                : ""}
+            </p>
 
-          {/* Coluna direita - Ranking (igual ao User/Leader) */}
-          <aside className="panel modules-right" aria-label="Ranking">
+
+              <h3 className="sc-subtitulo">
+                <Icone nome="olho" tamanho={17} /> Como o discípulo vê
+              </h3>
+              {selectedModulo.campos && selectedModulo.campos.length > 0 ? (
+                <ol className="ec-previa">
+                  {selectedModulo.campos.map((campo, index) => (
+                    <li key={index} className="campo-card campo-card--pergunta">
+                      <span className="ec-selo ec-selo--pergunta">
+                        {index + 1}. {NOME_TIPO[String(campo.tipo_campo)] || "Conteúdo"}
+                      </span>
+                      <div className="campo-label">{campo.label || "Sem título"}</div>
+                      <div className="campo-conteudo">{formatarConteudoCampo(campo.conteudo)}</div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="sc-vazio-conteudo">Este módulo ainda não tem conteúdo. Clique em Editar módulo para adicionar vídeos, textos e arquivos.</p>
+              )}
+            </DetalheSecretaria>
+          ) : (
+            <DetalheVazio
+              icone="formatura"
+              texto={modulos.length ? "Escolha um módulo na lista para ver as aulas." : "Ainda não há módulos. Crie o primeiro da trilha."}
+              acao={{ rotulo: "Novo módulo", onClick: () => navigate("/admin/modulos/criar") }}
+            />
+          )}
+
+          <aside className="sc-lateral" aria-label="Ranking">
             <RankingCard
               ranking={ranking}
               limit={20}
@@ -441,10 +445,8 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
               }
             />
           </aside>
-        </section>
-      </main>
-
-      <Footer />
+        </div>
+      </PaginaSecretaria>
 
       <DarPontosModal
         open={modalDarPontosAberto}
@@ -473,7 +475,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
           variant={toast.startsWith("Erro") ? "error" : "success"}
         />
       )}
-    </div>
+    </>
   );
 };
 
