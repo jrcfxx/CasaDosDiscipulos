@@ -120,7 +120,7 @@ body:not(#_) .escala-page .esc-topo .page-title::after {
 }
 
 .escala-page .esc-btn--primario {
-  background: var(--esc-teal);
+  background: #027a8f;
   border-color: var(--esc-teal);
   color: #fff;
 }
@@ -715,7 +715,7 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--esc-teal);
+  background: #027a8f;
 }
 
 .escala-page .esc-barra > span.completo {

@@ -241,7 +241,9 @@ function ItemFormulario({
       />
       {info && <p className="ec-ajuda-tipo">{info.dica}</p>}
       <div className="ec-item__previa">
-        <span className="ec-item__previa-rotulo">Prévia do que o líder preenche</span>
+        <span className="ec-item__previa-rotulo" aria-hidden>
+          Prévia do que o líder preenche
+        </span>
         <div className="ec-item__corpo field-wrapper">{children}</div>
       </div>
     </li>
@@ -1199,7 +1201,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
               }}
             >
               <div className="ec-editor">
-                <header className="ec-editor__topo">
+                <div className="ec-editor__topo">
                   <div>
                     <p className="ec-editor__sobretitulo">Secretaria das Células · Formulário</p>
                     <h2 id="ec-form-titulo">{formularioToEdit ? "Editar formulário" : "Novo formulário"}</h2>
@@ -1207,7 +1209,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                   <button type="button" className="ec-fechar" onClick={pedirFechar} aria-label="Fechar">
                     <Icone nome="fechar" tamanho={20} />
                   </button>
-                </header>
+                </div>
 
                 <form
                   className="ec-editor__form"
@@ -1389,7 +1391,12 @@ export default function FormulariosSecretariaCelulasAdmin() {
                                     onRemover={() => removeField(f.uid)}
                                   >
                                     {/* Só mostra como fica: o líder começa sempre com o campo vazio */}
-                                    <Component id={`previa-${f.uid}`} name={`previa_${f.uid}`} label="" value="" onChange={() => {}} disabled />
+                                    <>
+                                      <label className="sr-only" htmlFor={`previa-${f.uid}`}>
+                                        Prévia: {f.label || "pergunta sem texto"}
+                                      </label>
+                                      <Component id={`previa-${f.uid}`} name={`previa_${f.uid}`} label="" value="" onChange={() => {}} disabled />
+                                    </>
                                   </ItemFormulario>
                                 );
                               })}
@@ -1423,7 +1430,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                     </section>
                   </div>
 
-                  <footer className="ec-editor__rodape">
+                  <div className="ec-editor__rodape">
                     {erroForm ? (
                       <p className="ec-erro" role="alert">
                         <Icone nome="alerta" tamanho={16} /> {erroForm}
@@ -1450,7 +1457,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                         {formularioToEdit ? "Salvar alterações" : "Criar formulário"}
                       </BotaoCarregando>
                     </div>
-                  </footer>
+                  </div>
                 </form>
               </div>
             </div>

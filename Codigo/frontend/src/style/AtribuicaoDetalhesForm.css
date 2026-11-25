@@ -39,7 +39,7 @@
 }
 
 .atrib-detalhe-field::placeholder {
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .atrib-detalhe-field textarea {

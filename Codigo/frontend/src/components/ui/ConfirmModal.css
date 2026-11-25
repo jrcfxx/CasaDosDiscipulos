@@ -80,7 +80,7 @@
   color: white;
 }
 .confirm-modal-btn-default {
-  background: var(--color-primary-teal);
+  background: #027a8f;
 }
 .confirm-modal-btn-default:hover {
   background: var(--color-primary-dark);

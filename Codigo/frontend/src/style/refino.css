@@ -216,7 +216,7 @@ body:not(#_) :is(
   .btn-tpl-pri-sm,
   .btn-tpl-novo
 ):hover:not(:disabled) {
-  background: var(--teal-500);
+  background: #027a8f;
   border-color: var(--teal-500);
 }
 

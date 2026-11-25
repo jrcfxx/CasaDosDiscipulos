@@ -192,7 +192,7 @@ export default function EditorModulo({ idModulo }: { idModulo?: number }) {
   return (
     <div className="ec-pagina">
       <div className="ec-editor ec-editor--pagina">
-        <header className="ec-editor__topo">
+        <div className="ec-editor__topo">
           <div>
             <p className="ec-editor__sobretitulo">Escola de Discípulos · Módulo</p>
             <h1 id="ec-modulo-titulo">{editando ? "Editar módulo" : "Novo módulo"}</h1>
@@ -200,7 +200,7 @@ export default function EditorModulo({ idModulo }: { idModulo?: number }) {
           <button type="button" className="ec-fechar" onClick={sair} aria-label="Voltar para a lista de módulos">
             <Icone nome="fechar" tamanho={20} />
           </button>
-        </header>
+        </div>
 
         <form className="ec-editor__form" noValidate onSubmit={salvar} aria-labelledby="ec-modulo-titulo">
           <div className="ec-editor__rolagem">
@@ -432,7 +432,7 @@ export default function EditorModulo({ idModulo }: { idModulo?: number }) {
             </section>
           </div>
 
-          <footer className="ec-editor__rodape">
+          <div className="ec-editor__rodape">
             {erro ? (
               <p className="ec-erro" role="alert">
                 <Icone nome="alerta" tamanho={16} /> {erro}
@@ -456,7 +456,7 @@ export default function EditorModulo({ idModulo }: { idModulo?: number }) {
                 {editando ? "Salvar alterações" : "Criar módulo"}
               </BotaoCarregando>
             </div>
-          </footer>
+          </div>
         </form>
       </div>
 

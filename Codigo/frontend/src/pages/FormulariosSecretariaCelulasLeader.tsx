@@ -309,10 +309,15 @@ export default function FormulariosSecretariaCelulasLeader() {
                             const safeLabel = String(campo.label ?? "Campo");
                             return (
                               <div key={campo.uid} className="campo-card">
-                                <div className="campo-label">
+                                <label className="campo-label" htmlFor={`campo_${campo.uid}`}>
                                   {campo.label}
-                                  {campo.obrigatorio && " *"}
-                                </div>
+                                  {campo.obrigatorio && (
+                                    <>
+                                      <span aria-hidden> *</span>
+                                      <span className="sr-only"> (obrigatório)</span>
+                                    </>
+                                  )}
+                                </label>
                                 <div className="campo-conteudo">
                                   {campo.tipo === "texto" && (
                                     <TextField

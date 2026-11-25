@@ -242,7 +242,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
             }}
           >
             <div className="ec-editor">
-              <header className="ec-editor__topo">
+              <div className="ec-editor__topo">
                 <div>
                   <p className="ec-editor__sobretitulo">Secretaria das Células · Lição</p>
                   <h2 id="ec-licao-titulo">{idEditando ? "Editar lição" : "Nova lição"}</h2>
@@ -250,7 +250,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
                 <button type="button" className="ec-fechar" onClick={pedirFechar} aria-label="Fechar">
                   <Icone nome="fechar" tamanho={20} />
                 </button>
-              </header>
+              </div>
 
               <form
                 className="ec-editor__form"
@@ -373,7 +373,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
                   </section>
                 </div>
 
-                <footer className="ec-editor__rodape">
+                <div className="ec-editor__rodape">
                   {erro ? (
                     <p className="ec-erro" role="alert">
                       <Icone nome="alerta" tamanho={16} /> {erro}
@@ -398,7 +398,7 @@ const LicoesSecretariaAdmin: React.FC = () => {
                       {idEditando ? "Salvar alterações" : "Criar lição"}
                     </BotaoCarregando>
                   </div>
-                </footer>
+                </div>
               </form>
             </div>
           </div>

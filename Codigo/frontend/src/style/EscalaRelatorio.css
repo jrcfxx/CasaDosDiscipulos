@@ -153,7 +153,7 @@
 .escala-relatorio__vazio {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .escala-relatorio__lista {
@@ -281,7 +281,7 @@
 }
 
 .escala-relatorio__barra-fill--teal {
-  background: linear-gradient(90deg, #02869b, #00b5d2);
+  background: linear-gradient(90deg, #027a8f, #00b5d2);
 }
 
 .escala-relatorio__barra-fill--gold {

@@ -84,7 +84,7 @@
 }
 
 .tab.active {
-  background: var(--primary-teal);
+  background: #027a8f;
   border-color: var(--primary-teal);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(2, 134, 155, 0.3);
@@ -154,7 +154,7 @@
   height: 48px;
   border-radius: 12px;
   border: none;
-  background: var(--primary-teal);
+  background: #027a8f;
   color: white;
   font-size: 24px;
   font-weight: 300;
@@ -791,13 +791,13 @@
 
 .modal-fundo .modal input::placeholder,
 .modal-fundo .modal textarea::placeholder {
-  color: var(--n-500) !important;
+  color: var(--n-400) !important;
   -webkit-text-fill-color: var(--n-500) !important;
   opacity: 1;
 }
 
 .modal-fundo .modal input[type="tel"]::placeholder {
-  color: var(--n-500) !important;
+  color: var(--n-400) !important;
   -webkit-text-fill-color: var(--n-500) !important;
   opacity: 1;
 }
@@ -880,7 +880,7 @@
 }
 
 .modal-fundo .modal .modal-buttons button:last-child {
-  background: var(--primary-teal);
+  background: #027a8f;
   color: white;
   border: none;
 }
@@ -1121,7 +1121,7 @@
 }
 
 .modal-fundo .modal .modal-content textarea::placeholder {
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .modal-fundo .modal .modal-content textarea:focus {
@@ -1208,7 +1208,7 @@
 .modal-ministerio-form-group input[type="text"]::placeholder,
 .modal-ministerio-form-group input[type="number"]::placeholder,
 .modal-ministerio-form-group textarea::placeholder {
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .modal-ministerio-form-group input[type="text"]:focus,
@@ -1382,7 +1382,7 @@
 .modal-ministerio-lideres .modal-ministerio-hint {
   grid-column: 1 / -1;
   padding: 0.5rem 0;
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .modal-ministerio-footer {

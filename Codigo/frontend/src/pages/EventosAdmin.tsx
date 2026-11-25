@@ -328,7 +328,7 @@ const EventosAdmin: React.FC = () => {
             }}
           >
             <div className="ev-modal">
-              <header className="ev-modal__topo">
+              <div className="ev-modal__topo">
                 <div>
                   <p className="ev-modal__sobretitulo">Carrossel da página inicial</p>
                   <h2 id="ev-modal-titulo">{editingEvento ? "Editar evento" : "Novo evento"}</h2>
@@ -342,7 +342,7 @@ const EventosAdmin: React.FC = () => {
                 >
                   <Icone nome="fechar" tamanho={20} />
                 </button>
-              </header>
+              </div>
 
               <form onSubmit={handleSubmit} className="ev-modal__form" noValidate>
                 <div className="ev-modal__grade">
@@ -468,7 +468,7 @@ const EventosAdmin: React.FC = () => {
                   </div>
                 </div>
 
-                <footer className="ev-modal__rodape">
+                <div className="ev-modal__rodape">
                   <button type="button" className="ev-btn ev-btn--fantasma" onClick={closeModal} disabled={!!salvando}>
                     Cancelar
                   </button>
@@ -484,7 +484,7 @@ const EventosAdmin: React.FC = () => {
                       "Criar evento"
                     )}
                   </button>
-                </footer>
+                </div>
               </form>
             </div>
           </div>
@@ -551,6 +551,7 @@ const EventosAdmin: React.FC = () => {
             }}
           >
             <SortableContext items={eventos.map((e) => e.id_evento)} strategy={rectSortingStrategy}>
+              <h2 className="sr-only">Eventos na ordem do carrossel</h2>
               <ol className="ev-grade" aria-label="Eventos na ordem do carrossel">
                 {eventos.map((evento, i) => (
                   <CardEvento

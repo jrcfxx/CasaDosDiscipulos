@@ -52,6 +52,7 @@ const StaffOrganograma: React.FC<Props> = ({ estrutura, mostrarCabecalho = true 
           {estrutura.subtitulo && <p className="staff-org__subtitulo">{estrutura.subtitulo}</p>}
         </div>
       )}
+      {!mostrarCabecalho && <h2 className="sr-only">Organograma</h2>}
       <div className="staff-org__grupos">
         {estrutura.itens.map((grupo) => (
           <section key={grupo.id_staff_item} className="staff-org__grupo" aria-label={grupo.titulo}>

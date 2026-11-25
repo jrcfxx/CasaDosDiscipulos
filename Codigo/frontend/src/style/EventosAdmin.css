@@ -4,7 +4,7 @@
  */
 
 .eventos-admin {
-  --ev-teal: #02869b;
+  --ev-teal: #027a8f;
   --ev-teal-claro: #5fb2bf;
   --ev-dourado: #f4b002;
   --ev-texto: #ebebeb;
@@ -113,7 +113,7 @@
 }
 
 .ev-btn--primario:hover:not(:disabled) {
-  background: #027a8f;
+  background: #02687a;
   transform: translateY(-1px);
 }
 
@@ -330,7 +330,7 @@
 
 /* ==================== Modal de criar/editar (no fim do <body>, por cima de tudo) ==================== */
 .ev-modal-fundo {
-  --ev-teal: #02869b;
+  --ev-teal: #027a8f;
   --ev-teal-claro: #5fb2bf;
   --ev-dourado: #f4b002;
   --ev-texto: #ebebeb;

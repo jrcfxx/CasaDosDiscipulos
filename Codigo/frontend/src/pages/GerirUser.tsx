@@ -694,6 +694,7 @@ export default function GerenciarUsuarios() {
               />
               <select
                 className="filtro-nivel"
+                aria-label="Filtrar por nível"
                 value={filtroNivel}
                 onChange={(e) => setFiltroNivel(e.target.value)}
               >
@@ -731,6 +732,7 @@ export default function GerenciarUsuarios() {
               </div>
             ) : (
               <div className="cards-container">
+                <h2 className="sr-only">Lista de usuários</h2>
                 {usuariosFiltrados.map((usuario) => {
                   const fotoUrl = usuario.foto
                     ? usuario.foto.startsWith("http")

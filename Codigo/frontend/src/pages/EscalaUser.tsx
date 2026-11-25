@@ -1277,7 +1277,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
               fallbackFocus: ".esc-gaveta",
             }}
           >
-            <aside className="esc-gaveta" role="dialog" aria-modal="true" aria-label="Relatório da escala" tabIndex={-1}>
+            <div className="esc-gaveta" role="dialog" aria-modal="true" aria-label="Relatório da escala" tabIndex={-1}>
               <EscalaRelatorio
                 titulo={tituloRelatorio}
                 subtitulo={modoMeus ? "Só os ministérios selecionados" : "Visão geral para liderança e secretaria"}
@@ -1288,7 +1288,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                   abrirEvento(id);
                 }}
               />
-            </aside>
+            </div>
           </FocusTrap>
         </div>
       )}

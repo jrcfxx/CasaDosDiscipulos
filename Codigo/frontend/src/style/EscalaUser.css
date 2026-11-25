@@ -116,7 +116,7 @@
 }
 
 .btn-nav:hover {
-  background: var(--primary-teal);
+  background: #027a8f;
   border-color: var(--primary-teal);
   color: #fff;
 }
@@ -214,11 +214,30 @@
   font-family: var(--font-primary, "Montserrat", sans-serif);
 }
 
+/* Número do dia: é o botão que abre o dia (teclado e leitor de tela) */
 .dia-numero {
   font-size: 0.85rem;
   color: var(--primary-light);
   flex-shrink: 0;
   font-weight: 700;
+  font-family: inherit;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0 0.3rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.dia-numero:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dia-numero:focus-visible {
+  outline: 2px solid var(--secondary-gold, #f4b002);
+  outline-offset: 1px;
 }
 
 .dia-eventos {
@@ -469,7 +488,7 @@
 .escala-dashboard-titulo-secao {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--n-500);
+  color: var(--n-400);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 0.85rem;
@@ -536,7 +555,7 @@
 
 .ministerio-count {
   font-size: 0.75rem;
-  color: var(--n-500);
+  color: var(--n-400);
   background: rgba(255, 255, 255, 0.05);
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
@@ -633,7 +652,7 @@
 
 .ministerio-vazio {
   font-size: 0.9rem;
-  color: var(--n-500);
+  color: var(--n-400);
   font-style: italic;
   margin: 0;
   padding: 0.75rem 0;
@@ -703,7 +722,7 @@
 }
 
 .btn-editar-evento:hover:not(:disabled) {
-  background: #02869b;
+  background: #027a8f;
 }
 
 .btn-editar-evento:disabled {
@@ -972,7 +991,7 @@
 
 .modal-escala-evento .form-group input::placeholder,
 .modal-escala-evento .form-group textarea::placeholder {
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .modal-escala-evento .form-group input:hover:not(:focus),
@@ -1071,7 +1090,7 @@
 }
 
 .modal-escala-evento .ministerio-chip.selecionado .ministerio-chip__mark {
-  background: var(--primary-teal, #02869b);
+  background: #027a8f;
   border-color: var(--primary-teal, #02869b);
 }
 
@@ -1157,7 +1176,7 @@
 }
 
 .evento-ativo-toggle.ligado .evento-ativo-toggle__switch {
-  background: var(--primary-teal, #02869b);
+  background: #027a8f;
 }
 
 .evento-ativo-toggle.ligado .evento-ativo-toggle__switch::after {
@@ -1671,7 +1690,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--n-500);
+  color: var(--n-400);
   cursor: grab;
   padding: 0;
 }
@@ -1697,7 +1716,7 @@
   font-size: 0.68rem;
   font-weight: 700;
   color: #00444c;
-  background: linear-gradient(135deg, #f4b002, #02869b);
+  background: linear-gradient(135deg, #f4b002, #027a8f);
   font-family: inherit;
 }
 
@@ -2420,7 +2439,7 @@
     margin-top: 0.3rem;
     padding: 0 0.3rem;
     border-radius: 999px;
-    background: var(--teal-500, #02869b);
+    background: #027a8f;
     color: #fff;
     font-size: 0.72rem;
     font-weight: 700;
@@ -2613,7 +2632,7 @@
   border-color: var(--teal-400, #2a99aa);
 }
 .filtro-ministerio.ativo {
-  background: var(--teal-500, #02869b);
+  background: #027a8f;
   border-color: var(--teal-500, #02869b);
   color: #fff;
 }
@@ -2727,4 +2746,9 @@
 .semana-evento .quadro-area .quadro-area__funcoes {
   margin-left: 0.1rem;
   padding-left: 0.25rem;
+}
+
+/* Área de toque mínima (WCAG 2.5.8: 24x24 px) para os eventos dentro do dia */
+.dia-evento-nome {
+  min-height: 24px;
 }

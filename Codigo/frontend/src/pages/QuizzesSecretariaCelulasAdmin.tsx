@@ -823,7 +823,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
             }}
           >
             <div className="ec-editor">
-              <header className="ec-editor__topo">
+              <div className="ec-editor__topo">
                 <div>
                   <p className="ec-editor__sobretitulo">Escola de Discípulos · Quiz</p>
                   <h2 id="ec-editor-titulo">{quizToEdit ? "Editar quiz" : "Novo quiz"}</h2>
@@ -831,7 +831,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                 <button type="button" className="ec-fechar" onClick={pedirFechar} aria-label="Fechar">
                   <Icone nome="fechar" tamanho={20} />
                 </button>
-              </header>
+              </div>
 
               <form
                 className="ec-editor__form"
@@ -999,6 +999,10 @@ export default function QuizzesSecretariaCelulasAdmin() {
                                       onChange={(v) => atualizarItem(f.uid, { conteudo: v })}
                                     />
                                   ) : (
+                                    <>
+                                    <label className="sr-only" htmlFor={String(f.uid)}>
+                                      Conteúdo de {f.label || "apoio"}
+                                    </label>
                                     <Component
                                       id={String(f.uid)}
                                       name={`campo_${f.uid}`}
@@ -1007,6 +1011,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                                       onChange={(v: ValorCampo) => atualizarItem(f.uid, { conteudo: v })}
                                       {...extras}
                                     />
+                                    </>
                                   )}
                                 </ItemQuiz>
                               );
@@ -1061,7 +1066,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                   </section>
                 </div>
 
-                <footer className="ec-editor__rodape">
+                <div className="ec-editor__rodape">
                   {erroForm ? (
                     <p className="ec-erro" role="alert">
                       <Icone nome="alerta" tamanho={16} /> {erroForm}
@@ -1086,7 +1091,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
                       {quizToEdit ? "Salvar alterações" : "Criar quiz"}
                     </BotaoCarregando>
                   </div>
-                </footer>
+                </div>
               </form>
             </div>
           </div>

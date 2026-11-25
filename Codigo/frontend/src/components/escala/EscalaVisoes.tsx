@@ -404,25 +404,28 @@ export const EscalaVisaoMesCalendario: React.FC<{
           const ehHoje = dia.data === hoje;
           const passado = dia.data < hoje;
           return (
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
             <div
               key={cel.key}
               className={`calendario-celula ${dia.temEventos ? "tem-evento clicavel" : "clicavel"}${
                 ehHoje ? " hoje" : ""
               }${passado ? " passado" : ""}`}
+              // Atalho de mouse: clicar em qualquer ponto do dia; no teclado, o botão do número abaixo
               onClick={() => onAbrirDia(dia.data)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onAbrirDia(dia.data);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={`${dia.diaDaSemana} ${dia.diaNumero}${ehHoje ? " (hoje)" : ""}${
-                dia.temEventos ? `, ${plural(dia.totalEventos, "evento")}` : ""
-              }`}
             >
-              <span className="dia-numero">{dia.diaNumero}</span>
+              <button
+                type="button"
+                className="dia-numero"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAbrirDia(dia.data);
+                }}
+                aria-label={`Abrir ${dia.diaDaSemana} ${dia.diaNumero}${ehHoje ? " (hoje)" : ""}${
+                  dia.temEventos ? `, ${plural(dia.totalEventos, "evento")}` : ", sem eventos"
+                }`}
+              >
+                {dia.diaNumero}
+              </button>
               {/* No celular os nomes não cabem: mostra só a quantidade */}
               {dia.temEventos && (
                 <span className="dia-contagem" aria-hidden>

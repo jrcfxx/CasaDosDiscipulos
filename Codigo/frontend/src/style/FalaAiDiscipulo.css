@@ -48,7 +48,7 @@
 .fala-ai-btn-novo {
   display: inline-block;
   padding: 0.6rem 1.25rem;
-  background: var(--fala-ai-teal);
+  background: #027a8f;
   color: #fff;
   font-weight: 600;
   font-size: 0.9rem;
@@ -380,7 +380,7 @@
 
 .fala-ai-btn-send {
   padding: 0.5rem 1rem;
-  background: var(--fala-ai-teal);
+  background: #027a8f;
   border: none;
   color: #fff;
   font-size: 0.875rem;

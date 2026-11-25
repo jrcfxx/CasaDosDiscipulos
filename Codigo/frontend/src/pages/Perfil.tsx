@@ -355,6 +355,7 @@ export default function Perfil() {
               onChange={handleFileChange}
               className="file-input-hidden"
               aria-hidden
+              tabIndex={-1}
             />
           </div>
 

@@ -164,7 +164,7 @@ export default function RankingCard({
           </p>
         </div>
       )}
-      <div className="ranking-list">
+      <div className="ranking-list" tabIndex={0} role="region" aria-label="Lista do ranking">
         {items.length > 0 ? (
           items.map((usuario, index) => {
             const position = index + 1;

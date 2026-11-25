@@ -304,7 +304,7 @@
 
 .tpl-form input::placeholder,
 .tpl-form textarea::placeholder {
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .tpl-form input:hover,
@@ -415,7 +415,7 @@
 }
 
 .tpl-ministerio-chip.selecionado .tpl-ministerio-chip__mark {
-  background: var(--primary-teal, #02869b);
+  background: #027a8f;
   border-color: var(--primary-teal, #02869b);
 }
 

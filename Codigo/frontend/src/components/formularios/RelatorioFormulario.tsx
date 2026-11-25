@@ -195,7 +195,7 @@ const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia, titulo
             <p className="rel-aviso">Nenhuma célula ativa para acompanhar.</p>
           ) : (
             <>
-              <div className="rel-tabela-wrap" role="region" aria-label="Envios por célula">
+              <div className="rel-tabela-wrap" role="region" aria-label="Envios por célula" tabIndex={0}>
                 <table className="rel-tabela">
                   <thead>
                     <tr>

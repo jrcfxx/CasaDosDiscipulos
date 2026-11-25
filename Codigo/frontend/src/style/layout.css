@@ -73,7 +73,7 @@
 }
 
 .header-home__btn-login:hover {
-  background: var(--color-primary-teal, #02869b);
+  background: #027a8f;
 }
 
 .header-home__acoes {
@@ -453,7 +453,7 @@
 }
 
 .header-login-btn:hover {
-  background: var(--color-primary-teal, #02869b);
+  background: #027a8f;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(2, 134, 155, 0.35);
 }
@@ -686,7 +686,7 @@
 }
 
 .btn-dark:hover {
-  background-color: var(--color-primary-teal, #02869b);
+  background-color: #027a8f;
 }
 
 /* ==================== Cabeçalho (logado) no celular ==================== */

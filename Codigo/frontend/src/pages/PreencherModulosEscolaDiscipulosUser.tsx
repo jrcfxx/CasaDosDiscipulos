@@ -477,7 +477,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
         <Header />
         <main id="main-content" className="pfu-main" tabIndex={-1}>
           <div className="modulo-resultado modulo-resultado-sucesso">
-            <h2>Módulo já concluído</h2>
+            <h1>Módulo já concluído</h1>
             <p>Você já concluiu este módulo com sucesso. Não é permitido refazer o quiz.</p>
             <button
               type="button"
@@ -499,7 +499,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
         <Header />
         <main id="main-content" className="pfu-main" tabIndex={-1}>
           <div className="modulo-erro-acesso">
-            <h2>Módulo bloqueado</h2>
+            <h1>Módulo bloqueado</h1>
             <p>{erroAcesso}</p>
             <button
               type="button"

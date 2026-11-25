@@ -91,7 +91,7 @@
 
 .fala-ai-admin-field input::placeholder,
 .fala-ai-admin-field textarea::placeholder {
-  color: var(--n-500);
+  color: var(--n-400);
 }
 
 .fala-ai-admin-field input:focus,
@@ -112,7 +112,7 @@
 
 .fala-ai-admin-field select option:checked,
 .fala-ai-admin-field select option:hover {
-  background-color: #02869b;
+  background-color: #027a8f;
   color: #fff;
 }
 
@@ -196,7 +196,7 @@
 
 .fala-ai-admin-btn-submit {
   padding: 0.65rem 1.5rem;
-  background: #02869b;
+  background: #027a8f;
   border: none;
   color: #fff;
   font-size: 0.95rem;
@@ -218,7 +218,7 @@
 .fala-ai-admin-field-hint {
   margin: 0.4rem 0 0;
   font-size: 0.8rem;
-  color: var(--n-500);
+  color: var(--n-400);
   font-family: var(--font-primary, inherit);
 }
 

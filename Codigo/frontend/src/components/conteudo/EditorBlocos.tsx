@@ -181,7 +181,9 @@ function Bloco({
       />
       {Componente && (
         <div className="ec-campo">
-          <span className="ec-rotulo">Conteúdo</span>
+          <label className="ec-rotulo" htmlFor={`bloco-${bloco.uid}`}>
+            Conteúdo<span className="sr-only"> de {bloco.label || info?.nome || "este bloco"}</span>
+          </label>
           {info && <p className="ec-ajuda-tipo">{info.dica}</p>}
           <div className="ec-item__corpo field-wrapper">
             <Componente

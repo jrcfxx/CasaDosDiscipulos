@@ -78,7 +78,7 @@
   height: 1.5rem;
   border: none;
   background: var(--n-200);
-  color: var(--n-500);
+  color: var(--n-600);
   font-size: 1.2rem;
   line-height: 1;
   border-radius: 50%;
@@ -113,7 +113,7 @@
 .dar-pontos-lista-loading,
 .dar-pontos-lista-vazia {
   padding: 1rem;
-  color: var(--n-500);
+  color: var(--n-600);
   font-size: 0.9rem;
 }
 
@@ -161,7 +161,7 @@
 
 .dar-pontos-modal-field input::placeholder,
 .dar-pontos-modal-field textarea::placeholder {
-  color: var(--n-400);
+  color: var(--n-600);
 }
 
 .dar-pontos-modal-field input:disabled,
@@ -208,7 +208,7 @@
 }
 
 .dar-pontos-modal-btn-confirm {
-  background: #02869b;
+  background: #027a8f;
   color: white;
 }
 .dar-pontos-modal-btn-confirm:hover:not(:disabled) {

@@ -1,0 +1,55 @@
+/**
+ * Contraste mínimo de texto (WCAG 2.2 AA: 4,5:1; 3:1 para texto grande).
+ * O turquesa da marca (#02869b) não passa como TEXTO nem em fundo escuro (≈4,4:1) nem em fundo
+ * claro (4,3:1). Aqui ficam os ajustes pontuais, achados pela auditoria automática (axe) de todas as
+ * telas; os FUNDOS turquesa com texto branco já usam #027a8f direto em cada CSS.
+ *
+ *  - texto turquesa em fundo escuro  -> turquesa claro da marca #5fb2bf (6,8 a 8,5:1)
+ *  - texto turquesa em fundo claro   -> #027a8f / #00626f
+ *
+ * "body" na frente dá prioridade sobre o CSS de cada página, que carrega depois.
+ */
+:root {
+  --teal-acessivel: #027a8f;
+  --teal-texto-escuro: #5fb2bf;
+  --teal-texto-claro: #00626f;
+}
+
+/* Rótulos e títulos turquesa em seções escuras */
+body .home-integre__rotulo,
+body .sobre-nos-instagram__label,
+body .sobre-nos-dizimos__label,
+body .sobre-nos-dizimos__chave-label,
+body .user-card .nivel,
+body .celulas-table th,
+body .celulas-table .badge-ativo,
+body .fala-ai-admin-btn-upload,
+body .btn-upload {
+  color: var(--teal-texto-escuro);
+}
+
+/* "Mostrar/Ocultar" senha: usa a cor do texto do lugar (claro no escuro, escuro no claro) */
+body .campo-senha__alternar {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Botão "Inativar" (vermelho em fundo vermelho escuro) */
+body .inativar-btn:not(.reativar) {
+  color: #ef6b5f;
+}
+
+/* Organograma: nomes em cima do turquesa escuro */
+body .staff-org__pessoas {
+  color: #ffffff;
+}
+
+/* Ranking (tema claro): pontos em cinza e botão "Dar pontos" */
+body .rank-info .rank-points {
+  color: #4a5568;
+}
+
+body .ranking-btn-dar-pontos {
+  color: var(--teal-texto-claro);
+}

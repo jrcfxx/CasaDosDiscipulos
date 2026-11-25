@@ -223,7 +223,7 @@ main.container {
 }
 
 .btn-status.active {
-  background: var(--teal-500);
+  background: #027a8f;
   color: white;
 }
 
@@ -432,7 +432,7 @@ main.container {
 }
 
 .quiz-none {
-  color: var(--n-400);
+  color: var(--n-600);
   font-weight: 500;
   font-style: italic;
   font-size: 0.9rem;
@@ -539,7 +539,7 @@ main.container {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--primary-teal);
+  background: #027a8f;
   color: #ffffff;
   text-decoration: none;
   border-radius: 8px;

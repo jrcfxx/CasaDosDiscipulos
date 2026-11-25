@@ -140,12 +140,12 @@
 }
 
 .input-modal-btn-confirm {
-  background: #02869b;
+  background: #027a8f;
   color: #fff;
 }
 
 .input-modal-btn-confirm:hover:not(:disabled) {
-  background: #027a8f;
+  background: #02687a;
 }
 
 @media (prefers-reduced-motion: reduce) {

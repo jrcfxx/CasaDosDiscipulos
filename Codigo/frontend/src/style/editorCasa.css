@@ -263,7 +263,7 @@
   width: 1.45rem;
   height: 1.45rem;
   border-radius: 50%;
-  background: #02869b;
+  background: #027a8f;
   color: #fff;
   font-weight: 700;
   font-size: 0.78rem;
@@ -455,7 +455,7 @@
 }
 
 .ec-chave input:checked + .ec-chave__trilho {
-  background: #02869b;
+  background: #027a8f;
 }
 
 .ec-chave input:checked + .ec-chave__trilho::after {
@@ -784,12 +784,12 @@
 }
 
 .ec-btn--primario {
-  background: #02869b;
+  background: #027a8f;
   color: #fff;
 }
 
 .ec-btn--primario:hover:not(:disabled) {
-  background: #027a8f;
+  background: #02687a;
 }
 
 .ec-btn--fantasma {

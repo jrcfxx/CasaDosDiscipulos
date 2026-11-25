@@ -42,9 +42,11 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
-      <Link to="/" className="login-logo" aria-label="Ir para a página inicial">
-        <img src={logo} alt="Casa dos Discípulos" />
-      </Link>
+      <header>
+        <Link to="/" className="login-logo" aria-label="Ir para a página inicial">
+          <img src={logo} alt="Casa dos Discípulos" />
+        </Link>
+      </header>
 
       <main id="main-content" className="login-form" tabIndex={-1}>
         <h1>Seja bem-vindo!</h1>
@@ -104,9 +106,11 @@ const Login: React.FC = () => {
         </details>
       </main>
 
-      <Link to="/" className="login-back">
-        Voltar ao início
-      </Link>
+      <nav aria-label="Voltar">
+        <Link to="/" className="login-back">
+          Voltar ao início
+        </Link>
+      </nav>
     </div>
   );
 };
