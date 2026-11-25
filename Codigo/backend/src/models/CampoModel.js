@@ -156,31 +156,6 @@ const CampoModel = {
   },
 
   /**
-   * Remove vínculo de campo com entidade
-   * @param {string} entity - Tipo da entidade
-   * @param {number} entityId - ID da entidade
-   * @param {number} campoId - ID do vínculo (não do campo personalizado)
-   * @returns {Promise<number>} Número de linhas afetadas
-   */
-  async unlinkFromEntity(entity, entityId, campoId) {
-    const tableMap = {
-      modulo: { table: "modulo_campo", idField: "id_modulo" },
-      quiz: { table: "quiz_campo", idField: "id_quiz" },
-      licao: { table: "licao_campo", idField: "id_licao" },
-      formulario: { table: "formulario_campo", idField: "id_formulario" },
-    };
-
-    const config = tableMap[entity];
-    if (!config) {
-      throw new Error(`Entidade inválida: ${entity}`);
-    }
-
-    return knex(config.table)
-      .where({ [config.idField]: entityId, id: campoId })
-      .del();
-  },
-
-  /**
    * Remove todos os vínculos de uma entidade
    * @param {string} entity - Tipo da entidade
    * @param {number} entityId - ID da entidade

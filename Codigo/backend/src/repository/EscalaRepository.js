@@ -95,10 +95,6 @@ const EscalaRepository = {
     return trx("escala_area").where("id_escala_area", insertId).first();
   },
 
-  async excluirAreasPorEvento(idEvento, trx = knex) {
-    return trx("escala_area").where("id_escala_evento", idEvento).del();
-  },
-
   /** Batch: mapa nome_ministerio (lower) -> ministerio */
   async mapearMinisteriosPorNomes(nomes) {
     if (!nomes?.length) return new Map();
@@ -112,10 +108,6 @@ const EscalaRepository = {
 
   async buscarMinisterioPorNome(nome) {
     return knex("ministerio").where("nome", nome).where("ativo", true).first();
-  },
-
-  async buscarMinisterioPorId(id) {
-    return knex("ministerio").where("id_ministerio", id).where("ativo", true).first();
   },
 
   // ---------- Atribuições ----------
@@ -185,14 +177,6 @@ const EscalaRepository = {
     return rows.map(parseDetalhes);
   },
 
-  async listarAtribuicoesPorArea(idArea) {
-    const rows = await knex("escala_atribuicao as a")
-      .join("usuario as u", "a.id_usuario", "u.id_usuario")
-      .select("a.*", "u.nome as usuario_nome")
-      .where("a.id_escala_area", idArea);
-    return rows.map(parseDetalhes);
-  },
-
   async buscarAtribuicaoCompleta(idAtribuicao) {
     const row = await knex("escala_atribuicao as a")
       .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
@@ -239,35 +223,6 @@ const EscalaRepository = {
 
   async excluirAtribuicao(id, trx = knex) {
     return trx("escala_atribuicao").where("id_escala_atribuicao", id).del();
-  },
-
-  async excluirAtribuicoesPorEvento(idEvento, trx = knex) {
-    const areas = await trx("escala_area")
-      .select("id_escala_area")
-      .where("id_escala_evento", idEvento);
-    const areaIds = areas.map((a) => a.id_escala_area);
-    if (!areaIds.length) return 0;
-    return trx("escala_atribuicao").whereIn("id_escala_area", areaIds).del();
-  },
-
-  async idsEventosDoUsuario(idUsuario) {
-    const rows = await knex("escala_atribuicao as a")
-      .join("escala_area as ar", "a.id_escala_area", "ar.id_escala_area")
-      .where("a.id_usuario", idUsuario)
-      .distinct("ar.id_escala_evento");
-    return rows.map((r) => r.id_escala_evento);
-  },
-
-  async idsUsuariosEscaladosNoEvento(idEvento) {
-    const areas = await knex("escala_area")
-      .select("id_escala_area")
-      .where("id_escala_evento", idEvento);
-    const ids = areas.map((a) => a.id_escala_area);
-    if (!ids.length) return [];
-    const rows = await knex("escala_atribuicao")
-      .select("id_usuario")
-      .whereIn("id_escala_area", ids);
-    return rows.map((r) => r.id_usuario);
   },
 
   /**
@@ -320,15 +275,6 @@ const EscalaRepository = {
     return Boolean(
       await knex("ministerio_lider").where({ id_usuario: idUsuario, id_ministerio: idMinisterio }).first()
     );
-  },
-
-  async usuarioJaEscaladoNoEvento(idUsuario, idEvento, idAtribuicaoExcluir = null) {
-    const rows = await this.listarEscalasUsuarioNoEvento(
-      idUsuario,
-      idEvento,
-      idAtribuicaoExcluir
-    );
-    return rows[0] || null;
   },
 
   async listarEscalasUsuarioNoEvento(idUsuario, idEvento, idAtribuicaoExcluir = null) {
@@ -500,29 +446,6 @@ const EscalaRepository = {
         .orderBy("id_escala_historico", "desc")
         .limit(50);
       const row = rows.find((r) => !idsDesfeitos.has(Number(r.id_escala_historico)));
-      if (!row) return null;
-      for (const k of ["dados_antes", "dados_depois"]) {
-        if (row[k] && typeof row[k] === "string") {
-          try {
-            row[k] = JSON.parse(row[k]);
-          } catch {
-            /* keep */
-          }
-        }
-      }
-      return row;
-    } catch (err) {
-      if (err?.code === "ER_NO_SUCH_TABLE") return null;
-      throw err;
-    }
-  },
-
-  async ultimoHistorico(idEvento) {
-    try {
-      const row = await knex("escala_historico")
-        .where("id_escala_evento", idEvento)
-        .orderBy("criado_em", "desc")
-        .first();
       if (!row) return null;
       for (const k of ["dados_antes", "dados_depois"]) {
         if (row[k] && typeof row[k] === "string") {

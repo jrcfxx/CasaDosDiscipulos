@@ -496,15 +496,6 @@
   background: var(--color-bg);
 }
 
-.home-eventos__titulo {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #fff;
-  text-align: center;
-  margin: 0 0 2rem 0;
-  letter-spacing: -0.02em;
-}
-
 .home-eventos .carousel-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -579,13 +570,9 @@
     align-items: center;
   }
 
-  .home-acesso-rapido__wrap {
-    gap: 1rem;
-  }
+  
 
-  .home-acesso-link {
-    font-size: 0.85rem;
-  }
+  
 }
 
 @media (max-width: 480px) {

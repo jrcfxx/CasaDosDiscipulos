@@ -40,8 +40,7 @@ body:not(#_) .quadro-slot-header .icone {
 }
 
 /* Ícone no cabeçalho dos modais (usuário, nível, ministério, célula): teal da marca */
-body:not(#_) .cd-modal-icon,
-body:not(#_) .modal-ministerio-icon {
+body:not(#_) .cd-modal-icon{
   color: var(--teal-400, #2a99aa);
 }
 
@@ -51,21 +50,6 @@ body:not(#_) :is(button, a) > .icone:only-child {
 }
 
 /* Resultado do quiz: troféu em amarelo (conquista), alvo em teal (tente de novo) */
-body:not(#_) .quiz-resultado-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  background: rgba(244, 176, 2, 0.14);
-  color: var(--gold-500, #f4b002);
-  font-size: 1rem;
-}
-
-body:not(#_) .quiz-resultado-icon.quiz-icon-falha {
-  background: rgba(2, 134, 155, 0.14);
-  color: var(--teal-400, #2a99aa);
-}
 
 /* Mensagem do ranking: ícone + texto lado a lado */
 body:not(#_) .ranking-mensagem-motivacional {
@@ -80,15 +64,6 @@ body:not(#_) .ranking-mensagem-motivacional .icone {
 }
 
 /* Estado do módulo na lista: concluído (teal) e bloqueado (cinza) */
-.modulo-estado {
-  display: inline-flex;
-  margin-left: 0.5rem;
-  color: var(--n-500, #7d8486);
-}
-
-.modulo-estado--ok {
-  color: var(--teal-500, #02869b);
-}
 
 /* Ícones das seções do Fala Aí e do aviso de notificações vazias */
 body:not(#_) .fala-ai-section__icone {

@@ -33,13 +33,6 @@ export interface LoginCredentials {
   senha: string;
 }
 
-export interface RegisterData {
-  nome: string;
-  email: string;
-  senha: string;
-  tipo: UserType;
-}
-
 export interface Usuario {
   id_usuario: number;
   nome: string;
@@ -47,12 +40,6 @@ export interface Usuario {
   tipo: UserType | "admin" | "usuario" | "administrador"; // Compatibilidade com backend
   ativo: boolean;
   data_cadastro: string;
-}
-
-export interface AuthResponse {
-  message: string;
-  usuario: Usuario;
-  token: string;
 }
 
 // ==================== CAMPO ====================
@@ -124,18 +111,6 @@ export interface Quiz {
   questoes?: QuizQuestao[];
 }
 
-export interface QuizResposta {
-  id_resposta?: number;
-  id_quiz: number;
-  id_usuario: number;
-  pontuacao: number;
-  data_resposta?: string;
-  respostas: {
-    id_questao: number;
-    resposta: "A" | "B" | "C" | "D";
-  }[];
-}
-
 // ==================== LIÇÃO ====================
 
 export interface Licao {
@@ -155,17 +130,6 @@ export interface Formulario {
   descricao?: string;
   ativo: boolean;
   campos?: CampoFormulario[];
-}
-
-export interface FormularioResposta {
-  id_resposta?: number;
-  id_formulario: number;
-  id_celula: number;
-  data_resposta?: string;
-  campos: {
-    id_formulario_campo: number;
-    resposta: string | number | boolean | null;
-  }[];
 }
 
 // ==================== CÉLULA ====================
@@ -229,11 +193,6 @@ export interface TextareaFieldProps extends BaseFieldProps {
   maxLength?: number;
 }
 
-export interface CheckboxFieldProps extends Omit<BaseFieldProps, "value" | "onChange"> {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}
-
 export interface DateFieldProps extends BaseFieldProps {
   min?: string;
   max?: string;
@@ -252,19 +211,3 @@ export interface Evento {
   data_atualizacao?: string;
 }
 
-// ==================== API RESPONSE ====================
-
-export interface ApiResponse<T = any> {
-  data?: T;
-  message?: string;
-  error?: string;
-  errors?: string[];
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  perPage: number;
-  totalPages: number;
-}

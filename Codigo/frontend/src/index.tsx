@@ -10,10 +10,8 @@ import "./style/mobile.css";
 import "./style/impressao.css";
 import "./style/acessibilidadeContraste.css";
 import App from "./App";
-import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
-import { LiveAnnouncerProvider } from "./components/accessibility/LiveAnnouncer";
 import SkipLink from "./components/accessibility/SkipLink";
 import AccessibilityBar from "./components/accessibility/AccessibilityBar";
 import MiniJesus from "./components/MiniJesus";
@@ -35,16 +33,13 @@ root.render(
     <BrowserRouter>
       <AuthProvider>
         <AccessibilityProvider>
-          <LiveAnnouncerProvider>
-            <SkipLink />
-            <App />
-            <MiniJesus />
-            <AccessibilityBar />
-          </LiveAnnouncerProvider>
+          <SkipLink />
+          <App />
+          <MiniJesus />
+          <AccessibilityBar />
         </AccessibilityProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
 
-reportWebVitals();

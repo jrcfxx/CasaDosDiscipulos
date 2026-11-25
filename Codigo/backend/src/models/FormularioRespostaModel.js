@@ -123,16 +123,6 @@ const FormularioRespostaModel = {
   },
 
   /**
-   * Cria campo preenchido da resposta
-   * @param {Object} data - Dados do campo
-   * @returns {Promise<number>} ID do registro criado
-   */
-  async createCampo(data) {
-    const [id] = await knex("formulario_resposta_campo").insert(data);
-    return id;
-  },
-
-  /**
    * Atualiza resposta existente
    * @param {number} id_resposta - ID da resposta
    * @param {Object} data - Dados para atualização

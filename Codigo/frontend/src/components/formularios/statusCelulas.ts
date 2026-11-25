@@ -11,11 +11,6 @@ export interface RespostaResumo {
   nome_lider?: string;
 }
 
-export interface CelulaResumo {
-  id_celula: number;
-  nome: string;
-}
-
 export interface FiltrosRespostas {
   /** "" = todas as células */
   celula: number | "";

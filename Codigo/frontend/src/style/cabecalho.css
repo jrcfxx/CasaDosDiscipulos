@@ -112,6 +112,16 @@
   position: relative;
 }
 
+/* O painel do Portal é largo: ancora na barra inteira (centralizado na tela), não no botão,
+   para nunca sair pela lateral em telas médias */
+.cb-menu[data-menu="portal"] {
+  position: static;
+}
+
+.cb-painel--portal {
+  top: calc(100% + 6px);
+}
+
 .cb-link {
   display: inline-flex;
   align-items: center;

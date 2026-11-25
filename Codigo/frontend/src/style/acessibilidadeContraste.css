@@ -20,11 +20,9 @@ body .home-integre__rotulo,
 body .sobre-nos-instagram__label,
 body .sobre-nos-dizimos__label,
 body .sobre-nos-dizimos__chave-label,
-body .user-card .nivel,
 body .celulas-table th,
 body .celulas-table .badge-ativo,
-body .fala-ai-admin-btn-upload,
-body .btn-upload {
+body .fala-ai-admin-btn-upload{
   color: var(--teal-texto-escuro);
 }
 
@@ -36,9 +34,6 @@ body .campo-senha__alternar {
 }
 
 /* Botão "Inativar" (vermelho em fundo vermelho escuro) */
-body .inativar-btn:not(.reativar) {
-  color: #ef6b5f;
-}
 
 /* Organograma: nomes em cima do turquesa escuro */
 body .staff-org__pessoas {

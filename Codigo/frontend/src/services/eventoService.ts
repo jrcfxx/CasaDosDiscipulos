@@ -24,11 +24,6 @@ export async function listarEventos(): Promise<Evento[]> {
   return data;
 }
 
-export async function getEventoById(id: number): Promise<Evento> {
-  const { data } = await api.get<Evento>(`/evento/${id}`);
-  return data;
-}
-
 /** Endereço da imagem: upload do site (/uploads/...) ou endereço completo (ex.: imagens de exemplo) */
 export function urlImagemEvento(imagemUrl: string | null | undefined): string {
   if (!imagemUrl) return "";

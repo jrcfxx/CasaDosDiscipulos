@@ -18,11 +18,7 @@ import imgSeguranca from "../assets/DSC00438.jpg";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
-interface PortalProps {
-  onNavigate: (tela: string) => void;
-}
-
-const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
+const PortalDoDiscipuloAdmin: React.FC = () => {
   return (
     <div className="portal page-with-fixed-header">
       <Header />

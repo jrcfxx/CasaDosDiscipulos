@@ -117,10 +117,6 @@
   max-width: 560px;
 }
 
-.portal-grid--auto {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
 /* Cards */
 .portal-card {
   position: relative;
@@ -212,9 +208,7 @@
     grid-template-columns: 1fr;
   }
 
-  .portal-grid--auto {
-    grid-template-columns: 1fr;
-  }
+  
 
   .portal .portal-wrap,
   .portal-user .portal-wrap {

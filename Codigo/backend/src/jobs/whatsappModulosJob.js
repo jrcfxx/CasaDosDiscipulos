@@ -42,10 +42,3 @@ export function iniciarJobModulosWhatsApp() {
   });
   console.log(`[Job] Notificação WhatsApp módulos agendada: ${CRON_SEMANAL} (America/Sao_Paulo)`);
 }
-
-/**
- * Executa manualmente (útil para testes)
- */
-export function executarAgora() {
-  executarNotificacaoModulos();
-}

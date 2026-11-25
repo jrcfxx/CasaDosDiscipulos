@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   formatarTelefoneInput,
-  formatarTelefoneExibicao,
   normalizarTelefoneParaEnvio,
 } from "./telefoneUtils";
 import { getErrorMessage } from "./errorUtils";
@@ -11,11 +10,6 @@ import { parseReferenciaBiblica } from "./bibliaUtils";
 describe("telefone", () => {
   it("mantém só dígitos e no máximo 11", () => {
     expect(formatarTelefoneInput("(31) 99999-0000 ramal 5")).toBe("31999990000");
-  });
-  it("formata para exibição progressivamente", () => {
-    expect(formatarTelefoneExibicao("31")).toBe("31");
-    expect(formatarTelefoneExibicao("31999")).toBe("(31) 999");
-    expect(formatarTelefoneExibicao("31999990000")).toBe("(31) 99999-0000");
   });
   it("normaliza para envio e recusa número curto", () => {
     expect(normalizarTelefoneParaEnvio(" (31) 99999-0000 ")).toBe("31999990000");

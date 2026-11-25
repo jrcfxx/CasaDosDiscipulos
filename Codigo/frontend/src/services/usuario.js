@@ -61,16 +61,6 @@ export async function updateUser(id, userData) {
   }
 }
 
-export async function deleteUser(id) {
-  try {
-    const res = await api.delete(`${URL}/${id}`);
-    return res.data;
-  } catch (err) {
-    console.error("Erro ao excluir usuário:", err);
-    throw err;
-  }
-}
-
 export async function getUserProfile() {
   try {
     const res = await api.get(`${URL}/perfil`);

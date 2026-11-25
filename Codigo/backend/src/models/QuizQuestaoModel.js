@@ -65,14 +65,6 @@ const QuizQuestaoModel = {
     return knex("quiz_questao").where({ id_questao }).del();
   },
 
-  /**
-   * Remove todas as questões de um quiz
-   * @param {number} id_quiz - ID do quiz
-   * @returns {Promise<number>} Número de registros removidos
-   */
-  async deleteByQuiz(id_quiz) {
-    return knex("quiz_questao").where({ id_quiz }).del();
-  },
 };
 
 export default QuizQuestaoModel;

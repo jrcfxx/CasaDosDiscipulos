@@ -452,17 +452,6 @@ const ModuloService = {
   },
 
   /**
-   * Atualiza quiz vinculado a um módulo
-   * @param {number} idModulo - ID do módulo
-   * @param {number} novoIdQuiz - ID do novo quiz (ou null para remover)
-   * @returns {Promise<Object|null>} Novo vínculo ou null
-   */
-  async atualizarQuizVinculado(idModulo, novoIdQuiz) {
-    await this.getById(idModulo);
-    return ModuloQuizModel.atualizarVinculo(idModulo, novoIdQuiz);
-  },
-
-  /**
    * Retorna progresso do usuário em um módulo (requer auth)
    * @param {number} id_modulo - ID do módulo
    * @param {number} id_usuario - ID do usuário

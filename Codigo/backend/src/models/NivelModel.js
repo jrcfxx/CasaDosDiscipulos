@@ -131,9 +131,6 @@ class NivelModel {
     });
   }
 
-  async hardDelete(id) {
-    return this.excluir(id);
-  }
 }
 
 export default new NivelModel();

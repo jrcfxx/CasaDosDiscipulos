@@ -22,10 +22,6 @@ import { SlotsPorArea, payloadDeDrop, MoverUnificadoPayload } from "./EscalaQuad
 import { ParalelismoMapa } from "../../utils/ministerioParalelismo";
 import { faixaHorario, plural, tituloSemana, toIsoDate } from "../../utils/escalaDatas";
 
-function formatarHora(s: string) {
-  return s || "";
-}
-
 function formatarDataHora(s: string) {
   return new Date(s).toLocaleString("pt-BR", {
     day: "2-digit",
@@ -141,38 +137,6 @@ export function slotCompativel(
 interface PropsComuns {
   onAbrirEvento: (id: number) => void;
 }
-
-export const EscalaVisaoDia: React.FC<
-  PropsComuns & { eventos: EventoUnificado[]; data: string }
-> = ({ eventos, data, onAbrirEvento }) => (
-  <section className="escala-visao-dia">
-    <h3 className="escala-lista-titulo">
-      {new Date(`${data}T12:00:00`).toLocaleDateString("pt-BR", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long",
-      })}
-    </h3>
-    {eventos.length === 0 ? (
-      <p className="escala-vazio">Nenhum evento neste dia.</p>
-    ) : (
-      <ul className="escala-lista-eventos">
-        {eventos.map((ev) => (
-          <li key={ev.id} className="escala-item-evento">
-            <button type="button" className="escala-item-evento-btn" onClick={() => onAbrirEvento(ev.id)}>
-              <span className="ev-data">
-                {formatarHora(ev.horaInicio)}
-                {ev.horaFim ? ` – ${formatarHora(ev.horaFim)}` : ""}
-              </span>
-              <span className="ev-titulo">{ev.nome}</span>
-              <span className="ev-meta">{ev.totais.totalPessoas} pessoas</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    )}
-  </section>
-);
 
 /**
  * Semanas em sequência (o líder escolhe o intervalo de datas). Todas ficam no MESMO quadro de

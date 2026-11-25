@@ -53,7 +53,6 @@ import SelectField from "../components/fields/SelectField";
 import usuarioService from "../services/usuarioService";
 import moduloService from "../services/moduloService";
 import { ASSETS_BASE } from "../config/api";
-import type { Usuario } from "../services/usuarioService";
 import { generateUid } from "../utils/generateUid";
 import RankingCard, { type RankItem } from "../components/modulos/RankingCard";
 import BotoesExportar from "../components/ui/BotoesExportar";
@@ -61,7 +60,6 @@ import { exportarRanking } from "../utils/exportacoes";
 import DarPontosModal from "../components/ui/DarPontosModal";
 import { isRecord, parseAlternativas, parseSelect, type Alternativa, type CampoDinamico, type CampoVinculado, type ValorCampo } from "../types/campoConteudo";
 import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
-import { getMedalIcon } from "../utils/moduloConteudoUtils";
 import { useAcao } from "../hooks/useAcao";
 import BotaoCarregando from "../components/ui/BotaoCarregando";
 import Icone, { type NomeIcone } from "../components/ui/Icone";
@@ -673,15 +671,6 @@ export default function QuizzesSecretariaCelulasAdmin() {
 
       setErroForm(msg);
     }
-  };
-
-  const getIniciais = (nome: string): string => {
-    return nome
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
   };
 
   const formatarConteudoCampo = (conteudo: unknown): React.ReactNode => {

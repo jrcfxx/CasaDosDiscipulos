@@ -43,11 +43,6 @@ const falaAiService = {
     return res.data;
   },
 
-  async getPost(id: number) {
-    const res = await api.get<FalaAiPost>(`/fala-ai/posts/${id}`);
-    return res.data;
-  },
-
   async criarPost(dados: CriarPostPayload) {
     const res = await api.post<FalaAiPost>("/fala-ai/posts", dados);
     return res.data;
@@ -56,14 +51,6 @@ const falaAiService = {
   async adicionarComentario(idPost: number, texto: string) {
     const res = await api.post<FalaAiComentario>(`/fala-ai/posts/${idPost}/comentarios`, { texto });
     return res.data;
-  },
-
-  async excluirComentario(idComentario: number) {
-    await api.delete(`/fala-ai/comentarios/${idComentario}`);
-  },
-
-  async excluirPost(idPost: number) {
-    await api.delete(`/fala-ai/posts/${idPost}`);
   },
 
   async uploadImagem(file: File) {

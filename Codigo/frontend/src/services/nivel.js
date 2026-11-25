@@ -14,16 +14,6 @@ export async function showAllNiveis(incluirInativos = false) {
   }
 }
 
-export async function showNivelById(id) {
-  try {
-    const res = await api.get(`${URL}/${id}`);
-    return res.data;
-  } catch (err) {
-    console.error("Erro ao buscar nível:", err);
-    throw err;
-  }
-}
-
 export async function createNivel(nivelData) {
   try {
     const res = await api.post(URL, nivelData);

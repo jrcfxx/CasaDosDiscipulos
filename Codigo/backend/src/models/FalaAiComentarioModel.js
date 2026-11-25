@@ -42,12 +42,6 @@ const FalaAiComentarioModel = {
     return await knex("fala_ai_comentario").where("id_comentario", id).del();
   },
 
-  async usuarioEhAutor(idComentario, idUsuario) {
-    const c = await knex("fala_ai_comentario")
-      .where("id_comentario", idComentario)
-      .first();
-    return c && c.id_usuario === idUsuario;
-  },
 };
 
 export default FalaAiComentarioModel;

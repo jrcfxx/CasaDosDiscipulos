@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import { usePageTitle } from "./hooks/usePageTitle";
 
@@ -64,14 +64,8 @@ import Perfil from "./pages/Perfil";
  * - Módulos: Realização apenas
  */
 export default function App() {
-  const navigate = useNavigate();
-  const { isAuthenticated, isAdmin, userType, logout, precisaTrocarSenha } = useAuth();
+  const { isAuthenticated, isAdmin, userType, precisaTrocarSenha } = useAuth();
   usePageTitle(); // Atualiza título para leitores de tela
-
-  const handleLogout = () => {
-    logout();
-    navigate("/", { replace: true });
-  };
 
   // Determina o portal correto baseado no tipo de usuário
   const getPortalPath = () => {
@@ -121,11 +115,7 @@ export default function App() {
         path="/portal/admin"
         element={
           <ProtectedRoute requireAdmin>
-            <PortalDoDiscipuloAdmin
-              onNavigate={(tela) => {
-                if (tela === "logout") handleLogout();
-              }}
-            />
+            <PortalDoDiscipuloAdmin />
           </ProtectedRoute>
         }
       />

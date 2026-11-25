@@ -88,13 +88,6 @@ const formularioRespostaService = {
     return response.data;
   },
 
-  async listarPorCelula(idCelula: number) {
-    const response = await apiClient.get(
-      `/formulario-resposta/celula/${idCelula}`
-    );
-    return response.data;
-  },
-
   async getById(id: number) {
     const response = await apiClient.get(`/formulario-resposta/${id}`);
     return response.data;

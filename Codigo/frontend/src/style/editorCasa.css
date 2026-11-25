@@ -6,29 +6,6 @@
 /* ======================================================================
    Painel (quiz e formulários): números, lembrete, prévia e selos
    ====================================================================== */
-.quiz-actions .btn-edit {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.btn-excluir-quiz {
-  width: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #b91c1c;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.btn-excluir-quiz:hover {
-  background: #fee2e2;
-  border-color: #f87171;
-}
 
 .ec-numeros {
   display: grid;
@@ -645,11 +622,6 @@
   outline: none;
 }
 
-.ec-editor .field-wrapper .radio-option,
-.ec-editor .field-wrapper .checkbox-option {
-  color: #2b2f30 !important;
-}
-
 /* Adicionar perguntas e conteúdo */
 .ec-adicionar {
   display: flex;
@@ -1109,56 +1081,6 @@
 /* ======================================================================
    Lista de módulos: alça de arrastar e posição na trilha
    ====================================================================== */
-.mod-item__alca {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: inherit;
-  opacity: 0.65;
-  cursor: grab;
-  touch-action: none;
-}
-
-.mod-item__alca:hover,
-.mod-item__alca:focus-visible {
-  opacity: 1;
-  border-color: rgba(2, 134, 155, 0.35);
-  background: rgba(2, 134, 155, 0.08);
-}
-
-.mod-item__alca:focus-visible {
-  outline: 2px solid #02869b;
-  outline-offset: 1px;
-}
-
-.mod-item--arrastando {
-  position: relative;
-  z-index: 5;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
-}
-
-.mod-lista-dica {
-  margin: 0.75rem 1rem 0.25rem;
-  padding: 0;
-  font-size: 0.76rem;
-  line-height: 1.4;
-  color: var(--n-600, #5c6263);
-  display: flex;
-  align-items: flex-start;
-  gap: 0.35rem;
-}
-
-.mod-lista-dica .icone {
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-  color: #02869b;
-}
 
 /* ======================================================================
    Construtor de pergunta do quiz (components/quiz/ConstrutorPergunta)

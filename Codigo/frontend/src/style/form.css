@@ -13,12 +13,6 @@
   width: 100%;
 }
 
-.form-field--inline {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--spacing-3);
-}
-
 .form-field--error .form-input,
 .form-field--error .form-select,
 .form-field--error .form-textarea {
@@ -100,28 +94,12 @@
 
 /* ==================== INPUT SIZES ==================== */
 
-.form-input--sm,
-.form-select--sm {
-  padding: var(--spacing-2) var(--spacing-3);
-  font-size: var(--font-size-sm);
-}
-
-.form-input--lg,
-.form-select--lg {
-  padding: var(--spacing-4) var(--spacing-5);
-  font-size: var(--font-size-lg);
-}
-
 /* ==================== TEXTAREA ==================== */
 
 .form-textarea {
   min-height: 100px;
   resize: vertical;
   line-height: var(--line-height-normal);
-}
-
-.form-textarea--fixed {
-  resize: none;
 }
 
 /* ==================== SELECT ==================== */
@@ -136,53 +114,6 @@
 }
 
 /* ==================== CHECKBOX & RADIO ==================== */
-
-.form-checkbox,
-.form-radio {
-  width: 1.125rem;
-  height: 1.125rem;
-  color: var(--color-primary-teal);
-  border: var(--border-width-2) solid var(--n-300);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  flex-shrink: 0;
-}
-
-.form-radio {
-  border-radius: var(--border-radius-full);
-}
-
-.form-checkbox:hover:not(:disabled),
-.form-radio:hover:not(:disabled) {
-  border-color: var(--color-primary-teal);
-}
-
-.form-checkbox:checked,
-.form-radio:checked {
-  background-color: #027a8f;
-  border-color: var(--color-primary-teal);
-}
-
-.form-checkbox:focus,
-.form-radio:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.1);
-}
-
-.form-checkbox:disabled,
-.form-radio:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.form-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  cursor: pointer;
-  user-select: none;
-}
 
 /* ==================== HELP TEXT ==================== */
 
@@ -217,49 +148,6 @@
 }
 
 /* ==================== INPUT GROUP (com ícones/botões) ==================== */
-
-.form-input-group {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-  width: 100%;
-}
-
-.form-input-group .form-input {
-  flex: 1;
-}
-
-.form-input-group__prepend,
-.form-input-group__append {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-3) var(--spacing-4);
-  background-color: var(--color-gray-100);
-  border: var(--border-width) solid var(--n-300);
-  color: var(--n-600);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
-}
-
-.form-input-group__prepend {
-  border-right: none;
-  border-radius: var(--border-radius-md) 0 0 var(--border-radius-md);
-}
-
-.form-input-group__append {
-  border-left: none;
-  border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
-}
-
-.form-input-group .form-input:not(:first-child) {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.form-input-group .form-input:not(:last-child) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
 
 /* ==================== FIELD CARD (para formulários dinâmicos) ==================== */
 
@@ -311,51 +199,20 @@
     font-size: var(--font-size-base);
   }
 
-  .form-input-group {
-    flex-direction: column;
-  }
+  
 
-  .form-input-group__prepend,
-  .form-input-group__append {
-    border: var(--border-width) solid var(--color-border);
-  }
+  
 
-  .form-input-group__prepend {
-    border-bottom: none;
-    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
-  }
+  
 
-  .form-input-group__append {
-    border-top: none;
-    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
-  }
+  
 
-  .form-input-group .form-input {
-    border-radius: 0;
-  }
+  
 }
 
 /* ==================== COMPONENTES ESPECÍFICOS ==================== */
 
 /* Radio Group (para MultipleChoiceField e TrueFalseField) */
-.form-field__radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-2);
-}
-
-.form-radio {
-  width: 18px;
-  height: 18px;
-  margin-right: var(--spacing-2);
-  cursor: pointer;
-  accent-color: var(--color-primary-teal);
-}
-
-.form-radio:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
 
 /* File Upload Info */
 .form-field__file-info {
@@ -404,22 +261,6 @@
 }
 
 /* Character Counter (para TextareaField e EssayField) */
-.form-field__counter {
-  margin-top: var(--spacing-2);
-  text-align: right;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-}
-
-.form-field__counter--warning {
-  color: var(--color-warning-600);
-  font-weight: var(--font-weight-medium);
-}
-
-.form-field__counter--error {
-  color: var(--color-error-600);
-  font-weight: var(--font-weight-medium);
-}
 
 /* Instruções do campo de vídeo */
 .video-field-instructions {

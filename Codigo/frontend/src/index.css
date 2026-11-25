@@ -37,10 +37,3 @@ body {
   padding: 0 var(--spacing-4);
 }
 
-.container--sm {
-  max-width: 640px;
-}
-
-.container--lg {
-  max-width: 1400px;
-}

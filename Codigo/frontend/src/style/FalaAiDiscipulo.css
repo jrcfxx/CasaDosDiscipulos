@@ -39,12 +39,6 @@
   color: #fff;
 }
 
-.fala-ai-subtitle {
-  margin: 0 0 1rem;
-  font-size: 0.95rem;
-  color: var(--fala-ai-muted);
-}
-
 .fala-ai-btn-novo {
   display: inline-block;
   padding: 0.6rem 1.25rem;
@@ -236,13 +230,6 @@
   font-size: 0.95rem;
 }
 
-.fala-ai-card__tipo {
-  font-size: 0.75rem;
-  color: var(--fala-ai-teal);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
 .fala-ai-card__data {
   font-size: 0.8rem;
   color: var(--fala-ai-muted);
@@ -270,13 +257,6 @@
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
   font-weight: 700;
-}
-
-.fala-ai-card__ref {
-  margin: 0 0 0.75rem;
-  font-size: 0.9rem;
-  color: var(--fala-ai-teal);
-  font-style: italic;
 }
 
 .fala-ai-card__conteudo {

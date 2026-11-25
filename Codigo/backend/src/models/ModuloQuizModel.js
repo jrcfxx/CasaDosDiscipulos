@@ -68,18 +68,6 @@ const ModuloQuizModel = {
   },
 
   /**
-   * Busca todos os módulos vinculados a um quiz
-   * @param {number} idQuiz - ID do quiz
-   * @returns {Promise<Array>} Lista de módulos
-   */
-  async getModulosByQuiz(idQuiz) {
-    return knex("modulo_quiz")
-      .where({ id_quiz: idQuiz })
-      .join("modulo", "modulo_quiz.id_modulo", "modulo.id_modulo")
-      .select("modulo.*", "modulo_quiz.vinculado_em");
-  },
-
-  /**
    * Verifica se já existe vínculo
    * @param {number} idModulo - ID do módulo
    * @param {number} idQuiz - ID do quiz
@@ -93,22 +81,6 @@ const ModuloQuizModel = {
     return Boolean(resultado);
   },
 
-  /**
-   * Atualiza o quiz vinculado a um módulo
-   * Remove vínculo antigo e cria novo
-   * @param {number} idModulo - ID do módulo
-   * @param {number} novoIdQuiz - ID do novo quiz
-   * @returns {Promise<Object>} Novo vínculo criado
-   */
-  async atualizarVinculo(idModulo, novoIdQuiz) {
-    await knex("modulo_quiz").where({ id_modulo: idModulo }).delete();
-
-    if (novoIdQuiz) {
-      return this.vincular(idModulo, novoIdQuiz);
-    }
-
-    return null;
-  },
 };
 
 export default ModuloQuizModel;

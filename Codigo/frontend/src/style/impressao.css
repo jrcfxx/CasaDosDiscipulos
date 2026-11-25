@@ -44,7 +44,6 @@
   .chip-acao,
   .rel-atalhos,
   .rel-datas,
-  .formularios-left,
   .formulario-tabs,
   .exportar-barra {
     display: none !important;
@@ -57,19 +56,12 @@
     margin-top: 0 !important;
   }
 
-  .formularios-layout {
-    display: block !important;
-  }
+  
 
-  .panel,
-  .formularios-center {
-    box-shadow: none !important;
-    overflow: visible !important;
-  }
+  
 
   /* Tabelas que rolam de lado na tela: no papel mostram tudo */
-  .rel-tabela-wrap,
-  .esc-tabela-wrap {
+  .rel-tabela-wrap{
     overflow: visible !important;
   }
 
@@ -81,9 +73,7 @@
   .semana-evento,
   .semana-bloco,
   .mes-dia,
-  .rel-kpi,
-  .staff-card,
-  .organograma-no {
+  .rel-kpi{
     break-inside: avoid;
     page-break-inside: avoid;
   }

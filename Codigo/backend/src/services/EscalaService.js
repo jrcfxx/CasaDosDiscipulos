@@ -369,18 +369,6 @@ class EscalaService {
     }
   }
 
-  async getAreasByEvento(idEvento) {
-    const parsed = this._parseId(idEvento);
-    await this.getEventoById(parsed);
-    return EscalaRepository.listarAreasPorEvento(parsed);
-  }
-
-  async getAtribuicoesByEvento(idEvento) {
-    const parsed = this._parseId(idEvento);
-    await this.getEventoById(parsed);
-    return EscalaRepository.listarAtribuicoesPorEvento(parsed);
-  }
-
   async addAtribuicao(
     idArea,
     idUsuario,

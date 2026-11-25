@@ -520,22 +520,6 @@ const UsuarioService = {
   },
 
   /**
-   * Adiciona pontos ao usuário
-   * @param {number} id_usuario - ID do usuário
-   * @param {number} pontos - Quantidade de pontos
-   * @returns {Promise<void>}
-   */
-  async addScore(id_usuario, pontos) {
-    await this.getById(id_usuario); // Verifica se existe
-
-    if (isNaN(pontos) || pontos === 0) {
-      throw new ValidationError("Pontos devem ser um número diferente de zero");
-    }
-
-    await UsuarioModel.updateScore(id_usuario, pontos);
-  },
-
-  /**
    * Admin: atribui pontuação manual a um usuário (ex: dinâmicas presenciais).
    * Cria notificação para o usuário com o motivo.
    * @param {number} id_usuario - ID do usuário que receberá os pontos

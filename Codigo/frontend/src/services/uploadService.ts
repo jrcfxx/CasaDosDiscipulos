@@ -10,13 +10,6 @@ import { OPCOES_SESSAO } from "./authService";
 
 const UPLOAD_CAMPO_ENDPOINT = `${API_BASE}/upload/campo`;
 
-export interface UploadResult {
-  path: string;
-  filename: string;
-  originalname: string;
-  size: number;
-}
-
 /**
  * Faz upload de arquivo para campo personalizado (módulos, lições, formulários)
  * Usa axios direto para garantir multipart/form-data correto (sem Content-Type json)
