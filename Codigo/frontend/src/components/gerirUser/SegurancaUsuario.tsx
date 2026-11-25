@@ -4,7 +4,7 @@ import { getErrorMessage } from "../../utils/errorUtils";
 import { formatarDataHora } from "../../utils/eventosSeguranca";
 
 /**
- * Gerenciar Usuários → modal: situação de segurança da pessoa e o que o admin pode fazer
+ * Gerenciamento → painel do usuário: situação de segurança da pessoa e o que o admin pode fazer
  * (liberar acesso pausado, desconectar aparelhos, remover 2FA de quem perdeu o celular).
  */
 const SegurancaUsuario: React.FC<{ idUsuario: number }> = ({ idUsuario }) => {
@@ -25,7 +25,7 @@ const SegurancaUsuario: React.FC<{ idUsuario: number }> = ({ idUsuario }) => {
     carregar();
   }, [carregar]);
 
-  const agir = async (acao: () => Promise<{ message?: string } | unknown>, confirmacao?: string) => {
+  const agir = async (acao: () => Promise<unknown>, confirmacao?: string) => {
     if (confirmacao && !window.confirm(confirmacao)) return;
     setOcupado(true);
     setErro("");
@@ -42,54 +42,56 @@ const SegurancaUsuario: React.FC<{ idUsuario: number }> = ({ idUsuario }) => {
   };
 
   if (!sit) {
-    return erro ? <p className="hint redefinir-senha__erro" role="alert">{erro}</p> : null;
+    return erro ? <p className="gr-erro" role="alert">{erro}</p> : <p className="gr-dica" role="status">Carregando…</p>;
   }
 
   return (
-    <div className="form-field form-field-full redefinir-senha">
-      <span className="lider-permissoes-title">Segurança da conta</span>
-      <ul className="hint seguranca-usuario__lista">
-        <li>
-          Último acesso: <strong>{sit.ultimo_login ? formatarDataHora(sit.ultimo_login) : "nunca entrou"}</strong>
-        </li>
-        <li>
-          Acesso:{" "}
-          {sit.bloqueado ? (
-            <strong>pausado até {formatarDataHora(sit.bloqueado_ate)} (senha errada várias vezes)</strong>
-          ) : (
-            <strong>normal</strong>
+    <div className="gr-bloco">
+      <dl className="gr-situacao">
+        <div>
+          <dt>Último acesso</dt>
+          <dd>{sit.ultimo_login ? formatarDataHora(sit.ultimo_login) : "Nunca entrou"}</dd>
+        </div>
+        <div>
+          <dt>Acesso</dt>
+          <dd className={sit.bloqueado ? "gr-situacao--alerta" : undefined}>
+            {sit.bloqueado ? `Pausado até ${formatarDataHora(sit.bloqueado_ate)}` : "Normal"}
+          </dd>
+        </div>
+        <div>
+          <dt>Duas etapas</dt>
+          <dd className={sit.totp_ativo ? "gr-situacao--ok" : undefined}>{sit.totp_ativo ? "Ativa" : "Desligada"}</dd>
+        </div>
+        <div>
+          <dt>Aparelhos</dt>
+          <dd>{sit.sessoes_ativas} conectado(s)</dd>
+        </div>
+      </dl>
+      {(sit.bloqueado || sit.sessoes_ativas > 0 || sit.totp_ativo) && (
+        <div className="gr-acoes-linha">
+          {sit.bloqueado && (
+            <button type="button" className="sc-btn sc-btn--contorno" disabled={ocupado}
+              onClick={() => agir(() => segurancaService.desbloquear(idUsuario))}>
+              Liberar acesso agora
+            </button>
           )}
-        </li>
-        <li>
-          Verificação em duas etapas: <strong>{sit.totp_ativo ? "ativa" : "desligada"}</strong>
-        </li>
-        <li>
-          Aparelhos conectados: <strong>{sit.sessoes_ativas}</strong>
-        </li>
-      </ul>
-      <div className="seguranca-usuario__acoes">
-        {sit.bloqueado && (
-          <button type="button" className="redefinir-senha__botao" disabled={ocupado}
-            onClick={() => agir(() => segurancaService.desbloquear(idUsuario))}>
-            Liberar acesso agora
-          </button>
-        )}
-        {sit.sessoes_ativas > 0 && (
-          <button type="button" className="redefinir-senha__botao" disabled={ocupado}
-            onClick={() => agir(() => segurancaService.encerrarSessoesDoUsuario(idUsuario), "Desconectar essa pessoa de todos os aparelhos?")}>
-            Desconectar de todos os aparelhos
-          </button>
-        )}
-        {sit.totp_ativo && (
-          <button type="button" className="redefinir-senha__botao" disabled={ocupado}
-            onClick={() => agir(() => segurancaService.removerDoisFatores(idUsuario),
-              "Remover a verificação em duas etapas? Só faça isso se a própria pessoa pediu (perdeu o celular e os códigos).")}>
-            Remover verificação em duas etapas
-          </button>
-        )}
-      </div>
-      {mensagem && <p className="hint" role="status">{mensagem}</p>}
-      {erro && <p className="hint redefinir-senha__erro" role="alert">{erro}</p>}
+          {sit.sessoes_ativas > 0 && (
+            <button type="button" className="sc-btn sc-btn--contorno" disabled={ocupado}
+              onClick={() => agir(() => segurancaService.encerrarSessoesDoUsuario(idUsuario), "Desconectar essa pessoa de todos os aparelhos?")}>
+              Desconectar aparelhos
+            </button>
+          )}
+          {sit.totp_ativo && (
+            <button type="button" className="sc-btn sc-btn--perigo" disabled={ocupado}
+              onClick={() => agir(() => segurancaService.removerDoisFatores(idUsuario),
+                "Remover a verificação em duas etapas? Só faça isso se a própria pessoa pediu (perdeu o celular e os códigos).")}>
+              Remover duas etapas
+            </button>
+          )}
+        </div>
+      )}
+      {mensagem && <p className="gr-dica" role="status">{mensagem}</p>}
+      {erro && <p className="gr-erro" role="alert">{erro}</p>}
     </div>
   );
 };

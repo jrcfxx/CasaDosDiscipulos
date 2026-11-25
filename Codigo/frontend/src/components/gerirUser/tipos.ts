@@ -24,6 +24,7 @@ export interface Usuario {
   ativo?: boolean;
   lider_celula?: boolean;
   lider_ministerio?: boolean;
+  ultimo_login?: string | null;
 }
 
 export interface UsuarioModal {

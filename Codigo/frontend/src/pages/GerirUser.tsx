@@ -1,5 +1,5 @@
 import type { ErroApi } from "../utils/errorUtils";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -15,14 +15,15 @@ import {
   arrayMove,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import "../style/GerirUser.css";
+import "../style/secretaria.css";
+import "../style/gerenciamento.css";
+import Icone, { type NomeIcone } from "../components/ui/Icone";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import { formatarTelefoneInput, normalizarTelefoneParaEnvio } from "../utils/telefoneUtils";
 import Toast from "../components/ui/Toast";
-import perfil from "../assets/perfil-preto.png";
 import { ASSETS_BASE } from "../config/api";
 import { showAllUsers, showUserById, createUser, updateUser, redefinirSenhaUsuario } from "../services/usuario";
 import {
@@ -40,6 +41,7 @@ import SortableNivelRow from "../components/gerirUser/SortableNivelRow";
 import ModalUsuario from "../components/gerirUser/ModalUsuario";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarUsuarios } from "../utils/exportacoes";
+import { tempoRelativo } from "../utils/eventosSeguranca";
 import ModalNivel from "../components/gerirUser/ModalNivel";
 import ModalMinisterio from "../components/gerirUser/ModalMinisterio";
 import type { Nivel, Usuario, UsuarioModal, NivelModal, MinisterioModal } from "../components/gerirUser/tipos";
@@ -56,8 +58,9 @@ export default function GerenciarUsuarios() {
   const [filtro, setFiltro] = useState("");
   const [filtroNivel, setFiltroNivel] = useState<string>("");
   const [modalAberto, setModalAberto] = useState(false);
-  const [showSenha, setShowSenha] = useState(false);
-  const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
+  const [filtroTipo, setFiltroTipo] = useState<"" | "membro" | "lider" | "administrador">("");
+  const [filtroSituacao, setFiltroSituacao] = useState<"ativos" | "inativos" | "todos">("ativos");
+  const [ordenar, setOrdenar] = useState<"nome" | "acesso">("nome");
   const [usuarioModal, setUsuarioModal] = useState<UsuarioModal>({
     nome: "",
     email: "",
@@ -99,13 +102,12 @@ export default function GerenciarUsuarios() {
     id_lideres: [],
     id_paralelismos: [],
   });
-  const [showParalelismoInfo, setShowParalelismoInfo] = useState(false);
   const [showConfirmExcluirMinisterio, setShowConfirmExcluirMinisterio] = useState(false);
   const [ministerioToExcluir, setMinisterioToExcluir] = useState<number | null>(null);
 
   const tipoLabels: Record<string, string> = {
     lider: "Líder",
-    administrador: "Admin",
+    administrador: "Administrador",
     membro: "Membro",
   };
 
@@ -237,25 +239,29 @@ export default function GerenciarUsuarios() {
     return Number.isNaN(n) || n <= 0 ? null : n;
   };
 
-  const usuariosFiltrados = usuarios.filter((u) => {
-    const matchNome = !filtro || u.nome.toLowerCase().includes(filtro.toLowerCase());
+  const termoBusca = filtro.trim().toLowerCase();
+  const usuariosFiltrados = usuarios
+    .filter((u) => {
+      const matchTexto =
+        !termoBusca || u.nome.toLowerCase().includes(termoBusca) || (u.email || "").toLowerCase().includes(termoBusca);
+      const matchTipo = !filtroTipo || u.tipo === filtroTipo;
+      const ativo = u.ativo !== false;
+      const matchSituacao = filtroSituacao === "todos" || (filtroSituacao === "ativos" ? ativo : !ativo);
 
-    let matchNivel = true;
-    if (filtroNivel === "0") {
-      const idNivel = getIdNivel(u);
-      const nivelEscola = u.nivel_escola ?? null;
-      matchNivel = idNivel === null && nivelEscola === null;
-    } else if (filtroNivel !== "") {
-      const idNivel = getIdNivel(u);
-      const nivelEscola = u.nivel_escola ?? null;
-      const idFiltro = Number(filtroNivel);
-      matchNivel =
-        !Number.isNaN(idFiltro) &&
-        (idNivel === idFiltro || nivelEscola === idFiltro);
-    }
-
-    return matchNome && matchNivel;
-  });
+      let matchNivel = true;
+      if (filtroNivel === "0") {
+        matchNivel = getIdNivel(u) === null && (u.nivel_escola ?? null) === null;
+      } else if (filtroNivel !== "") {
+        const idFiltro = Number(filtroNivel);
+        matchNivel = !Number.isNaN(idFiltro) && (getIdNivel(u) === idFiltro || (u.nivel_escola ?? null) === idFiltro);
+      }
+      return matchTexto && matchTipo && matchSituacao && matchNivel;
+    })
+    .sort((a, b) =>
+      ordenar === "acesso"
+        ? String(b.ultimo_login || "").localeCompare(String(a.ultimo_login || ""))
+        : a.nome.localeCompare(b.nome, "pt-BR")
+    );
 
   const abrirModalCadastro = () => {
     setUsuarioModal({
@@ -328,8 +334,6 @@ export default function GerenciarUsuarios() {
 
   const fecharModal = () => {
     setModalAberto(false);
-    setShowSenha(false);
-    setShowConfirmarSenha(false);
     setUsuarioModal({
       nome: "",
       email: "",
@@ -653,284 +657,362 @@ export default function GerenciarUsuarios() {
     setMinisterioToExcluir(null);
   };
 
+  const novoMinisterio = () => {
+    setMinisterioModal({
+      id_ministerio: undefined,
+      nome: "",
+      descricao: "",
+      ordem: ministerios.length + 1,
+      ativo: true,
+      id_lideres: [],
+      id_paralelismos: [],
+    });
+    setModalMinisterioAberto(true);
+  };
+
+  const editarMinisterio = (m: (typeof ministerios)[number]) => {
+    setMinisterioModal({
+      id_ministerio: m.id_ministerio,
+      nome: m.nome,
+      descricao: m.descricao || "",
+      ordem: m.ordem,
+      ativo: m.ativo,
+      id_lideres: (m.lideres || []).map((l) => l.id_usuario),
+      id_paralelismos: m.id_paralelismos || [],
+    });
+    setModalMinisterioAberto(true);
+  };
+
+  const ABAS: Array<{ id: typeof abaAtiva; nome: string; icone: NomeIcone }> = [
+    { id: "usuarios", nome: "Usuários", icone: "equipe" },
+    { id: "niveis", nome: "Níveis", icone: "formatura" },
+    { id: "ministerios", nome: "Ministérios", icone: "igreja" },
+  ];
+  const abasRef = useRef<Array<HTMLButtonElement | null>>([]);
+  const trocarAbaPorSeta = (e: React.KeyboardEvent, i: number) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    e.preventDefault();
+    const prox = (i + (e.key === "ArrowRight" ? 1 : ABAS.length - 1)) % ABAS.length;
+    setAbaAtiva(ABAS[prox].id);
+    abasRef.current[prox]?.focus();
+  };
+
+  const ativosLista = usuarios.filter((u) => u.ativo !== false);
+  const pessoasPorNivel = useMemo(() => {
+    const mapa = new Map<number, number>();
+    usuarios.forEach((u) => {
+      if (u.ativo === false) return;
+      const n = u.nivel_escola ?? getIdNivel(u);
+      if (n != null) mapa.set(Number(n), (mapa.get(Number(n)) || 0) + 1);
+    });
+    return mapa;
+  }, [usuarios]);
+
+  const resumo: Record<typeof abaAtiva, { descricao: string; numeros: Array<{ valor: number; rotulo: string }>; acao: { rotulo: string; onClick: () => void } }> = {
+    usuarios: {
+      descricao: "Quem tem acesso ao Portal, com qual papel, nível e ministérios.",
+      numeros: [
+        { valor: ativosLista.length, rotulo: "ativos" },
+        { valor: ativosLista.filter((u) => u.tipo === "lider").length, rotulo: "líderes" },
+        { valor: ativosLista.filter((u) => u.tipo === "administrador").length, rotulo: "admins" },
+        { valor: usuarios.length - ativosLista.length, rotulo: "inativos" },
+      ],
+      acao: { rotulo: "Novo usuário", onClick: abrirModalCadastro },
+    },
+    niveis: {
+      descricao: "As etapas da caminhada na Escola de Discípulos, na ordem em que a pessoa avança.",
+      numeros: [
+        { valor: niveis.filter((n) => n.ativo).length, rotulo: "níveis ativos" },
+        { valor: [...pessoasPorNivel.values()].reduce((a, b) => a + b, 0), rotulo: "pessoas com nível" },
+      ],
+      acao: { rotulo: "Novo nível", onClick: abrirModalNivelCadastro },
+    },
+    ministerios: {
+      descricao: "As áreas de serviço da Casa, seus líderes e quem pode servir em mais de uma no mesmo evento.",
+      numeros: [
+        { valor: ministerios.filter((m) => m.ativo).length, rotulo: "ministérios ativos" },
+        { valor: new Set(ministerios.flatMap((m) => (m.lideres || []).map((l) => l.id_usuario))).size, rotulo: "líderes" },
+      ],
+      acao: { rotulo: "Novo ministério", onClick: novoMinisterio },
+    },
+  };
+  const atual = resumo[abaAtiva];
+  const filtrando = !!(filtro || filtroNivel || filtroTipo || filtroSituacao !== "ativos");
+
   return (
-    <div className="gerir-container page-with-fixed-header">
+    <div className="sc-pagina gr page-with-fixed-header">
       <Header />
 
-      <main id="main-content" className="gerir-main" tabIndex={-1}>
-        <h1 className="gerir-title">Gerenciamento</h1>
-
-        {/* Tabs de navegação */}
-        <div className="tabs-container">
-          <button
-            className={`tab ${abaAtiva === "usuarios" ? "active" : ""}`}
-            onClick={() => setAbaAtiva("usuarios")}
-          >
-            Usuários
-          </button>
-          <button
-            className={`tab ${abaAtiva === "niveis" ? "active" : ""}`}
-            onClick={() => setAbaAtiva("niveis")}
-          >
-            Níveis
-          </button>
-          <button
-            className={`tab ${abaAtiva === "ministerios" ? "active" : ""}`}
-            onClick={() => setAbaAtiva("ministerios")}
-          >
-            Ministérios
-          </button>
-        </div>
-
-        {/* Conteúdo da aba Usuários */}
-        {abaAtiva === "usuarios" && (
-          <>
-            <div className="busca-container">
-              <input
-                type="text"
-                placeholder="Buscar usuário por nome..."
-                value={filtro}
-                onChange={(e) => setFiltro(e.target.value)}
-              />
-              <select
-                className="filtro-nivel"
-                aria-label="Filtrar por nível"
-                value={filtroNivel}
-                onChange={(e) => setFiltroNivel(e.target.value)}
-              >
-                <option value="">Todos os níveis</option>
-                <option value="0">Sem nível</option>
-                {niveisAtivos.map((nivel) => (
-                  <option key={nivel.id_nivel} value={String(nivel.id_nivel)}>
-                    {nivel.nome}
-                  </option>
+      <main id="main-content" tabIndex={-1}>
+        <section className="sc-topo" aria-labelledby="gr-titulo">
+          <div className="sc-topo__conteudo">
+            <div className="sc-topo__texto">
+              <p className="sc-topo__area"><Icone nome="coordenacao" tamanho={15} /> Administração</p>
+              <h1 id="gr-titulo">Gerenciamento</h1>
+              <p className="sc-topo__descricao">{atual.descricao}</p>
+              <ul className="sc-topo__numeros" aria-label="Resumo">
+                {atual.numeros.map((n) => (
+                  <li key={n.rotulo}><strong>{n.valor}</strong><span>{n.rotulo}</span></li>
                 ))}
-              </select>
+              </ul>
+            </div>
+            <button type="button" className="sc-btn sc-btn--destaque" onClick={atual.acao.onClick}>
+              <span aria-hidden>+</span> {atual.acao.rotulo}
+            </button>
+          </div>
+          <div className="sc-abas" role="tablist" aria-label="Áreas do gerenciamento">
+            {ABAS.map((a, i) => (
               <button
-                className="btn-add"
-                onClick={abrirModalCadastro}
-                title="Criar novo usuário"
+                key={a.id}
+                ref={(el) => { abasRef.current[i] = el; }}
+                type="button"
+                role="tab"
+                id={`gr-aba-${a.id}`}
+                aria-selected={abaAtiva === a.id}
+                aria-controls="gr-painel"
+                tabIndex={abaAtiva === a.id ? 0 : -1}
+                className={`sc-aba${abaAtiva === a.id ? " sc-aba--ativa" : ""}`}
+                onClick={() => setAbaAtiva(a.id)}
+                onKeyDown={(e) => trocarAbaPorSeta(e, i)}
               >
-                +
+                <Icone nome={a.icone} tamanho={15} /> {a.nome}
               </button>
-              <BotoesExportar
-                rotuloExcel="Excel"
-                onExcel={() => exportarUsuarios(usuariosFiltrados, ministerios)}
-              />
-            </div>
+            ))}
+          </div>
+        </section>
 
-            {loading ? (
-              <div className="loading-message">Carregando usuários...</div>
-            ) : usuariosFiltrados.length === 0 ? (
-              <div className="empty-state">
-                <h3>Nenhum usuário encontrado</h3>
-                <p>
-                  {filtro || filtroNivel
-                    ? "Tente outro termo ou filtro de nível"
-                    : "Clique em + para criar o primeiro usuário"}
-                </p>
-              </div>
-            ) : (
-              <div className="cards-container">
-                <h2 className="sr-only">Lista de usuários</h2>
-                {usuariosFiltrados.map((usuario) => {
-                  const fotoUrl = usuario.foto
-                    ? usuario.foto.startsWith("http")
-                      ? usuario.foto
-                      : `${ASSETS_BASE}${usuario.foto}`
-                    : perfil;
-                  const nivelNome =
-                    usuario.nivel_nome ??
-                    usuario.nivel_escola_nome ??
-                    (getIdNivel(usuario) != null
-                      ? niveis.find((n) => Number(n.id_nivel) === Number(getIdNivel(usuario)))?.nome
-                      : null);
-                  const tipoTexto = usuario.ativo ? tipoLabels[usuario.tipo] : "INATIVADO";
-                  const nivelTexto =
-                    usuario.ativo && nivelNome ? `${tipoTexto} · ${nivelNome}` : tipoTexto;
-
-                  return (
-                    <div
-                      className={`user-card ${!usuario.ativo ? "inativo" : ""}`}
-                      key={usuario.id_usuario}
-                    >
-                      <img src={fotoUrl} alt={usuario.nome} />
-                      <p className="nivel">{nivelTexto}</p>
-                      <h3>{usuario.nome}</h3>
-                      <p className="email">{usuario.email}</p>
-                      <div className="card-buttons">
-                        <button
-                          className="editar-btn"
-                          onClick={() => abrirModalEdicao(usuario)}
-                          disabled={usuario.ativo === false}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          className={`inativar-btn ${
-                            usuario.ativo ? "" : "reativar"
-                          }`}
-                          onClick={() => abrirModalInativar(usuario)}
-                        >
-                          {usuario.ativo ? "Inativar" : "Reativar"}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Conteúdo da aba Níveis */}
-        {abaAtiva === "niveis" && (
-          <>
-            <div className="busca-container">
-              <button
-                className="btn-add"
-                onClick={abrirModalNivelCadastro}
-                title="Criar novo nível"
-              >
-                +
-              </button>
-            </div>
-
-            {niveis.length === 0 ? (
-              <div className="empty-state">
-                <h3>Nenhum nível cadastrado</h3>
-                <p>Clique em + para criar o primeiro nível</p>
-              </div>
-            ) : (
-            <div className="niveis-table-container">
-              <p className="niveis-dnd-hint">Arraste as linhas pelo ícone ⋮⋮ para reordenar. A ordem atualiza automaticamente.</p>
-              <DndContext
-                sensors={sensoresNiveis}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEndNivel}
-              >
-                <table className="niveis-table">
-                  <thead>
-                    <tr>
-                      <th>Ordem</th>
-                      <th>Nome</th>
-                      <th>Descrição</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <SortableContext
-                    items={niveis.map((n) => n.id_nivel)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <tbody>
-                      {niveis.map((nivel) => (
-                        <SortableNivelRow
-                          key={nivel.id_nivel}
-                          nivel={nivel}
-                          onEditar={abrirModalNivelEdicao}
-                          onInativar={handleInativarNivelClick}
-                          onReativar={handleReativarNivelClick}
-                          onExcluir={handleExcluirNivelClick}
-                        />
-                      ))}
-                    </tbody>
-                  </SortableContext>
-                </table>
-              </DndContext>
-            </div>
-            )}
-          </>
-        )}
-
-        {/* Conteúdo da aba Ministérios */}
-        {abaAtiva === "ministerios" && (
-          <>
-            <div className="busca-container">
-              <button
-                className="btn-add"
-                onClick={() => {
-                  setMinisterioModal({
-                    id_ministerio: undefined,
-                    nome: "",
-                    descricao: "",
-                    ordem: ministerios.length + 1,
-                    ativo: true,
-                    id_lideres: [],
-                    id_paralelismos: [],
-                  });
-                  setShowParalelismoInfo(false);
-                  setModalMinisterioAberto(true);
-                }}
-                title="Criar novo ministério"
-              >
-                +
-              </button>
-            </div>
-
-            {ministerios.length === 0 ? (
-              <div className="empty-state">
-                <h3>Nenhum ministério cadastrado</h3>
-                <p>Clique em + para criar o primeiro ministério</p>
-              </div>
-            ) : (
-              <div className="niveis-table-container">
-                <table className="niveis-table">
-                  <thead>
-                    <tr>
-                      <th>Ordem</th>
-                      <th>Nome</th>
-                      <th>Líderes</th>
-                      <th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ministerios.map((m) => (
-                      <tr key={m.id_ministerio} className={!m.ativo ? "nivel-inativo" : ""}>
-                        <td>{m.ordem}</td>
-                        <td>
-                          {m.nome}
-                          {!m.ativo && <span className="badge-inativo">Inativo</span>}
-                        </td>
-                        <td>
-                          {(m.lideres || []).map((l) => l.nome).join(", ") || "-"}
-                        </td>
-                        <td className="acoes">
-                          <button
-                            className="btn-edit"
-                            onClick={() => {
-                              setMinisterioModal({
-                                id_ministerio: m.id_ministerio,
-                                nome: m.nome,
-                                descricao: m.descricao || "",
-                                ordem: m.ordem,
-                                ativo: m.ativo,
-                                id_lideres: (m.lideres || []).map((l) => l.id_usuario),
-                                id_paralelismos: m.id_paralelismos || [],
-                              });
-                              setShowParalelismoInfo(false);
-                              setModalMinisterioAberto(true);
-                            }}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="btn-delete"
-                            onClick={() => {
-                              setMinisterioToExcluir(m.id_ministerio);
-                              setShowConfirmExcluirMinisterio(true);
-                            }}
-                          >
-                            Excluir
-                          </button>
-                        </td>
-                      </tr>
+        <div className="sc-corpo-fundo">
+          <div id="gr-painel" className="gr-corpo" role="tabpanel" aria-labelledby={`gr-aba-${abaAtiva}`}>
+            {/* ==================== USUÁRIOS ==================== */}
+            {abaAtiva === "usuarios" && (
+              <section className="gr-painel" aria-label="Usuários">
+                <div className="gr-ferramentas">
+                  <label className="gr-busca">
+                    <span className="sr-only">Buscar por nome ou e-mail</span>
+                    <Icone nome="busca" tamanho={17} />
+                    <input
+                      type="search"
+                      placeholder="Buscar por nome ou e-mail"
+                      value={filtro}
+                      onChange={(e) => setFiltro(e.target.value)}
+                    />
+                  </label>
+                  <div className="gr-segmento" role="group" aria-label="Filtrar por tipo">
+                    {([["", "Todos"], ["membro", "Membros"], ["lider", "Líderes"], ["administrador", "Admins"]] as const).map(([v, r]) => (
+                      <button key={v} type="button" aria-pressed={filtroTipo === v} onClick={() => setFiltroTipo(v)}>
+                        {r}
+                      </button>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </div>
+                </div>
+                <div className="gr-ferramentas gr-ferramentas--secundaria">
+                  <label className="gr-filtro">
+                    <span>Nível</span>
+                    <select value={filtroNivel} onChange={(e) => setFiltroNivel(e.target.value)}>
+                      <option value="">Todos</option>
+                      <option value="0">Sem nível</option>
+                      {niveisAtivos.map((n) => <option key={n.id_nivel} value={String(n.id_nivel)}>{n.nome}</option>)}
+                    </select>
+                  </label>
+                  <label className="gr-filtro">
+                    <span>Situação</span>
+                    <select value={filtroSituacao} onChange={(e) => setFiltroSituacao(e.target.value as typeof filtroSituacao)}>
+                      <option value="ativos">Ativos</option>
+                      <option value="inativos">Inativos</option>
+                      <option value="todos">Todos</option>
+                    </select>
+                  </label>
+                  <label className="gr-filtro">
+                    <span>Ordenar</span>
+                    <select value={ordenar} onChange={(e) => setOrdenar(e.target.value as typeof ordenar)}>
+                      <option value="nome">Nome (A–Z)</option>
+                      <option value="acesso">Acesso mais recente</option>
+                    </select>
+                  </label>
+                  <div className="gr-ferramentas__fim">
+                    <BotoesExportar tema="claro" rotuloExcel="Exportar Excel" onExcel={() => exportarUsuarios(usuariosFiltrados, ministerios)} />
+                  </div>
+                </div>
+
+                <p className="gr-contagem" role="status" aria-live="polite">
+                  {loading ? "Carregando…" : `${usuariosFiltrados.length} ${usuariosFiltrados.length === 1 ? "pessoa" : "pessoas"}`}
+                  {filtrando && !loading && (
+                    <button
+                      type="button"
+                      className="gr-link"
+                      onClick={() => { setFiltro(""); setFiltroNivel(""); setFiltroTipo(""); setFiltroSituacao("ativos"); }}
+                    >
+                      Limpar filtros
+                    </button>
+                  )}
+                </p>
+
+                {!loading && usuariosFiltrados.length === 0 ? (
+                  <div className="gr-vazio">
+                    <Icone nome="busca" tamanho={28} />
+                    <p><strong>Ninguém encontrado</strong></p>
+                    <p>{filtrando ? "Tente outra busca ou limpe os filtros." : "Cadastre a primeira pessoa no botão Novo usuário."}</p>
+                  </div>
+                ) : (
+                  <ul className="gr-pessoas" aria-label="Lista de usuários">
+                    {usuariosFiltrados.map((u) => {
+                      const foto = u.foto ? (u.foto.startsWith("http") ? u.foto : `${ASSETS_BASE}${u.foto}`) : null;
+                      const nivelNome =
+                        u.nivel_nome ?? u.nivel_escola_nome ??
+                        (getIdNivel(u) != null ? niveis.find((n) => Number(n.id_nivel) === Number(getIdNivel(u)))?.nome : null);
+                      const iniciais = u.nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+                      const ativo = u.ativo !== false;
+                      return (
+                        <li key={u.id_usuario} className={`gr-pessoa${ativo ? "" : " gr-pessoa--inativa"}`}>
+                          <span className="gr-avatar" aria-hidden>
+                            {foto ? <img src={foto} alt="" /> : iniciais}
+                          </span>
+                          <div className="gr-pessoa__id">
+                            <span className="gr-pessoa__nome">{u.nome}</span>
+                            <span className="gr-pessoa__email">{u.email}</span>
+                          </div>
+                          <div className="gr-pessoa__papel">
+                            <span className={`gr-selo gr-selo--${ativo ? u.tipo : "cinza"}`}>
+                              {ativo ? tipoLabels[u.tipo] : "Inativo"}
+                            </span>
+                            {ativo && u.tipo === "lider" && u.lider_celula && <span className="gr-selo gr-selo--leve">Célula</span>}
+                            {ativo && u.tipo === "lider" && u.lider_ministerio && <span className="gr-selo gr-selo--leve">Ministério</span>}
+                          </div>
+                          <span className="gr-pessoa__nivel">
+                            <span className="gr-pessoa__rotulo">Nível</span>
+                            {nivelNome || "—"}
+                          </span>
+                          <span className="gr-pessoa__acesso">
+                            <span className="gr-pessoa__rotulo">Último acesso</span>
+                            {u.ultimo_login ? tempoRelativo(u.ultimo_login) : "nunca entrou"}
+                          </span>
+                          <div className="gr-pessoa__acoes">
+                            {ativo && (
+                              <button type="button" className="sc-btn sc-btn--contorno" onClick={() => abrirModalEdicao(u)} aria-label={`Editar ${u.nome}`}>
+                                <Icone nome="editar" tamanho={15} /> Editar
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className={`sc-btn ${ativo ? "sc-btn--perigo" : "sc-btn--contorno"}`}
+                              onClick={() => abrirModalInativar(u)}
+                              aria-label={`${ativo ? "Inativar" : "Reativar"} ${u.nome}`}
+                            >
+                              {ativo ? "Inativar" : "Reativar"}
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
             )}
-          </>
-        )}
+
+            {/* ==================== NÍVEIS ==================== */}
+            {abaAtiva === "niveis" && (
+              <section className="gr-painel" aria-label="Níveis">
+                <div className="gr-painel__cabeca">
+                  <div>
+                    <h2>Caminhada na Escola de Discípulos</h2>
+                    <p>Arraste pela alça <Icone nome="arrastar" tamanho={14} /> para mudar a ordem. No teclado: espaço para pegar, setas para mover.</p>
+                  </div>
+                </div>
+                {niveis.length === 0 ? (
+                  <div className="gr-vazio">
+                    <Icone nome="formatura" tamanho={28} />
+                    <p><strong>Nenhum nível ainda</strong></p>
+                    <p>Crie o primeiro no botão Novo nível.</p>
+                  </div>
+                ) : (
+                  <DndContext sensors={sensoresNiveis} collisionDetection={closestCenter} onDragEnd={handleDragEndNivel}>
+                    <SortableContext items={niveis.map((n) => n.id_nivel)} strategy={verticalListSortingStrategy}>
+                      <ol className="gr-niveis">
+                        {niveis.map((nivel) => (
+                          <SortableNivelRow
+                            key={nivel.id_nivel}
+                            nivel={nivel}
+                            pessoas={pessoasPorNivel.get(Number(nivel.id_nivel)) || 0}
+                            onEditar={abrirModalNivelEdicao}
+                            onInativar={handleInativarNivelClick}
+                            onReativar={handleReativarNivelClick}
+                            onExcluir={handleExcluirNivelClick}
+                          />
+                        ))}
+                      </ol>
+                    </SortableContext>
+                  </DndContext>
+                )}
+              </section>
+            )}
+
+            {/* ==================== MINISTÉRIOS ==================== */}
+            {abaAtiva === "ministerios" && (
+              ministerios.length === 0 ? (
+                <section className="gr-painel">
+                  <div className="gr-vazio">
+                    <Icone nome="igreja" tamanho={28} />
+                    <p><strong>Nenhum ministério ainda</strong></p>
+                    <p>Crie o primeiro no botão Novo ministério.</p>
+                  </div>
+                </section>
+              ) : (
+                <ul className="gr-ministerios" aria-label="Ministérios">
+                  {ministerios.map((m) => {
+                    const juntos = (m.id_paralelismos || [])
+                      .map((id) => ministerios.find((x) => x.id_ministerio === id)?.nome)
+                      .filter(Boolean);
+                    return (
+                      <li key={m.id_ministerio} className={`gr-ministerio${m.ativo ? "" : " gr-ministerio--inativo"}`}>
+                        <div className="gr-ministerio__topo">
+                          <span className="gr-ministerio__ordem" aria-label={`Posição ${m.ordem}`}>{m.ordem}</span>
+                          <h2 className="gr-ministerio__nome">{m.nome}</h2>
+                          {!m.ativo && <span className="gr-selo gr-selo--cinza">Inativo</span>}
+                        </div>
+                        {m.descricao && <p className="gr-ministerio__desc">{m.descricao}</p>}
+                        <div className="gr-ministerio__info">
+                          <span className="gr-pessoa__rotulo">Líderes</span>
+                          {(m.lideres || []).length ? (
+                            <ul className="gr-lideres">
+                              {(m.lideres || []).map((l) => (
+                                <li key={l.id_usuario}>
+                                  <span className="gr-avatar gr-avatar--mini" aria-hidden>
+                                    {l.nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase()}
+                                  </span>
+                                  {l.nome.split(" ")[0]}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span className="gr-alerta-mini"><Icone nome="alerta" tamanho={14} /> Sem líder definido</span>
+                          )}
+                        </div>
+                        {juntos.length > 0 && (
+                          <p className="gr-ministerio__juntos">
+                            <span className="gr-pessoa__rotulo">Pode servir junto com</span> {juntos.join(", ")}
+                          </p>
+                        )}
+                        <div className="gr-ministerio__acoes">
+                          <button type="button" className="sc-btn sc-btn--contorno" onClick={() => editarMinisterio(m)} aria-label={`Editar ${m.nome}`}>
+                            <Icone nome="editar" tamanho={15} /> Editar
+                          </button>
+                          <button
+                            type="button"
+                            className="sc-btn sc-btn--perigo gr-so-icone"
+                            onClick={() => { setMinisterioToExcluir(m.id_ministerio); setShowConfirmExcluirMinisterio(true); }}
+                            aria-label={`Excluir ${m.nome}`}
+                          >
+                            <Icone nome="lixeira" tamanho={16} />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )
+            )}
+          </div>
+        </div>
       </main>
 
       {/* Modal de Cadastro/Edição de Usuário - renderizado no body para não herdar estilos do container */}
@@ -940,10 +1022,6 @@ export default function GerenciarUsuarios() {
           handleChange={handleChange}
           niveisAtivos={niveisAtivos}
           ministerios={ministerios}
-          showSenha={showSenha}
-          setShowSenha={setShowSenha}
-          showConfirmarSenha={showConfirmarSenha}
-          setShowConfirmarSenha={setShowConfirmarSenha}
           onFechar={fecharModal}
           onSalvar={() => acaoUsuario.executar(salvarUsuario)}
           salvando={acaoUsuario.executando}
@@ -1035,8 +1113,6 @@ export default function GerenciarUsuarios() {
           setMinisterioModal={setMinisterioModal}
           lideresParaSelect={lideresParaSelect}
           ministerios={ministerios}
-          showParalelismoInfo={showParalelismoInfo}
-          setShowParalelismoInfo={setShowParalelismoInfo}
           onFechar={() => setModalMinisterioAberto(false)}
           onSalvar={() => acaoMinisterio.executar(salvarMinisterio)}
           salvando={acaoMinisterio.executando}

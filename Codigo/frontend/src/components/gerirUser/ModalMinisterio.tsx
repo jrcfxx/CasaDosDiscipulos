@@ -1,202 +1,113 @@
-import React from "react";
+import React, { useId } from "react";
 import type { Ministerio } from "../../services/ministerioService";
 import type { MinisterioModal, Usuario } from "./tipos";
-import BotaoCarregando from "../ui/BotaoCarregando";
-import Icone from "../../components/ui/Icone";
+import Gaveta, { ChipsMarcaveis, SecaoGaveta } from "./Gaveta";
 
 interface Props {
   ministerioModal: MinisterioModal;
   setMinisterioModal: React.Dispatch<React.SetStateAction<MinisterioModal>>;
   lideresParaSelect: Usuario[];
   ministerios: Ministerio[];
-  showParalelismoInfo: boolean;
-  setShowParalelismoInfo: React.Dispatch<React.SetStateAction<boolean>>;
   onFechar: () => void;
   onSalvar: () => void;
   salvando?: boolean;
 }
 
-/** Modal de cadastro/edição de ministério (líderes e paralelismo na escala) */
+/** Painel de cadastro/edição de ministério (líderes e paralelismo na escala) */
 const ModalMinisterio: React.FC<Props> = ({
   ministerioModal,
   setMinisterioModal,
   lideresParaSelect,
   ministerios,
-  showParalelismoInfo,
-  setShowParalelismoInfo,
   onFechar,
   onSalvar,
   salvando = false,
-}) => (
-    <div className="modal-ministerio-overlay">
-      <div className="modal-ministerio">
-        <div className="modal-ministerio-header cd-modal-header">
-          <div className="modal-ministerio-header-content cd-modal-header-content">
-            <span className="modal-ministerio-icon cd-modal-icon" aria-hidden><Icone nome="igreja" tamanho={26} /></span>
-            <div>
-              <h2 className="modal-ministerio-title cd-modal-title">
-                {ministerioModal.id_ministerio ? "Editar Ministério" : "Novo Ministério"}
-              </h2>
-              <p className="modal-ministerio-subtitle cd-modal-subtitle">
-                {ministerioModal.id_ministerio
-                  ? "Atualize as informações do ministério"
-                  : "Preencha os dados para criar um novo ministério"}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="modal-ministerio-close cd-modal-close"
-            onClick={onFechar}
-            disabled={salvando}
-            title="Fechar"
-            aria-label="Fechar"
-          >
-            <Icone nome="fechar" tamanho={18} />
-          </button>
-        </div>
-        <div className="modal-ministerio-body">
-          <div className="modal-ministerio-form-group">
-            <label htmlFor="ministerioModalNome">Nome *</label>
+}) => {
+  const id = useId();
+  const outros = ministerios
+    .filter((m) => m.ativo && m.id_ministerio !== ministerioModal.id_ministerio)
+    .map((m) => ({ id: m.id_ministerio, nome: m.nome }));
+
+  return (
+    <Gaveta
+      titulo={ministerioModal.id_ministerio ? ministerioModal.nome || "Editar ministério" : "Novo ministério"}
+      subtitulo="Área de serviço usada na escala dos eventos"
+      icone="igreja"
+      onFechar={onFechar}
+      onSalvar={onSalvar}
+      salvando={salvando}
+      rotuloSalvar={ministerioModal.id_ministerio ? "Salvar alterações" : "Criar ministério"}
+    >
+      <SecaoGaveta titulo="Sobre o ministério">
+        <div className="gr-grade">
+          <div className="gr-campo gr-campo--inteiro">
+            <label htmlFor={`${id}-nome`}>Nome</label>
             <input
-              id="ministerioModalNome"
-              type="text"
+              id={`${id}-nome`}
               value={ministerioModal.nome || ""}
               onChange={(e) => setMinisterioModal((p) => ({ ...p, nome: e.target.value }))}
-              placeholder="Ex: Louvor, Som, Voluntários"
+              placeholder="Ex.: Louvor, Som, Acolhida"
             />
           </div>
-          <div className="modal-ministerio-form-group">
-            <label htmlFor="ministerioModalDescricao">Descrição</label>
+          <div className="gr-campo gr-campo--inteiro">
+            <label htmlFor={`${id}-descricao`}>Descrição <span className="gr-opcional">(opcional)</span></label>
             <textarea
-              id="ministerioModalDescricao"
+              id={`${id}-descricao`}
               value={ministerioModal.descricao || ""}
               onChange={(e) => setMinisterioModal((p) => ({ ...p, descricao: e.target.value }))}
-              placeholder="Descrição opcional do ministério"
-              rows={2}
+              rows={3}
             />
           </div>
-          <div className="modal-ministerio-row">
-            <div className="modal-ministerio-form-group modal-ministerio-form-group--sm">
-              <label htmlFor="ministerioModalOrdem">Ordem</label>
-              <input
-                id="ministerioModalOrdem"
-                type="number"
-                value={ministerioModal.ordem || 0}
-                onChange={(e) =>
-                  setMinisterioModal((p) => ({
-                    ...p,
-                    ordem: Math.max(0, parseInt(e.target.value, 10) || 0),
-                  }))
-                }
-                min="0"
-              />
-            </div>
-            <label className="modal-ministerio-checkbox">
+          <div className="gr-campo">
+            <label htmlFor={`${id}-ordem`}>Posição na lista</label>
+            <input
+              id={`${id}-ordem`}
+              type="number"
+              min="0"
+              value={ministerioModal.ordem || 0}
+              onChange={(e) => setMinisterioModal((p) => ({ ...p, ordem: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
+            />
+          </div>
+          <div className="gr-campo gr-campo--centro">
+            <label className="gr-interruptor">
               <input
                 type="checkbox"
+                role="switch"
+                aria-label="Ministério ativo"
                 checked={ministerioModal.ativo}
                 onChange={(e) => setMinisterioModal((p) => ({ ...p, ativo: e.target.checked }))}
               />
-              <span>Ministério ativo</span>
+              <span className="gr-interruptor__trilho" aria-hidden />
+              <span><strong>Ministério ativo</strong></span>
             </label>
           </div>
-          <div className="modal-ministerio-form-group">
-            <span>Líderes do ministério</span>
-            <div className="modal-ministerio-lideres">
-              {lideresParaSelect.map((u) => (
-                <label key={u.id_usuario!} className="modal-ministerio-lider-chip">
-                  <input
-                    type="checkbox"
-                    checked={(ministerioModal.id_lideres || []).includes(u.id_usuario!)}
-                    onChange={(e) => {
-                      const prev = ministerioModal.id_lideres;
-                      const next = e.target.checked
-                        ? [...prev, u.id_usuario!]
-                        : prev.filter((id) => id !== u.id_usuario);
-                      setMinisterioModal((p) => ({ ...p, id_lideres: next }));
-                    }}
-                  />
-                  <span>{u.nome}</span>
-                </label>
-              ))}
-              {lideresParaSelect.length === 0 && (
-                <p className="modal-ministerio-hint">Nenhum líder cadastrado. Crie usuários do tipo Líder na aba Usuários.</p>
-              )}
-            </div>
-          </div>
+        </div>
+      </SecaoGaveta>
 
-          <div className="modal-ministerio-form-group modal-ministerio-paralelismo">
-            <div className="modal-ministerio-paralelismo-head">
-              <span>Paralelismo na escala</span>
-              <button
-                type="button"
-                className="modal-ministerio-info-btn"
-                onClick={() => setShowParalelismoInfo((v) => !v)}
-                aria-expanded={showParalelismoInfo}
-                title="O que é paralelismo?"
-              >
-                ?
-              </button>
-            </div>
-            {showParalelismoInfo && (
-              <div className="modal-ministerio-info-box" role="note">
-                <strong>O que é isso?</strong>
-                <p>
-                  Por padrão, a mesma pessoa não pode ser escalada em dois ministérios no
-                  mesmo evento. Se marcar outro ministério aqui, a pessoa poderá estar nos
-                  dois — por exemplo, cantar no Louvor e também ministrar na Palavra.
-                </p>
-              </div>
-            )}
-            <p className="modal-ministerio-hint">
-              Selecione os ministérios que podem compartilhar a mesma pessoa neste evento.
-            </p>
-            <div className="modal-ministerio-lideres">
-              {ministerios
-                .filter(
-                  (m) =>
-                    m.ativo &&
-                    m.id_ministerio !== ministerioModal.id_ministerio
-                )
-                .map((m) => (
-                  <label key={m.id_ministerio} className="modal-ministerio-lider-chip">
-                    <input
-                      type="checkbox"
-                      checked={(ministerioModal.id_paralelismos || []).includes(
-                        m.id_ministerio
-                      )}
-                      onChange={(e) => {
-                        const prev = ministerioModal.id_paralelismos || [];
-                        const next = e.target.checked
-                          ? [...prev, m.id_ministerio]
-                          : prev.filter((id) => id !== m.id_ministerio);
-                        setMinisterioModal((p) => ({ ...p, id_paralelismos: next }));
-                      }}
-                    />
-                    <span>{m.nome}</span>
-                  </label>
-                ))}
-              {ministerios.filter(
-                (m) => m.ativo && m.id_ministerio !== ministerioModal.id_ministerio
-              ).length === 0 && (
-                <p className="modal-ministerio-hint">
-                  Cadastre outros ministérios para configurar o paralelismo.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="modal-ministerio-footer">
-          <button type="button" className="modal-ministerio-btn-cancel" onClick={onFechar} disabled={salvando}>
-            Cancelar
-          </button>
-          <BotaoCarregando type="button" className="modal-ministerio-btn-save" onClick={onSalvar} carregando={salvando} textoCarregando="Salvando…">
-            {ministerioModal.id_ministerio ? "Salvar alterações" : "Criar ministério"}
-          </BotaoCarregando>
-        </div>
-      </div>
-    </div>
-);
+      <SecaoGaveta titulo="Líderes" descricao="Quem monta a escala deste ministério. Só aparecem usuários do tipo Líder.">
+        <ChipsMarcaveis
+          legenda="Líderes do ministério"
+          opcoes={lideresParaSelect.map((u) => ({ id: u.id_usuario!, nome: u.nome }))}
+          marcados={ministerioModal.id_lideres || []}
+          onMudar={(ids) => setMinisterioModal((p) => ({ ...p, id_lideres: ids }))}
+          vazio="Nenhum líder cadastrado. Crie usuários do tipo Líder na aba Usuários."
+        />
+      </SecaoGaveta>
+
+      <SecaoGaveta
+        titulo="Pode servir junto com"
+        descricao="Por padrão, ninguém fica em dois ministérios no mesmo evento. Marque os que podem dividir a mesma pessoa (ex.: cantar no Louvor e ministrar a Palavra)."
+      >
+        <ChipsMarcaveis
+          legenda="Ministérios que podem compartilhar a mesma pessoa"
+          opcoes={outros}
+          marcados={ministerioModal.id_paralelismos || []}
+          onMudar={(ids) => setMinisterioModal((p) => ({ ...p, id_paralelismos: ids }))}
+          vazio="Cadastre outros ministérios para configurar."
+        />
+      </SecaoGaveta>
+    </Gaveta>
+  );
+};
 
 export default ModalMinisterio;

@@ -1,5 +1,6 @@
 import type { ErroApi } from "../utils/errorUtils";
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "../style/secretaria.css";
 import "../style/Perfil.css";
 import Header from "../components/layout/Header";
@@ -83,6 +84,14 @@ export default function Perfil() {
     showAllNiveis().then((d) => Array.isArray(d) && setNiveis(d)).catch(() => {});
     celulaService.getAtivas().then((c) => setCelulas(c || [])).catch(() => setCelulas([]));
   }, [carregar]);
+
+  // Link direto para uma seção (ex.: /perfil#duas-etapas, vindo do menu do usuário)
+  const hash = useLocation().hash;
+  useEffect(() => {
+    if (!perfil || !hash) return;
+    const t = window.setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" }), 300);
+    return () => window.clearTimeout(t);
+  }, [perfil, hash]);
 
   // Destaca no menu a seção que está na tela
   useEffect(() => {
@@ -315,7 +324,7 @@ function CartaoDados({
     if (form.nome.trim().length < 3) novos.nome = "Digite seu nome completo (pelo menos 3 letras).";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) novos.email = "Digite um e-mail válido.";
     const telefone = normalizarTelefoneParaEnvio(form.telefone);
-    if (form.telefone.trim() && !telefone) novos.telefone = "Use o DDD e o número, por exemplo (31) 99999-0000.";
+    if (form.telefone.trim() && !telefone) novos.telefone = "Use só números, com DDD. Exemplo: 31999990000.";
     if (mudaEmail && !senhaAtual) novos.senhaAtual = "Para trocar o e-mail, confirme com sua senha atual.";
     setErros(novos);
     const primeiro = Object.keys(novos)[0];
@@ -405,7 +414,7 @@ function CartaoDados({
               autoComplete="tel"
               value={form.telefone}
               onChange={(e) => mudar("telefone", formatarTelefoneInput(e.target.value))}
-              placeholder="(31) 99999-0000"
+              placeholder="31999990000"
             />
             <p id={`${id}-telefone-dica`} className="pf-campo__dica">Para avisos de escala e lembretes. Só a liderança vê.</p>
             {erro("telefone")}

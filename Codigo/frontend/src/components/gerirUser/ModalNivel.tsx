@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useId } from "react";
 import type { NivelModal } from "./tipos";
-import BotaoCarregando from "../ui/BotaoCarregando";
-import Icone from "../../components/ui/Icone";
+import Gaveta, { SecaoGaveta } from "./Gaveta";
 
 interface Props {
   nivelModal: NivelModal;
@@ -11,76 +10,47 @@ interface Props {
   salvando?: boolean;
 }
 
-/** Modal de cadastro/edição de nível */
-const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSalvar, salvando = false }) => (
-    <div className="modal-fundo" role="dialog" aria-modal="true">
-      <div className="modal">
-        <div className="cd-modal-header">
-          <div className="cd-modal-header-content">
-            <span className="cd-modal-icon" aria-hidden><Icone nome="formatura" tamanho={26} /></span>
-            <div>
-              <h2 className="cd-modal-title">
-                {nivelModal.id_nivel ? "Editar Nível" : "Novo Nível"}
-              </h2>
-              <p className="cd-modal-subtitle">
-                {nivelModal.id_nivel
-                  ? "Atualize as informações deste nível"
-                  : "Preencha os dados para criar um novo nível"}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="cd-modal-close"
-            onClick={onFechar}
-            disabled={salvando}
-            title="Fechar"
-            aria-label="Fechar"
-          >
-            <Icone nome="fechar" tamanho={18} />
-          </button>
-        </div>
-
-        <div className="modal-content">
-          <label htmlFor="nivelModalNome">Nome do Nível</label>
+/** Painel de cadastro/edição de nível */
+const ModalNivel: React.FC<Props> = ({ nivelModal, setNivelModal, onFechar, onSalvar, salvando = false }) => {
+  const id = useId();
+  return (
+    <Gaveta
+      titulo={nivelModal.id_nivel ? "Editar nível" : "Novo nível"}
+      subtitulo="Etapa da caminhada na Escola de Discípulos"
+      icone="formatura"
+      largura="estreita"
+      onFechar={onFechar}
+      onSalvar={onSalvar}
+      salvando={salvando}
+      rotuloSalvar={nivelModal.id_nivel ? "Salvar alterações" : "Criar nível"}
+    >
+      <SecaoGaveta titulo="Sobre o nível">
+        <div className="gr-campo">
+          <label htmlFor={`${id}-nome`}>Nome</label>
           <input
-            id="nivelModalNome"
-            type="text"
+            id={`${id}-nome`}
             value={nivelModal.nome || ""}
-            onChange={(e) =>
-              setNivelModal((prev) => ({ ...prev, nome: e.target.value }))
-            }
-            placeholder="Ex: Discípulo"
+            onChange={(e) => setNivelModal((p) => ({ ...p, nome: e.target.value }))}
+            placeholder="Ex.: Discipulado 1 – Fundamentos"
           />
-
-          <label htmlFor="nivelModalDescricao">Descrição</label>
+        </div>
+        <div className="gr-campo">
+          <label htmlFor={`${id}-descricao`}>Descrição <span className="gr-opcional">(opcional)</span></label>
           <textarea
-            id="nivelModalDescricao"
+            id={`${id}-descricao`}
             value={nivelModal.descricao || ""}
-            onChange={(e) =>
-              setNivelModal((prev) => ({
-                ...prev,
-                descricao: e.target.value,
-              }))
-            }
-            placeholder="Descrição opcional do nível"
-            rows={3}
+            onChange={(e) => setNivelModal((p) => ({ ...p, descricao: e.target.value }))}
+            rows={4}
+            placeholder="O que a pessoa vive nesta etapa"
           />
-
-          <p className="hint">
-            A ordem de progressão é definida arrastando os níveis na lista.
-            {nivelModal.id_nivel ? ` Ordem atual: ${nivelModal.ordem}.` : " Novos níveis entram no final."}
-          </p>
         </div>
-
-        <div className="modal-buttons">
-          <button onClick={onFechar} disabled={salvando}>Cancelar</button>
-          <BotaoCarregando onClick={onSalvar} carregando={salvando} textoCarregando="Salvando…">
-            {nivelModal.id_nivel ? "Salvar Alterações" : "Criar Nível"}
-          </BotaoCarregando>
-        </div>
-      </div>
-    </div>
-);
+        <p className="gr-dica">
+          A ordem da caminhada é definida arrastando os níveis na lista.
+          {nivelModal.id_nivel ? ` Posição atual: ${nivelModal.ordem}º.` : " Novos níveis entram no final."}
+        </p>
+      </SecaoGaveta>
+    </Gaveta>
+  );
+};
 
 export default ModalNivel;
