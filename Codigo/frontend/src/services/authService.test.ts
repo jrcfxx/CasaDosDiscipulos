@@ -22,29 +22,33 @@ describe("sessão em cookie HttpOnly", () => {
     expect(opcoes).toMatchObject({ withCredentials: true, headers: { "X-Requested-With": "XMLHttpRequest" } });
   });
 
-  it("converte o token antigo em cookie e apaga do navegador, sem novo login", async () => {
+  it("conta com verificação em duas etapas: senha certa não guarda usuário até o código", async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { precisa_2fa: true, message: "Digite o código" } });
+    const r = await authService.login({ email: "ana@exemplo.com", senha: "Casa da Fe 2026" });
+    expect("precisa_2fa" in r).toBe(true);
+    expect(authService.getUser()).toBeNull();
+
+    vi.mocked(axios.post).mockResolvedValueOnce({ data: { message: "ok", usuario: { id_usuario: 1, nome: "Ana", tipo: "membro" } } });
+    await authService.confirmarCodigo("123456");
+    const [url, corpo, opcoes] = vi.mocked(axios.post).mock.calls[1];
+    expect(String(url)).toMatch(/\/auth\/login\/2fa$/);
+    expect(corpo).toEqual({ codigo: "123456" });
+    expect(opcoes).toMatchObject({ withCredentials: true });
+    expect(authService.getUser()?.nome).toBe("Ana");
+  });
+
+  it("token do formato antigo é apagado (não vale mais no servidor)", () => {
     localStorage.setItem("token", "token-antigo");
     localStorage.setItem("usuario", JSON.stringify({ id_usuario: 1, nome: "Ana", tipo: "membro" }));
-    vi.mocked(axios.post).mockResolvedValue({ data: {} });
-    await authService.migrarSessaoAntiga();
-    const [url, , opcoes] = vi.mocked(axios.post).mock.calls[0];
-    expect(String(url)).toMatch(/\/auth\/sessao$/);
-    expect(opcoes?.headers).toMatchObject({ Authorization: "Bearer token-antigo" });
-    expect(localStorage.getItem("token")).toBeNull();
-    expect(authService.getUser()).not.toBeNull(); // continua logada
-  });
-
-  it("token antigo inválido: apaga tudo e a pessoa só entra de novo", async () => {
-    localStorage.setItem("token", "expirado");
-    localStorage.setItem("usuario", JSON.stringify({ id_usuario: 1, nome: "Ana", tipo: "membro" }));
-    vi.mocked(axios.post).mockRejectedValue(new Error("401"));
-    await authService.migrarSessaoAntiga();
+    authService.limparSessaoAntiga();
     expect(localStorage.getItem("token")).toBeNull();
     expect(authService.getUser()).toBeNull();
+    expect(axios.post).not.toHaveBeenCalled();
   });
 
-  it("sem token antigo, não chama o servidor", async () => {
-    await authService.migrarSessaoAntiga();
-    expect(axios.post).not.toHaveBeenCalled();
+  it("sem token antigo, mantém a sessão atual", () => {
+    localStorage.setItem("usuario", JSON.stringify({ id_usuario: 1, nome: "Ana", tipo: "membro" }));
+    authService.limparSessaoAntiga();
+    expect(authService.getUser()?.nome).toBe("Ana");
   });
 });

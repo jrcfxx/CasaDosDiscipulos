@@ -1493,3 +1493,19 @@
 .modal-fundo .modal .redefinir-senha__erro {
   color: var(--color-error-700);
 }
+
+/* Modal → Segurança da conta */
+.modal-fundo .modal .seguranca-usuario__lista {
+  margin: 0.25rem 0 0.5rem;
+  padding-left: 1.1rem;
+  font-style: normal;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.modal-fundo .modal .seguranca-usuario__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

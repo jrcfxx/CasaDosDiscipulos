@@ -47,6 +47,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_PORT: 3306
       JWT_SECRET: ${JWT_SECRET}
+      # Protege o segredo do 2FA guardado no banco (openssl rand -base64 48). Não troque depois de definir.
+      CHAVE_CRIPTOGRAFIA: ${CHAVE_CRIPTOGRAFIA:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-}
       EVOLUTION_API_URL: http://evolution:8080
       EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME:-casadosdiscipulos}

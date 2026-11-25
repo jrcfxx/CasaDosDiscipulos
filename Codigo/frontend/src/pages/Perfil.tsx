@@ -1,5 +1,5 @@
 import type { ErroApi } from "../utils/errorUtils";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import "../style/Perfil.css";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -16,6 +16,7 @@ import usuarioCelulaService from "../services/usuarioCelulaService";
 import { ASSETS_BASE } from "../config/api";
 import { formatarTelefoneInput, normalizarTelefoneParaEnvio } from "../utils/telefoneUtils";
 import CampoSenha from "../components/ui/CampoSenha";
+import SegurancaConta from "../components/perfil/SegurancaConta";
 import { avaliarSenha } from "../utils/regrasSenha";
 
 function buildFotoUrl(foto: string | undefined): string | null {
@@ -127,6 +128,12 @@ export default function Perfil() {
     fetchNiveis();
     fetchCelulas();
      
+  }, []);
+
+  // Estável: a seção de segurança usa como dependência
+  const avisarSeguranca = useCallback((msg: string, variant: "success" | "error" | "info") => {
+    setToast(msg);
+    setToastVariant(variant);
   }, []);
 
   const showToast = (msg: string, variant: "success" | "error" | "info" = "info") => {
@@ -517,6 +524,8 @@ export default function Perfil() {
             </div>
           </div>
         </div>
+
+        <SegurancaConta avisar={avisarSeguranca} />
       </main>
 
       {toast && (

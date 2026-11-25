@@ -11,7 +11,7 @@ export const OPCOES_SESSAO = {
   headers: { "X-Requested-With": "XMLHttpRequest" },
 } as const;
 
-/** Chave do token antigo (antes do cookie): só lida para converter a sessão e apagar */
+/** Chave do token antigo (antes do cookie): só apagada, não vale mais */
 const TOKEN_ANTIGO_KEY = "token";
 
 export interface LoginCredentials {
@@ -32,11 +32,19 @@ export interface Usuario {
   lider_ministerio?: boolean;
   /** true enquanto a pessoa usa senha provisória (telefone ou definida pelo admin) */
   trocar_senha?: boolean;
+  /** verificação em duas etapas (app autenticador) ligada */
+  totp_ativo?: boolean;
 }
 
 export interface LoginResponse {
   message: string;
   usuario: Usuario;
+}
+
+/** Senha certa, mas a conta usa verificação em duas etapas: falta o código */
+export interface LoginPendente {
+  precisa_2fa: true;
+  message: string;
 }
 
 const AVISO_KEY = "auth_aviso";
@@ -67,13 +75,26 @@ class AuthService {
   /**
    * Realiza login do usuário
    */
-  async login(credentials: LoginCredentials): Promise<LoginResponse> {
+  async login(credentials: LoginCredentials): Promise<LoginResponse | LoginPendente> {
     try {
-      const response = await axios.post<LoginResponse>(`${API_URL}/auth/login`, credentials, OPCOES_SESSAO);
+      const response = await axios.post<LoginResponse | LoginPendente>(`${API_URL}/auth/login`, credentials, OPCOES_SESSAO);
+      if ("precisa_2fa" in response.data) return response.data;
 
       this.setUser(response.data.usuario);
       // Senha provisória: guarda só em memória para a tela "Crie sua senha" não pedir de novo
       this.senhaDoLogin = response.data.usuario.trocar_senha ? credentials.senha : null;
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /** Segundo passo do login: código de 6 dígitos do app (ou código de recuperação) */
+  async confirmarCodigo(codigo: string): Promise<LoginResponse> {
+    try {
+      const response = await axios.post<LoginResponse>(`${API_URL}/auth/login/2fa`, { codigo }, OPCOES_SESSAO);
+      this.setUser(response.data.usuario);
+      this.senhaDoLogin = null;
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -100,27 +121,17 @@ class AuthService {
   }
 
   /**
-   * Transição: quem entrou antes do cookie tem o token no localStorage. Troca por cookie
-   * (sem novo login) e apaga o token do navegador. Sem token antigo, não faz nada.
+   * Restos do formato antigo (token no localStorage): não valem mais no servidor.
+   * Apaga para a pessoa simplesmente entrar de novo.
    */
-  async migrarSessaoAntiga(): Promise<void> {
-    let antigo: string | null = null;
+  limparSessaoAntiga(): void {
     try {
-      antigo = localStorage.getItem(TOKEN_ANTIGO_KEY);
+      if (localStorage.getItem(TOKEN_ANTIGO_KEY)) {
+        localStorage.removeItem(TOKEN_ANTIGO_KEY);
+        localStorage.removeItem(this.USER_KEY);
+      }
     } catch {
-      return;
-    }
-    if (!antigo) return;
-    try {
-      await axios.post(`${API_URL}/auth/sessao`, null, {
-        ...OPCOES_SESSAO,
-        headers: { ...OPCOES_SESSAO.headers, Authorization: `Bearer ${antigo}` },
-      });
-    } catch {
-      // Token antigo inválido: a pessoa só precisa entrar de novo
-      localStorage.removeItem(this.USER_KEY);
-    } finally {
-      localStorage.removeItem(TOKEN_ANTIGO_KEY);
+      /* armazenamento indisponível */
     }
   }
 

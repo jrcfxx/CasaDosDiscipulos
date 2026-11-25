@@ -25,6 +25,7 @@ import {
   Handshake,
   House,
   Lock,
+  ShieldCheck,
   Menu,
   Mic,
   Music,
@@ -64,6 +65,7 @@ const ICONES = {
   calendario: CalendarDays,
   casa: House,
   cadeado: Lock,
+  escudo: ShieldCheck, // painel de segurança
   check: Check,
   abrir: ChevronDown,
   anterior: ChevronLeft,

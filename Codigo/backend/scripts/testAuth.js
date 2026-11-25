@@ -2,17 +2,22 @@
  * Teste de integração da autenticação — banco de DESENVOLVIMENTO.
  * Cadastro público fechado, primeiro acesso com troca obrigatória, regras de senha,
  * sessões derrubadas ao trocar/redefinir a senha e login sem revelar contas.
+ * Controle de acesso: sessões no servidor, bloqueio por tentativas, 2FA, registro de segurança.
  * Cria e apaga seus próprios usuários. Uso: node scripts/testAuth.js
  */
 import express from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import knex from "../src/database/index.js";
 import authRoutes from "../src/routes/authRoutes.js";
 import usuarioRoutes from "../src/routes/usuarioRoutes.js";
 import ModuloRoutes from "../src/routes/ModuloRoutes.js";
+import segurancaRoutes from "../src/routes/segurancaRoutes.js";
 import errorHandler from "../src/middlewares/errorHandler.js";
-import { gerarToken } from "../src/services/authService.js";
 import { validarNovaSenha } from "../src/utils/senha.js";
+import { gerarCodigoTotp } from "../src/utils/totp.js";
+import { tokenDeTeste, encerrarSessoesDeTeste } from "./sessaoTeste.js";
+import { testeSessoes, testeBloqueio, testeDoisFatores, testePainel } from "./testAuthControle.js";
 
 if (process.env.NODE_ENV === "production") {
   console.error("Não rode este teste em produção.");
@@ -49,6 +54,8 @@ function testeRegrasDeSenha() {
   ok(validarNovaSenha("12345678", pessoa) !== null, "sequência numérica é recusada");
   ok(validarNovaSenha("aaaaaaaa", pessoa) !== null, "caractere repetido é recusado");
   ok(validarNovaSenha("maria@exemplo.com", pessoa) !== null, "o próprio e-mail é recusado");
+  ok(validarNovaSenha("Jesus123", pessoa) !== null, "senha muito comum (Jesus123) é recusada");
+  ok(validarNovaSenha("Deus é fiel!", pessoa) !== null, "senha comum com acento e símbolo é recusada");
   ok(validarNovaSenha("Casa da Fé 2026", pessoa) === null, "senha boa é aceita");
 }
 
@@ -58,6 +65,7 @@ async function testeApi() {
   app.use("/api/auth", authRoutes);
   app.use("/api/usuarios", usuarioRoutes);
   app.use("/api/modulo", ModuloRoutes);
+  app.use("/api/seguranca", segurancaRoutes);
   app.use(errorHandler);
   const server = app.listen(0);
   const base = `http://127.0.0.1:${server.address().port}/api`;
@@ -75,7 +83,8 @@ async function testeApi() {
     });
     const setCookie = lerSetCookie(r);
     const token = setCookie ? decodeURIComponent(setCookie.split(";")[0].split("=").slice(1).join("=")) : null;
-    return { status: r.status, corpo: await r.json().catch(() => ({})), token, setCookie };
+    const desafio = (r.headers.getSetCookie?.() ?? []).find((c) => c.startsWith("cd_2fa=") && !c.startsWith("cd_2fa=;"));
+    return { status: r.status, corpo: await r.json().catch(() => ({})), token, setCookie, desafio: desafio?.split(";")[0] ?? null };
   };
 
   try {
@@ -121,8 +130,8 @@ async function testeApi() {
 
     // Admin redefine a senha: gera temporária, derruba sessões e obriga nova troca
     const admin = await knex("usuario").where({ tipo: "administrador", ativo: true }).first();
-    const tkAdmin = gerarToken(admin);
-    const membroTk = gerarToken({ ...novo, sessao_versao: 1 });
+    const tkAdmin = await tokenDeTeste(admin);
+    const membroTk = await tokenDeTeste({ ...novo, sessao_versao: 1 });
     const naoAdmin = await chamar("POST", `/usuarios/${novo.id_usuario}/redefinir-senha`, membroTk);
     ok(naoAdmin.status === 403, "membro não redefine senha de ninguém");
     const red = await chamar("POST", `/usuarios/${novo.id_usuario}/redefinir-senha`, tkAdmin);
@@ -153,10 +162,18 @@ async function testeApi() {
     const sair = await chamar("POST", "/auth/logout", null, null, cookie);
     ok(sair.status === 200 && /cd_sessao=;/.test(sair.setCookie || "") , "logout apaga o cookie de sessão");
 
-    const convertido = await chamar("POST", "/auth/sessao", tk3, null);
-    ok(convertido.status === 200 && convertido.token === tk3, "token antigo (Bearer) é convertido em cookie sem novo login");
-    const semBearer = await chamar("POST", "/auth/sessao", null, null, { ...cookie, "X-Requested-With": "XMLHttpRequest" });
-    ok(semBearer.status === 400, "conversão exige o token antigo no cabeçalho");
+    const depoisDeSair = await chamar("GET", "/usuarios/perfil", tk3);
+    ok(depoisDeSair.status === 401, "depois de sair, o token copiado também deixa de valer (sessão encerrada no servidor)");
+
+    // Token sem sessão no servidor (formato antigo, ou forjado por quem tem o segredo) não vale
+    const semSessao = jwt.sign({ id_usuario: novo.id_usuario, tipo: "membro", sv: 2 }, process.env.JWT_SECRET, { expiresIn: "1h", algorithm: "HS256" });
+    ok((await chamar("GET", "/usuarios/perfil", semSessao)).status === 401, "token sem sessão registrada é recusado");
+
+    const ctx = { chamar, ok, criarUsuario, knex, sufixo, tkAdmin, membroTk, gerarCodigoTotp, tokenDeTeste, bcrypt };
+    await testeSessoes(ctx);
+    await testeBloqueio(ctx);
+    await testeDoisFatores(ctx);
+    await testePainel(ctx);
   } finally {
     server.close();
   }
@@ -169,7 +186,12 @@ try {
   console.error("Erro:", err);
   falhas += 1;
 } finally {
-  if (criados.length) await knex("usuario").whereIn("id_usuario", criados).del();
+  if (criados.length) {
+    await knex("log_seguranca").whereIn("id_usuario", criados).del();
+    await knex("usuario").whereIn("id_usuario", criados).del();
+  }
+  await knex("log_seguranca").where("email", "like", `%.${sufixo}%@exemplo.com`).del();
+  await encerrarSessoesDeTeste();
   await knex.destroy();
   console.log(falhas ? `\n${falhas} falha(s)` : "\nTodos os testes de autenticação passaram.");
   process.exit(falhas ? 1 : 0);

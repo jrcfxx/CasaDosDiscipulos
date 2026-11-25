@@ -6,7 +6,7 @@
  */
 import "dotenv/config";
 import knex from "../src/database/index.js";
-import { gerarToken } from "../src/services/authService.js";
+import { tokenDeTeste, encerrarSessoesDeTeste } from "./sessaoTeste.js";
 
 const API = "http://localhost:3001/api";
 const falhas = [];
@@ -40,7 +40,7 @@ const resumo = (r) => `status ${r.status} ${JSON.stringify(r.bruto).slice(0, 180
 
 async function main() {
   const admin = await knex("usuario").where({ id_usuario: 182 }).first(); // admin de teste local
-  token = gerarToken(admin);
+  token = await tokenDeTeste(admin);
   const tipos = Object.fromEntries((await knex("campo_personalizado")).map((c) => [c.tipo_campo, c.id_campo]));
   const me = (enunciado, alternativas) => ({
     id_campo: tipos.multipla_escolha,
@@ -129,6 +129,7 @@ main()
     }
     console.log(`\n${oks} OK, ${falhas.length} FALHA(S)`);
     for (const f of falhas) console.log(` - ${f}`);
+    await encerrarSessoesDeTeste();
     await knex.destroy();
     process.exit(falhas.length ? 1 : 0);
   });

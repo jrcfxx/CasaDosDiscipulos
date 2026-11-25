@@ -4,7 +4,7 @@
  * Uso: node scripts/testStaff.js
  */
 import express from "express";
-import { gerarToken } from "../src/services/authService.js";
+import { tokenDeTeste, encerrarSessoesDeTeste } from "./sessaoTeste.js";
 import knex from "../src/database/index.js";
 import StaffService, { PROFUNDIDADE_MAXIMA } from "../src/services/StaffService.js";
 import staffRoutes from "../src/routes/staffRoutes.js";
@@ -91,7 +91,7 @@ async function testePermissoes() {
   const token = async (tipo) => {
     // Usuário que já criou a própria senha (quem tem senha provisória fica bloqueado de propósito)
     const u = await knex("usuario").where({ tipo, ativo: true, trocar_senha: false }).first();
-    return u ? gerarToken(u) : null;
+    return u ? await tokenDeTeste(u) : null;
   };
   const chamar = (metodo, caminho, tk, corpo) =>
     fetch(base + caminho, {
@@ -141,6 +141,7 @@ try {
   if (configOriginal) {
     await StaffService.atualizarConfig({ titulo: configOriginal.titulo, subtitulo: configOriginal.subtitulo || "" }).catch(() => {});
   }
+  await encerrarSessoesDeTeste();
   await knex.destroy();
   console.log(falhas ? `\n${falhas} falha(s)` : "\nTodos os testes passaram.");
   process.exit(falhas ? 1 : 0);

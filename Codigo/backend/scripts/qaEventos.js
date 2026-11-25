@@ -9,7 +9,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import knex from "../src/database/index.js";
-import { gerarToken } from "../src/services/authService.js";
+import { tokenDeTeste, encerrarSessoesDeTeste } from "./sessaoTeste.js";
 
 const API = "http://localhost:3001/api";
 const UPLOADS = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "uploads");
@@ -58,7 +58,7 @@ const arquivoExiste = (url) => !!url && fs.existsSync(path.join(UPLOADS, url.rep
 const criados = [];
 async function main() {
   const admin = await knex("usuario").where({ id_usuario: 182 }).first(); // admin de teste local
-  token = gerarToken(admin);
+  token = await tokenDeTeste(admin);
 
   console.log("\n== 1. Upload de imagem");
   let up = await enviarImagem();
@@ -149,6 +149,7 @@ main()
     await knex("evento").whereIn("id_evento", qa.map((e) => e.id_evento)).del();
     console.log(`\n${oks} OK, ${falhas.length} FALHA(S)`);
     for (const f of falhas) console.log(` - ${f}`);
+    await encerrarSessoesDeTeste();
     await knex.destroy();
     process.exit(falhas.length ? 1 : 0);
   });

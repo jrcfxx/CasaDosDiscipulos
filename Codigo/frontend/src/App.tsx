@@ -29,6 +29,7 @@ import EditarQuizzesSecretariaCelulas from "./pages/EditarQuizzesSecretariaCelul
 import EventosAdmin from "./pages/EventosAdmin";
 import StaffAdmin from "./pages/StaffAdmin";
 import StaffUser from "./pages/StaffUser";
+import SegurancaAdmin from "./pages/SegurancaAdmin";
 
 // Páginas Autenticadas - Usuário
 import PortalDoDiscipuloUser from "./pages/PortalDoDiscipuloUser";
@@ -125,6 +126,16 @@ export default function App() {
                 if (tela === "logout") handleLogout();
               }}
             />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Segurança: registro de acessos, aparelhos conectados, bloqueios */}
+      <Route
+        path="/admin/seguranca"
+        element={
+          <ProtectedRoute requireAdmin>
+            <SegurancaAdmin />
           </ProtectedRoute>
         }
       />

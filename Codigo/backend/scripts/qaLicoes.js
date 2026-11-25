@@ -6,7 +6,7 @@
  */
 import "dotenv/config";
 import knex from "../src/database/index.js";
-import { gerarToken } from "../src/services/authService.js";
+import { tokenDeTeste, encerrarSessoesDeTeste } from "./sessaoTeste.js";
 
 const API = "http://localhost:3001/api";
 const falhas = [];
@@ -40,7 +40,7 @@ const resumo = (r) => `status ${r.status} ${JSON.stringify(r.bruto).slice(0, 180
 
 async function main() {
   const admin = await knex("usuario").where({ id_usuario: 182 }).first(); // admin de teste local
-  token = gerarToken(admin);
+  token = await tokenDeTeste(admin);
   const T = Object.fromEntries((await knex("campo_personalizado")).map((c) => [c.tipo_campo, c.id_campo]));
 
   console.log("\n== 1. Criação e validação");
@@ -90,7 +90,7 @@ async function main() {
   console.log("\n== 2b. Lição inativa some para os líderes");
   const lider = await knex("usuario").where({ id_usuario: 170 }).first(); // líder de teste local
   const tokenAdmin = token;
-  token = gerarToken(lider);
+  token = await tokenDeTeste(lider);
   const trocarAntes = lider.trocar_senha;
   await knex("usuario").where({ id_usuario: 170 }).update({ trocar_senha: 0 });
   try {
@@ -123,6 +123,7 @@ main()
     }
     console.log(`\n${oks} OK, ${falhas.length} FALHA(S)`);
     for (const f of falhas) console.log(` - ${f}`);
+    await encerrarSessoesDeTeste();
     await knex.destroy();
     process.exit(falhas.length ? 1 : 0);
   });

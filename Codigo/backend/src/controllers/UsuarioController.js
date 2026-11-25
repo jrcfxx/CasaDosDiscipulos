@@ -4,6 +4,25 @@ import UsuarioService from "../services/UsuarioService.js";
 import AuthService from "../services/authService.js";
 import InicioService from "../services/InicioService.js";
 import { gravarCookieSessao } from "../utils/cookieSessao.js";
+import NotificacaoModel from "../models/NotificacaoModel.js";
+import SessaoService, { MOTIVOS_REVOGACAO } from "../services/SessaoService.js";
+import RegistroSegurancaService, { EVENTOS } from "../services/RegistroSegurancaService.js";
+
+/** Campos acompanhados no registro de segurança quando o admin edita alguém */
+const CAMPOS_AUDITADOS = ["nome", "email", "telefone", "tipo", "ativo", "lider_celula", "lider_ministerio", "id_nivel", "pontuacao"];
+
+function diferencas(antes, depois) {
+  const mudou = {};
+  for (const c of CAMPOS_AUDITADOS) {
+    const a = antes?.[c] ?? null;
+    const d = depois?.[c] ?? null;
+    if (String(a) !== String(d) && !(typeof a === "number" && typeof d === "boolean" && Boolean(a) === d)) {
+      // Dados pessoais (telefone/e-mail) aparecem só como "alterado"
+      mudou[c] = c === "telefone" || c === "email" ? "alterado" : { de: a, para: d };
+    }
+  }
+  return mudou;
+}
 import { HTTP_STATUS } from "../utils/constants.js";
 import { ValidationError } from "../utils/AppError.js";
 
@@ -45,6 +64,10 @@ const UsuarioController = {
   async store(req, res, next) {
     try {
       const usuario = await UsuarioService.create(req.body);
+      await RegistroSegurancaService.registrar(req, {
+        evento: EVENTOS.USUARIO_CRIADO, id_usuario: usuario.id_usuario, id_ator: req.usuario?.id_usuario,
+        detalhes: { tipo: usuario.tipo },
+      });
       res.status(HTTP_STATUS.CREATED).json(usuario);
     } catch (err) {
       next(err);
@@ -57,7 +80,23 @@ const UsuarioController = {
    */
   async update(req, res, next) {
     try {
+      const antes = await UsuarioService.getById(req.params.id);
       const usuario = await UsuarioService.update(req.params.id, req.body, req.usuario?.id_usuario);
+      const mudou = diferencas(antes, usuario);
+      const definiuSenha = req.body?.senha !== undefined;
+      if (definiuSenha || mudou.ativo?.para === false || mudou.ativo?.para === 0) {
+        await SessaoService.revogarDoUsuario(
+          usuario.id_usuario,
+          definiuSenha ? MOTIVOS_REVOGACAO.SENHA_REDEFINIDA : MOTIVOS_REVOGACAO.CONTA_DESATIVADA
+        );
+      }
+      if (Object.keys(mudou).length || definiuSenha) {
+        await RegistroSegurancaService.registrar(req, {
+          evento: mudou.tipo ? EVENTOS.PERMISSAO_ALTERADA : EVENTOS.USUARIO_EDITADO,
+          id_usuario: usuario.id_usuario, id_ator: req.usuario?.id_usuario,
+          detalhes: { campos: mudou, senha_definida_pelo_admin: definiuSenha || undefined },
+        });
+      }
       res.status(HTTP_STATUS.OK).json(usuario);
     } catch (err) {
       next(err);
@@ -71,6 +110,11 @@ const UsuarioController = {
   async toggleActive(req, res, next) {
     try {
       const usuario = await UsuarioService.toggleActive(req.params.id, req.usuario?.id_usuario);
+      if (!usuario.ativo) await SessaoService.revogarDoUsuario(usuario.id_usuario, MOTIVOS_REVOGACAO.CONTA_DESATIVADA);
+      await RegistroSegurancaService.registrar(req, {
+        evento: usuario.ativo ? EVENTOS.USUARIO_ATIVADO : EVENTOS.USUARIO_DESATIVADO,
+        id_usuario: usuario.id_usuario, id_ator: req.usuario?.id_usuario,
+      });
       res.status(HTTP_STATUS.OK).json({
         message: `Usuário ${
           usuario.ativo ? "ativado" : "desativado"
@@ -89,6 +133,10 @@ const UsuarioController = {
   async destroy(req, res, next) {
     try {
       await UsuarioService.softDelete(req.params.id, req.usuario?.id_usuario);
+      await SessaoService.revogarDoUsuario(Number(req.params.id), MOTIVOS_REVOGACAO.CONTA_DESATIVADA);
+      await RegistroSegurancaService.registrar(req, {
+        evento: EVENTOS.USUARIO_DESATIVADO, id_usuario: Number(req.params.id), id_ator: req.usuario?.id_usuario,
+      });
       res.status(HTTP_STATUS.OK).json({
         message: "Usuário desativado com sucesso",
       });
@@ -161,12 +209,19 @@ const UsuarioController = {
       let usuario = Object.keys(dadosPermitidos).length
         ? await UsuarioService.update(usuarioId, dadosPermitidos)
         : await UsuarioService.getById(usuarioId);
+      if (mudaEmail) {
+        await RegistroSegurancaService.registrar(req, { evento: EVENTOS.EMAIL_ALTERADO, id_usuario: usuarioId, id_ator: usuarioId });
+        await NotificacaoModel.create({
+          id_usuario: usuarioId, tipo: "seguranca", titulo: "E-mail de acesso alterado",
+          mensagem: "O e-mail usado para entrar na sua conta foi alterado. Se não foi você, fale com a secretaria.",
+        }).catch(() => {});
+      }
 
       // Troca de senha: mesma regra e efeitos do primeiro acesso (encerra outras sessões;
       // esta continua com a sessão nova no cookie)
       if (body.senha !== undefined) {
-        const r = await AuthService.trocarSenha(usuarioId, body.senhaAtual, body.senha);
-        gravarCookieSessao(res, r.token);
+        const r = await AuthService.trocarSenha(usuarioId, body.senhaAtual, body.senha, req);
+        if (r.token) gravarCookieSessao(res, r.token, r.maximaSeg);
         usuario = await UsuarioService.getById(usuarioId);
       }
 
@@ -194,7 +249,7 @@ const UsuarioController = {
     try {
       const id = parseInt(req.params.id, 10);
       if (!id) throw new ValidationError("Usuário inválido");
-      const { senha_temporaria } = await AuthService.redefinirSenha(id);
+      const { senha_temporaria } = await AuthService.redefinirSenha(id, req);
       res.status(HTTP_STATUS.OK).json({
         message: "Senha redefinida. A pessoa criará uma nova senha ao entrar.",
         senha_temporaria,

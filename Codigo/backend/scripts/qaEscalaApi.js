@@ -4,7 +4,7 @@
  * Uso: node scripts/qaEscalaApi.js
  */
 import knex from "../src/database/index.js";
-import { gerarToken } from "../src/services/authService.js";
+import { tokenDeTeste, encerrarSessoesDeTeste } from "./sessaoTeste.js";
 
 const API = "http://localhost:3001/api";
 const IDS = { admin: 182, liderLouvor: 170, liderMidia: 178, membroLouvor: 155, membroMidia: 115 };
@@ -53,7 +53,7 @@ async function main() {
   for (const [nome, id] of Object.entries(IDS)) {
     const u = await knex("usuario").where({ id_usuario: id }).first();
     trocarSenhaAntes[id] = u.trocar_senha;
-    tokens[nome] = gerarToken(u);
+    tokens[nome] = await tokenDeTeste(u);
   }
   await knex("usuario").whereIn("id_usuario", Object.values(IDS)).update({ trocar_senha: 0 });
   // limpa restos de execuções anteriores
@@ -304,6 +304,7 @@ try {
   const ids = new Set([...criados.eventos, ...(await knex("escala_evento").where("titulo", "like", "QA %").pluck("id_escala_evento"))]);
   for (const id of ids) await api("admin", "DELETE", `/escala/eventos/${id}`).catch(() => {});
   for (const [id, v] of Object.entries(trocarSenhaAntes)) await knex("usuario").where({ id_usuario: id }).update({ trocar_senha: v });
+  await encerrarSessoesDeTeste();
   await knex.destroy();
   console.log(`\n${oks} OK, ${falhas.length} FALHA(S)`);
   if (falhas.length) console.log(falhas.map((f) => " - " + f).join("\n"));

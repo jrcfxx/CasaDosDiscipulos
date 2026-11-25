@@ -3,6 +3,29 @@ import crypto from "node:crypto";
 export const SENHA_MINIMO = 8;
 
 /**
+ * Senhas que aparecem no topo dos vazamentos (e as óbvias para uma igreja).
+ * Comparadas sem acento, maiúsculas, espaços e números no fim ("Jesus123" = "jesus").
+ */
+const SENHAS_COMUNS = new Set([
+  "senha", "password", "qwerty", "qwertyuiop", "asdfghjkl", "abc", "abcdef", "abcdefgh", "iloveyou", "admin",
+  "administrador", "mudar", "trocar", "teste", "brasil", "flamengo", "corinthians", "palmeiras", "saopaulo",
+  "vasco", "cruzeiro", "gremio", "internacional", "amor", "meuamor", "familia", "felicidade", "princesa",
+  "jesus", "jesuscristo", "jesusteama", "jesusmeama", "jesuseamor", "deus", "deuseamor", "deusefiel", "deusefieldemais",
+  "deusmeama", "senhor", "senhorjesus", "gloria", "gloriaadeus", "aleluia", "amem", "igreja", "biblia",
+  "cristo", "cristao", "espiritosanto", "fe", "esperanca", "graca", "salmos", "salmo",
+  "casadosdiscipulos", "casadiscipulos", "discipulo", "discipulos", "celula", "escoladediscipulos",
+]);
+
+function normalizar(texto) {
+  return String(texto)
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .replace(/\d+$/, "");
+}
+
+/**
  * Regra única para senhas escolhidas pela própria pessoa.
  * @param {string} senha
  * @param {{ telefone?: string|null, email?: string|null }} [dados] - dados da pessoa, que não podem virar senha
@@ -15,6 +38,9 @@ export function validarNovaSenha(senha, { telefone, email } = {}) {
   if (/^(.)\1+$/.test(s)) return "A senha não pode ser um caractere repetido";
   if ("01234567890123456789".includes(s) || "98765432109876543210".includes(s)) {
     return "A senha não pode ser uma sequência de números";
+  }
+  if (SENHAS_COMUNS.has(normalizar(s)) || (/^\d+$/.test(s) && new Set(s).size <= 2)) {
+    return "Essa senha é muito comum e fácil de adivinhar. Escolha outra (dica: use uma frase)";
   }
   const digitosTelefone = String(telefone || "").replace(/\D/g, "");
   if (digitosTelefone && s.replace(/\D/g, "") === digitosTelefone && /^[\d\s()+-]+$/.test(s)) {

@@ -7,6 +7,9 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import authService, { Usuario, UserType } from "../services/authService";
+
+/** Resultado do login: a pessoa entrou, ou falta o código da verificação em duas etapas */
+export type ResultadoLogin = { usuario: Usuario } | { precisa2fa: true };
 import { getUserProfile } from "../services/usuario";
 
 interface AuthContextValue {
@@ -21,7 +24,9 @@ interface AuthContextValue {
   loading: boolean;
   /** true enquanto a pessoa usa senha provisória */
   precisaTrocarSenha: boolean;
-  login: (email: string, senha: string) => Promise<Usuario>;
+  login: (email: string, senha: string) => Promise<ResultadoLogin>;
+  /** Segundo passo do login com 2FA */
+  confirmarCodigo: (codigo: string) => Promise<Usuario>;
   trocarSenha: (senhaAtual: string, novaSenha: string) => Promise<Usuario>;
   logout: () => void;
   refreshUser: () => void;
@@ -30,10 +35,12 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<Usuario | null>(() => authService.getUser());
+  const [user, setUser] = useState<Usuario | null>(() => {
+    // Token do formato antigo não vale mais no servidor: apaga antes de montar o app
+    authService.limparSessaoAntiga();
+    return authService.getUser();
+  });
   const [loading, setLoading] = useState(false);
-  // Quem entrou antes do cookie HttpOnly tem token antigo: converte antes de o app fazer chamadas
-  const [pronto, setPronto] = useState(() => !temTokenAntigo());
 
   const refreshUser = useCallback(() => {
     setUser(authService.getUser());
@@ -43,9 +50,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await authService.migrarSessaoAntiga();
-      if (cancelled) return;
-      setPronto(true);
       if (!authService.getUser()) {
         setUser(null);
         return;
@@ -70,18 +74,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (email: string, senha: string): Promise<Usuario> => {
+    async (email: string, senha: string): Promise<ResultadoLogin> => {
       setLoading(true);
       try {
-        const { usuario } = await authService.login({ email, senha });
-        setUser(usuario);
-        return usuario;
+        const r = await authService.login({ email, senha });
+        if ("precisa_2fa" in r) return { precisa2fa: true };
+        setUser(r.usuario);
+        return { usuario: r.usuario };
       } finally {
         setLoading(false);
       }
     },
     []
   );
+
+  const confirmarCodigo = useCallback(async (codigo: string): Promise<Usuario> => {
+    const { usuario } = await authService.confirmarCodigo(codigo);
+    setUser(usuario);
+    return usuario;
+  }, []);
 
   const trocarSenha = useCallback(async (senhaAtual: string, novaSenha: string): Promise<Usuario> => {
     const usuario = await authService.trocarSenha(senhaAtual, novaSenha);
@@ -107,23 +118,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     precisaTrocarSenha: !!user?.trocar_senha,
     login,
+    confirmarCodigo,
     trocarSenha,
     logout,
     refreshUser,
   };
 
-  // Só durante a conversão do token antigo (uma requisição): evita chamadas sem sessão
-  if (!pronto) return null;
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-function temTokenAntigo(): boolean {
-  try {
-    return !!localStorage.getItem("token");
-  } catch {
-    return false;
-  }
 }
 
 export function useAuth(): AuthContextValue {

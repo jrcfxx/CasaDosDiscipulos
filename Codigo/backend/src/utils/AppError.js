@@ -58,4 +58,13 @@ export class ConflictError extends AppError {
   }
 }
 
+/**
+ * Tentativas demais (ex.: conta bloqueada temporariamente)
+ */
+export class TooManyRequestsError extends AppError {
+  constructor(message = "Muitas tentativas. Aguarde alguns minutos.") {
+    super(message, 429);
+  }
+}
+
 export default AppError;

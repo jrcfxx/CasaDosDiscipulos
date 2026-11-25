@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SegurancaUsuario from "./SegurancaUsuario";
 import { createPortal } from "react-dom";
 import { formatarTelefoneInput } from "../../utils/telefoneUtils";
 import type { Ministerio } from "../../services/ministerioService";
@@ -286,6 +287,8 @@ const ModalUsuario: React.FC<Props> = ({
               {erroRedefinir && <p className="hint redefinir-senha__erro" role="alert">{erroRedefinir}</p>}
             </div>
           )}
+
+          {usuarioModal.id_usuario && <SegurancaUsuario idUsuario={Number(usuarioModal.id_usuario)} />}
 
           <div className="form-field form-field-full form-field-senhas">
             <div className="form-field">

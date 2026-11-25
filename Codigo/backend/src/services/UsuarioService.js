@@ -241,7 +241,7 @@ const UsuarioService = {
     }
 
     // Hash da senha
-    const senhaHash = await bcrypt.hash(data.senha, 10);
+    const senhaHash = await bcrypt.hash(data.senha, 12);
 
     // Prepara dados do novo usuário
     const novoUsuarioData = {
@@ -378,7 +378,7 @@ const UsuarioService = {
       }
       // Senha definida pelo admin é provisória: a pessoa cria a própria no próximo acesso,
       // e as sessões abertas com a senha antiga são encerradas.
-      dadosAtualizacao.senha = await bcrypt.hash(data.senha, 10);
+      dadosAtualizacao.senha = await bcrypt.hash(data.senha, 12);
       dadosAtualizacao.trocar_senha = true;
       dadosAtualizacao.sessao_versao = knex.raw("sessao_versao + 1");
     }

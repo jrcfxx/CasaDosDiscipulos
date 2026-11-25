@@ -12,6 +12,8 @@ import imgModulos from "../assets/IMG_6568.jpg";
 import imgQuiz from "../assets/IMG_6936.jpg";
 import imgEventos from "../assets/DSC00719.jpg";
 import imgStaff from "../assets/tres_mulheres.jpeg";
+import imgUsuarios from "../assets/DSC00309.jpg";
+import imgSeguranca from "../assets/DSC00438.jpg";
 
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -166,6 +168,35 @@ const PortalDoDiscipuloAdmin: React.FC<PortalProps> = ({ onNavigate }) => {
               <div className="portal-card__overlay" />
               <span className="portal-card__title">Gerenciar Eventos</span>
               <span className="portal-card__desc">Criar e administrar eventos</span>
+            </Link>
+          </div>
+        </section>
+
+        <section className="portal-section">
+          <h2 className="portal-section__title">
+            <span className="portal-section__line" aria-hidden />
+            Administração
+          </h2>
+          <div className="portal-grid portal-grid--2">
+            <Link
+              to="/admin/usuarios"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgUsuarios})` }}
+              aria-label="Gerenciar Usuários"
+            >
+              <div className="portal-card__overlay" />
+              <span className="portal-card__title">Usuários</span>
+              <span className="portal-card__desc">Contas, permissões e senhas</span>
+            </Link>
+            <Link
+              to="/admin/seguranca"
+              className="portal-card"
+              style={{ backgroundImage: `url(${imgSeguranca})` }}
+              aria-label="Segurança"
+            >
+              <div className="portal-card__overlay" />
+              <span className="portal-card__title">Segurança</span>
+              <span className="portal-card__desc">Acessos, aparelhos e bloqueios</span>
             </Link>
           </div>
         </section>

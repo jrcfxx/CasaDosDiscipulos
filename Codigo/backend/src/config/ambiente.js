@@ -15,4 +15,10 @@ export function verificarAmbiente() {
         "(trocar o segredo encerra todas as sessões)."
     );
   }
+  if (producao && !process.env.CHAVE_CRIPTOGRAFIA) {
+    console.warn(
+      "[seguranca] CHAVE_CRIPTOGRAFIA não definida: o segredo do 2FA está sendo protegido com uma chave derivada do JWT_SECRET. " +
+        "Defina CHAVE_CRIPTOGRAFIA (openssl rand -base64 48) antes de alguém ativar o 2FA."
+    );
+  }
 }

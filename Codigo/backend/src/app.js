@@ -26,10 +26,12 @@ import usuarioCelulaRoutes from "./routes/usuarioCelulaRoutes.js";
 import ministerioRoutes from "./routes/ministerioRoutes.js";
 import notificacaoRoutes from "./routes/notificacaoRoutes.js";
 import falaAiRoutes from "./routes/falaAiRoutes.js";
+import segurancaRoutes from "./routes/segurancaRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import { verificarAmbiente } from "./config/ambiente.js";
 import { iniciarJobModulosWhatsApp } from "./jobs/whatsappModulosJob.js";
 import { iniciarJobConcluirEscalas } from "./jobs/escalaConcluirJob.js";
+import { iniciarJobLimpezaSeguranca } from "./jobs/segurancaLimpezaJob.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +56,12 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
+// Respostas da API têm dados pessoais: navegador e proxies não guardam cópia
+app.use("/api/", (req, res, next) => {
+  res.set("Cache-Control", "no-store");
+  next();
+});
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   // Em desenvolvimento o limite é alto para crawls E2E / hot reload
@@ -70,8 +78,9 @@ const authLimiter = rateLimit({
   limit: Number(process.env.AUTH_RATE_LIMIT_MAX) || (process.env.NODE_ENV === "production" ? 30 : 500),
   message: { error: "Muitas tentativas de login. Tente novamente em alguns minutos." },
 });
-app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/login", authLimiter); // inclui /api/auth/login/2fa
 app.use("/api/auth/senha", authLimiter);
+app.use("/api/auth/2fa", authLimiter);
 
 // Limite por conta (além do limite por IP): impede testar várias senhas de um mesmo e-mail
 // a partir de muitas conexões. Só conta tentativas que falharam.
@@ -79,6 +88,8 @@ const loginPorContaLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: process.env.NODE_ENV === "production" ? 10 : 200,
   skipSuccessfulRequests: true,
+  // Só o passo da senha (o do código 2FA não tem e-mail no corpo e já conta no bloqueio da conta)
+  skip: (req) => req.path !== "/",
   keyGenerator: (req) => `conta:${String(req.body?.email || "").trim().toLowerCase()}`,
   message: { error: "Muitas tentativas para esta conta. Aguarde 15 minutos ou fale com a secretaria." },
 });
@@ -156,6 +167,9 @@ app.use("/api/notificacoes", notificacaoRoutes);
 // Fala Aí Discípulo (devocional e palavra do dia)
 app.use("/api/fala-ai", falaAiRoutes);
 
+// Painel de segurança (admin): registro de acessos, sessões, bloqueios
+app.use("/api/seguranca", segurancaRoutes);
+
 // Middleware de tratamento de erros deve vir por último
 app.use(errorHandler);
 
@@ -164,4 +178,5 @@ app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
   iniciarJobModulosWhatsApp();
   iniciarJobConcluirEscalas();
+  iniciarJobLimpezaSeguranca();
 });

@@ -1,6 +1,17 @@
 import { ForbiddenError } from "../utils/AppError.js";
 import { USER_TYPES } from "../utils/constants.js";
 import knex from "../database/index.js";
+import RegistroSegurancaService, { EVENTOS } from "../services/RegistroSegurancaService.js";
+
+/** Tentativa de abrir área sem permissão vai para o registro de segurança (nunca lança erro) */
+function registrarNegado(req, exigido) {
+  return RegistroSegurancaService.registrar(req, {
+    evento: EVENTOS.ACESSO_NEGADO,
+    resultado: "falha",
+    id_usuario: req.usuario?.id_usuario,
+    detalhes: { metodo: req.method, rota: `${req.baseUrl}${req.path}`.slice(0, 200), tipo: req.usuario?.tipo, exigido },
+  });
+}
 
 /**
  * Middleware para verificar se o usuário tem permissão baseada em seu tipo
@@ -8,7 +19,7 @@ import knex from "../database/index.js";
  * @returns {Function} Middleware function
  */
 const checkRole = (allowedRoles) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     if (!req.usuario) {
       return next(
         new ForbiddenError("Usuário não autenticado. Faça login primeiro.")
@@ -18,6 +29,7 @@ const checkRole = (allowedRoles) => {
     const userType = req.usuario.tipo;
 
     if (!allowedRoles.includes(userType)) {
+      await registrarNegado(req, allowedRoles.join(","));
       return next(
         new ForbiddenError(
           `Acesso negado. Esta ação requer permissão de: ${allowedRoles.join(
@@ -52,6 +64,7 @@ export const adminAndLiderMinisterio = async (req, res, next) => {
     }
 
     if (req.usuario.tipo !== USER_TYPES.LEADER) {
+      await registrarNegado(req, "lider_ministerio");
       return next(
         new ForbiddenError(
           "Acesso negado. Esta ação requer permissão de administrador ou líder de ministério."
@@ -65,6 +78,7 @@ export const adminAndLiderMinisterio = async (req, res, next) => {
       .first();
 
     if (!row) {
+      await registrarNegado(req, "lider_ministerio");
       return next(
         new ForbiddenError(
           "Acesso negado. Apenas líderes de ministério podem gerenciar a escala."
