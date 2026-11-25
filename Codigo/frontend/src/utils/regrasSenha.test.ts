@@ -26,3 +26,11 @@ describe("regras de senha (espelho do servidor)", () => {
     expect(avaliarSenha("", pessoa).some((r) => r.ok)).toBe(false);
   });
 });
+
+describe("senhas óbvias (mesma lista do servidor)", () => {
+  it("recusa jesus123 e variações com acento e símbolo", () => {
+    expect(senhaAceita("Jesus123", pessoa)).toBe(false);
+    expect(senhaAceita("Deus é fiel!", pessoa)).toBe(false);
+    expect(senhaAceita("11112222", pessoa)).toBe(false);
+  });
+});

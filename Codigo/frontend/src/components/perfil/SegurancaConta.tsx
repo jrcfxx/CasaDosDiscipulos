@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import CampoSenha from "../ui/CampoSenha";
+import ConfirmModal from "../ui/ConfirmModal";
+import Icone from "../ui/Icone";
 import segurancaService, {
   ConfiguracaoDoisFatores, EventoSeguranca, SessaoAberta, StatusDoisFatores,
 } from "../../services/segurancaService";
 import { getErrorMessage } from "../../utils/errorUtils";
 import { detalheEvento, formatarDataHora, rotuloEvento, tempoRelativo } from "../../utils/eventosSeguranca";
-import "../../style/segurancaConta.css";
 
 interface Props {
   /** Mensagem rápida na tela (Toast do Perfil) */
@@ -13,12 +14,15 @@ interface Props {
 }
 
 type Etapa2fa = "parado" | "configurando" | "codigos" | "desativando" | "renovando";
+type Confirmacao = { titulo: string; mensagem: string; rotulo: string; perigo?: boolean; acao: () => Promise<void> };
 
 /** Chave em blocos de 4 para digitar no app sem errar */
 const emBlocos = (s: string) => s.replace(/(.{4})/g, "$1 ").trim();
+const ATIVIDADE_INICIAL = 6;
 
 /**
- * Perfil → Segurança: verificação em duas etapas, aparelhos conectados e atividade recente da conta.
+ * Perfil → três cartões de segurança: verificação em duas etapas, aparelhos conectados e atividade recente.
+ * Os ids (duas-etapas, aparelhos, atividade) são os destinos do menu lateral do Perfil.
  */
 const SegurancaConta: React.FC<Props> = ({ avisar }) => {
   const idBase = useId();
@@ -26,6 +30,7 @@ const SegurancaConta: React.FC<Props> = ({ avisar }) => {
   const [sessoes, setSessoes] = useState<SessaoAberta[]>([]);
   const [acessos, setAcessos] = useState<EventoSeguranca[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [verTudo, setVerTudo] = useState(false);
 
   const [etapa, setEtapa] = useState<Etapa2fa>("parado");
   const [config, setConfig] = useState<ConfiguracaoDoisFatores | null>(null);
@@ -35,6 +40,7 @@ const SegurancaConta: React.FC<Props> = ({ avisar }) => {
   const [guardou, setGuardou] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [erro2fa, setErro2fa] = useState("");
+  const [confirmacao, setConfirmacao] = useState<Confirmacao | null>(null);
   const campoCodigo = useRef<HTMLInputElement>(null);
   const tituloCodigos = useRef<HTMLHeadingElement>(null);
 
@@ -144,85 +150,105 @@ const SegurancaConta: React.FC<Props> = ({ avisar }) => {
     URL.revokeObjectURL(url);
   };
 
-  const encerrar = async (s: SessaoAberta) => {
-    if (s.atual && !window.confirm("Encerrar este aparelho? Você vai sair da conta agora.")) return;
-    try {
-      await segurancaService.encerrarMinhaSessao(s.referencia);
-      if (s.atual) {
-        window.location.assign("/login");
-        return;
-      }
-      setSessoes((lista) => lista.filter((x) => x.referencia !== s.referencia));
-      avisar(`${s.dispositivo || "Aparelho"} desconectado`, "success");
-    } catch (err) {
-      avisar(getErrorMessage(err, "Não foi possível encerrar"), "error");
-    }
-  };
+  const pedirEncerrar = (s: SessaoAberta) =>
+    setConfirmacao({
+      titulo: s.atual ? "Sair deste aparelho?" : "Desconectar aparelho?",
+      mensagem: s.atual
+        ? "Você vai sair da conta agora e precisará entrar de novo."
+        : `${s.dispositivo || "Esse aparelho"} sai da sua conta na hora. Se não reconhece esse acesso, troque também sua senha.`,
+      rotulo: s.atual ? "Sair" : "Desconectar",
+      perigo: true,
+      acao: async () => {
+        await segurancaService.encerrarMinhaSessao(s.referencia);
+        if (s.atual) {
+          window.location.assign("/login");
+          return;
+        }
+        setSessoes((lista) => lista.filter((x) => x.referencia !== s.referencia));
+        avisar(`${s.dispositivo || "Aparelho"} desconectado`, "success");
+      },
+    });
 
-  const encerrarOutras = async () => {
-    if (!window.confirm("Sair da conta em todos os outros aparelhos?")) return;
-    try {
-      const r = await segurancaService.encerrarOutrasSessoes();
-      avisar(r.message, "success");
-      await carregar();
-    } catch (err) {
-      avisar(getErrorMessage(err, "Não foi possível encerrar"), "error");
-    }
-  };
-
-  if (carregando) {
-    return (
-      <section className="perfil-card sg" aria-labelledby={`${idBase}-titulo`}>
-        <h2 id={`${idBase}-titulo`} className="sg-titulo">Segurança da conta</h2>
-        <p className="sg-texto" role="status">Carregando…</p>
-      </section>
-    );
-  }
+  const pedirEncerrarOutras = () =>
+    setConfirmacao({
+      titulo: "Sair dos outros aparelhos?",
+      mensagem: "Todos os aparelhos, menos este, saem da sua conta agora.",
+      rotulo: "Sair dos outros",
+      perigo: true,
+      acao: async () => {
+        const r = await segurancaService.encerrarOutrasSessoes();
+        avisar(r.message, "success");
+        await carregar();
+      },
+    });
 
   const outras = sessoes.filter((s) => !s.atual).length;
   const pedeCodigo = etapa === "configurando" || etapa === "desativando" || etapa === "renovando";
+  const atividade = verTudo ? acessos : acessos.slice(0, ATIVIDADE_INICIAL);
+
+  const topo = (icone: Parameters<typeof Icone>[0]["nome"], titulo: string, texto: string, idTitulo: string, extra?: React.ReactNode) => (
+    <header className="pf-cartao__topo">
+      <span className="pf-cartao__icone" aria-hidden><Icone nome={icone} tamanho={20} /></span>
+      <div className="pf-cartao__titulos">
+        <h2 id={idTitulo}>{titulo}</h2>
+        <p>{texto}</p>
+      </div>
+      {extra}
+    </header>
+  );
 
   return (
-    <section className="perfil-card sg" aria-labelledby={`${idBase}-titulo`}>
-      <h2 id={`${idBase}-titulo`} className="sg-titulo">Segurança da conta</h2>
-
+    <>
       {/* ---------- Verificação em duas etapas ---------- */}
-      <div className="sg-bloco">
-        <div className="sg-bloco__topo">
-          <h3 className="sg-subtitulo">Verificação em duas etapas</h3>
-          <span className={`sg-selo ${status?.ativo ? "sg-selo--ok" : "sg-selo--off"}`}>
-            {status?.ativo ? "Ativa" : "Desligada"}
-          </span>
-        </div>
-
-        {etapa === "parado" && !status?.ativo && (
-          <>
-            <p className="sg-texto">
-              Além da senha, a conta pede um código que muda a cada 30 segundos no seu celular. Mesmo que alguém
-              descubra sua senha, não consegue entrar. Recomendado para quem cuida de dados de outras pessoas.
-            </p>
-            <button type="button" className="btn-save sg-botao" onClick={comecar} disabled={ocupado} aria-busy={ocupado}>
-              Ativar verificação em duas etapas
-            </button>
-          </>
+      <section id="duas-etapas" className="pf-cartao" aria-labelledby={`${idBase}-2fa`}>
+        {topo(
+          "escudo",
+          "Verificação em duas etapas",
+          "Além da senha, um código do seu celular a cada entrada.",
+          `${idBase}-2fa`,
+          !carregando && (
+            <span className={`pf-estado ${status?.ativo ? "pf-estado--ok" : ""}`}>
+              <span className="pf-estado__ponto" aria-hidden />
+              {status?.ativo ? "Ativa" : "Desligada"}
+            </span>
+          )
         )}
 
-        {etapa === "parado" && status?.ativo && (
+        {carregando && <p className="pf-texto" role="status">Carregando…</p>}
+
+        {!carregando && etapa === "parado" && !status?.ativo && (
+          <div className="pf-destaque">
+            <div>
+              <p className="pf-destaque__titulo">Proteja sua conta mesmo se alguém descobrir sua senha</p>
+              <p className="pf-texto">
+                Você usa um aplicativo gratuito no celular (Google Authenticator, Microsoft Authenticator ou Authy)
+                que mostra um código novo a cada 30 segundos. Leva 2 minutos para configurar.
+              </p>
+            </div>
+            <button type="button" className="sc-btn sc-btn--primario" onClick={comecar} disabled={ocupado} aria-busy={ocupado}>
+              Ativar agora
+            </button>
+          </div>
+        )}
+
+        {!carregando && etapa === "parado" && status?.ativo && (
           <>
-            <p className="sg-texto">
-              Sua conta pede o código do aplicativo autenticador a cada entrada.{" "}
+            <p className="pf-texto">
+              Sua conta pede o código do aplicativo a cada entrada.{" "}
               {status.codigos_restantes > 0
-                ? `Você ainda tem ${status.codigos_restantes} código(s) de recuperação.`
+                ? <>Você tem <strong>{status.codigos_restantes}</strong> código(s) de recuperação para usar se perder o celular.</>
                 : "Você não tem mais códigos de recuperação: gere novos."}
             </p>
             {status.codigos_restantes <= 2 && (
-              <p className="sg-alerta" role="note">Poucos códigos de recuperação restantes. Gere novos e guarde em lugar seguro.</p>
+              <p className="pf-alerta" role="note">
+                <Icone nome="alerta" tamanho={16} /> Poucos códigos de recuperação. Gere novos e guarde em lugar seguro.
+              </p>
             )}
-            <div className="sg-acoes">
-              <button type="button" className="btn-cancel sg-botao" onClick={() => { limparFormulario(); setEtapa("renovando"); }}>
+            <div className="pf-acoes pf-acoes--inicio">
+              <button type="button" className="sc-btn sc-btn--contorno" onClick={() => { limparFormulario(); setEtapa("renovando"); }}>
                 Gerar novos códigos de recuperação
               </button>
-              <button type="button" className="btn-cancel sg-botao sg-botao--perigo" onClick={() => { limparFormulario(); setEtapa("desativando"); }}>
+              <button type="button" className="sc-btn sc-btn--perigo" onClick={() => { limparFormulario(); setEtapa("desativando"); }}>
                 Desativar
               </button>
             </div>
@@ -230,164 +256,182 @@ const SegurancaConta: React.FC<Props> = ({ avisar }) => {
         )}
 
         {etapa === "configurando" && config && (
-          <ol className="sg-passos">
-            <li>
-              Instale um aplicativo autenticador no celular (Google Authenticator, Microsoft Authenticator ou Authy).
-            </li>
-            <li>
-              No aplicativo, toque em <strong>adicionar</strong> e leia este QR code:
-              <div className="sg-qr">
-                <img src={config.qrcode} alt="QR code para configurar o aplicativo autenticador" width={200} height={200} />
-              </div>
-              <details className="sg-chave">
-                <summary>Não consegue ler? Digite a chave</summary>
-                <code aria-label="Chave para digitar no aplicativo">{emBlocos(config.segredo)}</code>
-              </details>
-            </li>
-            <li>Digite abaixo o código de 6 dígitos que apareceu no aplicativo.</li>
-          </ol>
+          <div className="pf-config">
+            <ol className="pf-passos">
+              <li>
+                <span className="pf-passos__num" aria-hidden>1</span>
+                <div>
+                  <strong>Instale o aplicativo</strong>
+                  <p className="pf-texto">Google Authenticator, Microsoft Authenticator ou Authy (grátis na loja do celular).</p>
+                </div>
+              </li>
+              <li>
+                <span className="pf-passos__num" aria-hidden>2</span>
+                <div>
+                  <strong>Leia o QR code</strong>
+                  <p className="pf-texto">No aplicativo, toque em <em>adicionar conta</em> e aponte a câmera.</p>
+                  <details className="pf-chave">
+                    <summary>Não consegue ler? Digite a chave</summary>
+                    <code aria-label="Chave para digitar no aplicativo">{emBlocos(config.segredo)}</code>
+                  </details>
+                </div>
+              </li>
+              <li>
+                <span className="pf-passos__num" aria-hidden>3</span>
+                <div>
+                  <strong>Digite o código de 6 dígitos</strong>
+                  <p className="pf-texto">O que aparece no aplicativo agora, logo abaixo.</p>
+                </div>
+              </li>
+            </ol>
+            <div className="pf-qr">
+              <img src={config.qrcode} alt="QR code para configurar o aplicativo autenticador" width={196} height={196} />
+            </div>
+          </div>
         )}
 
         {etapa === "codigos" && (
-          <div className="sg-codigos">
-            <h4 ref={tituloCodigos} tabIndex={-1} className="sg-subtitulo">Guarde seus códigos de recuperação</h4>
-            <p className="sg-texto">
+          <div className="pf-codigos">
+            <h3 ref={tituloCodigos} tabIndex={-1}>Guarde seus códigos de recuperação</h3>
+            <p className="pf-texto">
               Se perder o celular, cada código abaixo permite entrar <strong>uma vez</strong>. Eles não aparecem de
-              novo: baixe, imprima ou anote e guarde em lugar seguro (não no mesmo celular).
+              novo: baixe, imprima ou anote, e guarde longe do celular.
             </p>
-            <ul className="sg-codigos__lista" aria-label="Códigos de recuperação">
-              {codigosNovos.map((c) => (
-                <li key={c}><code>{c}</code></li>
-              ))}
+            <ul className="pf-codigos__lista" aria-label="Códigos de recuperação">
+              {codigosNovos.map((c) => <li key={c}><code>{c}</code></li>)}
             </ul>
-            <div className="sg-acoes">
-              <button type="button" className="btn-cancel sg-botao" onClick={baixarCodigos}>Baixar (.txt)</button>
-              <button type="button" className="btn-cancel sg-botao" onClick={copiarCodigos}>Copiar</button>
+            <div className="pf-acoes pf-acoes--inicio">
+              <button type="button" className="sc-btn sc-btn--contorno" onClick={baixarCodigos}>Baixar (.txt)</button>
+              <button type="button" className="sc-btn sc-btn--contorno" onClick={copiarCodigos}>Copiar</button>
             </div>
-            <label className="sg-check">
+            <label className="pf-check">
               <input type="checkbox" checked={guardou} onChange={(e) => setGuardou(e.target.checked)} />
               Guardei os códigos em lugar seguro
             </label>
-            <button
-              type="button"
-              className="btn-save sg-botao"
-              disabled={!guardou}
-              onClick={() => { setCodigosNovos([]); setEtapa("parado"); }}
-            >
-              Concluir
-            </button>
+            <div className="pf-acoes pf-acoes--inicio">
+              <button
+                type="button"
+                className="sc-btn sc-btn--primario"
+                disabled={!guardou}
+                onClick={() => { setCodigosNovos([]); setEtapa("parado"); }}
+              >
+                Concluir
+              </button>
+            </div>
           </div>
         )}
 
         {pedeCodigo && (
-          <form className="sg-form" onSubmit={confirmar} noValidate>
+          <form className="pf-form pf-form--compacto" onSubmit={confirmar} noValidate>
             {etapa === "desativando" && (
-              <div className="form-group">
-                <label htmlFor={`${idBase}-senha`} className="form-label">Sua senha</label>
-                <CampoSenha
-                  id={`${idBase}-senha`}
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  className="form-input"
-                  autoComplete="current-password"
-                  required
-                />
+              <div className="pf-campo">
+                <label htmlFor={`${idBase}-senha`}>Sua senha</label>
+                <CampoSenha id={`${idBase}-senha`} value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="current-password" />
               </div>
             )}
-            <div className="form-group">
-              <label htmlFor={`${idBase}-codigo`} className="form-label">
+            <div className="pf-campo">
+              <label htmlFor={`${idBase}-codigo`}>
                 {etapa === "configurando" ? "Código do aplicativo" : "Código do aplicativo ou de recuperação"}
               </label>
               <input
                 ref={campoCodigo}
                 id={`${idBase}-codigo`}
-                className="form-input sg-codigo"
+                className="pf-codigo"
                 value={codigo}
-                onChange={(e) => setCodigo(etapa === "configurando" ? e.target.value.replace(/\D/g, "").slice(0, 6) : e.target.value.slice(0, 12))}
+                onChange={(e) =>
+                  setCodigo(etapa === "configurando" ? e.target.value.replace(/\D/g, "").slice(0, 6) : e.target.value.slice(0, 12))
+                }
                 inputMode={etapa === "configurando" ? "numeric" : "text"}
                 autoComplete="one-time-code"
                 placeholder="000000"
-                required
                 aria-invalid={erro2fa ? true : undefined}
                 aria-describedby={erro2fa ? `${idBase}-erro` : undefined}
               />
-              {erro2fa && <p id={`${idBase}-erro`} className="sg-erro" role="alert">{erro2fa}</p>}
+              {erro2fa && <p id={`${idBase}-erro`} className="pf-campo__erro" role="alert">{erro2fa}</p>}
             </div>
-            <div className="sg-acoes">
-              <button type="button" className="btn-cancel sg-botao" onClick={cancelar}>Cancelar</button>
+            <div className="pf-acoes pf-acoes--inicio">
               <button
                 type="submit"
-                className={`btn-save sg-botao${etapa === "desativando" ? " sg-botao--perigo-cheio" : ""}`}
+                className={`sc-btn ${etapa === "desativando" ? "pf-btn-perigo" : "sc-btn--primario"}`}
                 disabled={ocupado || !codigo || (etapa === "desativando" && !senha)}
                 aria-busy={ocupado}
               >
                 {etapa === "configurando" ? "Ativar" : etapa === "desativando" ? "Desativar" : "Gerar códigos"}
               </button>
+              <button type="button" className="sc-btn sc-btn--contorno" onClick={cancelar}>Cancelar</button>
             </div>
           </form>
         )}
-      </div>
+      </section>
 
       {/* ---------- Aparelhos conectados ---------- */}
-      <div className="sg-bloco">
-        <div className="sg-bloco__topo">
-          <h3 className="sg-subtitulo">Aparelhos conectados</h3>
-          {outras > 0 && (
-            <button type="button" className="sg-link" onClick={encerrarOutras}>
-              Sair dos outros aparelhos ({outras})
-            </button>
-          )}
-        </div>
-        <p className="sg-texto">
-          Não reconhece algum? Encerre e troque sua senha. Por segurança, a conta sai sozinha depois de alguns dias sem uso.
-        </p>
-        <ul className="sg-lista">
-          {sessoes.map((s) => (
-            <li key={s.referencia} className="sg-item">
-              <div className="sg-item__info">
-                <span className="sg-item__nome">
-                  {s.dispositivo || "Aparelho"}
-                  {s.atual && <span className="sg-selo sg-selo--ok">Este aparelho</span>}
+      <section id="aparelhos" className="pf-cartao" aria-labelledby={`${idBase}-aparelhos`}>
+        {topo(
+          "celular",
+          "Aparelhos conectados",
+          "Onde sua conta está aberta. Por segurança, ela sai sozinha após alguns dias sem uso.",
+          `${idBase}-aparelhos`
+        )}
+        {!carregando && (
+          <ul className="pf-lista">
+            {sessoes.map((s) => (
+              <li key={s.referencia} className="pf-linha">
+                <span className={`pf-linha__icone${s.atual ? " pf-linha__icone--atual" : ""}`} aria-hidden>
+                  <Icone nome={/iPhone|Android|iPad/.test(s.dispositivo || "") ? "celular" : "projecao"} tamanho={18} />
                 </span>
-                <span className="sg-item__meta">
-                  Último uso {tempoRelativo(s.ultimo_uso)} · entrou em {formatarDataHora(s.criada_em)}
-                  {s.ip ? ` · IP ${s.ip}` : ""}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="sg-link"
-                onClick={() => encerrar(s)}
-                aria-label={`Encerrar ${s.dispositivo || "aparelho"}${s.atual ? " (este aparelho)" : ""}`}
-              >
-                {s.atual ? "Sair" : "Encerrar"}
+                <div className="pf-linha__info">
+                  <span className="pf-linha__titulo">
+                    {s.dispositivo || "Aparelho"}
+                    {s.atual && <span className="pf-chip pf-chip--teal">Este aparelho</span>}
+                  </span>
+                  <span className="pf-linha__meta">
+                    {s.atual ? "Em uso agora" : `Último uso ${tempoRelativo(s.ultimo_uso)}`} · entrou em {formatarDataHora(s.criada_em)}
+                    {s.ip ? ` · IP ${s.ip}` : ""}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="sc-btn sc-btn--contorno"
+                  onClick={() => pedirEncerrar(s)}
+                  aria-label={`${s.atual ? "Sair deste aparelho" : "Desconectar"} ${s.dispositivo || ""}`.trim()}
+                >
+                  {s.atual ? "Sair" : "Desconectar"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {outras > 0 && (
+          <footer className="pf-cartao__rodape">
+            <p className="pf-pendente pf-pendente--neutro">Não reconhece algum? Desconecte e troque sua senha.</p>
+            <div className="pf-acoes">
+              <button type="button" className="sc-btn sc-btn--perigo" onClick={pedirEncerrarOutras}>
+                Sair dos outros aparelhos ({outras})
               </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+            </div>
+          </footer>
+        )}
+      </section>
 
       {/* ---------- Atividade recente ---------- */}
-      <div className="sg-bloco">
-        <h3 className="sg-subtitulo">Atividade recente</h3>
-        {acessos.length === 0 ? (
-          <p className="sg-texto">Nenhuma atividade registrada ainda.</p>
-        ) : (
-          <ul className="sg-lista">
-            {acessos.map((a) => {
+      <section id="atividade" className="pf-cartao" aria-labelledby={`${idBase}-atividade`}>
+        {topo("historico", "Atividade recente", "Entradas e mudanças importantes na sua conta.", `${idBase}-atividade`)}
+        {!carregando && acessos.length === 0 && <p className="pf-texto">Nenhuma atividade registrada ainda.</p>}
+        {acessos.length > 0 && (
+          <ol className="pf-linha-tempo">
+            {atividade.map((a) => {
               const detalhe = detalheEvento(a);
+              const problema = a.resultado !== "sucesso";
               return (
-                <li key={a.id_log} className={`sg-item sg-item--${a.resultado}`}>
-                  <span className="sg-item__marca" aria-hidden />
-                  <div className="sg-item__info">
-                    <span className="sg-item__nome">
+                <li key={a.id_log} className={problema ? "pf-linha-tempo__item pf-linha-tempo__item--alerta" : "pf-linha-tempo__item"}>
+                  <span className="pf-linha-tempo__marca" aria-hidden />
+                  <div className="pf-linha__info">
+                    <span className="pf-linha__titulo">
                       {rotuloEvento(a)}
-                      {a.resultado !== "sucesso" && (
-                        <span className="sg-selo sg-selo--erro">{a.resultado === "bloqueado" ? "Bloqueado" : "Recusado"}</span>
-                      )}
+                      {problema && <span className="pf-chip pf-chip--alerta">{a.resultado === "bloqueado" ? "Bloqueado" : "Recusado"}</span>}
                     </span>
-                    <span className="sg-item__meta">
-                      {formatarDataHora(a.criado_em)} · {a.dispositivo}
+                    <span className="pf-linha__meta">
+                      <time dateTime={a.criado_em}>{formatarDataHora(a.criado_em)}</time> · {a.dispositivo}
                       {a.ip ? ` · IP ${a.ip}` : ""}
                       {detalhe ? ` · ${detalhe}` : ""}
                     </span>
@@ -395,10 +439,37 @@ const SegurancaConta: React.FC<Props> = ({ avisar }) => {
                 </li>
               );
             })}
-          </ul>
+          </ol>
         )}
-      </div>
-    </section>
+        {acessos.length > ATIVIDADE_INICIAL && (
+          <div className="pf-acoes pf-acoes--inicio">
+            <button type="button" className="pf-link" onClick={() => setVerTudo((v) => !v)} aria-expanded={verTudo}>
+              {verTudo ? "Mostrar menos" : `Ver tudo (${acessos.length})`}
+            </button>
+          </div>
+        )}
+      </section>
+
+      <ConfirmModal
+        open={!!confirmacao}
+        title={confirmacao?.titulo || ""}
+        message={confirmacao?.mensagem || ""}
+        confirmLabel={confirmacao?.rotulo}
+        variant={confirmacao?.perigo ? "danger" : "default"}
+        textoCarregando="Desconectando…"
+        onCancel={() => setConfirmacao(null)}
+        onConfirm={async () => {
+          if (!confirmacao) return;
+          try {
+            await confirmacao.acao();
+          } catch (err) {
+            avisar(getErrorMessage(err, "Não foi possível desconectar"), "error");
+          } finally {
+            setConfirmacao(null);
+          }
+        }}
+      />
+    </>
   );
 };
 

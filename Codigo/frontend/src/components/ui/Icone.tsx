@@ -26,6 +26,8 @@ import {
   House,
   Lock,
   ShieldCheck,
+  Smartphone,
+  History,
   Menu,
   Mic,
   Music,
@@ -66,6 +68,8 @@ const ICONES = {
   casa: House,
   cadeado: Lock,
   escudo: ShieldCheck, // painel de segurança
+  celular: Smartphone,
+  historico: History,
   check: Check,
   abrir: ChevronDown,
   anterior: ChevronLeft,
