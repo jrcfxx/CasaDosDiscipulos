@@ -1,228 +1,127 @@
 import React, { useEffect, useState } from "react";
-import "../style/LicoesSecretariaCelulaUser.css";
+import "../style/editorCasa.css";
+import "../style/secretariaUsuario.css";
 
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-
+import PaginaSecretaria, {
+  ListaSecretaria,
+  ItemSecretaria,
+  DetalheSecretaria,
+  DetalheVazio,
+  abasDoUsuario,
+  filtrarItens,
+} from "../components/secretaria/PaginaSecretaria";
 import licaoService, { type Licao } from "../services/licaoService";
-import { ASSETS_BASE } from "../config/api";
-import { renderVideoPreview } from "../components/conteudo/renderVideoPreview";
+import { formatarConteudoCampo } from "../utils/moduloConteudoUtils";
 import Icone from "../components/ui/Icone";
 
+const NOME_TIPO: Record<string, string> = {
+  video: "Vídeo",
+  textarea: "Texto",
+  texto: "Texto curto",
+  upload: "Arquivo",
+  link: "Link",
+  data: "Data",
+  numero: "Número",
+};
+
+/** Lições da célula: o líder escolhe a da semana e vê o material para conduzir o encontro */
 const LicaoSecretariaCelulaUser: React.FC = () => {
   const [licoes, setLicoes] = useState<Licao[]>([]);
-  const [selectedLicao, setSelectedLicao] = useState<Licao | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [selecionada, setSelecionada] = useState<Licao | null>(null);
+  const [busca, setBusca] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    (async () => {
+      try {
+        const lista = await licaoService.getAll();
+        setLicoes(lista);
+        setSelecionada(lista[0] ?? null);
+      } catch {
+        setLicoes([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
-    await fetchLicoes();
-    setLoading(false);
-  };
-
-  const fetchLicoes = async () => {
-    try {
-      const list = await licaoService.getAll();
-      setLicoes(list);
-      if (list.length > 0 && !selectedLicao) {
-        setSelectedLicao(list[0]);
-      }
-    } catch {
-      setLicoes([]);
-    }
-  };
-
-  const handleSelectLicao = (licao: Licao) => {
-    setSelectedLicao(licao);
-  };
-
-  const formatarConteudoCampo = (conteudo: unknown): React.ReactNode => {
-    if (!conteudo) return "Sem conteúdo";
-
-    // Se for uma string, tenta parsear como JSON
-    let parsed = conteudo;
-    if (typeof conteudo === "string") {
-      // Verifica se é um arquivo de upload (caminho que começa com /uploads/)
-      if (conteudo.startsWith("/uploads/") || conteudo.includes("/uploads/")) {
-        const fileName = conteudo.split("/").pop() || "arquivo";
-        const fileExtension = fileName.split(".").pop()?.toLowerCase() || "";
-        const isImage = [
-          "jpg",
-          "jpeg",
-          "png",
-          "gif",
-          "webp",
-          "svg",
-          "bmp",
-        ].includes(fileExtension);
-
-        return (
-          <div className="upload-preview-campo">
-            {isImage ? (
-              <div>
-                <img
-                  src={`${ASSETS_BASE}${conteudo}`}
-                  alt={fileName}
-                  style={{
-                    maxWidth: "200px",
-                    maxHeight: "200px",
-                    borderRadius: "4px",
-                  }}
-                />
-                <br />
-              </div>
-            ) : null}
-            <a
-              href={`${ASSETS_BASE}${conteudo}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              style={{
-                color: "#3b82f6",
-                textDecoration: "underline",
-                fontSize: "0.9rem",
-              }}
-            >
-              <Icone nome="arquivo" tamanho={16} /> Baixar {fileName}
-            </a>
-          </div>
-        );
-      }
-
-      // Verifica se é uma URL de vídeo
-      const videoUrlRegex =
-        /(youtube\.com|youtu\.be|vimeo\.com|\.mp4|\.webm|\.ogg)/i;
-      if (videoUrlRegex.test(conteudo)) {
-        return renderVideoPreview(conteudo);
-      }
-
-      try {
-        parsed = JSON.parse(conteudo);
-      } catch {
-        // Não é JSON, retorna a string original
-        return conteudo;
-      }
-    }
-
-    // Se não for um objeto após o parse, retorna como está
-    if (typeof parsed !== "object" || parsed === null) {
-      return String(conteudo);
-    }
-
-    // Para outros tipos de objetos JSON, exibe formatado
-    return (
-      <pre className="json-formatted">{JSON.stringify(parsed, null, 2)}</pre>
-    );
-  };
+  const visiveis = filtrarItens(licoes, busca, "todos", (l) => l.titulo, () => true);
+  const campos = selecionada?.campos ?? [];
 
   return (
-    <div className="licoes-user-page page-with-fixed-header">
-      <Header />
-      <main id="main-content" className="page" tabIndex={-1}>
-        <h1 className="page-title">Secretaria das Células</h1>
+    <PaginaSecretaria
+      area="Secretaria das Células"
+      titulo="Lições"
+      icone="livro"
+      descricao="O material de cada encontro da célula. Escolha a lição na lista para ver o ensino, os vídeos e os arquivos para baixar."
+      abas={abasDoUsuario(true)}
+      rotuloAbas="Minhas áreas"
+      numeros={[{ valor: licoes.length, rotulo: licoes.length === 1 ? "lição disponível" : "lições disponíveis" }]}
+    >
+      <div className="sc-corpo">
+        <ListaSecretaria
+          titulo="Lições"
+          total={licoes.length}
+          busca={busca}
+          onBusca={setBusca}
+          placeholderBusca="Buscar lição pelo nome"
+          vazio={loading ? "Carregando…" : licoes.length ? "Nenhuma lição com esse nome." : "Ainda não há lições publicadas."}
+          quantidadeVisivel={visiveis.length}
+        >
+          {visiveis.map((l) => {
+            const n = l.campos?.length || 0;
+            return (
+              <ItemSecretaria
+                key={l.id_licao}
+                titulo={l.titulo}
+                meta={`${n} ${n === 1 ? "conteúdo" : "conteúdos"}`}
+                ativo
+                selecionado={selecionada?.id_licao === l.id_licao}
+                icone="livro"
+                onSelecionar={() => setSelecionada(l)}
+              />
+            );
+          })}
+        </ListaSecretaria>
 
-        {loading && <p className="loading-message">Carregando...</p>}
-
-        <section className="licoes-user-layout">
-          {/* Coluna esquerda - Lista de Lições */}
-          <aside
-            className="panel licoes-user-left"
-            aria-label="Lista de lições"
+        {selecionada ? (
+          <DetalheSecretaria
+            titulo={selecionada.titulo}
+            ativo
+            status={`${campos.length} ${campos.length === 1 ? "conteúdo" : "conteúdos"}`}
+            acoes={null}
           >
-            <div className="list-header">
-              <h2>Lições</h2>
-              <span className="count">{licoes.length}</span>
-            </div>
-            <div className="list">
-              {licoes.map((licao) => (
-                <div
-                  key={licao.id_licao}
-                  className={`licao-item ${
-                    selectedLicao?.id_licao === licao.id_licao ? "selected" : ""
-                  }`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleSelectLicao(licao)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
-                >
-                  <div className="licao-item__info">
-                    <span className="licao-item__name">{licao.titulo}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
-
-          {/* Coluna direita - Visualização da Lição (Somente Leitura) */}
-          <section
-            className="panel licoes-user-center"
-            aria-label="Detalhes da lição"
-          >
-            {selectedLicao ? (
-              <div className="licao-card">
-                <div className="licao-header">
-                  <div className="licao-title-area">
-                    <h2 className="licao-title">{selectedLicao.titulo}</h2>
-                  </div>
-                </div>
-
-                {selectedLicao.descricao && (
-                  <div className="licao-description">
-                    <h3>Descrição</h3>
-                    <p>{selectedLicao.descricao}</p>
-                  </div>
-                )}
-
-                <div className="licao-meta">
-                  <div className="meta-item">
-                    <span className="meta-label">Campos:</span>
-                    <span className="meta-value">
-                      {selectedLicao.campos?.length || 0}
-                    </span>
-                  </div>
-                </div>
-
-                {selectedLicao.campos && selectedLicao.campos.length > 0 ? (
-                  <div className="licao-fields">
-                    <h3>Campos Personalizados</h3>
-                    <div className="campos-grid">
-                      {selectedLicao.campos.map((campo, index) => (
-                        <div key={index} className="campo-card">
-                          <div className="campo-label">
-                            {campo.label || "Sem label"}
-                          </div>
-                          <div className="campo-conteudo">
-                            {formatarConteudoCampo(campo.conteudo)}
-                          </div>
-                          {campo.obrigatorio && (
-                            <span className="campo-required">Obrigatório</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="licao-empty">
-                    <p>Esta lição não possui campos cadastrados.</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="licao-placeholder">
-                <p>Selecione uma lição na lista para visualizar</p>
-              </div>
+            {selecionada.descricao && (
+              <p className="sc-descricao">
+                <strong>Sobre esta lição</strong>
+                {selecionada.descricao}
+              </p>
             )}
-          </section>
-        </section>
-      </main>
 
-      <Footer />
-    </div>
+            <h3 className="sc-subtitulo">
+              <Icone nome="livro" tamanho={17} /> Material do encontro
+            </h3>
+            {campos.length > 0 ? (
+              <ol className="ec-previa">
+                {campos.map((campo, i) => (
+                  <li key={i} className="campo-card campo-card--pergunta">
+                    <span className="ec-selo ec-selo--pergunta">
+                      {i + 1}. {NOME_TIPO[String(campo.tipo_campo)] || "Conteúdo"}
+                    </span>
+                    <div className="campo-label">{campo.label || "Sem título"}</div>
+                    <div className="campo-conteudo">{formatarConteudoCampo(campo.conteudo)}</div>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="sc-vazio-conteudo">Esta lição ainda não tem material.</p>
+            )}
+          </DetalheSecretaria>
+        ) : (
+          <DetalheVazio icone="livro" texto={loading ? "Carregando lições…" : "Escolha uma lição na lista."} />
+        )}
+      </div>
+    </PaginaSecretaria>
   );
 };
 

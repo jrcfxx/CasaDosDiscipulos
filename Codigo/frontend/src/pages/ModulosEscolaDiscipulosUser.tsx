@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../style/ModulosEscolaDiscipulosAdmin.css";
+import "../style/editorCasa.css";
+import "../style/secretariaUsuario.css";
 
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
+import PaginaSecretaria, {
+  ListaSecretaria,
+  ItemSecretaria,
+  DetalheSecretaria,
+  DetalheVazio,
+  abasDoUsuario,
+  filtrarItens,
+} from "../components/secretaria/PaginaSecretaria";
 import RankingCard, { type RankItem, type MinhaPosicao } from "../components/modulos/RankingCard";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarRanking } from "../utils/exportacoes";
 import { useAuth } from "../hooks/useAuth";
 import { formatarConteudoCampo } from "../utils/moduloConteudoUtils";
 import moduloService from "../services/moduloService";
-import Icone from "../components/ui/Icone";
+import Icone, { type NomeIcone } from "../components/ui/Icone";
 
 type ModuloComProgresso = {
   id_modulo: number;
@@ -18,7 +25,7 @@ type ModuloComProgresso = {
   descricao?: string;
   ordem: number;
   ativo: boolean;
-  obrigatorio?: boolean;
+  obrigatorio?: boolean | number;
   id_nivel?: number | null;
   nivel_nome?: string | null;
   pre_requisitos?: number[];
@@ -29,284 +36,334 @@ type ModuloComProgresso = {
   data_conclusao?: string | null;
 };
 
+const NOME_TIPO: Record<string, string> = {
+  video: "Vídeo",
+  textarea: "Texto",
+  texto: "Texto curto",
+  upload: "Arquivo",
+  link: "Link",
+  data: "Data",
+  numero: "Número",
+};
+
+const ehOpcional = (obrigatorio: boolean | number | undefined) => obrigatorio === false || obrigatorio === 0;
+
 const ModulosEscolaDiscipulosUser: React.FC = () => {
-  const { isLider, isAdmin } = useAuth();
+  const { isLider, isAdmin, isLiderCelula } = useAuth();
   const navigate = useNavigate();
   const [modulos, setModulos] = useState<ModuloComProgresso[]>([]);
-  const [selectedModulo, setSelectedModulo] = useState<ModuloComProgresso | null>(null);
+  const [selecionado, setSelecionado] = useState<ModuloComProgresso | null>(null);
   const [quizVinculado, setQuizVinculado] = useState<{ id_quiz: number; titulo?: string } | null>(null);
   const [ranking, setRanking] = useState<RankItem[]>([]);
   const [minhaPosicao, setMinhaPosicao] = useState<MinhaPosicao | null>(null);
   const [nivelEscola, setNivelEscola] = useState<string | null>(null);
+  const [busca, setBusca] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
+    carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const carregarQuiz = async (idModulo: number) => {
     try {
-      const [progressData, rankingData, posicaoData] = await Promise.all([
-        moduloService.getActiveWithProgress(),
-        moduloService.getRanking(20),
-        moduloService.getMinhaPosicao(),
-      ]);
-      setModulos(progressData.modulos as ModuloComProgresso[]);
-      setNivelEscola(progressData.nivel_escola_nome ?? null);
-      setRanking(rankingData as RankItem[]);
-      setMinhaPosicao(posicaoData ?? null);
-      if (progressData.modulos.length > 0 && !selectedModulo) {
-        const primeiro = progressData.modulos[0] as ModuloComProgresso;
-        setSelectedModulo(primeiro);
-        await loadQuizVinculado(primeiro.id_modulo);
-      }
-    } catch (err) {
-      console.error("Erro ao carregar dados:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadQuizVinculado = async (moduloId: number) => {
-    try {
-      const quiz = await moduloService.getQuizVinculado(moduloId);
-      setQuizVinculado(quiz);
+      setQuizVinculado(await moduloService.getQuizVinculado(idModulo));
     } catch {
       setQuizVinculado(null);
     }
   };
 
-  const handleSelectModulo = async (modulo: ModuloComProgresso) => {
-    setSelectedModulo(modulo);
-    await loadQuizVinculado(modulo.id_modulo);
-  };
-
-  const isOpcional = (obrigatorio: boolean | number | undefined) =>
-    obrigatorio === false || obrigatorio === 0;
-
-  const isModuloDisponivel = (index: number): boolean => {
-    const modulo = modulos[index];
-    if (!modulo) return false;
-
-    const preReqs = modulo.pre_requisitos || [];
-    if (preReqs.length > 0) {
-      const concluidos = new Set(
-        modulos.filter((m) => m.status === "concluido").map((m) => m.id_modulo)
-      );
-      return preReqs.every((id) => concluidos.has(id));
+  const carregar = async () => {
+    setLoading(true);
+    try {
+      const [progresso, rankingData, posicao] = await Promise.all([
+        moduloService.getActiveWithProgress(),
+        moduloService.getRanking(20),
+        moduloService.getMinhaPosicao(),
+      ]);
+      const lista = progresso.modulos as ModuloComProgresso[];
+      setModulos(lista);
+      setNivelEscola(progresso.nivel_escola_nome ?? null);
+      setRanking(rankingData as RankItem[]);
+      setMinhaPosicao(posicao ?? null);
+      // Abre no próximo passo da trilha: o primeiro liberado que ainda não foi concluído
+      const proximo = lista.find((m, i) => m.status !== "concluido" && disponivelEm(lista, i)) ?? lista[0];
+      if (proximo) {
+        setSelecionado(proximo);
+        await carregarQuiz(proximo.id_modulo);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar módulos:", err);
+    } finally {
+      setLoading(false);
     }
-
-    if (isOpcional(modulo.obrigatorio)) return true;
-
-    const obrigatoriosAntes = modulos
-      .slice(0, index)
-      .filter((m) => !isOpcional(m.obrigatorio));
-    return obrigatoriosAntes.every((m) => m.status === "concluido");
   };
+
+  const selecionar = async (m: ModuloComProgresso) => {
+    setSelecionado(m);
+    await carregarQuiz(m.id_modulo);
+  };
+
+  const indice = (m: ModuloComProgresso) => modulos.findIndex((x) => x.id_modulo === m.id_modulo);
+  const disponivel = (m: ModuloComProgresso) => disponivelEm(modulos, indice(m));
+
+  /** O que falta para liberar um módulo bloqueado, em palavras */
+  const motivoBloqueio = (m: ModuloComProgresso): string => {
+    const concluidos = new Set(modulos.filter((x) => x.status === "concluido").map((x) => x.id_modulo));
+    const preReqs = m.pre_requisitos || [];
+    const faltam =
+      preReqs.length > 0
+        ? modulos.filter((x) => preReqs.includes(x.id_modulo) && !concluidos.has(x.id_modulo))
+        : modulos.slice(0, indice(m)).filter((x) => !ehOpcional(x.obrigatorio) && x.status !== "concluido");
+    if (faltam.length === 0) return "Este módulo ainda não está liberado.";
+    return `Para liberar, conclua antes: ${faltam.map((x) => `"${x.titulo}"`).join(", ")}.`;
+  };
+
+  const obrigatorios = modulos.filter((m) => !ehOpcional(m.obrigatorio));
+  const concluidosObrig = obrigatorios.filter((m) => m.status === "concluido").length;
+  const totalConcluidos = modulos.filter((m) => m.status === "concluido").length;
+  const percentual = obrigatorios.length ? Math.round((concluidosObrig / obrigatorios.length) * 100) : 0;
+  const visiveis = filtrarItens(modulos, busca, "todos", (m) => m.titulo, () => true);
+
+  const estadoDe = (m: ModuloComProgresso): { icone: NomeIcone; estado?: "concluido" | "bloqueado" | "andamento"; meta: string } => {
+    if (m.status === "concluido") return { icone: "concluido", estado: "concluido", meta: "Concluído" };
+    if (!disponivel(m)) return { icone: "cadeado", estado: "bloqueado", meta: "Bloqueado" };
+    if (m.status === "em_andamento") return { icone: "formatura", estado: "andamento", meta: "Em andamento" };
+    const n = m.campos?.length || 0;
+    return { icone: "formatura", meta: `Liberado · ${n} ${n === 1 ? "conteúdo" : "conteúdos"}` };
+  };
+
+  const sel = selecionado;
+  const selLiberado = sel ? disponivel(sel) : false;
+  const selConcluido = sel?.status === "concluido";
 
   return (
-    <div className="modulos-page page-with-fixed-header">
-      <Header />
-      <main id="main-content" className="page" tabIndex={-1}>
-        <h1 className="page-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
-          Escola de Discípulos
-          <span
-            className="nivel-badge"
-            style={{
-              background: "rgba(2, 134, 155, 0.18)",
-              color: "var(--teal-200)",
-              padding: "0.35rem 0.9rem",
-              borderRadius: "999px",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              letterSpacing: "0.01em",
-            }}
-            aria-label={nivelEscola ? `Nível ${nivelEscola}` : "Nível"}
+    <PaginaSecretaria
+      area="Escola de Discípulos"
+      titulo="Minha trilha"
+      icone="formatura"
+      descricao="Siga os módulos na ordem: assista às aulas, leia o conteúdo e, quando houver, responda ao quiz para concluir. Cada módulo concluído libera o próximo."
+      abas={abasDoUsuario(Boolean(isLiderCelula))}
+      rotuloAbas="Minhas áreas"
+      numeros={[
+        { valor: nivelEscola ?? "Sem nível", rotulo: "seu nível" },
+        { valor: `${totalConcluidos}/${modulos.length}`, rotulo: "concluídos" },
+        ...(minhaPosicao && minhaPosicao.pontuacao > 0 ? [{ valor: `${minhaPosicao.posicao}º`, rotulo: "no ranking" }] : []),
+      ]}
+    >
+      {obrigatorios.length > 0 && (
+        <div className="su-progresso">
+          <div className="su-progresso__textos">
+            <strong>Progresso na trilha</strong>
+            <span>
+              {concluidosObrig} de {obrigatorios.length} módulos obrigatórios · {percentual}%
+            </span>
+          </div>
+          <div
+            className="su-progresso__barra"
+            role="progressbar"
+            aria-label="Progresso na trilha"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percentual}
           >
-            {nivelEscola ?? "Sem nível"}
-          </span>
-        </h1>
+            <span style={{ width: `${percentual}%` }} />
+          </div>
+        </div>
+      )}
 
-        {loading && <p className="loading-message">Carregando...</p>}
+      <div className="sc-corpo sc-corpo--com-ranking">
+        <ListaSecretaria
+          titulo="Módulos"
+          total={modulos.length}
+          busca={busca}
+          onBusca={setBusca}
+          placeholderBusca="Buscar módulo pelo nome"
+          dica={
+            <>
+              <Icone nome="cadeado" tamanho={13} /> Os bloqueados abrem quando você conclui os anteriores.
+            </>
+          }
+          vazio={loading ? "Carregando…" : modulos.length ? "Nenhum módulo com esse nome." : "Ainda não há módulos liberados para você."}
+          quantidadeVisivel={visiveis.length}
+        >
+          {visiveis.map((m) => {
+            const e = estadoDe(m);
+            return (
+              <ItemSecretaria
+                key={m.id_modulo}
+                titulo={m.titulo}
+                meta={e.meta}
+                selo={ehOpcional(m.obrigatorio) ? "Opcional" : undefined}
+                ativo
+                estado={e.estado}
+                selecionado={sel?.id_modulo === m.id_modulo}
+                icone={e.icone}
+                onSelecionar={() => selecionar(m)}
+                antes={
+                  <span className="sc-item__posicao su-posicao" aria-hidden>
+                    {indice(m) + 1}
+                  </span>
+                }
+              />
+            );
+          })}
+        </ListaSecretaria>
 
-        <section className="modules-layout" style={{ display: loading ? "none" : "grid" }}>
-          {/* Coluna esquerda - Lista de Módulos */}
-          <aside className="panel modules-left" aria-label="Lista de módulos">
-            <div className="list-header">
-              <h2>Módulos</h2>
-              <span className="count">{modulos.length}</span>
-            </div>
-            <div className="list">
-              {modulos.map((m, index) => {
-                const disponivel = isModuloDisponivel(index);
-                const concluido = m.status === "concluido";
-                const isSelected = selectedModulo?.id_modulo === m.id_modulo;
-                return (
-                  <div
-                    key={m.id_modulo}
-                    className={`mod-item ${isSelected ? "selected" : ""} ${!disponivel ? "locked" : ""} ${concluido ? "concluido" : ""}`}
-                    role={disponivel ? "button" : undefined}
-                    tabIndex={disponivel ? 0 : undefined}
-                    onClick={() => disponivel && handleSelectModulo(m)}
-                    onKeyDown={disponivel ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } } : undefined}
-                    style={{
-                      cursor: disponivel ? "pointer" : "not-allowed",
-                      opacity: disponivel ? 1 : 0.6,
-                    }}
-                  >
-                    <div className="mod-item__info">
-                      <span className="mod-item__ordem">#{m.ordem}</span>
-                      <span className="mod-item__name">{m.titulo}</span>
-                      {isOpcional(m.obrigatorio) && (
-                        <span className="mod-item__opcional-badge" title="Módulo opcional">Opcional</span>
-                      )}
-                      {concluido && <span className="modulo-estado modulo-estado--ok" title="Concluído"><Icone nome="concluido" tamanho={16} /></span>}
-                      {!disponivel && <span className="modulo-estado" title="Bloqueado"><Icone nome="cadeado" tamanho={15} /></span>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </aside>
-
-          {/* Coluna central - Conteúdo do Módulo */}
-          <section className="panel modules-center" aria-label="Conteúdo do módulo">
-            {selectedModulo ? (
-              <div className="module-card">
-                <div className="module-header">
-                  <div className="module-title-area">
-                    <h2 className="module-title">{selectedModulo.titulo}</h2>
-                    {selectedModulo.status === "concluido" && (
-                      <span className="badge badge-active">Concluído</span>
-                    )}
-                  </div>
-                  <button
-                    className="btn-edit"
-                    onClick={() =>
-                      navigate(`/usuario/modulos/preencher/${selectedModulo.id_modulo}`)
-                    }
-                    disabled={!isModuloDisponivel(
-                      modulos.findIndex((m) => m.id_modulo === selectedModulo.id_modulo)
-                    )}
-                  >
-                    {selectedModulo.status === "concluido" ? "Ver módulo" : "Realizar módulo"}
-                  </button>
-                </div>
-
-                {selectedModulo.descricao && (
-                  <div className="module-description">
-                    <h3>Descrição</h3>
-                    <p>{selectedModulo.descricao}</p>
-                  </div>
-                )}
-
-                <div className="module-meta">
-                  {selectedModulo && isOpcional(selectedModulo.obrigatorio) && (
-                    <div className="meta-item">
-                      <span className="meta-label">Tipo:</span>
-                      <span className="meta-value meta-value-opcional">Opcional</span>
-                    </div>
-                  )}
-                  {selectedModulo && !isOpcional(selectedModulo.obrigatorio) && selectedModulo.nivel_nome && (
-                    <div className="meta-item">
-                      <span className="meta-label">Nível:</span>
-                      <span className="meta-value">{selectedModulo.nivel_nome}</span>
-                    </div>
-                  )}
-                  {selectedModulo.pre_requisitos && selectedModulo.pre_requisitos.length > 0 && (
-                    <div className="meta-item meta-item-block">
-                      <span className="meta-label">Pré-requisitos:</span>
-                      <span className="meta-value">
-                        {modulos
-                          .filter((m) => selectedModulo.pre_requisitos!.includes(m.id_modulo))
-                          .map((m) => m.titulo)
-                          .join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  <div className="meta-item">
-                    <span className="meta-label">Ordem:</span>
-                    <span className="meta-value">{selectedModulo.ordem}</span>
-                  </div>
-                  <div className="meta-item">
-                    <span className="meta-label">Quiz:</span>
-                    <span className="meta-value">
-                      {quizVinculado ? (
-                        <span className="quiz-linked">
-                          {quizVinculado.titulo || `Quiz #${quizVinculado.id_quiz}`}
-                        </span>
-                      ) : (
-                        <span className="quiz-none">Nenhum</span>
-                      )}
-                    </span>
-                  </div>
-                  {selectedModulo.status === "concluido" &&
-                    selectedModulo.nota_quiz != null && (
-                      <div className="meta-item">
-                        <span className="meta-label">Sua nota:</span>
-                        <span className="meta-value">
-                          {selectedModulo.pontuacao_maxima != null
-                            ? `${selectedModulo.nota_quiz}/${selectedModulo.pontuacao_maxima}`
-                            : selectedModulo.nota_quiz}
-                        </span>
-                      </div>
-                    )}
-                </div>
-
-                {selectedModulo.campos && selectedModulo.campos.length > 0 ? (
-                  <div className="module-fields">
-                    <h3>Conteúdo</h3>
-                    <div className="campos-grid">
-                      {selectedModulo.campos.map((campo, index) => (
-                        <div key={index} className="campo-card">
-                          <div className="campo-label">{campo.label || "Sem label"}</div>
-                          <div className="campo-conteudo">
-                            {formatarConteudoCampo(campo.conteudo)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="module-empty">
-                    <p>Este módulo não possui conteúdo adicional.</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="module-placeholder">
-                <p>Selecione um módulo na lista para visualizar</p>
-              </div>
+        {sel ? (
+          <DetalheSecretaria
+            titulo={sel.titulo}
+            ativo={selLiberado}
+            status={`${selConcluido ? "Concluído" : selLiberado ? (sel.status === "em_andamento" ? "Em andamento" : "Liberado") : "Bloqueado"} · ${
+              ehOpcional(sel.obrigatorio) ? "opcional" : "obrigatório"
+            }`}
+            acoes={
+              selLiberado ? (
+                <button
+                  type="button"
+                  className={`sc-btn ${selConcluido ? "sc-btn--contorno" : "sc-btn--primario"}`}
+                  onClick={() => navigate(`/usuario/modulos/preencher/${sel.id_modulo}`)}
+                >
+                  <Icone nome={selConcluido ? "olho" : "proximo"} tamanho={15} />
+                  {selConcluido ? "Rever aulas" : sel.status === "em_andamento" ? "Continuar" : "Começar módulo"}
+                </button>
+              ) : (
+                <span className="su-bloqueado">
+                  <Icone nome="cadeado" tamanho={15} /> Bloqueado
+                </span>
+              )
+            }
+          >
+            {sel.descricao && (
+              <p className="sc-descricao">
+                <strong>Sobre este módulo</strong>
+                {sel.descricao}
+              </p>
             )}
-          </section>
 
-          {/* Coluna direita - Ranking (igual ao admin) com posição motivacional */}
-          <aside className="panel modules-right" aria-label="Ranking">
-            <RankingCard
-              ranking={ranking}
-              limit={20}
-              title="RANKING"
-              subtitle="Top 20 Discípulos"
-              theme="light"
-              minhaPosicao={minhaPosicao}
-              headerAction={
-                isLider || isAdmin ? (
-                  <BotoesExportar
-                    tema="claro"
-                    rotuloExcel="Excel"
-                    onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
-                  />
-                ) : undefined
-              }
-            />
-          </aside>
-        </section>
-      </main>
+            <div className="ec-numeros">
+              <div>
+                <strong>{indice(sel) + 1}º</strong>
+                <span>na trilha</span>
+              </div>
+              <div>
+                <strong>{sel.campos?.length || 0}</strong>
+                <span>{(sel.campos?.length || 0) === 1 ? "conteúdo" : "conteúdos"}</span>
+              </div>
+              <div>
+                {selConcluido && sel.nota_quiz != null ? (
+                  <>
+                    <strong>
+                      {sel.nota_quiz}
+                      {sel.pontuacao_maxima != null ? `/${sel.pontuacao_maxima}` : ""}
+                    </strong>
+                    <span>sua nota no quiz</span>
+                  </>
+                ) : (
+                  <>
+                    <strong className="ec-numeros__texto">{quizVinculado ? "Com quiz" : "Sem quiz"}</strong>
+                    <span>{quizVinculado ? "nota mínima de 50%" : "conclui com um clique"}</span>
+                  </>
+                )}
+              </div>
+            </div>
 
-      <Footer />
-    </div>
+            {!selLiberado ? (
+              <p className="ec-lembrete">
+                <Icone nome="cadeado" tamanho={15} />
+                {motivoBloqueio(sel)}
+              </p>
+            ) : selConcluido ? (
+              <p className="su-aviso su-aviso--ok">
+                <Icone nome="concluido" tamanho={16} />
+                Você concluiu este módulo
+                {sel.data_conclusao ? ` em ${new Date(sel.data_conclusao).toLocaleDateString("pt-BR")}` : ""}. Pode rever as aulas quando quiser.
+              </p>
+            ) : (
+              <p className="ec-lembrete">
+                <Icone nome="alerta" tamanho={15} />
+                {quizVinculado
+                  ? `Veja as aulas e responda ao quiz "${quizVinculado.titulo || "do módulo"}". Com pelo menos 50% de acerto o módulo é concluído.`
+                  : "Veja as aulas e clique em Concluir módulo no fim da página."}
+                {!ehOpcional(sel.obrigatorio) && sel.nivel_nome ? ` Ao concluir, você chega ao nível ${sel.nivel_nome}.` : ""}
+              </p>
+            )}
+
+            <h3 className="sc-subtitulo">
+              <Icone nome="lista" tamanho={17} /> O que tem neste módulo
+            </h3>
+            {sel.campos && sel.campos.length > 0 ? (
+              selLiberado ? (
+                <ol className="ec-previa">
+                  {sel.campos.map((campo, i) => (
+                    <li key={i} className="campo-card campo-card--pergunta">
+                      <span className="ec-selo ec-selo--pergunta">
+                        {i + 1}. {NOME_TIPO[String(campo.tipo_campo)] || "Conteúdo"}
+                      </span>
+                      <div className="campo-label">{campo.label || "Sem título"}</div>
+                      <div className="campo-conteudo">{formatarConteudoCampo(campo.conteudo)}</div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <ol className="su-sumario">
+                  {sel.campos.map((campo, i) => (
+                    <li key={i}>
+                      <span className="ec-selo ec-selo--pergunta">{NOME_TIPO[String(campo.tipo_campo)] || "Conteúdo"}</span>
+                      {campo.label || "Sem título"}
+                    </li>
+                  ))}
+                </ol>
+              )
+            ) : (
+              <p className="sc-vazio-conteudo">Este módulo não tem aulas cadastradas.</p>
+            )}
+          </DetalheSecretaria>
+        ) : (
+          <DetalheVazio
+            icone="formatura"
+            texto={loading ? "Carregando sua trilha…" : modulos.length ? "Escolha um módulo na lista." : "Ainda não há módulos para você. Fale com seu líder."}
+          />
+        )}
+
+        <aside className="sc-lateral" aria-label="Ranking">
+          <RankingCard
+            ranking={ranking}
+            limit={20}
+            title="RANKING"
+            subtitle="Top 20 Discípulos"
+            theme="light"
+            minhaPosicao={minhaPosicao}
+            headerAction={
+              isLider || isAdmin ? (
+                <BotoesExportar
+                  tema="claro"
+                  rotuloExcel="Excel"
+                  onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
+                />
+              ) : undefined
+            }
+          />
+        </aside>
+      </div>
+    </PaginaSecretaria>
   );
 };
+
+/** Mesma regra do servidor: pré-requisitos, ou os obrigatórios anteriores concluídos (opcionais sempre livres) */
+function disponivelEm(modulos: ModuloComProgresso[], index: number): boolean {
+  const modulo = modulos[index];
+  if (!modulo) return false;
+  const preReqs = modulo.pre_requisitos || [];
+  if (preReqs.length > 0) {
+    const concluidos = new Set(modulos.filter((m) => m.status === "concluido").map((m) => m.id_modulo));
+    return preReqs.every((id) => concluidos.has(id));
+  }
+  if (ehOpcional(modulo.obrigatorio)) return true;
+  return modulos
+    .slice(0, index)
+    .filter((m) => !ehOpcional(m.obrigatorio))
+    .every((m) => m.status === "concluido");
+}
 
 export default ModulosEscolaDiscipulosUser;

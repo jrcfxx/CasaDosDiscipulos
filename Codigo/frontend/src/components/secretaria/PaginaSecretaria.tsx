@@ -10,12 +10,24 @@ import Icone, { type NomeIcone } from "../ui/Icone";
  * Casa com explicação, navegação entre as quatro, lista à esquerda e detalhe à direita.
  */
 
-const SECOES: { to: string; nome: string; icone: NomeIcone }[] = [
+export type AbaSecretaria = { to: string; nome: string; icone: NomeIcone };
+
+const SECOES: AbaSecretaria[] = [
   { to: "/admin/modulos", nome: "Módulos", icone: "formatura" },
   { to: "/admin/quizzes", nome: "Quizzes", icone: "concluido" },
   { to: "/admin/formularios", nome: "Formulários", icone: "lista" },
   { to: "/admin/licoes", nome: "Lições", icone: "livro" },
 ];
+
+/** Abas das páginas do discípulo/líder: quem é líder de célula vê também Lições e Formulários */
+export function abasDoUsuario(ehLiderDeCelula: boolean): AbaSecretaria[] {
+  if (!ehLiderDeCelula) return [];
+  return [
+    { to: "/usuario/modulos", nome: "Escola de Discípulos", icone: "formatura" },
+    { to: "/usuario/licoes", nome: "Lições", icone: "livro" },
+    { to: "/usuario/formularios", nome: "Formulários", icone: "lista" },
+  ];
+}
 
 export interface NumeroResumo {
   valor: number | string;
@@ -29,6 +41,8 @@ export default function PaginaSecretaria({
   icone,
   acao,
   numeros = [],
+  abas = SECOES,
+  rotuloAbas = "Áreas de gestão",
   children,
 }: {
   /** "Escola de Discípulos" ou "Secretaria das Células" */
@@ -38,13 +52,16 @@ export default function PaginaSecretaria({
   icone: NomeIcone;
   acao?: { rotulo: string; onClick: () => void };
   numeros?: NumeroResumo[];
+  /** Abas de navegação no fim do cabeçalho (padrão: as quatro de gestão; [] esconde) */
+  abas?: AbaSecretaria[];
+  rotuloAbas?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="sc-pagina page-with-fixed-header">
       <Header />
       <main id="main-content" tabIndex={-1}>
-        <section className="sc-topo" aria-labelledby="sc-titulo">
+        <section className={`sc-topo${abas.length ? "" : " sc-topo--sem-abas"}`} aria-labelledby="sc-titulo">
           <div className="sc-topo__conteudo">
             <div className="sc-topo__texto">
               <p className="sc-topo__area">
@@ -69,13 +86,15 @@ export default function PaginaSecretaria({
               </button>
             )}
           </div>
-          <nav className="sc-abas" aria-label="Áreas de gestão">
-            {SECOES.map((s) => (
+          {abas.length > 0 && (
+          <nav className="sc-abas" aria-label={rotuloAbas}>
+            {abas.map((s) => (
               <NavLink key={s.to} to={s.to} className={({ isActive }) => `sc-aba${isActive ? " sc-aba--ativa" : ""}`}>
                 <Icone nome={s.icone} tamanho={15} /> {s.nome}
               </NavLink>
             ))}
           </nav>
+          )}
         </section>
         <div className="sc-corpo-fundo">{children}</div>
       </main>
@@ -104,8 +123,9 @@ export function ListaSecretaria({
   total: number;
   busca: string;
   onBusca: (v: string) => void;
-  filtro: FiltroStatus;
-  onFiltro: (f: FiltroStatus) => void;
+  /** Sem filtro (páginas do discípulo): some o seletor Todos/Ativos/Inativos */
+  filtro?: FiltroStatus;
+  onFiltro?: (f: FiltroStatus) => void;
   placeholderBusca: string;
   /** Texto curto abaixo do filtro (ex.: "Arraste para mudar a ordem") */
   dica?: React.ReactNode;
@@ -126,6 +146,7 @@ export function ListaSecretaria({
           <span className="sr-only">Buscar</span>
           <input type="search" value={busca} onChange={(e) => onBusca(e.target.value)} placeholder={placeholderBusca} />
         </label>
+        {filtro && onFiltro && (
         <div className="sc-filtro" role="radiogroup" aria-label="Mostrar">
           {(
             [
@@ -146,6 +167,7 @@ export function ListaSecretaria({
             </button>
           ))}
         </div>
+        )}
         {dica && <p className="sc-lista__dica">{dica}</p>}
       </div>
       <div className="sc-lista__itens">
@@ -165,19 +187,27 @@ export const ItemSecretaria = forwardRef<
     selecionado: boolean;
     icone: NomeIcone;
     onSelecionar: () => void;
-    onAlternar: () => void;
+    /** Sem onAlternar não há a chave ativo/inativo (páginas do discípulo) */
+    onAlternar?: () => void;
+    /** Mostrado à direita quando não há chave (ex.: concluído, bloqueado) */
+    depois?: React.ReactNode;
+    /** Variação visual do ícone: concluído (verde-teal) ou bloqueado (cinza) */
+    estado?: "concluido" | "bloqueado" | "andamento";
     /** Alça de arrastar e posição, antes do ícone */
     antes?: React.ReactNode;
     selo?: string;
     arrastando?: boolean;
     style?: React.CSSProperties;
   }
->(function ItemSecretaria({ titulo, meta, ativo, selecionado, icone, onSelecionar, onAlternar, antes, selo, arrastando, style }, ref) {
+>(function ItemSecretaria(
+  { titulo, meta, ativo, selecionado, icone, onSelecionar, onAlternar, depois, estado, antes, selo, arrastando, style },
+  ref
+) {
   return (
     <div
       ref={ref}
       style={style}
-      className={`sc-item${selecionado ? " sc-item--selecionado" : ""}${ativo ? "" : " sc-item--inativo"}${arrastando ? " sc-item--arrastando" : ""}`}
+      className={`sc-item${selecionado ? " sc-item--selecionado" : ""}${ativo ? "" : " sc-item--inativo"}${arrastando ? " sc-item--arrastando" : ""}${estado ? ` sc-item--${estado}` : ""}${onAlternar ? "" : " sc-item--sem-chave"}`}
     >
       {antes}
       <button
@@ -205,6 +235,8 @@ export const ItemSecretaria = forwardRef<
           )}
         </span>
       </button>
+      {depois}
+      {onAlternar && (
       <button
         type="button"
         className={`sc-chave${ativo ? " sc-chave--ligada" : ""}`}
@@ -216,6 +248,7 @@ export const ItemSecretaria = forwardRef<
       >
         <span className="sc-chave__trilho" aria-hidden />
       </button>
+      )}
     </div>
   );
 });

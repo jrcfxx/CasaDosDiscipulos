@@ -1,8 +1,16 @@
 import React, { useEffect, useState } from "react";
-import "../style/FormulariosSecretariaCelulasLeader.css";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-import formularioService, { FormularioCampo } from "../services/formularioService";
+import "../style/editorCasa.css";
+import "../style/secretariaUsuario.css";
+
+import PaginaSecretaria, {
+  ListaSecretaria,
+  ItemSecretaria,
+  DetalheSecretaria,
+  DetalheVazio,
+  abasDoUsuario,
+  filtrarItens,
+} from "../components/secretaria/PaginaSecretaria";
+import formularioService, { type FormularioCampo } from "../services/formularioService";
 import celulaService from "../services/celulaService";
 import formularioRespostaService from "../services/formularioRespostaService";
 import authService from "../services/authService";
@@ -17,6 +25,7 @@ import { ASSETS_BASE } from "../config/api";
 import { valorUpload, type ValorCampo } from "../types/campoConteudo";
 import RelatorioFormulario from "../components/formularios/RelatorioFormulario";
 import BotoesExportar from "../components/ui/BotoesExportar";
+import Toast from "../components/ui/Toast";
 import { exportarRespostasFormulario } from "../utils/exportacoes";
 import Icone from "../components/ui/Icone";
 
@@ -30,395 +39,380 @@ type Formulario = {
   campos?: FormularioCampo[];
 };
 
-type LocalField = {
+type Resposta = {
   uid: number;
   id_formulario_campo: number;
   tipo: string;
   label: string;
   conteudo: ValorCampo;
-  obrigatorio?: boolean;
+  obrigatorio: boolean;
 };
 
-type Celula = {
-  id_celula: number;
-  nome: string;
+type Celula = { id_celula: number; nome: string };
+
+const FREQUENCIA: Record<string, string> = {
+  semanal: "toda semana",
+  quinzenal: "a cada 15 dias",
+  mensal: "todo mês",
+  bimestral: "a cada 2 meses",
 };
 
+const vazio = (v: ValorCampo) => v == null || String(v).trim() === "";
+
+const urlArquivo = (v: ValorCampo) => {
+  const s = String(v);
+  return s.startsWith("http") ? s : `${ASSETS_BASE}${s}`;
+};
+
+/** Formulários da célula: o líder envia o relatório e acompanha o que já foi enviado */
 export default function FormulariosSecretariaCelulasLeader() {
   const [formularios, setFormularios] = useState<Formulario[]>([]);
   const [celulas, setCelulas] = useState<Celula[]>([]);
-  const [selectedFormulario, setSelectedFormulario] = useState<Formulario | null>(null);
-  const [selectedCelula, setSelectedCelula] = useState<number | null>(null);
+  const [selecionado, setSelecionado] = useState<Formulario | null>(null);
+  const [celula, setCelula] = useState<number | null>(null);
   const [aba, setAba] = useState<"preencher" | "relatorio">("preencher");
-  const [fields, setFields] = useState<LocalField[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [respostas, setRespostas] = useState<Resposta[]>([]);
+  const [tentouEnviar, setTentouEnviar] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [enviadoEm, setEnviadoEm] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
+    (async () => {
+      try {
+        const idUsuario = authService.getUser()?.id_usuario;
+        const [lista, minhas] = await Promise.all([
+          formularioService.getAll(),
+          idUsuario ? celulaService.getByLider(idUsuario) : celulaService.getAtivas(),
+        ]);
+        const forms = (lista || []).map((f) => ({ ...f, ativo: f.ativo === 1 || f.ativo === true })) as Formulario[];
+        setFormularios(forms);
+        setCelulas(minhas);
+        setSelecionado(forms.find((f) => f.ativo) ?? forms[0] ?? null);
+        if (minhas.length > 0) setCelula(minhas[0].id_celula);
+      } catch {
+        setToast("Erro ao carregar os formulários. Recarregue a página.");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    window.setTimeout(() => setToast(null), 2200);
-  };
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const user = authService.getUser();
-      const idUsuario = user?.id_usuario;
-
-      const [formulariosRes, celulasRes] = await Promise.all([
-        formularioService.getAll(),
-        idUsuario ? celulaService.getByLider(idUsuario) : celulaService.getAtivas(),
-      ]);
-
-      const formulariosNorm = (formulariosRes || []).map((f) => ({
-        ...f,
-        id_formulario: f.id_formulario,
-        ativo: f.ativo === 1 || f.ativo === true,
-      })) as Formulario[];
-
-      setFormularios(formulariosNorm);
-      setCelulas(celulasRes);
-
-      if (formulariosNorm.length > 0 && !selectedFormulario) {
-        setSelectedFormulario(formulariosNorm[0]);
-      }
-      if (celulasRes.length > 0 && selectedCelula === null) {
-        setSelectedCelula(celulasRes[0].id_celula);
-      }
-    } catch (err) {
-      showToast("Erro ao buscar dados");
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    if (selectedFormulario?.campos) {
-      setFields(
-        selectedFormulario.campos.map((c, idx) => ({
-          uid: idx,
-          id_formulario_campo: c.id ?? c.id_campo ?? idx,
-          tipo: c.tipo_campo || "texto",
-          label: c.label || `Campo ${idx + 1}`,
-          conteudo: "",
-          obrigatorio: c.obrigatorio || false,
-        }))
-      );
-    } else {
-      setFields([]);
-    }
-  }, [selectedFormulario]);
-
-  const handleSelectFormulario = (formulario: Formulario) => {
-    setSelectedFormulario(formulario);
-    setSuccess(false);
-  };
-
-  const handleChangeField = (uid: number, value: ValorCampo) => {
-    setFields((prev) =>
-      prev.map((f) => (f.uid === uid ? { ...f, conteudo: value } : f))
+    setRespostas(
+      (selecionado?.campos ?? []).map((c, i) => ({
+        uid: i,
+        id_formulario_campo: c.id ?? c.id_campo ?? i,
+        tipo: c.tipo_campo || "texto",
+        label: c.label || `Pergunta ${i + 1}`,
+        conteudo: "",
+        obrigatorio: Boolean(c.obrigatorio),
+      }))
     );
-  };
+    setTentouEnviar(false);
+    setEnviadoEm(null);
+  }, [selecionado]);
 
-  const formatarConteudoCampo = (campo: LocalField) => {
-    if (campo.tipo === "upload" && campo.conteudo) {
-      const fileName = String(campo.conteudo).split("/").pop() || "arquivo";
-      const ext = fileName.split(".").pop()?.toLowerCase() || "";
-      const isImage = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext);
-      const url = String(campo.conteudo).startsWith("http")
-        ? String(campo.conteudo)
-        : `${ASSETS_BASE}${campo.conteudo}`;
-      return (
-        <div className="upload-preview-campo">
-          {isImage && (
-            <img src={url} alt={fileName} style={{ maxWidth: 200, maxHeight: 200 }} />
-          )}
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            <Icone nome="arquivo" tamanho={16} /> {fileName}
-          </a>
-        </div>
-      );
-    }
-    if (campo.tipo === "video" && campo.conteudo) {
-      const url = String(campo.conteudo).startsWith("http")
-        ? String(campo.conteudo)
-        : `${ASSETS_BASE}${campo.conteudo}`;
-      return (
-        <div className="video-preview-campo">
-          <video controls src={url} style={{ maxWidth: 400 }} aria-label="Vídeo">
-            <track kind="captions" srcLang="pt-BR" label="Legendas" />
-          </video>
-        </div>
-      );
-    }
-    return null;
-  };
+  const mudar = (uid: number, v: ValorCampo) => setRespostas((rs) => rs.map((r) => (r.uid === uid ? { ...r, conteudo: v } : r)));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const faltando = respostas.filter((r) => r.obrigatorio && vazio(r.conteudo));
+  const respondidas = respostas.filter((r) => !vazio(r.conteudo)).length;
+
+  const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedFormulario || selectedCelula === null) {
-      showToast("Selecione um formulário e uma célula");
+    if (!selecionado) return;
+    setTentouEnviar(true);
+    if (celula === null) {
+      setToast("Erro: escolha a célula deste relatório.");
+      document.getElementById("su-celula")?.focus();
       return;
     }
-
-    const obrigatorios = fields.filter((f) => f.obrigatorio && !f.conteudo);
-    if (obrigatorios.length > 0) {
-      showToast("Preencha todos os campos obrigatórios");
+    if (faltando.length > 0) {
+      setToast(`Erro: faltam ${faltando.length} ${faltando.length === 1 ? "pergunta obrigatória" : "perguntas obrigatórias"}.`);
+      document.getElementById(`campo_${faltando[0].uid}`)?.focus();
       return;
     }
-
-    setSending(true);
+    setEnviando(true);
     try {
-      const camposPayload = fields.map((f) => ({
-        id_formulario_campo: f.id_formulario_campo,
-        resposta: String(f.conteudo ?? ""),
-      }));
-
       await formularioRespostaService.criar({
-        id_formulario: selectedFormulario.id_formulario,
-        id_celula: selectedCelula,
-        campos: camposPayload,
+        id_formulario: selecionado.id_formulario,
+        id_celula: celula,
+        campos: respostas.map((r) => ({ id_formulario_campo: r.id_formulario_campo, resposta: String(r.conteudo ?? "") })),
       });
-
-      setSuccess(true);
-      setFields((prev) => prev.map((f) => ({ ...f, conteudo: "" })));
-      showToast("Formulário enviado com sucesso!");
-    } catch (err) {
-      showToast("Erro ao enviar formulário");
+      setRespostas((rs) => rs.map((r) => ({ ...r, conteudo: "" })));
+      setTentouEnviar(false);
+      setEnviadoEm(new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+      setToast("Relatório enviado. Obrigado!");
+    } catch {
+      setToast("Erro ao enviar. Confira sua conexão e tente de novo.");
+    } finally {
+      setEnviando(false);
     }
-    setSending(false);
   };
 
-  return (
-    <div className="formularios-page page-with-fixed-header">
-      <Header />
-      <main id="main-content" className="page" tabIndex={-1}>
-        <h1 className="page-title">Secretaria das Células</h1>
-        {loading && <p className="loading-message">Carregando...</p>}
-        <section className="formularios-layout">
-          <aside className="panel formularios-left" aria-label="Lista de formulários">
-            <div className="list-header">
-              <h2>Formulários</h2>
-              <span className="count">{formularios.length}</span>
-            </div>
-            <div className="list">
-              {formularios.map((formulario) => (
-                <div
-                  key={formulario.id_formulario}
-                  className={`formulario-item ${
-                    selectedFormulario?.id_formulario === formulario.id_formulario
-                      ? "selected"
-                      : ""
-                  } ${!formulario.ativo ? "inactive" : ""}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleSelectFormulario(formulario)}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (e.target as HTMLElement).click(); } }}
-                >
-                  <span className="formulario-item__name">{formulario.titulo}</span>
-                </div>
-              ))}
-            </div>
-          </aside>
-
-          <section className="panel formularios-center" aria-label="Formulário">
-            {selectedFormulario ? (
-              <div className="formulario-card">
-                <div className="formulario-header">
-                  <h2 className="formulario-title">{selectedFormulario.titulo}</h2>
-                  <span className={`badge badge-${selectedFormulario.ativo ? "active" : "inactive"}`}>
-                    {selectedFormulario.ativo ? "Ativo" : "Inativo"}
-                  </span>
-                </div>
-
-                <div className="lider-abas" role="tablist" aria-label="Formulário">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={aba === "preencher"}
-                    className={aba === "preencher" ? "ativo" : ""}
-                    onClick={() => setAba("preencher")}
-                  >
-                    Preencher
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={aba === "relatorio"}
-                    className={aba === "relatorio" ? "ativo" : ""}
-                    onClick={() => setAba("relatorio")}
-                  >
-                    Relatório das minhas células
-                  </button>
-                </div>
-
-                {aba === "relatorio" ? (
-                  <>
-                    <BotoesExportar
-                      tema="claro"
-                      className="lider-exportar-respostas"
-                      rotuloExcel="Exportar respostas (Excel)"
-                      onExcel={async () => {
-                        const dados = await formularioRespostaService.exportacao(selectedFormulario.id_formulario);
-                        await exportarRespostasFormulario(selectedFormulario.titulo, dados, null, (p) =>
-                          p.startsWith("/") ? `${ASSETS_BASE}${p}` : p
-                        );
-                      }}
-                    />
-                    <RelatorioFormulario
-                      idFormulario={selectedFormulario.id_formulario}
-                      frequencia={selectedFormulario.frequencia}
-                      titulo={selectedFormulario.titulo}
-                    />
-                  </>
-                ) : (
-                  <>
-                    {selectedFormulario.descricao && (
-                      <div className="formulario-description">
-                        <p>{selectedFormulario.descricao}</p>
-                      </div>
-                    )}
-
-                    {selectedFormulario.campos?.length ? (
-                      <form className="formulario-fields" onSubmit={handleSubmit}>
-                        <div className="celula-selector">
-                          <label htmlFor="celula">Célula *</label>
-                          <select
-                            id="celula"
-                            value={selectedCelula ?? ""}
-                            onChange={(e) => setSelectedCelula(Number(e.target.value))}
-                            required
-                          >
-                            <option value="">Selecione a célula</option>
-                            {celulas.map((c) => (
-                              <option key={c.id_celula} value={c.id_celula}>
-                                {c.nome}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <h3>Preencha os campos</h3>
-                        <div className="campos-grid">
-                          {fields.map((campo) => {
-                            const safeLabel = String(campo.label ?? "Campo");
-                            return (
-                              <div key={campo.uid} className="campo-card">
-                                <label className="campo-label" htmlFor={`campo_${campo.uid}`}>
-                                  {campo.label}
-                                  {campo.obrigatorio && (
-                                    <>
-                                      <span aria-hidden> *</span>
-                                      <span className="sr-only"> (obrigatório)</span>
-                                    </>
-                                  )}
-                                </label>
-                                <div className="campo-conteudo">
-                                  {campo.tipo === "texto" && (
-                                    <TextField
-                                      id={`campo_${campo.uid}`}
-                                      name={`campo_${campo.uid}`}
-                                      label=""
-                                      placeholder={safeLabel}
-                                      value={campo.conteudo}
-                                      onChange={(v) => handleChangeField(campo.uid, v)}
-                                    />
-                                  )}
-                                  {campo.tipo === "textarea" && (
-                                    <TextareaField
-                                      id={`campo_${campo.uid}`}
-                                      name={`campo_${campo.uid}`}
-                                      label=""
-                                      placeholder={safeLabel}
-                                      value={campo.conteudo}
-                                      onChange={(v) => handleChangeField(campo.uid, v)}
-                                      rows={5}
-                                    />
-                                  )}
-                                  {campo.tipo === "numero" && (
-                                    <NumberField
-                                      id={`campo_${campo.uid}`}
-                                      name={`campo_${campo.uid}`}
-                                      label=""
-                                      placeholder={safeLabel}
-                                      value={campo.conteudo}
-                                      onChange={(v) => handleChangeField(campo.uid, v)}
-                                    />
-                                  )}
-                                  {campo.tipo === "data" && (
-                                    <DateField
-                                      id={`campo_${campo.uid}`}
-                                      name={`campo_${campo.uid}`}
-                                      label=""
-                                      placeholder={safeLabel}
-                                      value={campo.conteudo}
-                                      onChange={(v) => handleChangeField(campo.uid, v)}
-                                    />
-                                  )}
-                                  {campo.tipo === "link" && (
-                                    <LinkField
-                                      id={`campo_${campo.uid}`}
-                                      name={`campo_${campo.uid}`}
-                                      label=""
-                                      placeholder={safeLabel}
-                                      value={campo.conteudo}
-                                      onChange={(v) => handleChangeField(campo.uid, v)}
-                                    />
-                                  )}
-                                  {campo.tipo === "upload" && (
-                                    <UploadField
-                                      id={`campo_${campo.uid}`}
-                                      name={`campo_${campo.uid}`}
-                                      label=""
-                                      value={valorUpload(campo.conteudo)}
-                                      onChange={(v) => handleChangeField(campo.uid, v)}
-                                    />
-                                  )}
-                                  {campo.tipo === "video" && (
-                                    <VideoField
-                                      id={`campo_${campo.uid}`}
-                                      name={`campo_${campo.uid}`}
-                                      label=""
-                                      value={campo.conteudo}
-                                      onChange={(v) => handleChangeField(campo.uid, v)}
-                                    />
-                                  )}
-                                  {formatarConteudoCampo(campo) || null}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="formulario-actions">
-                          <button type="submit" className="save-btn" disabled={sending} aria-busy={sending}>
-                            {sending ? <><span className="btn-spinner" aria-hidden />Enviando…</> : "Enviar"}
-                          </button>
-                          {success && <span className="success-message">Formulário enviado!</span>}
-                        </div>
-                      </form>
-                    ) : (
-                      <div className="formulario-empty">
-                        <p>Este formulário não possui campos cadastrados.</p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="formulario-placeholder">
-                <p>Selecione um formulário na lista</p>
+  const campo = (r: Resposta) => {
+    const comum = {
+      id: `campo_${r.uid}`,
+      name: `campo_${r.uid}`,
+      label: "",
+      onChange: (v: ValorCampo) => mudar(r.uid, v),
+    };
+    switch (r.tipo) {
+      case "textarea":
+        return <TextareaField {...comum} placeholder="Escreva sua resposta" value={r.conteudo} rows={4} />;
+      case "numero":
+        return <NumberField {...comum} placeholder="0" value={r.conteudo} />;
+      case "data":
+        return <DateField {...comum} value={r.conteudo} />;
+      case "link":
+        return <LinkField {...comum} placeholder="https://" value={r.conteudo} />;
+      case "upload":
+        return (
+          <>
+            <UploadField {...comum} value={valorUpload(r.conteudo)} />
+            {!vazio(r.conteudo) && (
+              <div className="upload-preview-campo">
+                <a href={urlArquivo(r.conteudo)} target="_blank" rel="noopener noreferrer">
+                  <Icone nome="arquivo" tamanho={16} /> {String(r.conteudo).split("/").pop()}
+                </a>
               </div>
             )}
-          </section>
-        </section>
-      </main>
-      <Footer />
-      {toast && <div className="toast">{toast}</div>}
-    </div>
+          </>
+        );
+      case "video":
+        return (
+          <>
+            <VideoField {...comum} value={r.conteudo} />
+            {!vazio(r.conteudo) && (
+              <div className="video-preview-campo">
+                <video controls src={urlArquivo(r.conteudo)} aria-label="Vídeo enviado">
+                  <track kind="captions" srcLang="pt-BR" label="Legendas" />
+                </video>
+              </div>
+            )}
+          </>
+        );
+      default:
+        return <TextField {...comum} placeholder="Sua resposta" value={r.conteudo} />;
+    }
+  };
+
+  /** Setas esquerda/direita alternam entre as duas abas (padrão de abas acessíveis) */
+  const trocarAbaPorSeta = (e: React.KeyboardEvent) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    const nova = aba === "preencher" ? "relatorio" : "preencher";
+    setAba(nova);
+    document.getElementById(`su-aba-${nova}`)?.focus();
+  };
+
+  const visiveis = filtrarItens(formularios, busca, "todos", (f) => f.titulo, () => true);
+  const ativos = formularios.filter((f) => f.ativo).length;
+
+  return (
+    <PaginaSecretaria
+      area="Secretaria das Células"
+      titulo="Formulários"
+      icone="lista"
+      descricao="Os relatórios da sua célula. Escolha o formulário, preencha e envie; na aba Relatório você vê o que já foi enviado em cada período."
+      abas={abasDoUsuario(true)}
+      rotuloAbas="Minhas áreas"
+      numeros={[
+        { valor: ativos, rotulo: ativos === 1 ? "formulário aberto" : "formulários abertos" },
+        { valor: celulas.length, rotulo: celulas.length === 1 ? "célula sua" : "células suas" },
+      ]}
+    >
+      <div className="sc-corpo">
+        <ListaSecretaria
+          titulo="Formulários"
+          total={formularios.length}
+          busca={busca}
+          onBusca={setBusca}
+          placeholderBusca="Buscar formulário pelo nome"
+          vazio={loading ? "Carregando…" : formularios.length ? "Nenhum formulário com esse nome." : "Ainda não há formulários para preencher."}
+          quantidadeVisivel={visiveis.length}
+        >
+          {visiveis.map((f) => {
+            const n = f.campos?.length || 0;
+            return (
+              <ItemSecretaria
+                key={f.id_formulario}
+                titulo={f.titulo}
+                meta={`${n} ${n === 1 ? "pergunta" : "perguntas"}${f.frequencia && FREQUENCIA[f.frequencia] ? ` · ${FREQUENCIA[f.frequencia]}` : ""}`}
+                selo={f.ativo ? undefined : "Fechado"}
+                ativo={f.ativo}
+                selecionado={selecionado?.id_formulario === f.id_formulario}
+                icone="lista"
+                onSelecionar={() => setSelecionado(f)}
+              />
+            );
+          })}
+        </ListaSecretaria>
+
+        {selecionado ? (
+          <DetalheSecretaria
+            titulo={selecionado.titulo}
+            ativo={selecionado.ativo}
+            status={`${selecionado.ativo ? "Aberto para envio" : "Fechado para novos envios"}${
+              selecionado.frequencia && FREQUENCIA[selecionado.frequencia] ? ` · enviar ${FREQUENCIA[selecionado.frequencia]}` : ""
+            }`}
+            acoes={
+              aba === "relatorio" ? (
+                <BotoesExportar
+                  tema="claro"
+                  rotuloExcel="Exportar (Excel)"
+                  onExcel={async () => {
+                    const dados = await formularioRespostaService.exportacao(selecionado.id_formulario);
+                    await exportarRespostasFormulario(selecionado.titulo, dados, null, (p) => (p.startsWith("/") ? `${ASSETS_BASE}${p}` : p));
+                  }}
+                />
+              ) : null
+            }
+          >
+            <div className="su-segmento" role="tablist" aria-label="O que fazer com o formulário">
+              <button
+                type="button"
+                role="tab"
+                id="su-aba-preencher"
+                aria-controls="su-painel"
+                aria-selected={aba === "preencher"}
+                tabIndex={aba === "preencher" ? 0 : -1}
+                onClick={() => setAba("preencher")}
+                onKeyDown={trocarAbaPorSeta}
+              >
+                <Icone nome="editar" tamanho={15} /> Preencher
+              </button>
+              <button
+                type="button"
+                role="tab"
+                id="su-aba-relatorio"
+                aria-controls="su-painel"
+                aria-selected={aba === "relatorio"}
+                tabIndex={aba === "relatorio" ? 0 : -1}
+                onClick={() => setAba("relatorio")}
+                onKeyDown={trocarAbaPorSeta}
+              >
+                <Icone nome="calendario" tamanho={15} /> Relatório das minhas células
+              </button>
+            </div>
+
+            <div id="su-painel" role="tabpanel" aria-labelledby={aba === "preencher" ? "su-aba-preencher" : "su-aba-relatorio"}>
+              {aba === "relatorio" ? (
+                <RelatorioFormulario
+                  idFormulario={selecionado.id_formulario}
+                  frequencia={selecionado.frequencia}
+                  titulo={selecionado.titulo}
+                />
+              ) : !selecionado.ativo ? (
+                <p className="ec-lembrete">
+                  <Icone nome="cadeado" tamanho={15} />
+                  Este formulário está fechado pela secretaria e não recebe novos envios. Veja o que já foi enviado na aba Relatório.
+                </p>
+              ) : respostas.length === 0 ? (
+                <p className="sc-vazio-conteudo">Este formulário ainda não tem perguntas.</p>
+              ) : (
+                <form className="su-form" onSubmit={enviar} noValidate>
+                  {selecionado.descricao && (
+                    <p className="sc-descricao">
+                      <strong>Como preencher</strong>
+                      {selecionado.descricao}
+                    </p>
+                  )}
+
+                  <div className="su-celula">
+                    <label htmlFor="su-celula">
+                      Célula<span className="su-pergunta__obrigatoria" aria-hidden> *</span>
+                    </label>
+                    {celulas.length === 0 ? (
+                      <p className="su-pergunta__erro" id="su-celula">
+                        Você ainda não está como líder de nenhuma célula. Fale com a secretaria.
+                      </p>
+                    ) : (
+                      <select
+                        id="su-celula"
+                        value={celula ?? ""}
+                        onChange={(e) => setCelula(e.target.value ? Number(e.target.value) : null)}
+                        required
+                        aria-invalid={tentouEnviar && celula === null}
+                      >
+                        <option value="">Escolha a célula</option>
+                        {celulas.map((c) => (
+                          <option key={c.id_celula} value={c.id_celula}>
+                            {c.nome}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <ol className="su-perguntas">
+                    {respostas.map((r, i) => {
+                      const erro = tentouEnviar && r.obrigatorio && vazio(r.conteudo);
+                      return (
+                        <li key={r.uid} className={`su-pergunta${erro ? " su-pergunta--erro" : ""}`}>
+                          <span className="su-pergunta__numero" aria-hidden>
+                            {i + 1}
+                          </span>
+                          <div className="su-pergunta__corpo">
+                            <label className="su-pergunta__rotulo" htmlFor={`campo_${r.uid}`}>
+                              {r.label}
+                              {r.obrigatorio && (
+                                <>
+                                  <span className="su-pergunta__obrigatoria" aria-hidden>
+                                    {" "}
+                                    *
+                                  </span>
+                                  <span className="sr-only"> (obrigatória)</span>
+                                </>
+                              )}
+                            </label>
+                            <div className="su-campo">{campo(r)}</div>
+                            {erro && (
+                              <p className="su-pergunta__erro" role="alert">
+                                Responda esta pergunta para enviar.
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+
+                  <div className="su-enviar">
+                    {enviadoEm ? (
+                      <p className="su-enviar__info su-enviar__info--ok" role="status">
+                        <Icone nome="concluido" tamanho={16} /> Enviado às {enviadoEm}. Pode enviar outro se precisar.
+                      </p>
+                    ) : (
+                      <p className="su-enviar__info">
+                        {respondidas} de {respostas.length} respondidas
+                        {respostas.some((r) => r.obrigatorio) ? " · * obrigatória" : ""}
+                      </p>
+                    )}
+                    <button type="submit" className="sc-btn sc-btn--primario" disabled={enviando || celulas.length === 0} aria-busy={enviando}>
+                      {enviando ? (
+                        <>
+                          <span className="btn-spinner" aria-hidden /> Enviando…
+                        </>
+                      ) : (
+                        <>
+                          <Icone nome="proximo" tamanho={15} /> Enviar relatório
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </DetalheSecretaria>
+        ) : (
+          <DetalheVazio icone="lista" texto={loading ? "Carregando formulários…" : "Escolha um formulário na lista."} />
+        )}
+      </div>
+
+      {toast && <Toast message={toast} onClose={() => setToast(null)} variant={toast.startsWith("Erro") ? "error" : "success"} />}
+    </PaginaSecretaria>
   );
 }

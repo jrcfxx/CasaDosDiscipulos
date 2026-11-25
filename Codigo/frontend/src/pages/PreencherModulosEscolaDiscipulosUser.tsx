@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import "../style/PreencherModulosEscolaDiscipulosUser.css";
+import "../style/editorCasa.css";
+import "../style/secretariaUsuario.css";
 
+import PaginaSecretaria from "../components/secretaria/PaginaSecretaria";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import Toast from "../components/ui/Toast";
@@ -125,6 +127,10 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
         }
       } else {
         const progresso = await moduloService.getProgresso(idModulo!);
+        if (progresso?.status === "concluido") {
+          setModuloJaConcluido(true);
+          return;
+        }
         if (!progresso) {
           try {
             await moduloService.iniciar(idModulo!);
@@ -296,9 +302,9 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       const conteudo = renderConteudo(item.campo);
       if (!conteudo && !item.campo.label) return null;
       return (
-        <div key={`c-${item.campo.id ?? Math.random()}`} className="modulo-campo modulo-quiz-campo">
-          {item.campo.label && <h3 className="modulo-campo-label">{item.campo.label}</h3>}
-          {conteudo}
+        <div key={`c-${item.campo.id ?? Math.random()}`} className="su-aula su-aula--no-quiz">
+          {item.campo.label && <h3 className="su-aula__titulo">{item.campo.label}</h3>}
+          <div className="su-aula__conteudo">{conteudo}</div>
         </div>
       );
     }
@@ -306,20 +312,33 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     const opcoes = parseOpcoes(q.opcoes);
     const valor = respostas[q.id_questao] || "";
     return (
-      <div key={q.id_questao} className="modulo-questao">
-        <p className="modulo-questao-enunciado">
-          {item.questaoIdx + 1}. {q.enunciado}
-        </p>
+      <div key={q.id_questao} className="su-pergunta su-questao">
+        <span className="su-pergunta__numero" aria-hidden>
+          {item.questaoIdx + 1}
+        </span>
+        <div className="su-pergunta__corpo">
         {q.tipo_questao === "discursiva" ? (
+          <>
+          <label className="su-pergunta__rotulo" htmlFor={`q-${q.id_questao}`}>
+            <span className="sr-only">Pergunta {item.questaoIdx + 1}: </span>
+            {q.enunciado}
+          </label>
           <textarea
-            className="pfu-textarea"
+            id={`q-${q.id_questao}`}
+            className="su-textarea"
+            rows={4}
             value={valor}
             onChange={(e) => setRespostas((prev) => ({ ...prev, [q.id_questao]: e.target.value }))}
-            placeholder="Digite sua resposta"
+            placeholder="Escreva sua resposta"
             required
           />
+          </>
         ) : q.tipo_questao === "checkbox" ? (
-          <fieldset className="modulo-opcoes">
+          <fieldset className="su-opcoes">
+            <legend className="su-pergunta__rotulo">
+              <span className="sr-only">Pergunta {item.questaoIdx + 1}: </span>
+              {q.enunciado} <span className="su-dica-tipo">(marque todas as certas)</span>
+            </legend>
             {opcoes.map((opt) => {
               const optId = String(typeof opt === "object" ? opt.id : opt);
               const optText = typeof opt === "object" ? opt.texto : opt;
@@ -330,7 +349,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
                   .filter(Boolean)
               );
               return (
-                <label key={optId} className="modulo-opcao">
+                <label key={optId} className="su-opcao">
                   <input
                     type="checkbox"
                     name={`q-${q.id_questao}`}
@@ -350,12 +369,16 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
             })}
           </fieldset>
         ) : (
-          <fieldset className="modulo-opcoes">
+          <fieldset className="su-opcoes">
+            <legend className="su-pergunta__rotulo">
+              <span className="sr-only">Pergunta {item.questaoIdx + 1}: </span>
+              {q.enunciado}
+            </legend>
             {opcoes.map((opt) => {
               const optId = typeof opt === "object" ? opt.id : opt;
               const optText = typeof opt === "object" ? opt.texto : opt;
               return (
-                <label key={optId} className="modulo-opcao">
+                <label key={optId} className="su-opcao">
                   <input
                     type="radio"
                     name={`q-${q.id_questao}`}
@@ -369,6 +392,7 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
             })}
           </fieldset>
         )}
+        </div>
       </div>
     );
   };
@@ -423,7 +447,12 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
       return !r || (typeof r === "string" && !r.trim());
     });
     if (faltando.length > 0) {
-      setToast("Por favor, responda todas as questões.");
+      setToast(`Erro: ${faltando.length === 1 ? "falta 1 pergunta" : `faltam ${faltando.length} perguntas`} sem resposta.`);
+      const primeira = document.querySelector<HTMLElement>(
+        `[name="q-${faltando[0].id_questao}"], #q-${faltando[0].id_questao}`
+      );
+      primeira?.scrollIntoView({ behavior: "smooth", block: "center" });
+      primeira?.focus({ preventScroll: true });
       return;
     }
 
@@ -457,219 +486,232 @@ const PreencherModulosEscolaDiscipulosUser: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="modulo-user page-with-fixed-header">
-        <Header />
-        <main id="main-content" className="pfu-main" tabIndex={-1}>
-          <p>Carregando...</p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const voltar = () => navigate("/usuario/modulos");
+  const NOME_TIPO: Record<string, string> = {
+    video: "Vídeo",
+    textarea: "Texto",
+    texto: "Texto curto",
+    upload: "Arquivo",
+    link: "Link",
+    data: "Data",
+    numero: "Número",
+  };
+  const totalQuestoes = quiz?.questoes?.length ?? 0;
+  const respondidas = quiz?.questoes?.filter((q) => String(respostas[q.id_questao] || "").trim()).length ?? 0;
 
-  if (!modulo) return null;
+  const BotaoVoltar = () => (
+    <button type="button" className="su-voltar" onClick={voltar}>
+      <Icone nome="anterior" tamanho={15} /> Voltar para a trilha
+    </button>
+  );
 
-  if (moduloJaConcluido) {
+  /** Tela simples (carregando, bloqueado): moldura escura com um cartão no meio */
+  if (loading || !modulo || erroAcesso) {
     return (
-      <div className="modulo-user page-with-fixed-header">
+      <div className="sc-pagina page-with-fixed-header">
         <Header />
-        <main id="main-content" className="pfu-main" tabIndex={-1}>
-          <div className="modulo-resultado modulo-resultado-sucesso">
-            <h1>Módulo já concluído</h1>
-            <p>Você já concluiu este módulo com sucesso. Não é permitido refazer o quiz.</p>
-            <button
-              type="button"
-              className="pfu-save"
-              onClick={() => navigate("/usuario/modulos")}
-            >
-              Voltar aos módulos
-            </button>
+        <main id="main-content" tabIndex={-1} className="sc-corpo-fundo">
+          <div className="su-fazer">
+            {loading ? (
+              <p className="su-cartao su-estado" role="status">
+                Carregando o módulo…
+              </p>
+            ) : erroAcesso ? (
+              <section className="su-cartao su-estado su-estado--bloqueado">
+                <span className="su-estado__icone" aria-hidden>
+                  <Icone nome="cadeado" tamanho={30} />
+                </span>
+                <h1>Módulo bloqueado</h1>
+                <p>{erroAcesso}</p>
+                <div className="su-estado__acoes">
+                  <button type="button" className="sc-btn sc-btn--primario" onClick={voltar}>
+                    Voltar para a trilha
+                  </button>
+                </div>
+              </section>
+            ) : null}
           </div>
         </main>
         <Footer />
+        {toast && <Toast message={toast} onClose={() => setToast(null)} variant={toast.includes("Erro") ? "error" : "info"} />}
       </div>
     );
   }
 
-  if (erroAcesso) {
-    return (
-      <div className="modulo-user page-with-fixed-header">
-        <Header />
-        <main id="main-content" className="pfu-main" tabIndex={-1}>
-          <div className="modulo-erro-acesso">
-            <h1>Módulo bloqueado</h1>
-            <p>{erroAcesso}</p>
-            <button
-              type="button"
-              className="pfu-save"
-              onClick={() => navigate("/usuario/modulos")}
-            >
-              Voltar aos módulos
-            </button>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const aulas = (modulo.campos || []).filter((c) => !isCampoQuestao(c.tipo_campo));
+  const concluiuAgora = Boolean(resultado?.atingiu_50);
 
   return (
-    <div className="modulo-user page-with-fixed-header">
-      <Header />
+    <PaginaSecretaria
+      area="Escola de Discípulos"
+      titulo={modulo.titulo}
+      icone="formatura"
+      descricao={
+        modulo.descricao ||
+        (quiz?.questoes?.length ? "Veja as aulas e responda ao quiz no fim para concluir." : "Veja as aulas e conclua o módulo no fim da página.")
+      }
+      abas={[]}
+      numeros={[
+        { valor: aulas.length, rotulo: aulas.length === 1 ? "aula" : "aulas" },
+        ...(totalQuestoes ? [{ valor: totalQuestoes, rotulo: totalQuestoes === 1 ? "pergunta no quiz" : "perguntas no quiz" }] : []),
+      ]}
+    >
+      <div className="su-fazer">
+        <BotaoVoltar />
 
-      <main id="main-content" className="pfu-main" tabIndex={-1}>
-        <h1 className="pfu-title">{modulo.titulo}</h1>
+        {moduloJaConcluido && (
+          <p className="su-aviso su-aviso--ok" role="status">
+            <Icone nome="concluido" tamanho={16} />
+            Você já concluiu este módulo. As aulas ficam aqui para você rever quando quiser.
+          </p>
+        )}
 
-        <section className="pfu-card modulo-card" aria-label="Conteúdo do módulo">
-          {modulo.descricao && (
-            <p className="modulo-desc">{modulo.descricao}</p>
-          )}
-
-          {(modulo.campos || []).map((campo, idx) => (
-            <div key={idx} className="modulo-campo">
-              {campo.label && <h3 className="modulo-campo-label">{campo.label}</h3>}
-              {renderConteudo(campo)}
-            </div>
-          ))}
-
-          {quiz?.questoes?.length ? (
-            resultado?.atingiu_50 ? (
-              <div className="quiz-resultado quiz-resultado-sucesso">
-                <div className="quiz-resultado-icon"><Icone nome="trofeu" tamanho={44} /></div>
-                <h2>Parabéns! Módulo concluído!</h2>
-                <p className="quiz-resultado-subtitulo">
-                  Você acertou e está pronto para o próximo desafio.
-                </p>
-                <div className="quiz-resultado-pontos-card">
-                  <span className="quiz-pontos-valor">{resultado.pontos}</span>
-                  <span className="quiz-pontos-separador">/</span>
-                  <span className="quiz-pontos-total">{resultado.total}</span>
-                  <span className="quiz-pontos-label"> pontos</span>
-                </div>
-                <p className="quiz-resultado-extra">
-                  {resultado.eh_retentativa
-                    ? "Você conseguiu na nova tentativa!"
-                    : "Aprovado na primeira tentativa!"}
-                  {resultado.bonus_primeira_tentativa && resultado.bonus_primeira_tentativa > 0 && (
-                    <span className="quiz-bonus-badge"> +{resultado.bonus_primeira_tentativa} pts bônus!</span>
-                  )}
-                </p>
-                <button
-                  type="button"
-                  className="pfu-save pfu-btn-sucesso"
-                  onClick={() => navigate("/usuario/modulos")}
-                >
-                  Voltar aos módulos
-                </button>
-              </div>
-            ) : resultado && !resultado.atingiu_50 ? (
-              <div className="quiz-resultado quiz-resultado-falha">
-                <div className="quiz-resultado-icon quiz-icon-falha"><Icone nome="alvo" tamanho={44} /></div>
-                <h2>Tente novamente!</h2>
-                <p className="quiz-resultado-subtitulo">
-                  Você precisa de pelo menos 50% para passar. Revise as questões erradas abaixo.
-                </p>
-                <div className="quiz-resultado-pontos-card quiz-pontos-falha">
-                  <span className="quiz-pontos-valor">{resultado.pontos}</span>
-                  <span className="quiz-pontos-separador">/</span>
-                  <span className="quiz-pontos-total">{resultado.total}</span>
-                  <span className="quiz-pontos-label"> pontos</span>
-                </div>
-                <p className="quiz-resultado-tentativa">
-                  Tentativa {tentativaNum} • Faltam {Math.max(0, Math.ceil(resultado.total * 0.5) - resultado.pontos)} pontos para passar
-                </p>
-
-                {resultado.questoes_erradas && resultado.questoes_erradas.length > 0 && (
-                  <div className="quiz-questoes-erradas">
-                    <h3><Icone nome="lista" tamanho={18} /> Questões que você errou</h3>
-                    {resultado.questoes_erradas.map((q, idx) => (
-                      <div key={q.id_questao} className="quiz-questao-errada">
-                        <p className="quiz-errada-enunciado">{idx + 1}. {q.enunciado}</p>
-                        <div className="quiz-errada-respostas">
-                          <div className="quiz-errada-item quiz-errada-usuario">
-                            <span className="quiz-errada-label">Sua resposta:</span>
-                            <span>{q.resposta_usuario || "(vazio)"}</span>
-                          </div>
-                        </div>
-                        <span className="quiz-errada-pontos">−{q.pontos_perdidos} pts</span>
-                      </div>
-                    ))}
+        <section className="su-cartao" aria-labelledby="su-aulas-titulo">
+          <h2 className="su-cartao__titulo" id="su-aulas-titulo">
+            <Icone nome="livro" tamanho={19} /> Aulas
+          </h2>
+          {aulas.length ? (
+            <ol className="su-aulas">
+              {aulas.map((campo, idx) => (
+                <li key={idx} className="su-aula">
+                  <div className="su-aula__topo">
+                    <span className="ec-selo ec-selo--pergunta">
+                      {idx + 1}. {NOME_TIPO[String(campo.tipo_campo)] || "Conteúdo"}
+                    </span>
+                    {campo.label && <h3>{campo.label}</h3>}
                   </div>
-                )}
-
-                <div className="quiz-falha-actions">
-                  <button
-                    type="button"
-                    className="pfu-save pfu-btn-retry"
-                    onClick={handleTentarNovamente}
-                  >
-                    Refazer quiz
-                  </button>
-                  <p className="quiz-falha-hint">O quiz será exibido novamente com as respostas em branco para uma nova tentativa.</p>
-                </div>
-              </div>
-            ) : (
-              <form
-                ref={quizFormRef}
-                className="modulo-quiz modulo-quiz-desafio"
-                onSubmit={handleSubmit}
-                aria-labelledby="quizTitle"
-              >
-                <div className="quiz-desafio-header">
-                  <span className="quiz-desafio-badge">DESAFIO</span>
-                  <h2 id="quizTitle" className="modulo-quiz-title">
-                    {quiz.titulo || "Quiz"}
-                  </h2>
-                  {quiz.descricao && <p className="quiz-desafio-desc">{quiz.descricao}</p>}
-                </div>
-
-                {quizMergedItems.map((item, idx) => (
-                  <React.Fragment key={idx}>
-                    {renderQuizItem(item, respostas, setRespostas)}
-                  </React.Fragment>
-                ))}
-
-                <div className="pfu-actions">
-                  <button type="submit" className="pfu-save pfu-btn-enviar" disabled={enviando} aria-busy={enviando}>
-                    {enviando ? <><span className="btn-spinner" aria-hidden />Verificando…</> : "Enviar e ver resultado"}
-                  </button>
-                </div>
-              </form>
-            )
+                  <div className="su-aula__conteudo">{renderConteudo(campo) ?? <span className="su-sem-conteudo">Sem conteúdo.</span>}</div>
+                </li>
+              ))}
+            </ol>
           ) : (
-            <div className="pfu-actions">
-              <button
-                type="button"
-                className="pfu-save pfu-concluir"
-                onClick={handleConcluirSemQuiz}
-                disabled={concluindo}
-               aria-busy={concluindo}>
-                {concluindo ? <><span className="btn-spinner" aria-hidden />Concluindo…</> : "Concluir módulo"}
-              </button>
-              <button
-                type="button"
-                className="pfu-cancel"
-                onClick={() => navigate("/usuario/modulos")}
-              >
-                Voltar aos módulos
-              </button>
-            </div>
+            <p className="sc-vazio-conteudo">Este módulo não tem aulas cadastradas.</p>
           )}
         </section>
-      </main>
 
-      <Footer />
+        {moduloJaConcluido ? (
+          <div className="su-estado__acoes">
+            <button type="button" className="sc-btn sc-btn--primario" onClick={voltar}>
+              Voltar para a trilha
+            </button>
+          </div>
+        ) : quiz?.questoes?.length ? (
+          resultado ? (
+            <section
+              className={`su-cartao su-estado${concluiuAgora ? "" : " su-estado--tentar"}`}
+              aria-labelledby="su-resultado-titulo"
+              aria-live="polite"
+            >
+              <span className="su-estado__icone" aria-hidden>
+                <Icone nome={concluiuAgora ? "trofeu" : "alvo"} tamanho={32} />
+              </span>
+              <h2 id="su-resultado-titulo">{concluiuAgora ? "Parabéns! Módulo concluído" : "Quase lá! Tente de novo"}</h2>
+              <p className="su-placar">
+                <strong>{resultado.pontos}</strong> de {resultado.total} pontos
+              </p>
+              <p>
+                {concluiuAgora
+                  ? resultado.eh_retentativa
+                    ? "Você conseguiu na nova tentativa. O próximo módulo já está liberado."
+                    : "Aprovado de primeira! O próximo módulo já está liberado."
+                  : `Você precisa de pelo menos 50% para concluir. Faltaram ${Math.max(
+                      0,
+                      Math.ceil(resultado.total * 0.5) - resultado.pontos
+                    )} pontos (tentativa ${tentativaNum - 1}).`}
+                {concluiuAgora && (resultado.bonus_primeira_tentativa ?? 0) > 0 && (
+                  <span className="su-bonus"> +{resultado.bonus_primeira_tentativa} pts de bônus</span>
+                )}
+              </p>
 
-      {toast && (
-        <Toast
-          message={toast}
-          onClose={() => setToast(null)}
-          variant={toast.includes("Erro") ? "error" : "info"}
-        />
-      )}
-    </div>
+              {!concluiuAgora && resultado.questoes_erradas && resultado.questoes_erradas.length > 0 && (
+                <div className="su-erradas">
+                  <h3>
+                    <Icone nome="lista" tamanho={17} /> Para revisar
+                  </h3>
+                  <ul>
+                    {resultado.questoes_erradas.map((q) => (
+                      <li key={q.id_questao}>
+                        <strong>{q.enunciado}</strong>
+                        <span>Sua resposta: {q.resposta_usuario || "(em branco)"}</span>
+                        <small>−{q.pontos_perdidos} pts</small>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="su-estado__acoes">
+                {concluiuAgora ? (
+                  <button type="button" className="sc-btn sc-btn--primario" onClick={voltar}>
+                    Voltar para a trilha
+                  </button>
+                ) : (
+                  <>
+                    <button type="button" className="sc-btn sc-btn--primario" onClick={handleTentarNovamente}>
+                      Refazer o quiz
+                    </button>
+                    <button type="button" className="sc-btn sc-btn--contorno" onClick={voltar}>
+                      Voltar depois
+                    </button>
+                  </>
+                )}
+              </div>
+            </section>
+          ) : (
+            <form ref={quizFormRef} className="su-cartao su-quiz" onSubmit={handleSubmit} aria-labelledby="quizTitle" noValidate>
+              <p className="su-quiz__selo">
+                <Icone nome="alvo" tamanho={14} /> Quiz do módulo
+              </p>
+              <h2 id="quizTitle" className="su-cartao__titulo">
+                {quiz.titulo || "Quiz"}
+              </h2>
+              <p className="su-quiz__explica">
+                {quiz.descricao ? `${quiz.descricao} ` : ""}Responda todas as perguntas. Com pelo menos 50% dos pontos o módulo é concluído; se não
+                der, você pode tentar de novo.
+              </p>
+
+              <div className="su-perguntas">
+                {quizMergedItems.map((item, idx) => (
+                  <React.Fragment key={idx}>{renderQuizItem(item, respostas, setRespostas)}</React.Fragment>
+                ))}
+              </div>
+
+              <div className="su-enviar">
+                <p className="su-enviar__info">
+                  {respondidas} de {totalQuestoes} respondidas
+                </p>
+                <button type="submit" className="sc-btn sc-btn--primario" disabled={enviando} aria-busy={enviando}>
+                  {enviando ? (
+                    <>
+                      <span className="btn-spinner" aria-hidden /> Verificando…
+                    </>
+                  ) : (
+                    "Enviar e ver resultado"
+                  )}
+                </button>
+              </div>
+            </form>
+          )
+        ) : (
+          <section className="su-cartao su-concluir" aria-label="Concluir módulo">
+            <p>Terminou as aulas? Clique em concluir para registrar e liberar o próximo módulo da trilha.</p>
+            <button type="button" className="sc-btn sc-btn--primario" onClick={handleConcluirSemQuiz} disabled={concluindo} aria-busy={concluindo}>
+              {concluindo ? (
+                <>
+                  <span className="btn-spinner" aria-hidden /> Concluindo…
+                </>
+              ) : (
+                <>
+                  <Icone nome="concluido" tamanho={16} /> Concluir módulo
+                </>
+              )}
+            </button>
+          </section>
+        )}
+      </div>
+
+      {toast && <Toast message={toast} onClose={() => setToast(null)} variant={toast.includes("Erro") ? "error" : "info"} />}
+    </PaginaSecretaria>
   );
 };
 
