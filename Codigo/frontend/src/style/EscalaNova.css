@@ -76,11 +76,11 @@ body:not(#_) .escala-page .esc-topo .page-title::after {
 
 .escala-page .esc-aba:hover {
   color: var(--esc-texto);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(18, 50, 58, 0.055);
 }
 
 .escala-page .esc-aba.ativo {
-  color: #fff;
+  color: #12323a;
   background: var(--esc-petroleo);
   box-shadow: inset 0 0 0 1px rgba(95, 178, 191, 0.35);
 }
@@ -107,7 +107,7 @@ body:not(#_) .escala-page .esc-topo .page-title::after {
 
 .escala-page .esc-btn:hover:not(:disabled) {
   border-color: var(--esc-teal-claro);
-  background: rgba(2, 134, 155, 0.12);
+  background: rgba(2, 134, 155, 0.138);
 }
 
 .escala-page .esc-btn:disabled {
@@ -126,8 +126,8 @@ body:not(#_) .escala-page .esc-topo .page-title::after {
 }
 
 .escala-page .esc-btn--primario:hover:not(:disabled) {
-  background: var(--teal-600, #026f80);
-  border-color: var(--teal-600, #026f80);
+  background: #027a8f;
+  border-color: #027a8f;
 }
 
 .escala-page .esc-icone {
@@ -146,7 +146,7 @@ body:not(#_) .escala-page .esc-topo .page-title::after {
 
 .escala-page .esc-icone:hover {
   border-color: var(--esc-teal-claro);
-  background: rgba(2, 134, 155, 0.12);
+  background: rgba(2, 134, 155, 0.138);
 }
 
 /* ==================== Barra de ferramentas ==================== */
@@ -220,8 +220,8 @@ body:not(#_) .escala-page .esc-topo .page-title::after {
 
 .escala-page .esc-segmentado button.ativo {
   background: var(--esc-sup-2);
-  color: #fff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--esc-borda-forte);
+  color: #12323a;
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.12), inset 0 0 0 1px var(--esc-borda-forte);
 }
 
 /* Filtro "Meus ministérios": uma linha discreta */
@@ -289,13 +289,13 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
 }
 
 .escala-page .esc-chip--rascunho {
-  color: var(--gold-100, #fdecb8);
+  color: #00626f;
   border-color: rgba(244, 176, 2, 0.45);
-  background: rgba(244, 176, 2, 0.1);
+  background: rgba(244, 176, 2, 0.13);
 }
 
 .escala-page .esc-chip--cancelada {
-  color: #f2b8b2;
+  color: #00626f;
   border-color: rgba(217, 72, 59, 0.5);
 }
 
@@ -339,9 +339,9 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
   min-width: 230px;
   padding: 0.35rem;
   border-radius: 12px;
-  background: #15191b;
+  background: #ffffff;
   border: 1px solid var(--esc-borda-forte);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 16px 40px rgba(18, 50, 58, 0.165);
 }
 
 .escala-page .esc-menu__lista--direita { right: 0; }
@@ -375,11 +375,11 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
 }
 
 .escala-page .esc-menu__item.perigo {
-  color: #f2a39b;
+  color: #00626f;
 }
 
 .escala-page .esc-menu__item.perigo:hover {
-  background: rgba(217, 72, 59, 0.15);
+  background: rgba(179, 38, 30, 0.1);
 }
 
 .escala-page .esc-menu__sep {
@@ -442,7 +442,7 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
   padding: 0.45rem 0;
   border-radius: 10px;
   background: rgba(0, 68, 76, 0.55);
-  border: 1px solid rgba(95, 178, 191, 0.25);
+  border: 1px solid rgba(2, 122, 143, 0.35);
   line-height: 1.05;
 }
 
@@ -458,7 +458,7 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
 .escala-page .minha-card__dia {
   font-size: 1.55rem;
   font-weight: 700;
-  color: #fff;
+  color: #12323a;
   margin: 0.1rem 0;
 }
 
@@ -505,8 +505,8 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
 }
 
 .escala-page .minha-card__area {
-  background: rgba(2, 134, 155, 0.18);
-  color: #cdeef3;
+  background: rgba(2, 134, 155, 0.16);
+  color: #12323a;
 }
 
 .escala-page .minha-card__papel {
@@ -573,7 +573,7 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
 
 .escala-page .minha-card__abrir:hover {
   border-color: var(--esc-teal-claro);
-  background: rgba(2, 134, 155, 0.12);
+  background: rgba(2, 134, 155, 0.138);
 }
 
 /* ==================== Agenda ==================== */
@@ -707,7 +707,7 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
   flex: 0 1 180px;
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(18, 50, 58, 0.088);
   overflow: hidden;
 }
 
@@ -765,8 +765,8 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--gold-100, #fdecb8);
-  background: rgba(244, 176, 2, 0.12);
+  color: #00626f;
+  background: rgba(244, 176, 2, 0.156);
 }
 
 .escala-page .agenda-evento__rodape {
@@ -799,9 +799,9 @@ body:not(#_) .escala-page .filtro-ministerios__lista {
   width: min(720px, 100%);
   overflow-y: auto;
   padding: 1rem;
-  background: #0d1012;
-  border-left: 1px solid var(--color-border-strong, rgba(235, 235, 235, 0.22));
-  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.5);
+  background: #ffffff;
+  border-left: 1px solid rgba(18, 50, 58, 0.264);
+  box-shadow: -24px 0 60px rgba(18, 50, 58, 0.15);
   animation: esc-entrar 0.2s ease-out;
 }
 
@@ -894,8 +894,8 @@ body:not(#_) .escala-page .escala-dashboard-titulo-secao {
 
 .escala-page .esc-btn.ativo {
   border-color: var(--esc-teal);
-  background: rgba(2, 134, 155, 0.18);
-  color: #fff;
+  background: rgba(2, 134, 155, 0.16);
+  color: #12323a;
 }
 
 .escala-page .quadro-dica {

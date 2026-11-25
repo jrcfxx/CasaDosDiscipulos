@@ -205,7 +205,7 @@ const EscalaGradeDnd: React.FC<EscalaGradeDndProps> = ({
         {areas.map((area) => (
           <AreaDropZone key={area.id_escala_area} area={area}>
             <div className="area-card-header">
-              <h4>{area.nome}</h4>
+              <h3 className="area-card-nome">{area.nome}</h3>
               <span className="area-count">{area.atribuicoes?.length ?? 0}</span>
             </div>
             <ul className="area-pessoas">

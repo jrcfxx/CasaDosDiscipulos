@@ -1,8 +1,8 @@
 .escala-relatorio {
   margin-top: 1.75rem;
   border-radius: 14px;
-  border: 1px solid rgba(2, 134, 155, 0.28);
-  background: linear-gradient(160deg, rgba(2, 134, 155, 0.1), rgba(15, 18, 20, 0.92));
+  border: 1px solid rgba(2, 122, 143, 0.35);
+  background: linear-gradient(160deg, rgba(2, 134, 155, 0.115), rgba(255, 255, 255, 0.96));
   overflow: hidden;
   font-family: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
 }
@@ -13,7 +13,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1.1rem 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(18, 50, 58, 0.12);
 }
 
 .escala-relatorio__eyebrow {
@@ -22,29 +22,29 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--primary-teal, #02869b);
+  color: #00626f;
 }
 
 .escala-relatorio__titulo {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #f5f5f5;
+  color: #12323a;
 }
 
 .escala-relatorio__subtitulo {
   margin: 0.35rem 0 0;
   font-size: 0.85rem;
-  color: var(--n-400);
+  color: #3c4142;
 }
 
 .escala-relatorio__toggle {
   flex-shrink: 0;
   padding: 0.4rem 0.85rem;
   border-radius: 8px;
-  border: 1px solid rgba(2, 134, 155, 0.45);
-  background: rgba(2, 134, 155, 0.15);
-  color: var(--teal-200);
+  border: 1px solid rgba(2, 122, 143, 0.45);
+  background: rgba(2, 134, 155, 0.16);
+  color: #00626f;
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
@@ -52,8 +52,8 @@
 }
 
 .escala-relatorio__toggle:hover {
-  background: rgba(2, 134, 155, 0.28);
-  color: #fff;
+  background: rgba(2, 134, 155, 0.16);
+  color: #12323a;
 }
 
 .escala-relatorio__body {
@@ -71,9 +71,9 @@
   margin: 0;
   padding: 0.55rem 0.75rem;
   border-radius: 8px;
-  background: rgba(244, 176, 2, 0.12);
+  background: rgba(244, 176, 2, 0.156);
   border: 1px solid rgba(244, 176, 2, 0.35);
-  color: #f4d07a;
+  color: #00626f;
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -88,8 +88,8 @@
 .escala-relatorio__kpi {
   padding: 0.75rem 0.65rem;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(18, 50, 58, 0.04);
+  border: 1px solid rgba(18, 50, 58, 0.12);
   text-align: center;
 }
 
@@ -97,7 +97,7 @@
   display: block;
   font-size: 1.35rem;
   font-weight: 800;
-  color: var(--secondary-gold, #f4b002);
+  color: #7a4f00;
   line-height: 1.1;
 }
 
@@ -106,7 +106,7 @@
   margin-top: 0.35rem;
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--n-400);
+  color: #3c4142;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -120,8 +120,8 @@
 .escala-relatorio__card {
   padding: 0.95rem 1rem;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(18, 50, 58, 0.033);
+  border: 1px solid rgba(18, 50, 58, 0.12);
   min-width: 0;
 }
 
@@ -133,27 +133,27 @@
   margin: 0 0 0.65rem;
   font-size: 0.92rem;
   font-weight: 700;
-  color: var(--n-200);
+  color: #12323a;
 }
 
 .escala-relatorio__card h4 {
   margin: 0 0 0.45rem;
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--primary-teal, #02869b);
+  color: #00626f;
 }
 
 .escala-relatorio__hint {
   margin: -0.25rem 0 0.65rem;
   font-size: 0.78rem;
-  color: var(--n-400);
+  color: #3c4142;
   line-height: 1.4;
 }
 
 .escala-relatorio__vazio {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--n-400);
+  color: #3c4142;
 }
 
 .escala-relatorio__lista {
@@ -163,11 +163,11 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.86rem;
-  color: var(--n-300);
+  color: #3c4142;
 }
 
 .escala-relatorio__lista strong {
-  color: #fff;
+  color: #12323a;
   font-weight: 700;
 }
 
@@ -183,23 +183,23 @@
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
-  background: rgba(2, 134, 155, 0.18);
-  color: var(--teal-200);
+  background: rgba(2, 134, 155, 0.16);
+  color: #00626f;
 }
 
 .escala-relatorio__chip.status-rascunho {
-  background: rgba(156, 163, 175, 0.2);
-  color: var(--n-300);
+  background: rgba(18, 50, 58, 0.12);
+  color: #3c4142;
 }
 
 .escala-relatorio__chip.status-publicada {
-  background: rgba(2, 134, 155, 0.22);
-  color: var(--teal-200);
+  background: rgba(2, 134, 155, 0.16);
+  color: #00626f;
 }
 
 .escala-relatorio__chip.status-concluida {
-  background: rgba(2, 134, 155, 0.15);
-  color: var(--teal-200);
+  background: rgba(2, 134, 155, 0.16);
+  color: #00626f;
 }
 
 .escala-relatorio__ranking {
@@ -217,14 +217,14 @@
   align-items: flex-start;
   padding: 0.4rem 0.5rem;
   border-radius: 8px;
-  background: rgba(2, 134, 155, 0.08);
+  background: rgba(2, 134, 155, 0.092);
 }
 
 .escala-relatorio__pos {
   flex-shrink: 0;
   min-width: 1.6rem;
   font-weight: 800;
-  color: var(--secondary-gold, #f4b002);
+  color: #7a4f00;
   font-size: 0.85rem;
 }
 
@@ -237,12 +237,12 @@
 
 .escala-relatorio__pessoa strong {
   font-size: 0.88rem;
-  color: #f5f5f5;
+  color: #12323a;
 }
 
 .escala-relatorio__pessoa span {
   font-size: 0.75rem;
-  color: var(--n-400);
+  color: #3c4142;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -262,14 +262,14 @@
   justify-content: space-between;
   gap: 0.5rem;
   font-size: 0.82rem;
-  color: var(--n-300);
+  color: #3c4142;
   margin-bottom: 0.2rem;
 }
 
 .escala-relatorio__barra {
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(18, 50, 58, 0.088);
   overflow: hidden;
 }
 
@@ -312,8 +312,8 @@
   width: 100%;
   text-align: left;
   border: none;
-  background: rgba(0, 0, 0, 0.25);
-  color: var(--n-200);
+  background: rgba(18, 50, 58, 0.04);
+  color: #12323a;
   border-radius: 8px;
   padding: 0.45rem 0.55rem;
   font-family: inherit;
@@ -322,8 +322,8 @@
 }
 
 .escala-relatorio__link-ev:hover {
-  background: rgba(2, 134, 155, 0.28);
-  color: #fff;
+  background: rgba(2, 134, 155, 0.16);
+  color: #12323a;
 }
 
 .escala-relatorio__slots-faltando {
@@ -331,7 +331,7 @@
   margin-top: 0.2rem;
   padding-left: 0.35rem;
   font-size: 0.72rem;
-  color: #f4b002;
+  color: #7a4f00;
 }
 
 @media (max-width: 960px) {

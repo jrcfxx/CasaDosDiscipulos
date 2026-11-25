@@ -1,0 +1,1100 @@
+/**
+ * Escala no visual da Casa: topo escuro (moldura sc-) + corpo claro.
+ * Redefine os tokens --esc-* usados por EscalaUser.css / EscalaNova.css para o tema claro
+ * e organiza a barra de ferramentas e o conteúdo. Prefixo es-.
+ */
+.sc-pagina.es.escala-page {
+  --esc-sup: #ffffff;
+  --esc-sup-2: #f6f7f7;
+  --esc-borda: rgba(18, 50, 58, 0.12);
+  --esc-borda-forte: rgba(18, 50, 58, 0.22);
+  --esc-texto: #2b2f30;
+  --esc-suave: #5c6263;
+  --esc-teal: #027a8f;
+  --esc-teal-claro: #00626f;
+  --esc-petroleo: #00444c;
+  --esc-ouro: #f4b002;
+}
+
+.es-fundo {
+  color: var(--sc-texto);
+}
+
+.es-corpo {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ==================== Barra de ferramentas (período, visão, ações) ==================== */
+.es .esc-ferramentas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04), 0 6px 18px rgba(18, 50, 58, 0.05);
+}
+
+.es .esc-periodo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.es .esc-periodo__titulo {
+  margin: 0 0.35rem;
+  min-width: 10ch;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--sc-escuro);
+  text-transform: capitalize;
+}
+
+.es .esc-icone {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--sc-borda);
+  background: #fff;
+  color: var(--sc-escuro);
+  cursor: pointer;
+}
+
+.es .esc-icone:hover {
+  border-color: var(--sc-teal);
+  color: var(--sc-teal-escuro);
+  background: #f2f7f8;
+}
+
+.es .esc-btn {
+  min-height: 38px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.es .esc-hoje {
+  border: 1px solid var(--sc-borda);
+  background: #fff;
+  color: var(--sc-teal-escuro);
+}
+
+.es .esc-hoje:hover {
+  border-color: var(--sc-teal);
+  background: #f2f7f8;
+}
+
+.es .esc-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.es .esc-icone:focus-visible,
+.es .esc-btn:focus-visible {
+  outline: 2px solid var(--sc-teal);
+  outline-offset: 2px;
+}
+
+/* Intervalo de semanas e filtro de ministérios: cartões claros */
+.es .esc-intervalo,
+.es .filtro-ministerios {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  border-radius: 14px;
+}
+
+/* Calendário/lista ocupam a largura do corpo */
+.es .escala-layout {
+  margin: 0;
+}
+
+/* Exportar PDF de "Minhas escalas" alinhado à direita */
+.es .minhas-exportar {
+  align-self: flex-end;
+}
+
+@media (max-width: 700px) {
+  .es-corpo {
+    padding: 1rem 0.75rem 3rem;
+  }
+
+  .es .esc-ferramentas {
+    padding: 0.65rem;
+  }
+
+  .es .esc-periodo {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .es .esc-periodo__titulo {
+    flex: 1;
+    text-align: center;
+    font-size: 1.05rem;
+  }
+}
+
+/* ==================== Mês (calendário) ==================== */
+.es .escala-calendario {
+  padding: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04), 0 10px 28px rgba(18, 50, 58, 0.06);
+}
+
+.es .calendario-dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  background: var(--sc-escuro);
+}
+
+.es .calendario-dias-semana .dia-semana {
+  padding: 0.7rem 0.5rem;
+  color: rgba(235, 235, 235, 0.85);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.es .calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0;
+  background: #fff;
+}
+
+.es .calendario-celula {
+  box-shadow: inset -1px -1px 0 #e6e9e9;
+  position: relative;
+  min-height: 112px;
+  padding: 0.45rem;
+  border: none;
+  border-radius: 0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: background 0.12s;
+}
+
+.es .calendario-celula.vazio {
+  background: #fafbfb;
+}
+
+.es .calendario-celula.clicavel {
+  cursor: pointer;
+}
+
+.es .calendario-celula.clicavel:hover {
+  background: #f4f9fa;
+}
+
+.es .calendario-celula.passado,
+.es .calendario-celula.passado:not(.hoje) {
+  background: #fcfcfc;
+  opacity: 1;
+}
+
+.es .calendario-celula.passado .dia-evento-nome {
+  color: #3c4142;
+}
+
+.es .calendario-celula .dia-numero {
+  align-self: flex-start;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sc-escuro);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.es .calendario-celula.passado .dia-numero {
+  color: #8a9091;
+  font-weight: 600;
+}
+
+.es .calendario-celula .dia-numero:hover {
+  background: #e8f4f6;
+}
+
+.es .calendario-celula .dia-numero:focus-visible {
+  outline: 2px solid var(--sc-teal);
+  outline-offset: 1px;
+}
+
+.es .calendario-celula.hoje {
+  background: #fffaeb;
+  box-shadow: inset 0 0 0 2px var(--sc-dourado);
+  z-index: 1;
+}
+
+.es .calendario-celula.hoje .dia-numero {
+  background: var(--sc-dourado);
+  color: #1a1a1a;
+  font-weight: 800;
+}
+
+.es .calendario-celula .dia-contagem {
+  display: none;
+}
+
+.es .dia-eventos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.es .dia-evento-nome {
+  display: block;
+  width: 100%;
+  padding: 0.3rem 0.45rem;
+  border: none;
+  border-left: 3px solid var(--sc-teal);
+  border-radius: 6px;
+  background: #e8f4f6;
+  color: var(--sc-escuro);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.12s;
+}
+
+.es .dia-evento-nome:hover {
+  background: #cce8ec;
+}
+
+.es .dia-evento-nome:focus-visible {
+  outline: 2px solid var(--sc-teal);
+  outline-offset: 1px;
+}
+
+.es .dia-evento-nome.status-rascunho {
+  border-left-color: var(--sc-dourado);
+  background: #fff6d9;
+}
+
+.es .dia-evento-nome.status-concluida {
+  border-left-color: #9ba1a2;
+  background: #f0f2f2;
+  color: #4a5254;
+}
+
+.es .dia-evento-mais {
+  padding-left: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sc-teal-escuro);
+}
+
+.es .calendario-resumo {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border-top: 1px solid #eceeee;
+  background: #fbfcfc;
+  color: var(--sc-suave);
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+/* Legenda dos estados */
+.es-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0;
+  padding: 0 0.25rem;
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--sc-suave);
+}
+
+.es-legenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.es-legenda__marca {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 16px;
+  height: 10px;
+  border-radius: 3px;
+  border-left: 3px solid var(--sc-teal);
+  background: #e8f4f6;
+}
+
+.es-legenda__marca--rascunho {
+  border-left-color: var(--sc-dourado);
+  background: #fff6d9;
+}
+
+.es-legenda__marca--concluida {
+  border-left-color: #9ba1a2;
+  background: #f0f2f2;
+}
+
+.es-legenda__marca--hoje {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: var(--sc-dourado);
+}
+
+@media (max-width: 760px) {
+  .es .calendario-celula {
+    min-height: 64px;
+    padding: 0.3rem;
+    align-items: center;
+  }
+
+  .es .calendario-celula .dia-numero {
+    align-self: center;
+  }
+
+  .es .dia-eventos {
+    display: none;
+  }
+
+  .es .calendario-celula.tem-evento::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sc-teal);
+  }
+
+  .es .calendario-dias-semana .dia-semana {
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    padding: 0.55rem 0.1rem;
+  }
+}
+
+/* ==================== Janela do evento ==================== */
+.es .modal-escala-overlay {
+  background: rgba(8, 18, 21, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.es .modal-escala-dashboard {
+  padding: 0;
+  overflow: hidden;
+  background: var(--sc-fundo-claro);
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(4, 12, 14, 0.45);
+  display: flex;
+  flex-direction: column;
+}
+
+.es .escala-dashboard-header {
+  margin: 0;
+  padding: 1.25rem 1.5rem 1.1rem;
+  background:
+    radial-gradient(circle at 100% -40%, rgba(2, 134, 155, 0.45), transparent 60%),
+    linear-gradient(160deg, #0b1214 0%, #10262b 100%);
+  border-bottom: 1px solid rgba(244, 176, 2, 0.35);
+}
+
+.es .escala-dashboard-titulo h2 {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.es .escala-dashboard-data {
+  color: var(--sc-dourado);
+  font-weight: 700;
+}
+
+.es .btn-fechar-dashboard {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border-radius: 10px;
+}
+
+.es .btn-fechar-dashboard:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.es .escala-dashboard-header .status-badge {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.es .modal-escala-dashboard > :not(.escala-dashboard-header):not(.esc-modal-rodape) {
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+}
+
+.es .esc-modal-meta {
+  margin-top: 1rem;
+  color: var(--sc-suave);
+  font-weight: 600;
+}
+
+.es .escala-dashboard-desc {
+  color: var(--sc-texto);
+}
+
+.es .escala-dashboard-titulo-secao {
+  color: var(--sc-escuro);
+}
+
+.es .escala-area-card {
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  border-top: 3px solid var(--sc-teal);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+}
+
+.es .area-card-header h3,
+.es .area-card-header strong,
+.es .area-card-header {
+  color: var(--sc-escuro);
+}
+
+.es .area-count {
+  background: var(--sc-escuro);
+  color: var(--sc-dourado);
+}
+
+.es .pessoa-item {
+  background: #fff;
+  border: 1px solid #e6e9e9;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.es .pessoa-item:hover {
+  border-color: rgba(2, 122, 143, 0.4);
+  background: #fbfdfd;
+}
+
+.es .pessoa-nome {
+  color: var(--sc-escuro);
+}
+
+.es .pessoa-avatar {
+  background: linear-gradient(145deg, #1d4a55, var(--sc-escuro));
+  color: var(--sc-dourado);
+  box-shadow: 0 0 0 2px rgba(244, 176, 2, 0.45);
+}
+
+.es .pessoa-drag {
+  color: #8a9091;
+}
+
+.es .pessoa-acao {
+  border: 1px solid var(--sc-borda);
+  background: #fff;
+  color: var(--sc-suave);
+}
+
+.es .pessoa-acao:hover {
+  border-color: var(--sc-teal);
+  color: var(--sc-teal-escuro);
+}
+
+.es .pessoa-acao--perigo:hover {
+  border-color: #e8b4b0;
+  background: #fdeeec;
+  color: #b3261e;
+}
+
+.es .btn-escalar-area {
+  border: 1.5px dashed rgba(2, 122, 143, 0.45);
+  background: #f1f8f9;
+  color: var(--sc-teal-escuro);
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+.es .btn-escalar-area:hover {
+  background: #e3f1f3;
+  border-color: var(--sc-teal);
+}
+
+.es .esc-modal-rodape {
+  margin-top: 1.25rem;
+  padding: 0.9rem 1.5rem;
+  background: #fff;
+  border-top: 1px solid var(--sc-borda);
+}
+
+/* ==================== Semana(s) ==================== */
+.es .quadro-toolbar {
+  padding: 0 0.25rem;
+}
+
+.es .quadro-stats {
+  color: var(--sc-suave);
+  opacity: 1;
+}
+
+.es .semana-bloco {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+}
+
+.es .semana-bloco__topo {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.es .semana-bloco__titulo {
+  color: var(--sc-escuro);
+  font-weight: 800;
+}
+
+.es .semana-coluna {
+  background: #f8fafa;
+  border: 1px solid #e6e9e9;
+  border-radius: 12px;
+  opacity: 1;
+}
+
+.es .semana-coluna.passado {
+  background: #fbfbfb;
+  opacity: 1;
+}
+
+.es .semana-coluna.passado .semana-dia-header {
+  opacity: 0.7;
+}
+
+.es .semana-coluna.hoje {
+  background: #fffaeb;
+  border-color: var(--sc-dourado);
+  box-shadow: inset 0 0 0 1px var(--sc-dourado);
+}
+
+.es .semana-dia-header {
+  border-bottom: 1px solid #e6e9e9;
+}
+
+.es .semana-dia-nome {
+  color: var(--sc-suave);
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  opacity: 1;
+}
+
+.es .semana-dia-numero {
+  color: var(--sc-escuro);
+  font-weight: 800;
+}
+
+.es .semana-coluna.hoje .semana-dia-numero {
+  color: #7a4f00;
+}
+
+.es .semana-vazio {
+  color: #9ba1a2;
+  opacity: 1;
+}
+
+.es .semana-evento {
+  background: #fff;
+  border: 1px solid #dfe6e7;
+  border-left: 3px solid var(--sc-teal);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(18, 50, 58, 0.06);
+}
+
+.es .semana-evento.status-rascunho {
+  border-left-color: var(--sc-dourado);
+  background: #fffdf5;
+}
+
+.es .semana-evento.status-concluida {
+  border-left-color: #9ba1a2;
+}
+
+.es .semana-evento-titulo {
+  color: var(--sc-escuro);
+  font-weight: 700;
+}
+
+.es .semana-evento-preview {
+  color: var(--sc-suave);
+  opacity: 1;
+}
+
+.es .semana-btn-expandir {
+  background: #e8f4f6;
+  color: var(--sc-teal-escuro);
+  border-radius: 8px;
+}
+
+.es .semana-btn-expandir:hover {
+  background: #cce8ec;
+}
+
+/* Quadro (áreas, funções e pessoas) — usado na semana e no dia */
+.es .quadro-area {
+  background: #fff;
+  border: 1px solid #e3e8e9;
+  border-top: 3px solid var(--sc-teal);
+  border-radius: 10px;
+}
+
+.es .quadro-area__total {
+  color: var(--sc-suave);
+}
+
+.es .quadro-slot {
+  background: #f8fafa;
+  border: 1px solid #e6e9e9;
+  border-radius: 8px;
+}
+
+.es .quadro-slot-header {
+  color: var(--sc-escuro);
+  font-weight: 700;
+}
+
+.es .quadro-chip {
+  background: #fff;
+  border: 1px solid #d7e4e6;
+  border-radius: 999px;
+  color: var(--sc-escuro);
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.06);
+}
+
+.es .quadro-chip:hover {
+  border-color: var(--sc-teal);
+}
+
+.es .quadro-chip-nome {
+  color: var(--sc-escuro);
+  font-weight: 600;
+}
+
+.es .quadro-chip-avatar {
+  background: linear-gradient(145deg, #1d4a55, var(--sc-escuro));
+  color: var(--sc-dourado);
+}
+
+.es .quadro-add {
+  border: 1.5px dashed rgba(2, 122, 143, 0.45);
+  background: #fff;
+  color: var(--sc-teal-escuro);
+  border-radius: 8px;
+}
+
+.es .quadro-add:hover {
+  background: #f1f8f9;
+  border-color: var(--sc-teal);
+}
+
+/* ==================== Filtro de ministérios (Meus ministérios) ==================== */
+.es .filtro-ministerios {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.es .filtro-ministerios__rotulo {
+  flex: none;
+  padding-top: 0.45rem;
+  color: var(--sc-suave);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.es .filtro-ministerios__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.es .filtro-ministerio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 34px;
+  padding: 0.25rem 0.8rem;
+  border: 1px solid #c4c8c9;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--sc-texto);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.es .filtro-ministerio:hover {
+  border-color: var(--sc-teal);
+}
+
+.es .filtro-ministerio.ativo {
+  border-color: var(--sc-teal);
+  background: #e8f4f6;
+  color: var(--sc-teal-escuro);
+}
+
+.es .filtro-ministerio:focus-visible,
+.es .filtro-ministerio-todos:focus-visible {
+  outline: 2px solid var(--sc-teal);
+  outline-offset: 2px;
+}
+
+.es .filtro-ministerio-todos {
+  min-height: 34px;
+  padding: 0.25rem 0.6rem;
+  border: none;
+  background: none;
+  color: var(--sc-teal-escuro);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ==================== Mapa ==================== */
+.es .es-mapa {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  background: none;
+}
+
+.es .es-mapa .mapa-topo-acoes {
+  align-self: flex-end;
+}
+
+.es .mapa-navegacao {
+  margin: 0;
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+}
+
+.es .mapa-evento-chip {
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  color: var(--sc-escuro);
+}
+
+.es .mapa-evento-chip:hover {
+  border-color: var(--sc-teal);
+}
+
+.es .mapa-evento-chip.is-ativo {
+  background: var(--sc-escuro);
+  border-color: var(--sc-escuro);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(18, 50, 58, 0.25);
+}
+
+.es .mapa-evento-chip.is-ativo .chip-titulo {
+  color: #fff;
+}
+
+.es .mapa-evento-chip.is-ativo .chip-hora {
+  color: var(--sc-dourado);
+}
+
+.es .mapa-evento-chip.is-ativo .chip-data {
+  background: var(--sc-dourado);
+  color: #1a1a1a;
+}
+
+.es .mapa-evento-destaque {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(2, 134, 155, 0.45), transparent 55%),
+    linear-gradient(160deg, #0b1214 0%, #12323a 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(4, 12, 14, 0.2);
+}
+
+.es .mapa-evento-destaque .destaque-rotulo {
+  color: var(--sc-dourado);
+}
+
+.es .mapa-evento-destaque .destaque-titulo {
+  color: #fff;
+}
+
+.es .mapa-evento-destaque .destaque-quando,
+.es .mapa-evento-destaque .destaque-dia-extenso,
+.es .mapa-evento-destaque .destaque-desc {
+  color: rgba(235, 235, 235, 0.88);
+}
+
+.es .mapa-evento-destaque .destaque-hora {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.es .mapa-evento-destaque .destaque-numeros > div {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.es .mapa-evento-destaque .destaque-numeros dt {
+  color: rgba(235, 235, 235, 0.7);
+}
+
+.es .mapa-evento-destaque .destaque-numeros dd {
+  color: #fff;
+}
+
+.es .mapa-evento-destaque .destaque-numeros .is-alerta dd {
+  color: var(--sc-dourado);
+}
+
+/* ==================== Campos de formulário (todas as janelas da Escala) ==================== */
+.es input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+.es select,
+.es textarea {
+  background-color: #fff;
+  border: 1px solid #b9bfc0;
+  color: var(--sc-texto);
+  border-radius: 10px;
+}
+
+.es input:not([type="checkbox"]):not([type="radio"])::placeholder,
+.es textarea::placeholder {
+  color: #7b8283;
+}
+
+.es input:not([type="checkbox"]):not([type="radio"]):focus,
+.es select:focus,
+.es textarea:focus {
+  outline: none;
+  border-color: var(--sc-teal);
+  box-shadow: 0 0 0 3px rgba(2, 122, 143, 0.18);
+}
+
+.es input:not([type="checkbox"]):not([type="radio"]):disabled,
+.es select:disabled,
+.es textarea:disabled {
+  background-color: #f2f4f4;
+  color: #7b8283;
+}
+
+.es input[type="checkbox"],
+.es input[type="radio"] {
+  accent-color: var(--sc-teal);
+}
+
+/* ==================== Relatório (painel lateral) ==================== */
+.es .esc-gaveta,
+.es .esc-gaveta .escala-relatorio {
+  background: var(--sc-fundo-claro);
+}
+
+.es .escala-relatorio__kpi,
+.es .escala-relatorio__card {
+  background: #fff;
+  border: 1px solid var(--sc-borda);
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+}
+
+.es .escala-relatorio__kpi strong,
+.es .escala-relatorio__card h3,
+.es .escala-relatorio__card h4 {
+  color: var(--sc-escuro);
+}
+
+.es .escala-relatorio__link-ev {
+  background: #f6f8f8;
+}
+
+/* Acessibilidade: contraste no tema claro */
+.es .calendario-celula.passado .dia-numero {
+  color: #646b6c;
+}
+
+.es .detalhes-resumo-item,
+.es .mapa-pessoa .detalhes-resumo-item {
+  background: #fff2cc;
+  color: #6b4a00;
+}
+
+.es .area-card-nome {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ==================== Escalar pessoa / editar informações ==================== */
+.es .modal-atribuicao {
+  width: min(520px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(4, 12, 14, 0.45);
+  color: var(--sc-texto);
+  display: flex;
+  flex-direction: column;
+}
+
+.es .modal-atribuicao > h2 {
+  margin: 0;
+  padding: 1.2rem 1.5rem;
+  background:
+    radial-gradient(circle at 100% -40%, rgba(2, 134, 155, 0.45), transparent 60%),
+    linear-gradient(160deg, #0b1214 0%, #10262b 100%);
+  border-bottom: 1px solid rgba(244, 176, 2, 0.35);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.es .modal-atribuicao > .modal-atribuicao-contexto {
+  margin: 0;
+  padding: 0.75rem 1.5rem 0;
+  color: var(--sc-suave);
+}
+
+.es .modal-atribuicao > .form-group,
+.es .modal-atribuicao > .atrib-detalhes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 1rem 1.5rem 0;
+}
+
+.es .modal-atribuicao .form-group > label,
+.es .modal-atribuicao .form-group > span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--sc-escuro);
+}
+
+.es .modal-atribuicao .form-group > span {
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eceeee;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sc-teal-escuro);
+}
+
+.es .modal-atribuicao select,
+.es .modal-atribuicao input,
+.es .modal-atribuicao textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem 0.85rem;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 0.93rem;
+}
+
+.es .modal-atribuicao .modal-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding: 1rem 1.5rem;
+  background: #fff;
+  border-top: 1px solid var(--sc-borda);
+}
+
+.es .modal-atribuicao .btn-cancelar,
+.es .modal-atribuicao .btn-salvar {
+  min-height: 44px;
+  min-width: 120px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.es .modal-atribuicao .btn-cancelar {
+  border: 1px solid #c4c8c9;
+  background: #fff;
+  color: var(--sc-texto);
+}
+
+.es .modal-atribuicao .btn-cancelar:hover {
+  border-color: var(--sc-teal);
+  color: var(--sc-teal-escuro);
+}
+
+.es .modal-atribuicao .btn-salvar {
+  border: none;
+  background: var(--sc-teal);
+  color: #fff;
+}
+
+.es .modal-atribuicao .btn-salvar:hover:not(:disabled) {
+  background: #02687a;
+}
+
+.es .modal-atribuicao .btn-salvar:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.es .modal-atribuicao .btn-cancelar:focus-visible,
+.es .modal-atribuicao .btn-salvar:focus-visible {
+  outline: 2px solid var(--sc-teal);
+  outline-offset: 2px;
+}

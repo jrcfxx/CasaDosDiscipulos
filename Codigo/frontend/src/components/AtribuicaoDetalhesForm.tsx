@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 import { getCamposPorArea, type CampoConfig } from "../config/ministerioCampos";
 import "../style/AtribuicaoDetalhesForm.css";
 
@@ -11,12 +11,14 @@ interface AtribuicaoDetalhesFormProps {
 function renderCampo(
   campo: CampoConfig,
   valor: string,
-  onChange: (v: string) => void
+  onChange: (v: string) => void,
+  id: string
 ) {
   const commonClass = "atrib-detalhe-field";
   if (campo.tipo === "select") {
     return (
       <select
+        id={id}
         className={commonClass}
         value={valor}
         onChange={(e) => onChange(e.target.value)}
@@ -33,6 +35,7 @@ function renderCampo(
   if (campo.tipo === "textarea") {
     return (
       <textarea
+        id={id}
         className={commonClass}
         value={valor}
         onChange={(e) => onChange(e.target.value)}
@@ -43,6 +46,7 @@ function renderCampo(
   }
   return (
     <input
+      id={id}
       type="text"
       className={commonClass}
       value={valor}
@@ -58,6 +62,7 @@ const AtribuicaoDetalhesForm: React.FC<AtribuicaoDetalhesFormProps> = ({
   onChange,
 }) => {
   const campos = getCamposPorArea(nomeArea);
+  const idBase = useId();
 
   const handleChange = (chave: string, val: string) => {
     onChange({ ...value, [chave]: val });
@@ -67,8 +72,8 @@ const AtribuicaoDetalhesForm: React.FC<AtribuicaoDetalhesFormProps> = ({
     <div className="atrib-detalhes-form">
       {campos.map((campo) => (
         <div key={campo.chave} className="atrib-detalhe-row">
-          <label className="atrib-detalhe-label">{campo.label}</label>
-          {renderCampo(campo, value[campo.chave] || "", (v) => handleChange(campo.chave, v))}
+          <label className="atrib-detalhe-label" htmlFor={`${idBase}-${campo.chave}`}>{campo.label}</label>
+          {renderCampo(campo, value[campo.chave] || "", (v) => handleChange(campo.chave, v), `${idBase}-${campo.chave}`)}
         </div>
       ))}
     </div>

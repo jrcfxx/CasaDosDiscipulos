@@ -1,0 +1,448 @@
+/* Escala → Minhas escalas: próximo serviço em destaque e os seguintes por mês. Prefixo mse-. */
+.mse {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mse-proximo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 20px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(2, 134, 155, 0.45), transparent 55%),
+    radial-gradient(circle at 0% 120%, rgba(244, 176, 2, 0.16), transparent 45%),
+    linear-gradient(160deg, #0b1214 0%, #12323a 100%);
+  box-shadow: 0 18px 40px rgba(4, 12, 14, 0.25);
+}
+
+.mse-proximo__data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(244, 176, 2, 0.4);
+  text-align: center;
+}
+
+.mse-proximo__quando {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #f4b002;
+  color: #1a1a1a;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.mse-proximo__dia {
+  margin-top: 0.4rem;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mse-proximo__mes {
+  margin-top: 0.3rem;
+  color: rgba(235, 235, 235, 0.8);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mse-proximo__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.mse-proximo__rotulo {
+  margin: 0;
+  color: #f4b002;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mse-proximo__evento {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+  font-weight: 800;
+  color: #fff;
+}
+
+.mse-proximo__info {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: rgba(235, 235, 235, 0.9);
+  font-size: 0.92rem;
+}
+
+.mse-proximo__info li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mse-proximo__info svg {
+  color: #5fb2bf;
+  flex: none;
+}
+
+.mse-proximo__botao {
+  align-self: flex-start;
+  margin-top: 0.4rem;
+}
+
+.mse-proximo__equipe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 0;
+}
+
+.mse-proximo .mse-equipe__nome-area {
+  color: rgba(235, 235, 235, 0.72);
+}
+
+.mse-proximo .mse-pessoa {
+  color: #fff;
+}
+
+.mse-proximo .mse-pessoa__funcao {
+  color: rgba(235, 235, 235, 0.72);
+}
+
+.mse-proximo .mse-pessoa--eu {
+  color: #f4b002;
+}
+
+.mse-aviso {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(244, 176, 2, 0.14);
+  color: #ffd25e;
+  font-size: 0.85rem;
+}
+
+/* Equipe (pessoas por área) */
+.mse-equipe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mse-equipe__area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mse-equipe__nome-area {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #00626f;
+}
+
+.mse-equipe__pessoas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+
+.mse-pessoa {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #12323a;
+}
+
+.mse-pessoa__avatar {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #1d4a55, #12323a);
+  color: #f4b002;
+  font-size: 0.62rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 1.5px rgba(244, 176, 2, 0.45);
+}
+
+.mse-pessoa--eu .mse-pessoa__avatar {
+  background: #f4b002;
+  color: #1a1a1a;
+}
+
+.mse-pessoa__funcao {
+  font-weight: 500;
+  color: #5c6263;
+}
+
+/* Depois */
+.mse-titulo-secao {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #12323a;
+}
+
+.mse-titulo-secao span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #5c6263;
+}
+
+.mse-mes {
+  margin-top: 0.75rem;
+}
+
+.mse-mes__titulo {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #00626f;
+}
+
+.mse-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.mse-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #dcdfdf;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+}
+
+.mse-item__data {
+  flex: none;
+  width: 56px;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  background: #eef6f7;
+  color: #12323a;
+}
+
+.mse-item__semana {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #00626f;
+}
+
+.mse-item__dia {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.mse-item__corpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.mse-item__evento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+  color: #12323a;
+}
+
+.mse-item__meta {
+  font-size: 0.84rem;
+  color: #5c6263;
+}
+
+.mse-item__funcao {
+  font-size: 0.88rem;
+  color: #2b2f30;
+}
+
+.mse-item__equipe {
+  margin-top: 0.4rem;
+}
+
+.mse-item__equipe summary {
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #00626f;
+}
+
+.mse-item__equipe summary:focus-visible {
+  outline: 2px solid #027a8f;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.mse-item__equipe[open] summary {
+  margin-bottom: 0.6rem;
+}
+
+.mse-selo {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #fff2cc;
+  color: #6b4a00;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+/* Vazio e carregando */
+.mse-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #dcdfdf;
+  border-radius: 20px;
+  color: #5c6263;
+}
+
+.mse-vazio__icone {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eef6f7;
+  color: #00626f;
+}
+
+.mse-vazio__titulo {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #12323a;
+}
+
+.mse-vazio__texto {
+  margin: 0 0 0.5rem;
+  max-width: 460px;
+  line-height: 1.55;
+}
+
+.mse-esqueleto {
+  height: 96px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #eef1f1 0%, #f7f9f9 50%, #eef1f1 100%);
+  background-size: 200% 100%;
+  animation: mse-brilho 1.2s linear infinite;
+}
+
+.mse-esqueleto--grande {
+  height: 200px;
+  border-radius: 20px;
+}
+
+@keyframes mse-brilho {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mse-esqueleto {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .mse-proximo {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .mse-proximo__equipe {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .mse-proximo {
+    grid-template-columns: 1fr;
+    padding: 1.1rem;
+  }
+
+  .mse-proximo__data {
+    flex-direction: row;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  .mse-proximo__dia {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .mse-proximo__mes {
+    margin: 0;
+  }
+
+  .mse-proximo__botao {
+    align-self: stretch;
+  }
+
+  .mse-item {
+    flex-wrap: wrap;
+  }
+
+  .mse-item__abrir {
+    width: 100%;
+  }
+}

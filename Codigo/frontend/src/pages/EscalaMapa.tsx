@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import "../style/EscalaMapa.css";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
+import MolduraEscala from "../components/escala/MolduraEscala";
 import Toast from "../components/ui/Toast";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarPdf } from "../utils/exportarPdf";
@@ -135,31 +133,23 @@ const EscalaMapa: React.FC = () => {
   const fimEvento = eventoSelecionado?.data_hora_fim ? new Date(eventoSelecionado.data_hora_fim) : null;
 
   return (
-    <div className="page-with-fixed-header escala-mapa-page">
-      <Header />
-
-      <main id="main-content" className="escala-mapa-main" tabIndex={-1}>
-        {/* Cabeçalho da página */}
-        <header className="mapa-topo">
-          <div>
-            <Link to="/usuario/escala" className="mapa-voltar no-print">
-              <IconeSeta dir="esq" /> Calendário da escala
-            </Link>
-            <h1 className="escala-mapa-titulo">Mapa da Escala</h1>
-            <p className="escala-mapa-subtitulo">Quem serve em cada ministério, em cada culto.</p>
+    <MolduraEscala
+      aba="mapa"
+      descricao="Quem serve em cada ministério, em cada culto. Escolha o evento para ver a equipe completa."
+    >
+      <div className="escala-mapa-page es-mapa">
+        {eventoSelecionado && (
+          <div className="mapa-topo-acoes no-print">
+            <BotoesExportar
+              tema="claro"
+              onPdf={() =>
+                exportarPdf(
+                  `Mapa da escala – ${eventoSelecionado.titulo} – ${new Date(eventoSelecionado.data_hora).toLocaleDateString("pt-BR")}`
+                )
+              }
+            />
           </div>
-          {eventoSelecionado && (
-            <div className="mapa-topo-acoes">
-              <BotoesExportar
-                onPdf={() =>
-                  exportarPdf(
-                    `Mapa da escala – ${eventoSelecionado.titulo} – ${new Date(eventoSelecionado.data_hora).toLocaleDateString("pt-BR")}`
-                  )
-                }
-              />
-            </div>
-          )}
-        </header>
+        )}
 
         {/* Navegação: mês + eventos do mês */}
         <section className="mapa-navegacao no-print" aria-label="Escolher evento">
@@ -313,14 +303,12 @@ const EscalaMapa: React.FC = () => {
             )}
           </div>
         )}
-      </main>
+      </div>
 
       {toast && (
         <Toast message={toast} onClose={() => setToast(null)} variant={toastVariant} />
       )}
-
-      <Footer />
-    </div>
+    </MolduraEscala>
   );
 };
 

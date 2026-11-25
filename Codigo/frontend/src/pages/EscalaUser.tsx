@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import "../style/EscalaUser.css";
 import "../style/EscalaNova.css";
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
+import MolduraEscala from "../components/escala/MolduraEscala";
 import ConfirmModal from "../components/ui/ConfirmModal";
 import InputModal from "../components/ui/InputModal";
 import Toast from "../components/ui/Toast";
@@ -981,51 +980,34 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     document.addEventListener("keydown", tecla, true);
     return () => document.removeEventListener("keydown", tecla, true);
   });
-  return (
-    <div className="page-with-fixed-header escala-page">
-      <Header />
-      <main id="main-content" className="container escala-user" tabIndex={-1}>
-        <header className="esc-topo">
-          <div className="esc-topo__titulo">
-            <h1 className="page-title">{modoMeus ? "Meus ministérios" : "Escala"}</h1>
-            <p className="esc-topo__sub">
-              {modoMeus
-                ? "Só os ministérios que você lidera, para organizar a sua equipe."
-                : aba === "minhas"
-                  ? "Quando, onde e com quem você vai servir."
-                  : "Todos os eventos e equipes da igreja."}
-            </p>
-          </div>
-          <nav className="esc-abas" aria-label="Seções da escala">
-            <Link
-              to="/usuario/escala?ver=minhas"
-              className={`esc-aba${!modoMeus && aba === "minhas" ? " ativo" : ""}`}
-              aria-current={!modoMeus && aba === "minhas" ? "page" : undefined}
-            >
-              Minhas escalas
-            </Link>
-            <Link
-              to="/usuario/escala?ver=calendario"
-              className={`esc-aba${!modoMeus && aba === "calendario" ? " ativo" : ""}`}
-              aria-current={!modoMeus && aba === "calendario" ? "page" : undefined}
-            >
-              Calendário
-            </Link>
-            {podeEditar && (
-              <Link
-                to="/usuario/escala/meus-ministerios"
-                className={`esc-aba${modoMeus ? " ativo" : ""}`}
-                aria-current={modoMeus ? "page" : undefined}
-              >
-                Meus ministérios
-              </Link>
-            )}
-          </nav>
-        </header>
+  const numerosTopo =
+    mostrarCalendario && estatisticasAtuais
+      ? [
+          { valor: estatisticasAtuais.totalEventos, rotulo: estatisticasAtuais.totalEventos === 1 ? "evento" : "eventos" },
+          { valor: estatisticasAtuais.pessoasUnicas, rotulo: estatisticasAtuais.pessoasUnicas === 1 ? "pessoa servindo" : "pessoas servindo" },
+          ...(podeEditar && typeof estatisticasAtuais.vagasDisponiveis === "number"
+            ? [{ valor: estatisticasAtuais.vagasDisponiveis, rotulo: estatisticasAtuais.vagasDisponiveis === 1 ? "vaga aberta" : "vagas abertas" }]
+            : []),
+        ]
+      : [];
 
+  return (
+    <MolduraEscala
+      aba={modoMeus ? "meus" : aba}
+      descricao={
+        modoMeus
+          ? "Só os ministérios que você lidera. Arraste pessoas entre funções e eventos para montar a escala."
+          : aba === "minhas"
+            ? "Quando, onde e com quem você vai servir."
+            : "Todos os eventos da Casa e quem serve em cada um. Toque num evento para ver a equipe."
+      }
+      numeros={numerosTopo}
+      acao={isAdmin && mostrarCalendario ? { rotulo: "Novo evento", onClick: () => abrirModalEvento() } : undefined}
+    >
         {aba === "minhas" && (
           <>
           <BotoesExportar
+            tema="claro"
             className="minhas-exportar"
             onPdf={() => exportarPdf(`Minhas escalas – ${user?.nome ?? ""}`)}
           />
@@ -1069,7 +1051,6 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                       : []),
                     { rotulo: "Buscar pessoa", onSelecionar: abrirBuscaPessoa },
                     { rotulo: "Visão do ano", onSelecionar: () => setVisao("ano") },
-                    { rotulo: "Mapa da escala", onSelecionar: () => navigate("/usuario/escala/mapa") },
                     { rotulo: "Exportar Excel", onSelecionar: exportarExcelEscala, separar: true },
                     { rotulo: "Exportar PDF", onSelecionar: exportarPdfEscala },
                     ...(isAdmin
@@ -1077,16 +1058,6 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                       : []),
                   ]}
                 />
-                {isAdmin && (
-                  <button
-                    type="button"
-                    className="esc-btn esc-btn--primario"
-                    onClick={() => abrirModalEvento()}
-                    aria-label="Novo evento"
-                  >
-                    + <span className="esc-so-largo">Novo </span>evento
-                  </button>
-                )}
               </div>
             </div>
 
@@ -1169,6 +1140,15 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                   </>
                 )}
               </section>
+            )}
+
+            {(visao === "mes" || visao === "agenda") && (
+              <ul className="es-legenda" aria-label="Legenda">
+                <li><span className="es-legenda__marca" aria-hidden /> Publicada</li>
+                {podeEditar && <li><span className="es-legenda__marca es-legenda__marca--rascunho" aria-hidden /> Rascunho (só a liderança vê)</li>}
+                <li><span className="es-legenda__marca es-legenda__marca--concluida" aria-hidden /> Já aconteceu</li>
+                <li><span className="es-legenda__marca es-legenda__marca--hoje" aria-hidden /> Hoje</li>
+              </ul>
             )}
 
             {loading ? (
@@ -1259,7 +1239,6 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
             )}
           </>
         )}
-      </main>
 
       {showRelatorio && estatisticasAtuais && (
         <div className="esc-gaveta-raiz">
@@ -1646,9 +1625,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
           duration={Math.min(12000, Math.max(3000, toast.length * 60))}
         />
       )}
-
-      <Footer />
-    </div>
+    </MolduraEscala>
   );
 };
 
