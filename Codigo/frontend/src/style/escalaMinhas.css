@@ -11,12 +11,11 @@
   gap: 1.5rem;
   padding: 1.5rem;
   border-radius: 20px;
-  color: #fff;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(2, 134, 155, 0.45), transparent 55%),
-    radial-gradient(circle at 0% 120%, rgba(244, 176, 2, 0.16), transparent 45%),
-    linear-gradient(160deg, #0b1214 0%, #12323a 100%);
-  box-shadow: 0 18px 40px rgba(4, 12, 14, 0.25);
+  color: #ffffff;
+  background: radial-gradient(circle at 100% 0%, rgba(228, 200, 143, 0.18), transparent 55%),
+    radial-gradient(circle at 0% 120%, rgba(228, 200, 143, 0.16), transparent 45%),
+    linear-gradient(160deg, #0b1214 0%, #1c2122 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
 }
 
 .mse-proximo__data {
@@ -27,15 +26,15 @@
   min-width: 120px;
   padding: 1rem;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(244, 176, 2, 0.4);
+  background: rgba(12, 15, 16, 0.06);
+  border: 1px solid rgba(228, 200, 143, 0.45);
   text-align: center;
 }
 
 .mse-proximo__quando {
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
-  background: #f4b002;
+  background: #e4c88f;
   color: #1a1a1a;
   font-size: 0.75rem;
   font-weight: 800;
@@ -66,7 +65,7 @@
 
 .mse-proximo__rotulo {
   margin: 0;
-  color: #f4b002;
+  color: #e4c88f;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -77,7 +76,7 @@
   margin: 0;
   font-size: clamp(1.3rem, 2.4vw, 1.7rem);
   font-weight: 800;
-  color: #fff;
+  color: #ffffff;
 }
 
 .mse-proximo__info {
@@ -98,7 +97,7 @@
 }
 
 .mse-proximo__info svg {
-  color: #5fb2bf;
+  color: #e4c88f;
   flex: none;
 }
 
@@ -113,8 +112,8 @@
   gap: 0.6rem;
   padding: 1rem;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 15, 16, 0.05);
+  border: 1px solid rgba(243, 237, 226, 0.14);
   min-width: 0;
 }
 
@@ -123,7 +122,7 @@
 }
 
 .mse-proximo .mse-pessoa {
-  color: #fff;
+  color: #ffffff;
 }
 
 .mse-proximo .mse-pessoa__funcao {
@@ -131,7 +130,7 @@
 }
 
 .mse-proximo .mse-pessoa--eu {
-  color: #f4b002;
+  color: #e4c88f;
 }
 
 .mse-aviso {
@@ -141,8 +140,8 @@
   margin: 0;
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
-  background: rgba(244, 176, 2, 0.14);
-  color: #ffd25e;
+  background: rgba(228, 200, 143, 0.14);
+  color: #e4c88f;
   font-size: 0.85rem;
 }
 
@@ -164,7 +163,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .mse-equipe__pessoas {
@@ -182,7 +181,7 @@
   gap: 0.4rem;
   font-size: 0.86rem;
   font-weight: 600;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .mse-pessoa__avatar {
@@ -191,21 +190,21 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: linear-gradient(145deg, #1d4a55, #12323a);
-  color: #f4b002;
+  background: linear-gradient(145deg, #e4c88f, #1c2122);
+  color: #e4c88f;
   font-size: 0.62rem;
   font-weight: 800;
-  box-shadow: 0 0 0 1.5px rgba(244, 176, 2, 0.45);
+  box-shadow: 0 0 0 1.5px rgba(228, 200, 143, 0.3);
 }
 
 .mse-pessoa--eu .mse-pessoa__avatar {
-  background: #f4b002;
+  background: #e4c88f;
   color: #1a1a1a;
 }
 
 .mse-pessoa__funcao {
   font-weight: 500;
-  color: #5c6263;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 /* Depois */
@@ -216,13 +215,13 @@
   margin: 0 0 0.25rem;
   font-size: 1.15rem;
   font-weight: 800;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .mse-titulo-secao span {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #5c6263;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .mse-mes {
@@ -235,7 +234,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .mse-lista {
@@ -252,10 +251,10 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
-  background: #fff;
-  border: 1px solid #dcdfdf;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .mse-item__data {
@@ -266,15 +265,15 @@
   flex-direction: column;
   align-items: center;
   border-radius: 12px;
-  background: #eef6f7;
-  color: #12323a;
+  background: #151a1b;
+  color: #f3ede2;
 }
 
 .mse-item__semana {
   font-size: 0.68rem;
   font-weight: 800;
   text-transform: uppercase;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .mse-item__dia {
@@ -297,17 +296,17 @@
   align-items: center;
   gap: 0.4rem;
   font-weight: 800;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .mse-item__meta {
   font-size: 0.84rem;
-  color: #5c6263;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .mse-item__funcao {
   font-size: 0.88rem;
-  color: #2b2f30;
+  color: #f3ede2;
 }
 
 .mse-item__equipe {
@@ -318,11 +317,11 @@
   cursor: pointer;
   font-size: 0.84rem;
   font-weight: 700;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .mse-item__equipe summary:focus-visible {
-  outline: 2px solid #027a8f;
+  outline: 2px solid #e4c88f;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -334,8 +333,8 @@
 .mse-selo {
   padding: 0.1rem 0.5rem;
   border-radius: 999px;
-  background: #fff2cc;
-  color: #6b4a00;
+  background: rgba(228, 200, 143, 0.13);
+  color: #e4c88f;
   font-size: 0.68rem;
   font-weight: 800;
 }
@@ -348,10 +347,10 @@
   gap: 0.6rem;
   padding: 3rem 1.5rem;
   text-align: center;
-  background: #fff;
-  border: 1px solid #dcdfdf;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 20px;
-  color: #5c6263;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .mse-vazio__icone {
@@ -360,15 +359,15 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #eef6f7;
-  color: #00626f;
+  background: #151a1b;
+  color: #e4c88f;
 }
 
 .mse-vazio__titulo {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 800;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .mse-vazio__texto {
@@ -380,7 +379,7 @@
 .mse-esqueleto {
   height: 96px;
   border-radius: 16px;
-  background: linear-gradient(90deg, #eef1f1 0%, #f7f9f9 50%, #eef1f1 100%);
+  background: linear-gradient(90deg, #151a1b 0%, #0f1314 50%, #151a1b 100%);
   background-size: 200% 100%;
   animation: mse-brilho 1.2s linear infinite;
 }

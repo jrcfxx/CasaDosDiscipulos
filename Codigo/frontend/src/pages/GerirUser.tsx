@@ -830,7 +830,7 @@ export default function GerenciarUsuarios() {
                     </select>
                   </label>
                   <div className="gr-ferramentas__fim">
-                    <BotoesExportar tema="claro" rotuloExcel="Exportar Excel" onExcel={() => exportarUsuarios(usuariosFiltrados, ministerios)} />
+                    <BotoesExportar tema="escuro" rotuloExcel="Exportar Excel" onExcel={() => exportarUsuarios(usuariosFiltrados, ministerios)} />
                   </div>
                 </div>
 

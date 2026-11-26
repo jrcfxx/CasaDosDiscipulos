@@ -8,7 +8,7 @@ import { useAuth } from "../hooks/useAuth";
 import { getErrorMessage } from "../utils/errorUtils";
 import BotoesExportar from "../components/ui/BotoesExportar";
 import { exportarPdf } from "../utils/exportarPdf";
-import "../style/Portal.css";
+import { AberturaPortal } from "../components/portal/PortalInicio";
 import "../style/Staff.css";
 
 /** Staff e estrutura da Casa — somente visualização (membros e líderes, após login) */
@@ -24,14 +24,14 @@ const StaffUser: React.FC = () => {
   }, []);
 
   return (
-    <div className="portal-user">
+    <div className="pt">
       <Header />
-      <main id="main-content" className="portal-wrap staff-pagina" tabIndex={-1}>
-        <header className="portal-hero">
-          <p className="portal-hero__label">Casa dos Discípulos</p>
-          <h1 className="portal-hero__title">{estrutura?.titulo || "Staff e Estrutura"}</h1>
-          {estrutura?.subtitulo && <p className="portal-hero__subtitle">{estrutura.subtitulo}</p>}
-        </header>
+      <main id="main-content" className="pt-paineis staff-pagina" tabIndex={-1}>
+        <AberturaPortal
+          etiqueta="Na Casa"
+          titulo={estrutura?.titulo || "Staff e Estrutura"}
+          descricao={estrutura?.subtitulo}
+        />
 
         {estrutura && (
           <BotoesExportar
@@ -48,7 +48,11 @@ const StaffUser: React.FC = () => {
 
         {erro && <p className="staff-pagina__erro" role="alert">{erro}</p>}
         {!erro && !estrutura && <p className="staff-pagina__carregando">Carregando…</p>}
-        {estrutura && <StaffOrganograma estrutura={estrutura} mostrarCabecalho={false} />}
+        {estrutura && (
+          <section className="staff-painel staff-painel--previa" aria-label="Organograma">
+            <StaffOrganograma estrutura={estrutura} mostrarCabecalho={false} />
+          </section>
+        )}
 
         <p className="staff-pagina__voltar no-print">
           <Link to={isAdmin ? "/portal/admin" : "/portal/usuario"}>← Voltar ao Portal</Link>

@@ -261,7 +261,7 @@ export default function FormulariosSecretariaCelulasLeader() {
             acoes={
               aba === "relatorio" ? (
                 <BotoesExportar
-                  tema="claro"
+                  tema="escuro"
                   rotuloExcel="Exportar (Excel)"
                   onExcel={async () => {
                     const dados = await formularioRespostaService.exportacao(selecionado.id_formulario);

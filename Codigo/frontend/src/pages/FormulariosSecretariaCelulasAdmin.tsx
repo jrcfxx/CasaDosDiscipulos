@@ -1044,7 +1044,7 @@ export default function FormulariosSecretariaCelulasAdmin() {
                               ` de ${respostas.length}`}
                           </p>
                           <BotoesExportar
-                            tema="claro"
+                            tema="escuro"
                             onExcel={async () => {
                               const dados = await formularioRespostaService.exportacao(selectedFormulario.id);
                               const filtrando =

@@ -1158,7 +1158,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
         {aba === "minhas" && (
           <>
           <BotoesExportar
-            tema="claro"
+            tema="escuro"
             className="minhas-exportar"
             onPdf={() => exportarPdf(`Minhas escalas – ${user?.nome ?? ""}`)}
           />

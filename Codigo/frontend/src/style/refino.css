@@ -19,9 +19,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   /* Brilho teal muito sutil no topo das páginas escuras (elemento de apoio da marca) */
-  background:
-    radial-gradient(1100px 480px at 50% -12%, rgba(2, 134, 155, 0.09), transparent 62%),
-    var(--color-bg);
+  background: radial-gradient(1100px 480px at 50% -12%, rgba(228, 200, 143, 0.09), transparent 62%),
+    #020202;
   background-attachment: fixed;
 }
 
@@ -35,13 +34,13 @@ body {
 
 /* Funções da escala (microfone, violão, teclado...): teal claro da marca */
 body:not(#_) .quadro-slot-header .icone {
-  color: var(--teal-300, #5fb2bf);
+  color: #e4c88f;
   margin-right: 0.15rem;
 }
 
 /* Ícone no cabeçalho dos modais (usuário, nível, ministério, célula): teal da marca */
 body:not(#_) .cd-modal-icon{
-  color: var(--teal-400, #2a99aa);
+  color: #e4c88f;
 }
 
 /* Botões só com ícone (remover alternativa/campo, fechar): centraliza */
@@ -60,7 +59,7 @@ body:not(#_) .ranking-mensagem-motivacional {
 
 body:not(#_) .ranking-mensagem-motivacional .icone {
   margin-top: 0.1em;
-  color: var(--teal-500, #02869b);
+  color: #e4c88f;
 }
 
 /* Estado do módulo na lista: concluído (teal) e bloqueado (cinza) */
@@ -68,12 +67,12 @@ body:not(#_) .ranking-mensagem-motivacional .icone {
 /* Ícones das seções do Fala Aí e do aviso de notificações vazias */
 body:not(#_) .fala-ai-section__icone {
   display: inline-flex;
-  color: var(--teal-400, #2a99aa);
+  color: #e4c88f;
 }
 
 body:not(#_) .notif-empty-icon {
   display: inline-flex;
-  color: var(--teal-400, #2a99aa);
+  color: #e4c88f;
 }
 
 /* Os campos de senha já têm o próprio botão de mostrar/ocultar: esconde o "olho" que o Edge
@@ -84,13 +83,13 @@ input::-ms-clear {
 }
 
 ::selection {
-  background: rgba(2, 134, 155, 0.35);
+  background: rgba(228, 200, 143, 0.18);
   color: inherit;
 }
 
 /* Foco visível consistente (teclado), no tom da marca */
 body:not(#_) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--teal-400);
+  outline: 2px solid #e4c88f;
   outline-offset: 2px;
 }
 
@@ -104,18 +103,18 @@ body:not(#_) :is(a, button, input, select, textarea, summary, [tabindex]):focus-
   height: 10px;
 }
 *::-webkit-scrollbar-thumb {
-  background: rgba(155, 161, 162, 0.4);
+  background: rgba(12, 15, 16, 0.4);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(155, 161, 162, 0.65);
+  background: rgba(12, 15, 16, 0.65);
   background-clip: padding-box;
 }
 
 /* ==================== Títulos das páginas internas ==================== */
-/* Mesmo padrão do Portal: caixa normal, peso de destaque, sem letras espaçadas pesadas */
+/* Linguagem escura da Casa: título condensado (Anton) em creme, maiúsculas */
 body:not(#_) :is(
   .page-title,
   .gerir-title,
@@ -129,24 +128,25 @@ body:not(#_) :is(
   .pfu-title,
   .escala-mapa-titulo
 ) {
-  font-family: var(--font-primary);
-  font-size: clamp(1.6rem, 2.8vw, 2.15rem);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: -0.015em;
-  line-height: 1.2;
-  text-transform: none;
+  font-family: "Anton", "Impact", "Arial Narrow", sans-serif;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #f3ede2;
 }
 
-/* Filete sob o título: teal + detalhe amarelo (secundária usada só como detalhe) */
+/* Filete sob o título em dourado champanhe */
 body:not(#_) :is(.page-title, .gerir-title, .licoes-title)::after {
   width: 56px;
   height: 3px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--teal-500) 0 70%, var(--gold-500) 70% 100%);
+  background: #e4c88f;
 }
 
 /* ==================== Botões ==================== */
-/* Ação principal: petróleo, teal no hover */
+/* Ação principal: pílula dourado champanhe (linguagem escura da Casa; funciona também em fundo claro) */
 body:not(#_) :is(
   .save-btn,
   .btn-salvar,
@@ -163,10 +163,10 @@ body:not(#_) :is(
   .btn-tpl-pri-sm,
   .btn-tpl-novo
 ) {
-  background: var(--teal-800);
-  color: #fff;
-  border: 1px solid var(--teal-800);
-  border-radius: var(--radius-md);
+  background: #e4c88f;
+  color: #15130f;
+  border: 1px solid #e4c88f;
+  border-radius: 999px;
   font-family: var(--font-primary);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.01em;
@@ -191,8 +191,8 @@ body:not(#_) :is(
   .btn-tpl-pri-sm,
   .btn-tpl-novo
 ):hover:not(:disabled) {
-  background: #027a8f;
-  border-color: var(--teal-500);
+  background: #eed9ad;
+  border-color: #eed9ad;
 }
 
 /* Ação secundária: contorno que se adapta ao fundo (claro ou escuro) */
@@ -245,8 +245,8 @@ body:not(#_) :is(
 /* Ação destrutiva: discreta até o hover */
 body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel) {
   background: transparent;
-  color: var(--color-error-500);
-  border: 1px solid color-mix(in srgb, var(--color-error-500) 45%, transparent);
+  color: #f2a69c;
+  border: 1px solid color-mix(in srgb, #f08278 45%, transparent);
   border-radius: var(--radius-md);
   font-family: var(--font-primary);
   font-weight: var(--font-weight-semibold);
@@ -255,8 +255,8 @@ body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel) {
 }
 
 body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel):hover:not(:disabled) {
-  background: var(--color-error-600);
-  border-color: var(--color-error-600);
+  background: #c0392b;
+  border-color: #f08278;
   color: #fff;
 }
 
@@ -273,21 +273,21 @@ body:not(#_) :is(.badge, .badge-status, .status-badge, .btn-status, .evento-stat
 }
 
 body:not(#_) :is(.badge-active, .btn-status.active, .status-badge.status-publicada) {
-  background: var(--teal-50);
-  color: var(--teal-700);
-  border-color: var(--teal-100);
+  background: #151a1b;
+  color: #e4c88f;
+  border-color: rgba(228, 200, 143, 0.35);
 }
 
 body:not(#_) :is(.badge-inactive, .badge-inativo, .btn-status.inactive, .status-badge.status-concluida) {
-  background: var(--n-100);
-  color: var(--n-600);
-  border-color: var(--n-200);
+  background: #151a1b;
+  color: rgba(243, 237, 226, 0.84);
+  border-color: rgba(243, 237, 226, 0.14);
 }
 
 body:not(#_) .status-badge.status-rascunho {
-  background: var(--gold-50);
-  color: var(--gold-700);
-  border-color: var(--gold-100);
+  background: rgba(228, 200, 143, 0.13);
+  color: #e4c88f;
+  border-color: rgba(228, 200, 143, 0.35);
 }
 
 /* ==================== Campos ==================== */
@@ -296,17 +296,17 @@ body:not(#_) :is(input, select, textarea):not([type="checkbox"]):not([type="radi
 }
 
 body:not(#_) :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus {
-  border-color: var(--teal-500);
+  border-color: #e4c88f;
   box-shadow: var(--focus-ring);
   outline: none;
 }
 
 body:not(#_) :is(input[type="checkbox"], input[type="radio"]) {
-  accent-color: var(--teal-500);
+  accent-color: #e4c88f;
 }
 
 body:not(#_) ::placeholder {
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
   opacity: 1;
 }
 

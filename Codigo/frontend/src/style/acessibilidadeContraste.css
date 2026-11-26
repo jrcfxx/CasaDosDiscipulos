@@ -11,7 +11,7 @@
  */
 :root {
   --teal-acessivel: #027a8f;
-  --teal-texto-escuro: #5fb2bf;
+  --teal-texto-escuro: #e4c88f;
   --teal-texto-claro: #00626f;
 }
 
@@ -37,11 +37,11 @@ body .staff-org__pessoas {
   color: #ffffff;
 }
 
-/* Ranking (tema claro): pontos em cinza e botão "Dar pontos" */
+/* Ranking (tema escuro): pontos em creme suave e botão "Dar pontos" em dourado */
 body .rank-info .rank-points {
-  color: #4a5568;
+  color: rgba(243, 237, 226, 0.72);
 }
 
 body .ranking-btn-dar-pontos {
-  color: var(--teal-texto-claro);
+  color: #e4c88f;
 }

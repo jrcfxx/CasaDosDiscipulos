@@ -3,9 +3,9 @@
   --pl-teal: var(--sc-teal, #027a8f);
   --pl-teal-escuro: var(--sc-teal-escuro, #00626f);
   --pl-escuro: var(--sc-escuro, #12323a);
-  --pl-borda: #d5dbdc;
-  --pl-borda-forte: #aeb8ba;
-  --pl-suave: #5c6263;
+  --pl-borda: rgba(243, 237, 226, 0.12);
+  --pl-borda-forte: rgba(243, 237, 226, 0.28);
+  --pl-suave: rgba(243, 237, 226, 0.66);
   --pl-dourado: var(--sc-dourado, #f4b002);
   display: flex;
   flex-direction: column;
@@ -30,7 +30,7 @@
 
 .pl-abas button {
   border: 1px solid var(--pl-borda);
-  background: #fff;
+  background: #0f1314;
   color: var(--pl-escuro);
   border-radius: 999px;
   padding: 0.35rem 0.85rem;
@@ -45,9 +45,9 @@
 }
 
 .pl-abas button.ativo {
-  background: var(--pl-escuro);
-  border-color: var(--pl-escuro);
-  color: #fff;
+  background: var(--pl-dourado);
+  border-color: var(--pl-dourado);
+  color: #15130f;
 }
 
 .pl-filtro-evento {
@@ -84,7 +84,7 @@
   color: var(--pl-suave);
   border: 1px dashed var(--pl-borda-forte);
   border-radius: 12px;
-  background: #fff;
+  background: #0f1314;
 }
 
 /* ----- Tabela ----- */
@@ -94,7 +94,7 @@
   min-height: 240px;
   border: 1px solid var(--pl-borda-forte);
   border-radius: 10px;
-  background: #fff;
+  background: #0f1314;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -104,7 +104,7 @@
   width: 100%;
   min-width: max-content;
   font-size: 0.88rem;
-  color: #22292b;
+  color: #f3ede2;
 }
 
 .pl-tabela th,
@@ -116,7 +116,7 @@
 .pl-tabela thead th {
   position: sticky;
   z-index: 3;
-  background: #dfe6e7;
+  background: #151a1b;
   color: var(--pl-escuro);
   font-weight: 800;
   text-transform: uppercase;
@@ -129,7 +129,7 @@
 
 .pl-grupos th {
   top: 0;
-  background: #cfdadc !important;
+  background: rgba(243, 237, 226, 0.16) !important;
   font-size: 0.72rem;
 }
 
@@ -151,8 +151,8 @@
 .pl-mes th {
   position: sticky;
   left: 0;
-  background: var(--pl-escuro);
-  color: #fff;
+  background: var(--pl-dourado);
+  color: #15130f;
   text-align: left;
   padding: 0.35rem 0.75rem;
   font-size: 0.78rem;
@@ -171,7 +171,7 @@
   position: sticky;
   left: 0;
   z-index: 2;
-  background: #f3f6f6;
+  background: #151a1b;
   padding: 0;
   text-align: left;
   min-width: 7.5rem;
@@ -226,8 +226,8 @@
   margin-left: 0.3rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: #fff2cc;
-  color: #6b4a00;
+  background: rgba(228, 200, 143, 0.13);
+  color: #e4c88f;
   font-style: normal;
   font-weight: 700;
   font-size: 0.66rem;
@@ -235,16 +235,16 @@
 }
 
 .pl-linha--par td {
-  background: #f7f9f9;
+  background: #0f1314;
 }
 
 .pl-linha--passada td,
 .pl-linha--passada .pl-data {
-  color: #6b7273;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .pl-linha--passada .pl-data {
-  background: #eef0f0;
+  background: #151a1b;
 }
 
 .pl-linha--hoje .pl-data {
@@ -261,7 +261,7 @@
   text-align: center;
   vertical-align: middle;
   outline: none;
-  background: #fff;
+  background: #0f1314;
   transition: background-color 0.12s;
 }
 
@@ -270,15 +270,15 @@
 }
 
 .pl-cel--editavel:hover {
-  background: #eef7f8 !important;
+  background: #151a1b !important;
 }
 
 .pl-cel--na {
-  background: #fafafa;
+  background: #0f1314;
 }
 
 .pl-na {
-  color: #9aa2a3;
+  color: rgba(243, 237, 226, 0.64);
   font-size: 1rem;
 }
 
@@ -293,13 +293,13 @@
 }
 
 .pl-cel--drop {
-  background: #e3f4e9 !important;
-  box-shadow: inset 0 0 0 2px #1f8a4c;
+  background: rgba(47, 158, 110, 0.13) !important;
+  box-shadow: inset 0 0 0 2px rgba(47, 158, 110, 0.3);
 }
 
 .pl-cel--drop-cheio {
-  background: #fff4e0 !important;
-  box-shadow: inset 0 0 0 2px #c77700;
+  background: rgba(228, 200, 143, 0.13) !important;
+  box-shadow: inset 0 0 0 2px rgba(228, 200, 143, 0.3);
 }
 
 .pl-cel--salvando::after {
@@ -343,7 +343,7 @@
 }
 
 .pl-nome--arrastavel:hover {
-  background: #dcecef;
+  background: rgba(228, 200, 143, 0.13);
 }
 
 .pl-nome--origem {
@@ -354,18 +354,18 @@
 .pl-nome--voando {
   display: inline-block;
   width: auto;
-  background: var(--pl-escuro);
-  color: #fff;
+  background: var(--pl-dourado);
+  color: #15130f;
   padding: 0.25rem 0.6rem;
   border-radius: 6px;
-  box-shadow: 0 6px 18px rgba(18, 50, 58, 0.3);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
   cursor: grabbing;
   font-size: 0.85rem;
   pointer-events: none;
 }
 
 .pl-vazio {
-  color: #b5bcbd;
+  color: rgba(243, 237, 226, 0.64);
   font-weight: 700;
   opacity: 0;
 }
@@ -382,16 +382,16 @@
   z-index: 950;
   width: 280px;
   max-width: calc(100vw - 16px);
-  background: #fff;
-  border: 1px solid var(--sc-borda, #dcdfdf);
+  background: #0f1314;
+  border: 1px solid var(--sc-borda, rgba(243, 237, 226, 0.14));
   border-radius: 12px;
-  box-shadow: 0 16px 40px rgba(18, 50, 58, 0.22);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   padding: 0.6rem;
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
   font-size: 0.88rem;
-  color: #22292b;
+  color: #f3ede2;
   animation: pl-surgir 0.12s ease-out;
 }
 
@@ -413,12 +413,12 @@
 }
 
 .pl-editor__topo strong {
-  color: #12323a;
+  color: #f3ede2;
   font-size: 0.95rem;
 }
 
 .pl-editor__topo span {
-  color: #5c6263;
+  color: rgba(243, 237, 226, 0.84);
   font-size: 0.78rem;
 }
 
@@ -428,7 +428,7 @@
 }
 
 .pl-editor__lotado {
-  color: #a35f00;
+  color: #e4c88f;
 }
 
 .pl-editor__atuais {
@@ -444,8 +444,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  background: #e5f1f3;
-  color: #12323a;
+  background: #151a1b;
+  color: #f3ede2;
   border-radius: 999px;
   padding: 0.15rem 0.2rem 0.15rem 0.6rem;
   font-weight: 600;
@@ -458,29 +458,29 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #5c6263;
+  color: rgba(243, 237, 226, 0.84);
   font-size: 1rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .pl-editor__atuais button:hover {
-  background: #f9dcdc;
-  color: #a32020;
+  background: rgba(240, 130, 120, 0.13);
+  color: #f2a69c;
 }
 
 .pl-editor__busca {
   width: 100%;
   box-sizing: border-box;
   padding: 0.5rem 0.6rem;
-  border: 1.5px solid #027a8f;
+  border: 1.5px solid #e4c88f;
   border-radius: 8px;
   font: inherit;
   outline: none;
 }
 
 .pl-editor__busca:focus {
-  box-shadow: 0 0 0 3px rgba(2, 122, 143, 0.18);
+  box-shadow: 0 0 0 3px rgba(228, 200, 143, 0.18);
 }
 
 .pl-editor__lista {
@@ -502,7 +502,7 @@
 }
 
 .pl-op--destaque {
-  background: #e5f1f3;
+  background: #151a1b;
 }
 
 .pl-op__nome {
@@ -511,8 +511,8 @@
 
 .pl-op__ja {
   font-size: 0.72rem;
-  color: #8a5a00;
-  background: #fff2cc;
+  color: #e4c88f;
+  background: rgba(228, 200, 143, 0.13);
   border-radius: 999px;
   padding: 0.05rem 0.4rem;
   white-space: nowrap;
@@ -526,33 +526,33 @@
   height: 12px;
   flex-shrink: 0;
   border-radius: 50%;
-  border: 2px solid #027a8f;
+  border: 2px solid #e4c88f;
   border-right-color: transparent;
   animation: pl-girar 0.7s linear infinite;
 }
 
 .pl-editor__info {
   padding: 0.6rem;
-  color: #5c6263;
+  color: rgba(243, 237, 226, 0.84);
   font-size: 0.82rem;
 }
 
 .pl-editor__dica {
   margin: 0;
   padding-top: 0.35rem;
-  border-top: 1px solid #eef0f0;
+  border-top: 1px solid rgba(243, 237, 226, 0.14);
   font-size: 0.72rem;
-  color: #6b7273;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .pl-editor__dica kbd {
   font: inherit;
   font-weight: 700;
   padding: 0 0.25rem;
-  border: 1px solid #d5dbdc;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-bottom-width: 2px;
   border-radius: 4px;
-  background: #f6f7f7;
+  background: #151a1b;
 }
 
 /* ----- Celular ----- */

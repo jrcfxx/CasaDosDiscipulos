@@ -16,16 +16,16 @@
 }
 
 .escala-dialog {
-  background: linear-gradient(160deg, #f6f7f7 0%, #ffffff 100%);
-  border: 1px solid rgba(2, 122, 143, 0.35);
+  background: linear-gradient(160deg, #151a1b 0%, #0f1314 100%);
+  border: 1px solid rgba(228, 200, 143, 0.45);
   border-radius: 14px;
-  box-shadow: 0 18px 48px rgba(18, 50, 58, 0.135);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.405);
   padding: 1.5rem 1.75rem;
   max-width: 480px;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
-  color: #12323a;
+  color: #f3ede2;
   font-family: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
   animation: escalaDialogSlideIn 0.25s ease-out;
 }
@@ -45,7 +45,7 @@
   margin: 0 0 1rem;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .escala-dialog-list,
@@ -62,15 +62,15 @@
 .escala-dialog-history li {
   padding: 0.75rem 0.9rem;
   border-radius: 10px;
-  background: rgba(18, 50, 58, 0.044);
-  border: 1px solid rgba(18, 50, 58, 0.12);
+  background: rgba(243, 237, 226, 0.044);
+  border: 1px solid rgba(243, 237, 226, 0.12);
 }
 
 .escala-dialog-list strong,
 .escala-dialog-history strong {
   display: block;
   margin-bottom: 0.2rem;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .escala-dialog-hint {
@@ -116,21 +116,21 @@
 }
 
 .escala-dialog-btn-secondary {
-  background: rgba(18, 50, 58, 0.11);
-  color: #12323a;
+  background: rgba(243, 237, 226, 0.1);
+  color: #f3ede2;
 }
 
 .escala-dialog-btn-secondary:hover:not(:disabled) {
-  background: rgba(18, 50, 58, 0.12);
+  background: rgba(243, 237, 226, 0.1);
 }
 
 .escala-dialog-btn-primary {
-  background: #027a8f;
-  color: #fff;
+  background: #e4c88f;
+  color: #15130f;
 }
 
 .escala-dialog-btn-primary:hover:not(:disabled) {
-  background: #00444c;
+  background: #e4c88f;
 }
 
 /* Texto de exceção não encosta nos botões */
@@ -140,5 +140,5 @@
 
 /* Conflito é atenção: destaque no amarelo da marca (teal fica para o que está certo) */
 .escala-dialog-list strong {
-  color: #7a4f00;
+  color: #e4c88f;
 }

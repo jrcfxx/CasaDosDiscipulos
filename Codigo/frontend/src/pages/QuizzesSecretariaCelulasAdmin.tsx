@@ -1232,7 +1232,7 @@ export default function QuizzesSecretariaCelulasAdmin() {
               headerAction={
                 <div className="ranking-acoes">
                   <BotoesExportar
-                    tema="claro"
+                    tema="escuro"
                     rotuloExcel="Excel"
                     onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
                   />

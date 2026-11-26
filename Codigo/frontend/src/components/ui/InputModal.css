@@ -23,9 +23,9 @@
 }
 
 .input-modal {
-  background: #fff;
+  background: #0f1314;
   border-radius: 18px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   max-width: 460px;
   width: 100%;
   overflow: hidden;
@@ -44,9 +44,9 @@
   padding: 1.1rem 1.4rem 1rem;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, #0f1416 0%, #12323a 100%);
-  border-bottom: 3px solid #02869b;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f1416 0%, #1c2122 100%);
+  border-bottom: 3px solid #e4c88f;
 }
 
 .input-modal-field {
@@ -58,41 +58,41 @@
   margin-bottom: 0.45rem;
   font-size: 0.84rem;
   font-weight: 700;
-  color: #2b2f30;
+  color: #f3ede2;
 }
 
 .input-modal-input {
   width: 100%;
   padding: 0.7rem 0.85rem;
-  border: 1.5px solid var(--n-300, #c4c8c9);
+  border: 1.5px solid rgba(243, 237, 226, 0.14);
   border-radius: 10px;
   font-family: inherit;
   font-size: 0.95rem;
-  color: #2b2f30;
-  background: #fff;
+  color: #f3ede2;
+  background: #0f1314;
   transition: border-color 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
 }
 
 .input-modal-input:focus {
   outline: none;
-  border-color: #02869b;
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+  border-color: #e4c88f;
+  box-shadow: 0 0 0 3px rgba(228, 200, 143, 0.15);
 }
 
 .input-modal-input::placeholder {
-  color: var(--n-400, #9ba1a2);
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .input-modal-hint {
   margin: 0.7rem 0 0;
   padding: 0.6rem 0.75rem;
   border-radius: 10px;
-  background: #f1f8f9;
-  border: 1px solid #cfe7eb;
+  background: #151a1b;
+  border: 1px solid rgba(228, 200, 143, 0.35);
   font-size: 0.8rem;
   line-height: 1.45;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .input-modal-actions {
@@ -120,7 +120,7 @@
 }
 
 .input-modal-btn:focus-visible {
-  outline: 2px solid #02869b;
+  outline: 2px solid #e4c88f;
   outline-offset: 2px;
 }
 
@@ -130,22 +130,22 @@
 }
 
 .input-modal-btn-cancel {
-  background: #fff;
-  color: #2b2f30;
-  border-color: var(--n-300, #c4c8c9);
+  background: #0f1314;
+  color: #f3ede2;
+  border-color: rgba(243, 237, 226, 0.14);
 }
 
 .input-modal-btn-cancel:hover:not(:disabled) {
-  border-color: #2b2f30;
+  border-color: rgba(243, 237, 226, 0.3);
 }
 
 .input-modal-btn-confirm {
-  background: #027a8f;
-  color: #fff;
+  background: #e4c88f;
+  color: #15130f;
 }
 
 .input-modal-btn-confirm:hover:not(:disabled) {
-  background: #02687a;
+  background: #e4c88f;
 }
 
 @media (prefers-reduced-motion: reduce) {

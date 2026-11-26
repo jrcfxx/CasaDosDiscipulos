@@ -1,19 +1,28 @@
 /**
- * Escala no visual da Casa: topo escuro (moldura sc-) + corpo claro.
- * Redefine os tokens --esc-* usados por EscalaUser.css / EscalaNova.css para o tema claro
- * e organiza a barra de ferramentas e o conteúdo. Prefixo es-.
+ * Escala no visual escuro da Casa: moldura sc- (topo em painel) e corpo escuro com creme e dourado champanhe.
+ * Redefine os tokens --esc-* (EscalaUser.css / EscalaNova.css) e --sc-* (moldura) para o tema escuro. Prefixo es-.
  */
 .sc-pagina.es.escala-page {
-  --esc-sup: #ffffff;
-  --esc-sup-2: #f6f7f7;
-  --esc-borda: rgba(18, 50, 58, 0.12);
-  --esc-borda-forte: rgba(18, 50, 58, 0.22);
-  --esc-texto: #2b2f30;
-  --esc-suave: #5c6263;
-  --esc-teal: #027a8f;
-  --esc-teal-claro: #00626f;
-  --esc-petroleo: #00444c;
-  --esc-ouro: #f4b002;
+  color-scheme: dark;
+  --esc-sup: #0f1314;
+  --esc-sup-2: #151a1b;
+  --esc-borda: rgba(243, 237, 226, 0.1);
+  --esc-borda-forte: rgba(243, 237, 226, 0.22);
+  --esc-texto: #f3ede2;
+  --esc-suave: rgba(243, 237, 226, 0.66);
+  --esc-teal: #e4c88f;
+  --esc-teal-claro: #e4c88f;
+  --esc-petroleo: #2a2419;
+  --esc-ouro: #e4c88f;
+  --sc-escuro: #f3ede2;
+  --sc-texto: rgba(243, 237, 226, 0.88);
+  --sc-suave: rgba(243, 237, 226, 0.66);
+  --sc-borda: rgba(243, 237, 226, 0.1);
+  --sc-fundo-claro: rgba(243, 237, 226, 0.05);
+  --sc-teal: #e4c88f;
+  --sc-teal-escuro: #e4c88f;
+  --sc-teal-claro: #e4c88f;
+  --sc-dourado: #e4c88f;
 }
 
 .es-fundo {
@@ -39,10 +48,10 @@
   gap: 0.75rem 1rem;
   margin: 0;
   padding: 0.75rem 0.9rem;
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04), 0 6px 18px rgba(18, 50, 58, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
 .es .esc-periodo {
@@ -67,7 +76,7 @@
   place-items: center;
   border-radius: 10px;
   border: 1px solid var(--sc-borda);
-  background: #fff;
+  background: #0f1314;
   color: var(--sc-escuro);
   cursor: pointer;
 }
@@ -75,7 +84,7 @@
 .es .esc-icone:hover {
   border-color: var(--sc-teal);
   color: var(--sc-teal-escuro);
-  background: #f2f7f8;
+  background: #151a1b;
 }
 
 .es .esc-btn {
@@ -86,13 +95,13 @@
 
 .es .esc-hoje {
   border: 1px solid var(--sc-borda);
-  background: #fff;
+  background: #0f1314;
   color: var(--sc-teal-escuro);
 }
 
 .es .esc-hoje:hover {
   border-color: var(--sc-teal);
-  background: #f2f7f8;
+  background: #151a1b;
 }
 
 .es .esc-acoes {
@@ -112,7 +121,7 @@
 .es .filtro-ministerios {
   margin: 0;
   padding: 0.75rem 0.9rem;
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
   border-radius: 14px;
 }
@@ -152,10 +161,10 @@
 .es .escala-calendario {
   padding: 0;
   overflow: hidden;
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
   border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04), 0 10px 28px rgba(18, 50, 58, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 10px 28px rgba(0, 0, 0, 0.18);
 }
 
 .es .calendario-dias-semana {
@@ -163,7 +172,7 @@
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0;
   margin: 0;
-  background: var(--sc-escuro);
+  background: #1c2122;
 }
 
 .es .calendario-dias-semana .dia-semana {
@@ -180,7 +189,7 @@
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0;
-  background: #fff;
+  background: #0f1314;
 }
 
 .es .calendario-celula {
@@ -190,7 +199,7 @@
   padding: 0.45rem;
   border: none;
   border-radius: 0;
-  background: #fff;
+  background: #0f1314;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
@@ -198,7 +207,7 @@
 }
 
 .es .calendario-celula.vazio {
-  background: #fafbfb;
+  background: #0f1314;
 }
 
 .es .calendario-celula.clicavel {
@@ -206,17 +215,17 @@
 }
 
 .es .calendario-celula.clicavel:hover {
-  background: #f4f9fa;
+  background: #0f1314;
 }
 
 .es .calendario-celula.passado,
 .es .calendario-celula.passado:not(.hoje) {
-  background: #fcfcfc;
+  background: #0f1314;
   opacity: 1;
 }
 
 .es .calendario-celula.passado .dia-evento-nome {
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .es .calendario-celula .dia-numero {
@@ -237,12 +246,12 @@
 }
 
 .es .calendario-celula.passado .dia-numero {
-  color: #8a9091;
+  color: rgba(243, 237, 226, 0.64);
   font-weight: 600;
 }
 
 .es .calendario-celula .dia-numero:hover {
-  background: #e8f4f6;
+  background: #151a1b;
 }
 
 .es .calendario-celula .dia-numero:focus-visible {
@@ -251,14 +260,14 @@
 }
 
 .es .calendario-celula.hoje {
-  background: #fffaeb;
+  background: rgba(228, 200, 143, 0.13);
   box-shadow: inset 0 0 0 2px var(--sc-dourado);
   z-index: 1;
 }
 
 .es .calendario-celula.hoje .dia-numero {
   background: var(--sc-dourado);
-  color: #1a1a1a;
+  color: #15130f;
   font-weight: 800;
 }
 
@@ -280,7 +289,7 @@
   border: none;
   border-left: 3px solid var(--sc-teal);
   border-radius: 6px;
-  background: #e8f4f6;
+  background: #151a1b;
   color: var(--sc-escuro);
   font: inherit;
   font-size: 0.76rem;
@@ -295,7 +304,7 @@
 }
 
 .es .dia-evento-nome:hover {
-  background: #cce8ec;
+  background: rgba(228, 200, 143, 0.13);
 }
 
 .es .dia-evento-nome:focus-visible {
@@ -305,13 +314,13 @@
 
 .es .dia-evento-nome.status-rascunho {
   border-left-color: var(--sc-dourado);
-  background: #fff6d9;
+  background: rgba(228, 200, 143, 0.13);
 }
 
 .es .dia-evento-nome.status-concluida {
-  border-left-color: #9ba1a2;
-  background: #f0f2f2;
-  color: #4a5254;
+  border-left-color: rgba(243, 237, 226, 0.14);
+  background: #151a1b;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .es .dia-evento-mais {
@@ -324,8 +333,8 @@
 .es .calendario-resumo {
   margin: 0;
   padding: 0.7rem 1rem;
-  border-top: 1px solid #eceeee;
-  background: #fbfcfc;
+  border-top: 1px solid rgba(243, 237, 226, 0.14);
+  background: #0f1314;
   color: var(--sc-suave);
   font-size: 0.82rem;
   text-align: right;
@@ -356,17 +365,17 @@
   height: 10px;
   border-radius: 3px;
   border-left: 3px solid var(--sc-teal);
-  background: #e8f4f6;
+  background: #151a1b;
 }
 
 .es-legenda__marca--rascunho {
   border-left-color: var(--sc-dourado);
-  background: #fff6d9;
+  background: rgba(228, 200, 143, 0.13);
 }
 
 .es-legenda__marca--concluida {
-  border-left-color: #9ba1a2;
-  background: #f0f2f2;
+  border-left-color: rgba(243, 237, 226, 0.14);
+  background: #151a1b;
 }
 
 .es-legenda__marca--hoje {
@@ -419,7 +428,7 @@
   background: var(--sc-fundo-claro);
   border: none;
   border-radius: 20px;
-  box-shadow: 0 30px 80px rgba(4, 12, 14, 0.45);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
 }
@@ -427,14 +436,13 @@
 .es .escala-dashboard-header {
   margin: 0;
   padding: 1.25rem 1.5rem 1.1rem;
-  background:
-    radial-gradient(circle at 100% -40%, rgba(2, 134, 155, 0.45), transparent 60%),
-    linear-gradient(160deg, #0b1214 0%, #10262b 100%);
-  border-bottom: 1px solid rgba(244, 176, 2, 0.35);
+  background: radial-gradient(circle at 100% -40%, rgba(228, 200, 143, 0.18), transparent 60%),
+    linear-gradient(160deg, #0b1214 0%, #1c2122 100%);
+  border-bottom: 1px solid rgba(228, 200, 143, 0.45);
 }
 
 .es .escala-dashboard-titulo h2 {
-  color: #fff;
+  color: #ffffff;
   font-size: 1.35rem;
   font-weight: 800;
 }
@@ -445,18 +453,18 @@
 }
 
 .es .btn-fechar-dashboard {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  border: 1px solid rgba(243, 237, 226, 0.14);
+  background: rgba(12, 15, 16, 0.06);
+  color: #ffffff;
   border-radius: 10px;
 }
 
 .es .btn-fechar-dashboard:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(12, 15, 16, 0.14);
 }
 
 .es .escala-dashboard-header .status-badge {
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(243, 237, 226, 0.14);
 }
 
 .es .modal-escala-dashboard > :not(.escala-dashboard-header):not(.esc-modal-rodape) {
@@ -479,11 +487,11 @@
 }
 
 .es .escala-area-card {
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
   border-top: 3px solid var(--sc-teal);
   border-radius: 14px;
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .es .area-card-header h3,
@@ -493,20 +501,20 @@
 }
 
 .es .area-count {
-  background: var(--sc-escuro);
+  background: rgba(228, 200, 143, 0.14);
   color: var(--sc-dourado);
 }
 
 .es .pessoa-item {
-  background: #fff;
-  border: 1px solid #e6e9e9;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 12px;
   box-shadow: none;
 }
 
 .es .pessoa-item:hover {
-  border-color: rgba(2, 122, 143, 0.4);
-  background: #fbfdfd;
+  border-color: rgba(228, 200, 143, 0.45);
+  background: #0f1314;
 }
 
 .es .pessoa-nome {
@@ -514,18 +522,18 @@
 }
 
 .es .pessoa-avatar {
-  background: linear-gradient(145deg, #1d4a55, var(--sc-escuro));
+  background: linear-gradient(145deg, #2a2419, #15130f);
   color: var(--sc-dourado);
-  box-shadow: 0 0 0 2px rgba(244, 176, 2, 0.45);
+  box-shadow: 0 0 0 2px rgba(228, 200, 143, 0.3);
 }
 
 .es .pessoa-drag {
-  color: #8a9091;
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .es .pessoa-acao {
   border: 1px solid var(--sc-borda);
-  background: #fff;
+  background: #0f1314;
   color: var(--sc-suave);
 }
 
@@ -535,28 +543,28 @@
 }
 
 .es .pessoa-acao--perigo:hover {
-  border-color: #e8b4b0;
-  background: #fdeeec;
-  color: #b3261e;
+  border-color: #f08278;
+  background: rgba(240, 130, 120, 0.13);
+  color: #f2a69c;
 }
 
 .es .btn-escalar-area {
-  border: 1.5px dashed rgba(2, 122, 143, 0.45);
-  background: #f1f8f9;
+  border: 1.5px dashed rgba(228, 200, 143, 0.45);
+  background: #151a1b;
   color: var(--sc-teal-escuro);
   font-weight: 700;
   border-radius: 12px;
 }
 
 .es .btn-escalar-area:hover {
-  background: #e3f1f3;
+  background: rgba(228, 200, 143, 0.13);
   border-color: var(--sc-teal);
 }
 
 .es .esc-modal-rodape {
   margin-top: 1.25rem;
   padding: 0.9rem 1.5rem;
-  background: #fff;
+  background: #0f1314;
   border-top: 1px solid var(--sc-borda);
 }
 
@@ -572,10 +580,10 @@
 
 .es .semana-bloco {
   padding: 1rem;
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .es .semana-bloco__topo {
@@ -589,14 +597,14 @@
 }
 
 .es .semana-coluna {
-  background: #f8fafa;
-  border: 1px solid #e6e9e9;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 12px;
   opacity: 1;
 }
 
 .es .semana-coluna.passado {
-  background: #fbfbfb;
+  background: #0f1314;
   opacity: 1;
 }
 
@@ -605,13 +613,13 @@
 }
 
 .es .semana-coluna.hoje {
-  background: #fffaeb;
+  background: rgba(228, 200, 143, 0.13);
   border-color: var(--sc-dourado);
   box-shadow: inset 0 0 0 1px var(--sc-dourado);
 }
 
 .es .semana-dia-header {
-  border-bottom: 1px solid #e6e9e9;
+  border-bottom: 1px solid rgba(243, 237, 226, 0.14);
 }
 
 .es .semana-dia-nome {
@@ -629,29 +637,29 @@
 }
 
 .es .semana-coluna.hoje .semana-dia-numero {
-  color: #7a4f00;
+  color: #e4c88f;
 }
 
 .es .semana-vazio {
-  color: #9ba1a2;
+  color: rgba(243, 237, 226, 0.64);
   opacity: 1;
 }
 
 .es .semana-evento {
-  background: #fff;
-  border: 1px solid #dfe6e7;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-left: 3px solid var(--sc-teal);
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(18, 50, 58, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 
 .es .semana-evento.status-rascunho {
   border-left-color: var(--sc-dourado);
-  background: #fffdf5;
+  background: #0f1314;
 }
 
 .es .semana-evento.status-concluida {
-  border-left-color: #9ba1a2;
+  border-left-color: rgba(243, 237, 226, 0.14);
 }
 
 .es .semana-evento-titulo {
@@ -665,19 +673,19 @@
 }
 
 .es .semana-btn-expandir {
-  background: #e8f4f6;
+  background: #151a1b;
   color: var(--sc-teal-escuro);
   border-radius: 8px;
 }
 
 .es .semana-btn-expandir:hover {
-  background: #cce8ec;
+  background: rgba(228, 200, 143, 0.13);
 }
 
 /* Quadro (áreas, funções e pessoas) — usado na semana e no dia */
 .es .quadro-area {
-  background: #fff;
-  border: 1px solid #e3e8e9;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-top: 3px solid var(--sc-teal);
   border-radius: 10px;
 }
@@ -687,8 +695,8 @@
 }
 
 .es .quadro-slot {
-  background: #f8fafa;
-  border: 1px solid #e6e9e9;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 8px;
 }
 
@@ -698,11 +706,11 @@
 }
 
 .es .quadro-chip {
-  background: #fff;
-  border: 1px solid #d7e4e6;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 999px;
   color: var(--sc-escuro);
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .es .quadro-chip:hover {
@@ -715,19 +723,19 @@
 }
 
 .es .quadro-chip-avatar {
-  background: linear-gradient(145deg, #1d4a55, var(--sc-escuro));
+  background: linear-gradient(145deg, #2a2419, #15130f);
   color: var(--sc-dourado);
 }
 
 .es .quadro-add {
-  border: 1.5px dashed rgba(2, 122, 143, 0.45);
-  background: #fff;
+  border: 1.5px dashed rgba(228, 200, 143, 0.45);
+  background: #0f1314;
   color: var(--sc-teal-escuro);
   border-radius: 8px;
 }
 
 .es .quadro-add:hover {
-  background: #f1f8f9;
+  background: #151a1b;
   border-color: var(--sc-teal);
 }
 
@@ -760,9 +768,9 @@
   gap: 0.3rem;
   min-height: 34px;
   padding: 0.25rem 0.8rem;
-  border: 1px solid #c4c8c9;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 999px;
-  background: #fff;
+  background: #0f1314;
   color: var(--sc-texto);
   font: inherit;
   font-size: 0.84rem;
@@ -777,7 +785,7 @@
 
 .es .filtro-ministerio.ativo {
   border-color: var(--sc-teal);
-  background: #e8f4f6;
+  background: #151a1b;
   color: var(--sc-teal-escuro);
 }
 
@@ -818,14 +826,14 @@
 
 .es .mapa-navegacao {
   margin: 0;
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .es .mapa-evento-chip {
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
   color: var(--sc-escuro);
 }
@@ -835,32 +843,31 @@
 }
 
 .es .mapa-evento-chip.is-ativo {
-  background: var(--sc-escuro);
-  border-color: var(--sc-escuro);
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(18, 50, 58, 0.25);
+  background: var(--sc-ouro);
+  border-color: var(--sc-ouro);
+  color: #15130f;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
 }
 
 .es .mapa-evento-chip.is-ativo .chip-titulo {
-  color: #fff;
+  color: #15130f;
 }
 
 .es .mapa-evento-chip.is-ativo .chip-hora {
-  color: var(--sc-dourado);
+  color: #3d3424;
 }
 
 .es .mapa-evento-chip.is-ativo .chip-data {
-  background: var(--sc-dourado);
-  color: #1a1a1a;
+  background: #15130f;
+  color: #e4c88f;
 }
 
 .es .mapa-evento-destaque {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(2, 134, 155, 0.45), transparent 55%),
-    linear-gradient(160deg, #0b1214 0%, #12323a 100%);
+  background: radial-gradient(circle at 100% 0%, rgba(228, 200, 143, 0.18), transparent 55%),
+    linear-gradient(160deg, #0b1214 0%, #1c2122 100%);
   border: none;
-  color: #fff;
-  box-shadow: 0 14px 34px rgba(4, 12, 14, 0.2);
+  color: #ffffff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
 }
 
 .es .mapa-evento-destaque .destaque-rotulo {
@@ -868,7 +875,7 @@
 }
 
 .es .mapa-evento-destaque .destaque-titulo {
-  color: #fff;
+  color: #ffffff;
 }
 
 .es .mapa-evento-destaque .destaque-quando,
@@ -878,13 +885,13 @@
 }
 
 .es .mapa-evento-destaque .destaque-hora {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background: rgba(12, 15, 16, 0.08);
+  color: #ffffff;
 }
 
 .es .mapa-evento-destaque .destaque-numeros > div {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 15, 16, 0.06);
+  border: 1px solid rgba(243, 237, 226, 0.14);
 }
 
 .es .mapa-evento-destaque .destaque-numeros dt {
@@ -892,7 +899,7 @@
 }
 
 .es .mapa-evento-destaque .destaque-numeros dd {
-  color: #fff;
+  color: #ffffff;
 }
 
 .es .mapa-evento-destaque .destaque-numeros .is-alerta dd {
@@ -903,15 +910,15 @@
 .es input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
 .es select,
 .es textarea {
-  background-color: #fff;
-  border: 1px solid #b9bfc0;
+  background-color: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.14);
   color: var(--sc-texto);
   border-radius: 10px;
 }
 
 .es input:not([type="checkbox"]):not([type="radio"])::placeholder,
 .es textarea::placeholder {
-  color: #7b8283;
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .es input:not([type="checkbox"]):not([type="radio"]):focus,
@@ -919,14 +926,14 @@
 .es textarea:focus {
   outline: none;
   border-color: var(--sc-teal);
-  box-shadow: 0 0 0 3px rgba(2, 122, 143, 0.18);
+  box-shadow: 0 0 0 3px rgba(228, 200, 143, 0.18);
 }
 
 .es input:not([type="checkbox"]):not([type="radio"]):disabled,
 .es select:disabled,
 .es textarea:disabled {
-  background-color: #f2f4f4;
-  color: #7b8283;
+  background-color: #151a1b;
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .es input[type="checkbox"],
@@ -942,9 +949,9 @@
 
 .es .escala-relatorio__kpi,
 .es .escala-relatorio__card {
-  background: #fff;
+  background: #0f1314;
   border: 1px solid var(--sc-borda);
-  box-shadow: 0 1px 2px rgba(18, 50, 58, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .es .escala-relatorio__kpi strong,
@@ -954,18 +961,18 @@
 }
 
 .es .escala-relatorio__link-ev {
-  background: #f6f8f8;
+  background: #0f1314;
 }
 
 /* Acessibilidade: contraste no tema claro */
 .es .calendario-celula.passado .dia-numero {
-  color: #646b6c;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .es .detalhes-resumo-item,
 .es .mapa-pessoa .detalhes-resumo-item {
-  background: #fff2cc;
-  color: #6b4a00;
+  background: rgba(228, 200, 143, 0.13);
+  color: #e4c88f;
 }
 
 .es .area-card-nome {
@@ -979,9 +986,9 @@
   max-height: 90vh;
   overflow-y: auto;
   padding: 0;
-  background: #fff;
+  background: #0f1314;
   border-radius: 20px;
-  box-shadow: 0 30px 80px rgba(4, 12, 14, 0.45);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
   color: var(--sc-texto);
   display: flex;
   flex-direction: column;
@@ -990,11 +997,10 @@
 .es .modal-atribuicao > h2 {
   margin: 0;
   padding: 1.2rem 1.5rem;
-  background:
-    radial-gradient(circle at 100% -40%, rgba(2, 134, 155, 0.45), transparent 60%),
-    linear-gradient(160deg, #0b1214 0%, #10262b 100%);
-  border-bottom: 1px solid rgba(244, 176, 2, 0.35);
-  color: #fff;
+  background: radial-gradient(circle at 100% -40%, rgba(228, 200, 143, 0.18), transparent 60%),
+    linear-gradient(160deg, #0b1214 0%, #1c2122 100%);
+  border-bottom: 1px solid rgba(228, 200, 143, 0.45);
+  color: #ffffff;
   font-size: 1.15rem;
   font-weight: 800;
 }
@@ -1024,7 +1030,7 @@
 .es .modal-atribuicao .form-group > span {
   margin-top: 0.25rem;
   padding-top: 0.75rem;
-  border-top: 1px solid #eceeee;
+  border-top: 1px solid rgba(243, 237, 226, 0.14);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1051,7 +1057,7 @@
   gap: 0.6rem;
   margin-top: 1.25rem;
   padding: 1rem 1.5rem;
-  background: #fff;
+  background: #0f1314;
   border-top: 1px solid var(--sc-borda);
 }
 
@@ -1068,8 +1074,8 @@
 }
 
 .es .modal-atribuicao .btn-cancelar {
-  border: 1px solid #c4c8c9;
-  background: #fff;
+  border: 1px solid rgba(243, 237, 226, 0.14);
+  background: #0f1314;
   color: var(--sc-texto);
 }
 
@@ -1080,12 +1086,12 @@
 
 .es .modal-atribuicao .btn-salvar {
   border: none;
-  background: var(--sc-teal);
-  color: #fff;
+  background: var(--sc-ouro);
+  color: #15130f;
 }
 
 .es .modal-atribuicao .btn-salvar:hover:not(:disabled) {
-  background: #02687a;
+  background: #e4c88f;
 }
 
 .es .modal-atribuicao .btn-salvar:disabled {

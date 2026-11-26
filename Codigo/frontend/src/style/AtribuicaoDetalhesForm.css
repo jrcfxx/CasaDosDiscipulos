@@ -14,26 +14,26 @@
 .atrib-detalhe-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .atrib-detalhe-field {
   width: 100%;
   padding: 0.6rem 0.85rem;
-  background: #f6f7f7;
-  border: 1px solid rgba(18, 50, 58, 0.24);
+  background: #151a1b;
+  border: 1px solid rgba(243, 237, 226, 0.24);
   border-radius: 8px;
-  color: #12323a;
+  color: #f3ede2;
   font-size: 0.9rem;
 }
 
 .atrib-detalhe-field:focus {
   outline: none;
-  border-color: #027a8f;
+  border-color: #e4c88f;
 }
 
 .atrib-detalhe-field::placeholder {
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .atrib-detalhe-field textarea {
@@ -51,8 +51,8 @@
 
 .detalhes-resumo-item {
   font-size: 0.75rem;
-  color: #3c4142;
-  background: rgba(2, 134, 155, 0.16);
+  color: rgba(243, 237, 226, 0.84);
+  background: rgba(228, 200, 143, 0.16);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
 }

@@ -430,7 +430,7 @@ const ModulosEscolaDiscipulosAdmin: React.FC = () => {
               headerAction={
                 <div className="ranking-acoes">
                   <BotoesExportar
-                    tema="claro"
+                    tema="escuro"
                     rotuloExcel="Excel"
                     onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
                   />

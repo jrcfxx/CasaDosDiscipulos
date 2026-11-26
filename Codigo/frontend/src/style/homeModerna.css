@@ -4,6 +4,7 @@
  * destaque em âmbar, etiquetas pequenas espaçadas nos cantos e fotografia documental quente.
  */
 .hm {
+  color-scheme: dark;
   --hm-preto: #000;
   --hm-painel: #0c0f10;
   --hm-creme: #f3ede2;
@@ -664,6 +665,11 @@
 }
 
 @media (max-width: 420px) {
+  /* Etiquetas de canto: só a primeira cabe sem quebrar linha */
+  .hm-cantos span:last-child {
+    display: none;
+  }
+
   .hm-agenda li {
     padding: 1.25rem 0.4rem;
   }

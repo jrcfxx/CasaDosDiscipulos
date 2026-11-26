@@ -88,7 +88,7 @@ const RelatorioFormulario: React.FC<Props> = ({ idFormulario, frequencia, titulo
           ))}
         </div>
         <BotoesExportar
-          tema="claro"
+          tema="escuro"
           onExcel={dados ? () => exportarRelatorioFormulario(titulo, periodoTexto, dados) : undefined}
           onPdf={dados ? () => exportarPdf(`Relatório – ${titulo} – ${periodoTexto}`, { paisagem: true }) : undefined}
         />

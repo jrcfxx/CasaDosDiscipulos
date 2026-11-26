@@ -49,7 +49,7 @@
   padding: 0.45rem 0.85rem;
   border-radius: 999px;
   border: 1px solid var(--rel-borda);
-  background: #fff;
+  background: #0f1314;
   color: var(--rel-suave);
   font-size: 0.85rem;
   font-weight: 600;
@@ -63,9 +63,9 @@
 }
 
 .rel-atalho.ativo {
-  background: var(--primary-dark, #00444c);
-  border-color: var(--primary-dark, #00444c);
-  color: #fff;
+  background: #e4c88f;
+  border-color: #e4c88f;
+  color: #ffffff;
 }
 
 .rel-datas {
@@ -90,7 +90,7 @@
   font-family: inherit;
   font-size: 0.88rem;
   color: var(--rel-texto);
-  background: #fff;
+  background: #0f1314;
 }
 
 .rel-criterio {
@@ -104,16 +104,16 @@
   margin: 0 0 1rem;
   padding: 0.75rem 0.9rem;
   border-radius: 10px;
-  background: #fff8e1;
-  border: 1px solid #f3dfa0;
-  color: #6b5200;
+  background: rgba(228, 200, 143, 0.13);
+  border: 1px solid rgba(228, 200, 143, 0.35);
+  color: #e4c88f;
   font-size: 0.88rem;
   line-height: 1.5;
 }
 
 .rel-aviso--erro {
   background: var(--rel-falta-fundo);
-  border-color: #f1c4bf;
+  border-color: rgba(240, 130, 120, 0.35);
   color: var(--rel-falta);
 }
 
@@ -186,7 +186,7 @@
   overflow-x: auto;
   border: 1px solid var(--rel-borda);
   border-radius: 12px;
-  background: #fff;
+  background: #0f1314;
 }
 
 .rel-tabela {
@@ -221,11 +221,11 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--primary-teal, #02869b);
+  color: #e4c88f;
 }
 
 .rel-tabela thead th.atual {
-  background: #eef7f8;
+  background: #151a1b;
 }
 
 /* Primeira coluna fixa ao rolar para o lado */
@@ -235,7 +235,7 @@
   z-index: 1;
   min-width: 150px;
   text-align: left !important;
-  background: #fff;
+  background: #0f1314;
   box-shadow: 1px 0 0 var(--rel-borda);
 }
 
@@ -292,7 +292,7 @@ thead .rel-col-celula {
 }
 
 .rel-marca--aguardando span:first-child {
-  color: #9aa1a3;
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .rel-chip {
@@ -365,7 +365,7 @@ thead .rel-col-celula {
 }
 
 .rel-legenda .rel-marca--aguardando {
-  color: #9aa1a3;
+  color: rgba(243, 237, 226, 0.64);
 }
 
 @media (max-width: 640px) {
@@ -431,10 +431,10 @@ thead .rel-col-celula {
 
 /* Turquesa em fundo claro: tom mais fechado para passar no contraste (4,5:1) */
 .rel-tabela thead th.atual small {
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .rel-tabela-wrap:focus-visible {
-  outline: 2px solid #027a8f;
+  outline: 2px solid #e4c88f;
   outline-offset: 2px;
 }

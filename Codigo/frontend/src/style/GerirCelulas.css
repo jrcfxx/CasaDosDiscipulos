@@ -11,7 +11,7 @@
 
 .gerir-celulas-container {
   min-height: 100vh;
-  background: var(--color-bg);
+  background: #020202;
   display: flex;
   flex-direction: column;
   font-family: var(--font-primary);
@@ -47,7 +47,7 @@
   transform: translateX(-50%);
   width: 80px;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary-teal), var(--secondary-gold));
+  background: linear-gradient(90deg, #e4c88f, #e4c88f);
   border-radius: 2px;
 }
 
@@ -64,8 +64,8 @@
   max-width: 70%;
   padding: 0.85rem 1.25rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(243, 237, 226, 0.14);
+  background: rgba(12, 15, 16, 0.05);
   color: #ffffff;
   outline: none;
   font-size: 0.95rem;
@@ -77,16 +77,16 @@
 }
 
 .gerir-celulas-container .busca-container input:focus {
-  border-color: var(--primary-teal);
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.15);
+  border-color: #e4c88f;
+  box-shadow: 0 0 0 3px rgba(228, 200, 143, 0.15);
 }
 
 .gerir-celulas-container .btn-add {
   padding: 0.85rem 1.5rem;
   border-radius: 12px;
   border: none;
-  background: #027a8f;
-  color: #fff;
+  background: #e4c88f;
+  color: #15130f;
   font-size: 1.25rem;
   font-weight: 700;
   cursor: pointer;
@@ -95,14 +95,14 @@
 }
 
 .gerir-celulas-container .btn-add:hover {
-  background: var(--primary-teal-hover);
+  background: #e4c88f;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(2, 134, 155, 0.4);
+  box-shadow: 0 4px 12px rgba(228, 200, 143, 0.3);
 }
 
 .loading-message {
   text-align: center;
-  color: var(--primary-teal);
+  color: #e4c88f;
   font-size: 1.1rem;
   padding: 3rem;
 }
@@ -134,14 +134,14 @@
 .celulas-table {
   width: 100%;
   border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 15, 16, 0.03);
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 16px;
   overflow: hidden;
 }
 
 .celulas-table thead {
-  background: rgba(2, 134, 155, 0.15);
+  background: rgba(228, 200, 143, 0.15);
 }
 
 .celulas-table th {
@@ -151,14 +151,14 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--primary-teal);
-  border-bottom: 2px solid rgba(2, 134, 155, 0.3);
+  color: #e4c88f;
+  border-bottom: 2px solid rgba(228, 200, 143, 0.45);
 }
 
 .celulas-table td {
   padding: 1rem 1.25rem;
   color: rgba(255, 255, 255, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(243, 237, 226, 0.14);
   font-size: 0.9rem;
   max-width: 200px;
   overflow: hidden;
@@ -170,7 +170,7 @@
 }
 
 .celulas-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(12, 15, 16, 0.05);
 }
 
 .celulas-table .acoes {
@@ -188,13 +188,13 @@
 }
 
 .celulas-table .badge-ativo {
-  background: rgba(2, 134, 155, 0.2);
-  color: var(--teal-500);
+  background: rgba(228, 200, 143, 0.18);
+  color: #e4c88f;
 }
 
 .celulas-table .badge-inativo {
-  background: rgba(217, 72, 59, 0.2);
-  color: #fca5a5;
+  background: rgba(240, 130, 120, 0.18);
+  color: #f2a69c;
 }
 
 .celulas-table .btn-edit,
@@ -211,35 +211,35 @@
 }
 
 .celulas-table .btn-edit {
-  background: rgba(2, 134, 155, 0.2);
-  color: var(--primary-teal);
-  border: 1px solid rgba(2, 134, 155, 0.3);
+  background: rgba(228, 200, 143, 0.18);
+  color: #e4c88f;
+  border: 1px solid rgba(228, 200, 143, 0.45);
 }
 
 .celulas-table .btn-edit:hover {
-  background: rgba(2, 134, 155, 0.3);
+  background: rgba(228, 200, 143, 0.18);
   transform: translateY(-1px);
 }
 
 .celulas-table .btn-toggle {
-  background: rgba(244, 176, 2, 0.2);
-  color: var(--secondary-gold);
-  border: 1px solid rgba(244, 176, 2, 0.3);
+  background: rgba(228, 200, 143, 0.18);
+  color: #e4c88f;
+  border: 1px solid rgba(228, 200, 143, 0.45);
 }
 
 .celulas-table .btn-toggle:hover {
-  background: rgba(244, 176, 2, 0.3);
+  background: rgba(228, 200, 143, 0.18);
   transform: translateY(-1px);
 }
 
 .celulas-table .btn-delete {
-  background: rgba(217, 72, 59, 0.2);
-  color: var(--color-error-500);
-  border: 1px solid rgba(217, 72, 59, 0.3);
+  background: rgba(240, 130, 120, 0.18);
+  color: #f2a69c;
+  border: 1px solid rgba(240, 130, 120, 0.45);
 }
 
 .celulas-table .btn-delete:hover {
-  background: rgba(217, 72, 59, 0.3);
+  background: rgba(240, 130, 120, 0.18);
   transform: translateY(-1px);
 }
 
@@ -267,15 +267,15 @@
 
 .gerir-celulas-container .modal {
   background: rgba(26, 30, 35, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 16px;
   padding: 0;
   max-width: 480px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-  color: var(--color-neutral-light, #ebebeb);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  color: #ebebeb;
   display: flex;
   flex-direction: column;
   font-family: var(--font-primary);
@@ -287,8 +287,8 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1.5rem 1.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: linear-gradient(135deg, rgba(2, 134, 155, 0.08) 0%, transparent 50%);
+  border-bottom: 1px solid rgba(243, 237, 226, 0.14);
+  background: linear-gradient(135deg, rgba(228, 200, 143, 0.08) 0%, transparent 50%);
   border-radius: 16px 16px 0 0;
   flex-shrink: 0;
 }
@@ -306,7 +306,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(2, 134, 155, 0.2);
+  background: rgba(228, 200, 143, 0.18);
   border-radius: 14px;
   font-size: 1.5rem;
   flex-shrink: 0;
@@ -329,7 +329,7 @@
 .gerir-celulas-container .cd-modal-subtitle {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
   line-height: 1.4;
 }
 
@@ -339,10 +339,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 15, 16, 0.05);
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 10px;
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
@@ -352,9 +352,9 @@
 }
 
 .gerir-celulas-container .cd-modal-close:hover {
-  background: rgba(217, 72, 59, 0.15);
-  border-color: rgba(217, 72, 59, 0.3);
-  color: #f87171;
+  background: rgba(240, 130, 120, 0.15);
+  border-color: rgba(240, 130, 120, 0.45);
+  color: #f2a69c;
 }
 
 .gerir-celulas-container .modal-content {
@@ -366,7 +366,7 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #a8acad;
+  color: rgba(243, 237, 226, 0.64);
   margin-bottom: 0.5rem;
   margin-top: 1rem;
 }
@@ -380,27 +380,27 @@
 .gerir-celulas-container .modal-content select {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 8px;
   font-size: 1rem;
   font-family: var(--font-primary);
-  color: var(--color-neutral-light, #ebebeb);
-  background: rgba(255, 255, 255, 0.05);
+  color: #ebebeb;
+  background: rgba(12, 15, 16, 0.05);
   box-sizing: border-box;
 }
 
 .gerir-celulas-container .modal-content input[type="text"]::placeholder,
 .gerir-celulas-container .modal-content input[type="time"]::placeholder {
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .gerir-celulas-container .modal-content input[type="text"]:focus,
 .gerir-celulas-container .modal-content input[type="time"]:focus,
 .gerir-celulas-container .modal-content select:focus {
   outline: none;
-  border-color: var(--color-primary-teal, #02869b);
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: #e4c88f;
+  box-shadow: 0 0 0 3px rgba(228, 200, 143, 0.2);
+  background: rgba(12, 15, 16, 0.08);
 }
 
 .gerir-celulas-container .modal-content select option {
@@ -412,28 +412,28 @@
   margin-right: 0.5rem;
   width: 1.125rem;
   height: 1.125rem;
-  accent-color: var(--color-primary-teal, #02869b);
+  accent-color: #e4c88f;
 }
 
 .gerir-celulas-container .lideres-select-wrapper {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(243, 237, 226, 0.1);
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 12px;
   overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .gerir-celulas-container .lideres-select-wrapper:focus-within {
-  border-color: var(--color-primary-teal, #02869b);
-  box-shadow: 0 0 0 3px rgba(2, 134, 155, 0.2);
+  border-color: #e4c88f;
+  box-shadow: 0 0 0 3px rgba(228, 200, 143, 0.2);
 }
 
 .gerir-celulas-container .lideres-search {
   display: flex;
   align-items: center;
   padding: 0.6rem 1rem;
-  background: rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 15, 16, 0.04);
+  border-bottom: 1px solid rgba(243, 237, 226, 0.14);
 }
 
 .gerir-celulas-container .lideres-search-icon {
@@ -448,7 +448,7 @@
   outline: none;
   font-size: 0.95rem;
   font-family: var(--font-primary);
-  color: var(--color-neutral-light, #ebebeb) !important;
+  color: #ebebeb !important;
   background: transparent !important;
   padding: 0.35rem 0 !important;
   margin: 0 !important;
@@ -456,16 +456,16 @@
 }
 
 .gerir-celulas-container .lideres-search-input::placeholder {
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .gerir-celulas-container .lideres-selected-count {
   padding: 0.4rem 1rem;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-primary-teal, #02869b);
-  background: rgba(2, 134, 155, 0.15);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #e4c88f;
+  background: rgba(228, 200, 143, 0.15);
+  border-bottom: 1px solid rgba(243, 237, 226, 0.14);
 }
 
 .gerir-celulas-container .lideres-list {
@@ -479,17 +479,17 @@
 }
 
 .gerir-celulas-container .lideres-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(12, 15, 16, 0.04);
   border-radius: 4px;
 }
 
 .gerir-celulas-container .lideres-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(12, 15, 16, 0.22);
   border-radius: 4px;
 }
 
 .gerir-celulas-container .lideres-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(2, 134, 155, 0.55);
+  background: rgba(228, 200, 143, 0.18);
 }
 
 .gerir-celulas-container .modal::-webkit-scrollbar {
@@ -497,17 +497,17 @@
 }
 
 .gerir-celulas-container .modal::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(12, 15, 16, 0.04);
   border-radius: 4px;
 }
 
 .gerir-celulas-container .modal::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(12, 15, 16, 0.22);
   border-radius: 4px;
 }
 
 .gerir-celulas-container .modal::-webkit-scrollbar-thumb:hover {
-  background: rgba(2, 134, 155, 0.55);
+  background: rgba(228, 200, 143, 0.18);
 }
 
 .gerir-celulas-container .lider-item {
@@ -520,23 +520,23 @@
   cursor: pointer;
   transition: background 0.15s;
   font-weight: 500;
-  color: var(--color-neutral-light, #ebebeb) !important;
+  color: #ebebeb !important;
   background: transparent;
 }
 
 .gerir-celulas-container .lider-item:hover {
-  background: rgba(2, 134, 155, 0.12);
+  background: rgba(228, 200, 143, 0.12);
 }
 
 .gerir-celulas-container .lider-item.selected {
-  background: rgba(2, 134, 155, 0.22);
-  color: #fff !important;
+  background: rgba(228, 200, 143, 0.18);
+  color: #ffffff !important;
 }
 
 .gerir-celulas-container .lider-item input {
   width: 1.125rem;
   height: 1.125rem;
-  accent-color: var(--color-primary-teal, #02869b);
+  accent-color: #e4c88f;
   cursor: pointer;
   flex-shrink: 0;
   margin: 0;
@@ -550,7 +550,7 @@
 .gerir-celulas-container .lideres-empty {
   padding: 2rem 1rem;
   text-align: center;
-  color: #8b9194;
+  color: rgba(243, 237, 226, 0.64);
   font-size: 0.9rem;
 }
 
@@ -560,7 +560,7 @@
   justify-content: flex-end;
   margin-top: 0.5rem;
   padding: 1rem 1.75rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(243, 237, 226, 0.14);
 }
 
 .gerir-celulas-container .modal-buttons button {
@@ -574,22 +574,22 @@
 
 .gerir-celulas-container .modal-buttons button:first-child {
   background: transparent;
-  color: var(--color-neutral-light, #ebebeb);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ebebeb;
+  border: 1px solid rgba(243, 237, 226, 0.14);
 }
 
 .gerir-celulas-container .modal-buttons button:first-child:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(12, 15, 16, 0.06);
 }
 
 .gerir-celulas-container .modal-buttons button:last-child {
-  background: #027a8f;
-  color: #fff;
+  background: #e4c88f;
+  color: #15130f;
   border: none;
 }
 
 .gerir-celulas-container .modal-buttons button:last-child:hover {
-  background: var(--color-primary-dark, #00444c);
+  background: #e4c88f;
 }
 
 .gerir-celulas-container .modal-buttons button:hover {

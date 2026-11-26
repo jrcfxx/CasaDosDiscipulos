@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import authService from "../services/authService";
 import CampoSenha from "../components/ui/CampoSenha";
 import { avaliarSenha } from "../utils/regrasSenha";
+import PainelEntrada from "../components/layout/PainelEntrada";
 import "../style/Login.css";
 import logo from "../assets/logo_mark.png";
 
@@ -55,6 +56,8 @@ const CriarSenha: React.FC = () => {
 
   return (
     <div className="login-container">
+      <PainelEntrada />
+      <div className="login-lado">
       <Link to="/" className="login-logo" aria-label="Ir para a página inicial">
         <img src={logo} alt="Casa dos Discípulos" />
       </Link>
@@ -138,6 +141,7 @@ const CriarSenha: React.FC = () => {
       >
         Sair
       </button>
+      </div>
     </div>
   );
 };

@@ -33,18 +33,18 @@
   margin: 0 0 0.6rem -0.3rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #00626f;
+  color: #e4c88f;
   text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 .mapa-voltar:hover {
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .escala-mapa-titulo {
   margin: 0;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 /* Filete da marca: teal + detalhe amarelo */
@@ -55,13 +55,13 @@
   height: 3px;
   margin-top: 0.6rem;
   border-radius: 999px;
-  background: linear-gradient(90deg, #02869b 0 70%, #f4b002 70% 100%);
+  background: linear-gradient(90deg, #e4c88f 0 70%, #e4c88f 70% 100%);
 }
 
 .escala-mapa-subtitulo {
   margin: 0.75rem 0 0;
   font-size: 0.98rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 /* ==================== Navegação (mês + eventos) ==================== */
@@ -71,8 +71,8 @@
   gap: 1rem;
   padding: 1.1rem 1.25rem 1.25rem;
   margin-bottom: 1.75rem;
-  background: #ffffff;
-  border: 1px solid rgba(18, 50, 58, 0.144);
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.144);
   border-radius: var(--radius-xl);
 }
 
@@ -88,12 +88,12 @@
   text-align: center;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .mapa-mes-nome span {
   font-weight: 500;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .mapa-mes-btn {
@@ -104,16 +104,16 @@
   height: 36px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid rgba(18, 50, 58, 0.264);
+  border: 1px solid rgba(243, 237, 226, 0.264);
   background: transparent;
-  color: #12323a;
+  color: #f3ede2;
   cursor: pointer;
   transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .mapa-mes-btn:hover:not(:disabled) {
-  background: #00444c;
-  border-color: #027a8f;
+  background: #e4c88f;
+  border-color: #e4c88f;
 }
 
 .mapa-mes-btn:focus-visible,
@@ -144,17 +144,17 @@
   max-width: 280px;
   padding: 0.6rem 0.9rem 0.6rem 0.6rem;
   text-align: left;
-  background: #ffffff;
-  border: 1px solid rgba(18, 50, 58, 0.144);
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.144);
   border-radius: var(--radius-lg);
-  color: #12323a;
+  color: #f3ede2;
   cursor: pointer;
   scroll-snap-align: start;
   transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
 }
 
 .mapa-evento-chip:hover {
-  border-color: #027a8f;
+  border-color: #e4c88f;
   transform: translateY(-1px);
 }
 
@@ -171,8 +171,8 @@
   height: 52px;
   flex-shrink: 0;
   border-radius: var(--radius-md);
-  background: rgba(2, 134, 155, 0.16);
-  color: #00626f;
+  background: rgba(228, 200, 143, 0.16);
+  color: #e4c88f;
 }
 
 .chip-dia {
@@ -206,27 +206,27 @@
 .chip-hora {
   margin-top: 0.15rem;
   font-size: 0.8rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .mapa-evento-chip.is-ativo {
-  background: linear-gradient(135deg, #00444c, #027a8f);
-  border-color: #027a8f;
+  background: linear-gradient(135deg, #e4c88f, #e4c88f);
+  border-color: #e4c88f;
 }
 
 .mapa-evento-chip.is-ativo .chip-data {
-  background: #ebebeb;
-  color: #00626f;
+  background: #151a1b;
+  color: #e4c88f;
 }
 
 .mapa-evento-chip.is-ativo .chip-hora {
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .mapa-skeleton {
   height: 70px;
   cursor: default;
-  background: linear-gradient(90deg, #ffffff 0%, #f6f7f7 50%, #ffffff 100%);
+  background: linear-gradient(90deg, #0f1314 0%, #151a1b 50%, #0f1314 100%);
   background-size: 200% 100%;
   animation: mapa-brilho 1.2s ease-in-out infinite;
 }
@@ -239,8 +239,8 @@
   margin: 0;
   padding: 0.9rem 1rem;
   font-size: 0.92rem;
-  color: #3c4142;
-  border: 1px dashed rgba(18, 50, 58, 0.264);
+  color: rgba(243, 237, 226, 0.84);
+  border: 1px dashed rgba(243, 237, 226, 0.264);
   border-radius: var(--radius-lg);
 }
 
@@ -250,14 +250,14 @@
   flex-direction: column;
   align-items: center;
   padding: 4rem 2rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(2, 122, 143, 0.35);
-  border-top-color: #027a8f;
+  border: 3px solid rgba(228, 200, 143, 0.45);
+  border-top-color: #e4c88f;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -274,7 +274,7 @@
 .escala-mapa-empty {
   text-align: center;
   padding: 3.5rem 2rem;
-  border: 1px dashed rgba(18, 50, 58, 0.264);
+  border: 1px dashed rgba(243, 237, 226, 0.264);
   border-radius: var(--radius-xl);
 }
 
@@ -286,21 +286,21 @@
   height: 56px;
   margin-bottom: 1rem;
   border-radius: 50%;
-  background: rgba(2, 134, 155, 0.16);
-  color: #00626f;
+  background: rgba(228, 200, 143, 0.16);
+  color: #e4c88f;
 }
 
 .escala-mapa-empty h2 {
   margin: 0 0 0.4rem;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .escala-mapa-empty p {
   margin: 0;
   font-size: 0.95rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 /* ==================== Evento em destaque ==================== */
@@ -328,9 +328,9 @@
   margin-bottom: 1.75rem;
   overflow: hidden;
   border-radius: var(--radius-xl);
-  background: radial-gradient(120% 140% at 100% 0%, rgba(0, 181, 210, 0.16) 0%, transparent 55%),
-    linear-gradient(135deg, #00444c 0%, var(--teal-700) 55%, #027a8f 100%);
-  color: #fff;
+  background: radial-gradient(120% 140% at 100% 0%, rgba(228, 200, 143, 0.16) 0%, transparent 55%),
+    linear-gradient(135deg, #e4c88f 0%, #c9b07a 55%, #e4c88f 100%);
+  color: #15130f;
 }
 
 /* Detalhe amarelo da marca */
@@ -342,7 +342,7 @@
   bottom: 1.75rem;
   width: 4px;
   border-radius: 0 4px 4px 0;
-  background: #f4b002;
+  background: #e4c88f;
 }
 
 .destaque-data {
@@ -353,8 +353,8 @@
   width: 92px;
   height: 104px;
   border-radius: var(--radius-lg);
-  background: #ffffff;
-  color: #00626f;
+  background: #0f1314;
+  color: #e4c88f;
   box-shadow: var(--shadow-lg);
 }
 
@@ -363,7 +363,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .destaque-dia {
@@ -378,7 +378,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .destaque-info {
@@ -392,7 +392,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #7a4f00;
+  color: #e4c88f;
 }
 
 .destaque-titulo {
@@ -401,7 +401,7 @@
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.015em;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .destaque-quando {
@@ -411,7 +411,7 @@
   gap: 0.4rem 1rem;
   margin: 0.6rem 0 0;
   font-size: 0.98rem;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .destaque-dia-extenso::first-letter {
@@ -424,9 +424,9 @@
   gap: 0.35rem;
   padding: 0.2rem 0.6rem;
   border-radius: var(--radius-full);
-  background: rgba(18, 50, 58, 0.12);
+  background: rgba(243, 237, 226, 0.1);
   font-weight: 600;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .destaque-desc {
@@ -434,7 +434,7 @@
   max-width: 60ch;
   font-size: 0.92rem;
   line-height: 1.5;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.84);
 }
 
 .destaque-numeros {
@@ -450,8 +450,8 @@
   min-width: 88px;
   padding: 0.75rem 0.9rem;
   border-radius: var(--radius-lg);
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(18, 50, 58, 0.144);
+  background: rgba(243, 237, 226, 0.1);
+  border: 1px solid rgba(243, 237, 226, 0.144);
 }
 
 .destaque-numeros dt {
@@ -459,7 +459,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .destaque-numeros dd {
@@ -467,15 +467,15 @@
   font-size: 1.9rem;
   font-weight: 800;
   line-height: 1.1;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .destaque-numeros .is-alerta {
-  border-color: rgba(244, 176, 2, 0.55);
+  border-color: rgba(228, 200, 143, 0.55);
 }
 
 .destaque-numeros .is-alerta dd {
-  color: #7a4f00;
+  color: #e4c88f;
 }
 
 /* ==================== Ministérios ==================== */
@@ -487,11 +487,11 @@
 }
 
 .mapa-card {
-  --tom: var(--teal-500);
-  --tom-fundo: rgba(2, 134, 155, 0.16);
-  --tom-texto: var(--teal-300);
-  background: #ffffff;
-  border: 1px solid rgba(18, 50, 58, 0.144);
+  --tom: #e4c88f;
+  --tom-fundo: rgba(228, 200, 143, 0.14);
+  --tom-texto: #e4c88f;
+  background: #0f1314;
+  border: 1px solid rgba(243, 237, 226, 0.144);
   border-top: 3px solid var(--tom);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -500,27 +500,27 @@
 
 .mapa-card:hover {
   transform: translateY(-2px);
-  border-left-color: rgba(18, 50, 58, 0.264);
-  border-right-color: rgba(18, 50, 58, 0.264);
-  border-bottom-color: rgba(18, 50, 58, 0.264);
+  border-left-color: rgba(243, 237, 226, 0.264);
+  border-right-color: rgba(243, 237, 226, 0.264);
+  border-bottom-color: rgba(243, 237, 226, 0.264);
 }
 
 .mapa-card.tom-gold {
-  --tom: var(--gold-500);
-  --tom-fundo: rgba(244, 176, 2, 0.14);
-  --tom-texto: var(--gold-500);
+  --tom: #e9b97a;
+  --tom-fundo: rgba(233, 185, 122, 0.14);
+  --tom-texto: #efc896;
 }
 
 .mapa-card.tom-cyan {
-  --tom: var(--color-accent-cyan);
-  --tom-fundo: rgba(0, 181, 210, 0.14);
-  --tom-texto: #4fd0e4;
+  --tom: #9fc4c0;
+  --tom-fundo: rgba(159, 196, 192, 0.14);
+  --tom-texto: #b5d4d0;
 }
 
 .mapa-card.tom-petroleo {
-  --tom: var(--teal-300);
-  --tom-fundo: rgba(95, 178, 191, 0.14);
-  --tom-texto: var(--teal-200);
+  --tom: #7aaaac;
+  --tom-fundo: rgba(122, 170, 172, 0.16);
+  --tom-texto: #a9c9ca;
 }
 
 .mapa-card-topo {
@@ -528,7 +528,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.1rem 0.85rem;
-  border-bottom: 1px solid rgba(18, 50, 58, 0.144);
+  border-bottom: 1px solid rgba(243, 237, 226, 0.144);
 }
 
 .mapa-card-icone {
@@ -548,7 +548,7 @@
   margin: 0;
   font-size: 1.08rem;
   font-weight: 700;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .mapa-card-total {
@@ -585,7 +585,7 @@
 }
 
 .mapa-pessoa:hover {
-  background: rgba(18, 50, 58, 0.044);
+  background: rgba(243, 237, 226, 0.044);
 }
 
 .mapa-avatar {
@@ -596,9 +596,9 @@
   height: 38px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: #00444c;
+  background: #e4c88f;
   border: 2px solid var(--tom);
-  color: #fff;
+  color: #15130f;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -613,7 +613,7 @@
   display: block;
   font-size: 0.98rem;
   font-weight: 600;
-  color: #12323a;
+  color: #f3ede2;
   overflow-wrap: anywhere;
 }
 
@@ -636,8 +636,8 @@
   padding: 1rem;
   text-align: center;
   font-size: 0.9rem;
-  color: #3c4142;
-  border: 1px dashed rgba(18, 50, 58, 0.264);
+  color: rgba(243, 237, 226, 0.84);
+  border: 1px dashed rgba(243, 237, 226, 0.264);
   border-radius: var(--radius-md);
 }
 

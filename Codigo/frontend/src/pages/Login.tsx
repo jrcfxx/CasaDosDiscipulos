@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import authService from "../services/authService";
 import CampoSenha from "../components/ui/CampoSenha";
+import PainelEntrada from "../components/layout/PainelEntrada";
 import "../style/Login.css";
 import logo from "../assets/logo_mark.png";
 
@@ -84,6 +85,8 @@ const Login: React.FC = () => {
 
   return (
     <div className="login-container">
+      <PainelEntrada />
+      <div className="login-lado">
       <header>
         <Link to="/" className="login-logo" aria-label="Ir para a página inicial">
           <img src={logo} alt="Casa dos Discípulos" />
@@ -193,6 +196,7 @@ const Login: React.FC = () => {
           Voltar ao início
         </Link>
       </nav>
+      </div>
     </div>
   );
 };

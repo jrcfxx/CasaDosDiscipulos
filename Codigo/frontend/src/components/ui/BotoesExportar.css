@@ -11,7 +11,7 @@
   gap: 0.4rem;
   min-height: 36px;
   padding: 0.4rem 0.85rem;
-  border-radius: 10px;
+  border-radius: 999px;
   font-family: inherit;
   font-size: 0.85rem;
   font-weight: 600;
@@ -24,16 +24,17 @@
   cursor: progress;
 }
 
-/* Fundo escuro (escala, gerenciamento, staff) */
+/* Fundo escuro (linguagem escura da Casa) */
 .exportar-barra--escuro .exportar-btn {
-  border: 1px solid rgba(235, 235, 235, 0.22);
+  border: 1px solid rgba(243, 237, 226, 0.25);
   background: transparent;
-  color: #ebebeb;
+  color: #f3ede2;
 }
 
 .exportar-barra--escuro .exportar-btn:hover:not(:disabled) {
-  border-color: #5fb2bf;
-  background: rgba(2, 134, 155, 0.14);
+  border-color: #e4c88f;
+  background: rgba(228, 200, 143, 0.1);
+  color: #e4c88f;
 }
 
 /* Painel claro (formulários) */

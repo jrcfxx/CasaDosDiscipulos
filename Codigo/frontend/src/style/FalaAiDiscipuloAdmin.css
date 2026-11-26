@@ -24,7 +24,7 @@
   display: inline-block;
   background: none;
   border: none;
-  color: #02869b;
+  color: #e4c88f;
   font-size: 0.9rem;
   font-weight: 500;
   text-decoration: none;
@@ -34,7 +34,7 @@
 }
 
 .fala-ai-admin-back:hover {
-  color: var(--color-accent-cyan);
+  color: #e4c88f;
 }
 
 .fala-ai-admin-title {
@@ -46,7 +46,7 @@
 .fala-ai-admin-subtitle {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .fala-ai-admin-form {
@@ -57,10 +57,10 @@
 
 .fala-ai-admin-erro {
   padding: 0.75rem 1rem;
-  background: rgba(185, 28, 28, 0.2);
-  border: 1px solid rgba(185, 28, 28, 0.5);
+  background: rgba(240, 130, 120, 0.18);
+  border: 1px solid rgba(240, 130, 120, 0.5);
   border-radius: 10px;
-  color: #fca5a5;
+  color: #f2a69c;
   font-size: 0.9rem;
 }
 
@@ -73,17 +73,17 @@
 .fala-ai-admin-field label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--n-200);
+  color: #dcdfdf;
 }
 
 .fala-ai-admin-field input,
 .fala-ai-admin-field select,
 .fala-ai-admin-field textarea {
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(12, 15, 16, 0.05);
+  border: 1px solid rgba(243, 237, 226, 0.14);
   border-radius: 10px;
-  color: #fff;
+  color: #ffffff;
   font-size: 0.95rem;
   font-family: inherit;
   color-scheme: dark;
@@ -91,14 +91,14 @@
 
 .fala-ai-admin-field input::placeholder,
 .fala-ai-admin-field textarea::placeholder {
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
 }
 
 .fala-ai-admin-field input:focus,
 .fala-ai-admin-field select:focus,
 .fala-ai-admin-field textarea:focus {
   outline: none;
-  border-color: #02869b;
+  border-color: #e4c88f;
 }
 
 .fala-ai-admin-field select {
@@ -112,8 +112,8 @@
 
 .fala-ai-admin-field select option:checked,
 .fala-ai-admin-field select option:hover {
-  background-color: #027a8f;
-  color: #fff;
+  background-color: #e4c88f;
+  color: #15130f;
 }
 
 .fala-ai-admin-field textarea {
@@ -123,9 +123,9 @@
 
 .fala-ai-admin-btn-upload {
   padding: 0.6rem 1rem;
-  background: rgba(2, 134, 155, 0.2);
-  border: 1px dashed #02869b;
-  color: #02869b;
+  background: rgba(228, 200, 143, 0.18);
+  border: 1px dashed #e4c88f;
+  color: #e4c88f;
   font-size: 0.9rem;
   border-radius: 10px;
   cursor: pointer;
@@ -134,7 +134,7 @@
 }
 
 .fala-ai-admin-btn-upload:hover:not(:disabled) {
-  background: rgba(2, 134, 155, 0.3);
+  background: rgba(228, 200, 143, 0.18);
 }
 
 .fala-ai-admin-btn-upload:disabled {
@@ -157,16 +157,16 @@
 .fala-ai-admin-remove-img {
   margin-top: 0.5rem;
   padding: 0.4rem 0.75rem;
-  background: rgba(185, 28, 28, 0.3);
+  background: rgba(240, 130, 120, 0.18);
   border: none;
-  color: #fca5a5;
+  color: #f2a69c;
   font-size: 0.85rem;
   border-radius: 6px;
   cursor: pointer;
 }
 
 .fala-ai-admin-remove-img:hover {
-  background: rgba(185, 28, 28, 0.5);
+  background: rgba(240, 130, 120, 0.18);
 }
 
 .fala-ai-admin-actions {
@@ -180,8 +180,8 @@
   display: inline-block;
   padding: 0.65rem 1.25rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--n-400);
+  border: 1px solid rgba(243, 237, 226, 0.14);
+  color: rgba(243, 237, 226, 0.64);
   font-size: 0.95rem;
   font-weight: 500;
   border-radius: 10px;
@@ -190,15 +190,15 @@
 }
 
 .fala-ai-admin-btn-cancel:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  border-color: rgba(243, 237, 226, 0.14);
 }
 
 .fala-ai-admin-btn-submit {
   padding: 0.65rem 1.5rem;
-  background: #027a8f;
+  background: #e4c88f;
   border: none;
-  color: #fff;
+  color: #15130f;
   font-size: 0.95rem;
   font-weight: 600;
   border-radius: 10px;
@@ -207,7 +207,7 @@
 }
 
 .fala-ai-admin-btn-submit:hover:not(:disabled) {
-  background: #026d7d;
+  background: #e4c88f;
 }
 
 .fala-ai-admin-btn-submit:disabled {
@@ -218,7 +218,7 @@
 .fala-ai-admin-field-hint {
   margin: 0.4rem 0 0;
   font-size: 0.8rem;
-  color: var(--n-400);
+  color: rgba(243, 237, 226, 0.64);
   font-family: var(--font-primary, inherit);
 }
 

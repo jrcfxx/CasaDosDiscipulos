@@ -42,7 +42,7 @@
   padding: 1.35rem 1.5rem;
   border-radius: 16px;
   border: 1px solid var(--sc-borda);
-  background: #fff;
+  background: #0f1314;
   color: var(--sc-texto);
   min-width: 0;
 }
@@ -63,25 +63,25 @@
 }
 
 .sa-cartao--alerta {
-  border-color: #e8b4b0;
-  border-left: 4px solid #b3261e;
+  border-color: #f08278;
+  border-left: 4px solid #f08278;
 }
 
 .sa-cartao--alerta h2 {
-  color: #8c1d18;
+  color: #f2a69c;
 }
 
 .sa-cartao--aviso {
-  border-left: 4px solid #b07c00;
+  border-left: 4px solid #e4c88f;
 }
 
 .sa-cartao--ok {
-  border-left: 4px solid #2f7d5b;
+  border-left: 4px solid #2f9e6e;
   grid-column: 1 / -1;
 }
 
 .sa-cartao--ok h2 {
-  color: #1f5e43;
+  color: #9fd3b8;
 }
 
 .sa-ajuda {
@@ -162,8 +162,8 @@
   min-height: 42px;
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
-  border: 1px solid #b9bfc0;
-  background: #fff;
+  border: 1px solid rgba(243, 237, 226, 0.14);
+  background: #0f1314;
   color: var(--sc-texto);
   font: inherit;
   font-size: 0.92rem;
@@ -218,7 +218,7 @@
 }
 
 .sa-linha-falha td:first-child {
-  box-shadow: inset 3px 0 0 #b3261e;
+  box-shadow: inset 3px 0 0 rgba(240, 130, 120, 0.3);
 }
 
 .sa-nowrap {
@@ -242,13 +242,13 @@
 }
 
 .sa-resultado--sucesso {
-  background: #e3f3ee;
-  color: #1f5e43;
+  background: rgba(47, 158, 110, 0.13);
+  color: #9fd3b8;
 }
 
 .sa-resultado--falha {
-  background: #fbe9e7;
-  color: #8c1d18;
+  background: rgba(240, 130, 120, 0.13);
+  color: #f2a69c;
 }
 
 .sa-resultado--bloqueado {
@@ -257,7 +257,7 @@
 }
 
 .sa-num-falha {
-  color: #8c1d18;
+  color: #f2a69c;
   font-weight: 700;
 }
 

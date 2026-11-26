@@ -1,7 +1,7 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import "../style/Portal.css";
+import PortalInicio, { type GrupoPortal } from "../components/portal/PortalInicio";
+import InicioPersonalizado from "../components/portal/InicioPersonalizado";
 import imgEscala from "../assets/DSC00436.jpg";
 import imgMapa from "../assets/DSC00309.jpg";
 import imgFalaAi from "../assets/oracao-cabeca-baixa.jpg";
@@ -10,146 +10,48 @@ import imgFormularios from "../assets/DSC00438.jpg";
 import imgModulos from "../assets/IMG_6568.jpg";
 import imgStaff from "../assets/tres_mulheres.jpeg";
 
-import Header from "../components/layout/Header";
-import InicioPersonalizado from "../components/portal/InicioPersonalizado";
-import Footer from "../components/layout/Footer";
-
 const PortalDoDiscipuloUser: React.FC = () => {
   const { isLiderCelula, isLiderMinisterio } = useAuth();
 
+  const grupos: GrupoPortal[] = [
+    {
+      titulo: "Na Casa",
+      atalhos: [
+        { to: "/usuario/escala", titulo: "Escala", descricao: "Calendário e ministérios", foto: imgEscala },
+        ...(isLiderMinisterio
+          ? [{ to: "/usuario/escala/meus-ministerios", titulo: "Meus ministérios", descricao: "Cronograma dos ministérios que você lidera", foto: imgEscala }]
+          : []),
+        { to: "/usuario/escala/mapa", titulo: "Mapa da Escala", descricao: "Visão geral dos eventos", foto: imgMapa },
+        { to: "/usuario/fala-ai", titulo: "Fala Aí, Discípulo", descricao: "Devocional e palavra do dia", foto: imgFalaAi },
+        { to: "/usuario/staff", titulo: "Staff e Estrutura", descricao: "Quem serve em cada área", foto: imgStaff },
+      ],
+    },
+    ...(isLiderCelula
+      ? [
+          {
+            titulo: "Secretaria das Células",
+            atalhos: [
+              { to: "/usuario/licoes", titulo: "Lições", descricao: "Conteúdo para as células", foto: imgLicoes },
+              { to: "/usuario/formularios", titulo: "Formulários", descricao: "Relatórios e acompanhamento", foto: imgFormularios },
+            ],
+          },
+        ]
+      : []),
+    {
+      titulo: "Escola de Discípulos",
+      atalhos: [
+        { to: "/usuario/modulos", titulo: "Módulos", descricao: "Formação e crescimento com quizzes", foto: imgModulos },
+      ],
+    },
+  ];
+
   return (
-    <div className="portal-user">
-      <Header />
-
-      <main id="main-content" className="portal-wrap" tabIndex={-1}>
-        <header className="portal-hero">
-          <p className="portal-hero__label">Casa dos Discípulos</p>
-          <h1 className="portal-hero__title">Portal do Discípulo</h1>
-          <p className="portal-hero__subtitle">
-            Seu espaço de formação, comunhão e crescimento.
-          </p>
-        </header>
-
-        {/* O que importa hoje para esta pessoa */}
-        <InicioPersonalizado />
-
-        {/* Na Casa - Escala + Fala Aí + Staff */}
-        <section className="portal-section">
-          <h2 className="portal-section__title">
-            <span className="portal-section__line" aria-hidden />
-            Na Casa
-          </h2>
-          <div className="portal-grid portal-grid--2">
-            <NavLink
-              to="/usuario/escala"
-              className="portal-card"
-              style={{ backgroundImage: `url(${imgEscala})` }}
-              aria-label="Acessar Escala"
-            >
-              <span className="portal-card__overlay" />
-              <span className="portal-card__title">Escala</span>
-              <span className="portal-card__desc">Calendário e ministérios</span>
-            </NavLink>
-            {isLiderMinisterio && (
-              <NavLink
-                to="/usuario/escala/meus-ministerios"
-                className="portal-card"
-                style={{ backgroundImage: `url(${imgEscala})` }}
-                aria-label="Acessar o cronograma dos meus ministérios"
-              >
-                <span className="portal-card__overlay" />
-                <span className="portal-card__title">Meus ministérios</span>
-                <span className="portal-card__desc">Cronograma só dos ministérios que você lidera</span>
-              </NavLink>
-            )}
-            <NavLink
-              to="/usuario/escala/mapa"
-              className="portal-card"
-              style={{ backgroundImage: `url(${imgMapa})` }}
-              aria-label="Acessar Mapa da Escala"
-            >
-              <span className="portal-card__overlay" />
-              <span className="portal-card__title">Mapa da Escala</span>
-              <span className="portal-card__desc">Visão geral dos eventos</span>
-            </NavLink>
-            <NavLink
-              to="/usuario/fala-ai"
-              className="portal-card"
-              style={{ backgroundImage: `url(${imgFalaAi})` }}
-              aria-label="Acessar Fala Aí, Discípulo"
-            >
-              <span className="portal-card__overlay" />
-              <span className="portal-card__title">Fala Aí, Discípulo</span>
-              <span className="portal-card__desc">Devocional e palavra do dia</span>
-            </NavLink>
-            <NavLink
-              to="/usuario/staff"
-              className="portal-card"
-              style={{ backgroundImage: `url(${imgStaff})` }}
-              aria-label="Acessar Staff e Estrutura"
-            >
-              <span className="portal-card__overlay" />
-              <span className="portal-card__title">Staff e Estrutura</span>
-              <span className="portal-card__desc">Quem serve em cada área</span>
-            </NavLink>
-          </div>
-        </section>
-
-        {/* Secretaria das Células - Líderes */}
-        {isLiderCelula && (
-          <section className="portal-section">
-            <h2 className="portal-section__title">
-              <span className="portal-section__line" aria-hidden />
-              Secretaria das Células
-            </h2>
-            <div className="portal-grid portal-grid--2">
-              <NavLink
-                to="/usuario/licoes"
-                className="portal-card"
-                style={{ backgroundImage: `url(${imgLicoes})` }}
-                aria-label="Acessar Lições"
-              >
-                <span className="portal-card__overlay" />
-                <span className="portal-card__title">Lições</span>
-                <span className="portal-card__desc">Conteúdo para as células</span>
-              </NavLink>
-              <NavLink
-                to="/usuario/formularios"
-                className="portal-card"
-                style={{ backgroundImage: `url(${imgFormularios})` }}
-                aria-label="Acessar Formulários"
-              >
-                <span className="portal-card__overlay" />
-                <span className="portal-card__title">Formulários</span>
-                <span className="portal-card__desc">Relatórios e acompanhamento</span>
-              </NavLink>
-            </div>
-          </section>
-        )}
-
-        {/* Escola de Discípulos */}
-        <section className="portal-section">
-          <h2 className="portal-section__title">
-            <span className="portal-section__line" aria-hidden />
-            Escola de Discípulos
-          </h2>
-          <div className="portal-grid portal-grid--1">
-            <NavLink
-              to="/usuario/modulos"
-              className="portal-card portal-card--wide"
-              style={{ backgroundImage: `url(${imgModulos})` }}
-              aria-label="Acessar Módulos"
-            >
-              <span className="portal-card__overlay" />
-              <span className="portal-card__title">Módulos</span>
-              <span className="portal-card__desc">Formação e crescimento com quizzes gamificados</span>
-            </NavLink>
-          </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+    <PortalInicio
+      area="Área do discípulo"
+      descricao="Seu espaço de formação, comunhão e crescimento."
+      grupos={grupos}
+      antesDosGrupos={<InicioPersonalizado />}
+    />
   );
 };
 

@@ -141,7 +141,7 @@ const EscalaMapa: React.FC = () => {
         {eventoSelecionado && (
           <div className="mapa-topo-acoes no-print">
             <BotoesExportar
-              tema="claro"
+              tema="escuro"
               onPdf={() =>
                 exportarPdf(
                   `Mapa da escala – ${eventoSelecionado.titulo} – ${new Date(eventoSelecionado.data_hora).toLocaleDateString("pt-BR")}`

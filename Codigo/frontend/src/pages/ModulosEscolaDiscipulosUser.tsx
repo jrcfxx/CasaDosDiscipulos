@@ -337,7 +337,7 @@ const ModulosEscolaDiscipulosUser: React.FC = () => {
             headerAction={
               isLider || isAdmin ? (
                 <BotoesExportar
-                  tema="claro"
+                  tema="escuro"
                   rotuloExcel="Excel"
                   onExcel={async () => exportarRanking(await moduloService.getRankingCompleto())}
                 />

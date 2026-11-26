@@ -17,7 +17,7 @@ import {
   type StaffItem,
 } from "../services/staffService";
 import { getErrorMessage } from "../utils/errorUtils";
-import "../style/Portal.css";
+import { AberturaPortal } from "../components/portal/PortalInicio";
 import "../style/Staff.css";
 
 type Aviso = { msg: string; tipo: "success" | "error" | "info" };
@@ -269,16 +269,14 @@ const StaffAdmin: React.FC = () => {
     !!estrutura && (titulo.trim() !== estrutura.titulo || subtitulo.trim() !== estrutura.subtitulo);
 
   return (
-    <div className="portal staff-admin">
+    <div className="pt">
       <Header />
-      <main id="main-content" className="portal-wrap staff-pagina" tabIndex={-1}>
-        <header className="portal-hero">
-          <p className="portal-hero__label">Administração</p>
-          <h1 className="portal-hero__title">Staff e Estrutura</h1>
-          <p className="portal-hero__subtitle">
-            Edite o organograma da Casa. Membros e líderes veem o resultado no Portal, sem poder alterar.
-          </p>
-        </header>
+      <main id="main-content" className="pt-paineis staff-pagina" tabIndex={-1}>
+        <AberturaPortal
+          etiqueta="Administração"
+          titulo="Staff e Estrutura"
+          descricao="Edite o organograma da Casa. Membros e líderes veem o resultado no Portal, sem poder alterar."
+        />
 
         {!estrutura ? (
           <p className="staff-pagina__carregando">Carregando…</p>
