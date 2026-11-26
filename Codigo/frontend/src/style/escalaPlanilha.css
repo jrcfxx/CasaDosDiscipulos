@@ -1,0 +1,604 @@
+/* ==================== Escala em planilha ==================== */
+.pl {
+  --pl-teal: var(--sc-teal, #027a8f);
+  --pl-teal-escuro: var(--sc-teal-escuro, #00626f);
+  --pl-escuro: var(--sc-escuro, #12323a);
+  --pl-borda: #d5dbdc;
+  --pl-borda-forte: #aeb8ba;
+  --pl-suave: #5c6263;
+  --pl-dourado: var(--sc-dourado, #f4b002);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* ----- Filtros ----- */
+.pl-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+}
+
+.pl-abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.pl-abas button {
+  border: 1px solid var(--pl-borda);
+  background: #fff;
+  color: var(--pl-escuro);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pl-abas button:hover {
+  border-color: var(--pl-teal);
+}
+
+.pl-abas button.ativo {
+  background: var(--pl-escuro);
+  border-color: var(--pl-escuro);
+  color: #fff;
+}
+
+.pl-filtro-evento {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--pl-suave);
+  font-weight: 600;
+}
+
+.pl-filtro-evento select {
+  min-width: 12rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+}
+
+.pl-resumo {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--pl-escuro);
+  font-weight: 600;
+}
+
+.pl-resumo__dica {
+  color: var(--pl-suave);
+  font-weight: 400;
+}
+
+.pl-vazio-tudo {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--pl-suave);
+  border: 1px dashed var(--pl-borda-forte);
+  border-radius: 12px;
+  background: #fff;
+}
+
+/* ----- Tabela ----- */
+.pl-rolagem {
+  overflow: auto;
+  max-height: calc(100vh - 220px);
+  min-height: 240px;
+  border: 1px solid var(--pl-borda-forte);
+  border-radius: 10px;
+  background: #fff;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pl-tabela {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: max-content;
+  font-size: 0.88rem;
+  color: #22292b;
+}
+
+.pl-tabela th,
+.pl-tabela td {
+  border-right: 1px solid var(--pl-borda);
+  border-bottom: 1px solid var(--pl-borda);
+}
+
+.pl-tabela thead th {
+  position: sticky;
+  z-index: 3;
+  background: #dfe6e7;
+  color: var(--pl-escuro);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 0.6rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pl-grupos th {
+  top: 0;
+  background: #cfdadc !important;
+  font-size: 0.72rem;
+}
+
+.pl-cabecalho th {
+  top: 0;
+}
+
+.pl-grupos + .pl-cabecalho th {
+  top: 2.05rem;
+}
+
+.pl-tabela thead .pl-canto {
+  left: 0;
+  z-index: 5;
+  text-align: left;
+}
+
+/* Separador de mês (como abas do Excel, mas na mesma folha) */
+.pl-mes th {
+  position: sticky;
+  left: 0;
+  background: var(--pl-escuro);
+  color: #fff;
+  text-align: left;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pl-mes th span {
+  position: sticky;
+  left: 0.75rem;
+}
+
+/* Coluna da data, fixa à esquerda */
+.pl-data {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #f3f6f6;
+  padding: 0;
+  text-align: left;
+  min-width: 7.5rem;
+  max-width: 13rem;
+  box-shadow: 1px 0 0 var(--pl-borda-forte);
+}
+
+.pl-data button {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  color: var(--pl-escuro);
+}
+
+.pl-data button:hover .pl-data__dia {
+  color: var(--pl-teal);
+  text-decoration: underline;
+}
+
+.pl-data__dia {
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.pl-data__dia small {
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: var(--pl-suave);
+  text-transform: lowercase;
+}
+
+.pl-data__evento {
+  font-size: 0.74rem;
+  color: var(--pl-suave);
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.pl-rascunho {
+  display: inline-block;
+  margin-left: 0.3rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #fff2cc;
+  color: #6b4a00;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+}
+
+.pl-linha--par td {
+  background: #f7f9f9;
+}
+
+.pl-linha--passada td,
+.pl-linha--passada .pl-data {
+  color: #6b7273;
+}
+
+.pl-linha--passada .pl-data {
+  background: #eef0f0;
+}
+
+.pl-linha--hoje .pl-data {
+  box-shadow: inset 4px 0 0 var(--pl-dourado), 1px 0 0 var(--pl-borda-forte);
+}
+
+/* ----- Células ----- */
+.pl-cel {
+  position: relative;
+  min-width: 7.5rem;
+  max-width: 14rem;
+  height: 2.6rem;
+  padding: 0.3rem 0.45rem;
+  text-align: center;
+  vertical-align: middle;
+  outline: none;
+  background: #fff;
+  transition: background-color 0.12s;
+}
+
+.pl-cel--editavel {
+  cursor: cell;
+}
+
+.pl-cel--editavel:hover {
+  background: #eef7f8 !important;
+}
+
+.pl-cel--na {
+  background: #fafafa;
+}
+
+.pl-na {
+  color: #9aa2a3;
+  font-size: 1rem;
+}
+
+/* Célula selecionada: borda grossa como no Excel */
+.pl-cel--sel {
+  box-shadow: inset 0 0 0 2px var(--pl-teal);
+  z-index: 1;
+}
+
+.pl-cel--sel:focus-visible {
+  box-shadow: inset 0 0 0 3px var(--pl-teal);
+}
+
+.pl-cel--drop {
+  background: #e3f4e9 !important;
+  box-shadow: inset 0 0 0 2px #1f8a4c;
+}
+
+.pl-cel--drop-cheio {
+  background: #fff4e0 !important;
+  box-shadow: inset 0 0 0 2px #c77700;
+}
+
+.pl-cel--salvando::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--pl-teal);
+  border-right-color: transparent;
+  animation: pl-girar 0.7s linear infinite;
+}
+
+@keyframes pl-girar {
+  to { transform: rotate(360deg); }
+}
+
+.pl-nomes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.15rem 0.3rem;
+  line-height: 1.25;
+}
+
+.pl-nome {
+  display: inline-block;
+  padding: 0.05rem 0.35rem;
+  border-radius: 5px;
+  white-space: nowrap;
+  font-weight: 600;
+  user-select: none;
+  touch-action: none;
+}
+
+.pl-nome--arrastavel {
+  cursor: grab;
+}
+
+.pl-nome--arrastavel:hover {
+  background: #dcecef;
+}
+
+.pl-nome--origem {
+  opacity: 0.35;
+}
+
+/* O que segue o ponteiro: só o nome, pequeno */
+.pl-nome--voando {
+  display: inline-block;
+  width: auto;
+  background: var(--pl-escuro);
+  color: #fff;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(18, 50, 58, 0.3);
+  cursor: grabbing;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.pl-vazio {
+  color: #b5bcbd;
+  font-weight: 700;
+  opacity: 0;
+}
+
+.pl-cel--editavel:hover .pl-vazio,
+.pl-cel--sel .pl-vazio {
+  opacity: 1;
+  color: var(--pl-teal);
+}
+
+/* ----- Editor (popover) ----- */
+.pl-editor {
+  position: fixed;
+  z-index: 950;
+  width: 280px;
+  max-width: calc(100vw - 16px);
+  background: #fff;
+  border: 1px solid var(--sc-borda, #dcdfdf);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(18, 50, 58, 0.22);
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  color: #22292b;
+  animation: pl-surgir 0.12s ease-out;
+}
+
+@keyframes pl-surgir {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-editor { animation: none; }
+  .pl-cel--salvando::after { animation-duration: 2s; }
+}
+
+.pl-editor__topo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: 0 0.15rem;
+}
+
+.pl-editor__topo strong {
+  color: #12323a;
+  font-size: 0.95rem;
+}
+
+.pl-editor__topo span {
+  color: #5c6263;
+  font-size: 0.78rem;
+}
+
+.pl-editor__topo em {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.pl-editor__lotado {
+  color: #a35f00;
+}
+
+.pl-editor__atuais {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.pl-editor__atuais li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: #e5f1f3;
+  color: #12323a;
+  border-radius: 999px;
+  padding: 0.15rem 0.2rem 0.15rem 0.6rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.pl-editor__atuais button {
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #5c6263;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pl-editor__atuais button:hover {
+  background: #f9dcdc;
+  color: #a32020;
+}
+
+.pl-editor__busca {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.6rem;
+  border: 1.5px solid #027a8f;
+  border-radius: 8px;
+  font: inherit;
+  outline: none;
+}
+
+.pl-editor__busca:focus {
+  box-shadow: 0 0 0 3px rgba(2, 122, 143, 0.18);
+}
+
+.pl-editor__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.pl-op {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.pl-op--destaque {
+  background: #e5f1f3;
+}
+
+.pl-op__nome {
+  font-weight: 600;
+}
+
+.pl-op__ja {
+  font-size: 0.72rem;
+  color: #8a5a00;
+  background: #fff2cc;
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 45%;
+}
+
+.pl-op__spinner {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid #027a8f;
+  border-right-color: transparent;
+  animation: pl-girar 0.7s linear infinite;
+}
+
+.pl-editor__info {
+  padding: 0.6rem;
+  color: #5c6263;
+  font-size: 0.82rem;
+}
+
+.pl-editor__dica {
+  margin: 0;
+  padding-top: 0.35rem;
+  border-top: 1px solid #eef0f0;
+  font-size: 0.72rem;
+  color: #6b7273;
+}
+
+.pl-editor__dica kbd {
+  font: inherit;
+  font-weight: 700;
+  padding: 0 0.25rem;
+  border: 1px solid #d5dbdc;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #f6f7f7;
+}
+
+/* ----- Celular ----- */
+@media (max-width: 700px) {
+  .pl-rolagem {
+    max-height: calc(100vh - 180px);
+  }
+
+  .pl-data {
+    min-width: 5.5rem;
+  }
+
+  .pl-data__evento {
+    display: none;
+  }
+
+  .pl-cel {
+    min-width: 6rem;
+  }
+
+  .pl-resumo__dica,
+  .pl-editor__dica {
+    display: none;
+  }
+}
+
+/* ----- Impressão ----- */
+@media print {
+  .pl-filtros,
+  .pl-resumo__dica {
+    display: none !important;
+  }
+
+  .pl-rolagem {
+    max-height: none;
+    overflow: visible;
+    border: 0;
+  }
+
+  .pl-tabela thead th,
+  .pl-data,
+  .pl-mes th {
+    position: static;
+  }
+
+  .pl-vazio {
+    display: none;
+  }
+}

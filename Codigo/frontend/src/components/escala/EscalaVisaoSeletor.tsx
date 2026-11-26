@@ -1,7 +1,7 @@
 import React from "react";
 
-/** Agenda, Semana e Mês são as visões principais; Dia e Ano abrem a partir delas */
-export type EscalaVisaoTipo = "agenda" | "semana" | "mes" | "dia" | "ano";
+/** Planilha, Agenda, Semana e Mês são as visões principais; Dia e Ano abrem a partir delas */
+export type EscalaVisaoTipo = "planilha" | "agenda" | "semana" | "mes" | "dia" | "ano";
 
 interface EscalaVisaoSeletorProps {
   visao: EscalaVisaoTipo;
@@ -9,6 +9,7 @@ interface EscalaVisaoSeletorProps {
 }
 
 const PRINCIPAIS: { id: EscalaVisaoTipo; label: string }[] = [
+  { id: "planilha", label: "Planilha" },
   { id: "agenda", label: "Agenda" },
   { id: "semana", label: "Semana" },
   { id: "mes", label: "Mês" },

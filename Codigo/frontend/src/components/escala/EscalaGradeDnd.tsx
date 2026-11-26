@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { colisaoEscala } from "./colisaoEscala";
+import { createPortal } from "react-dom";
+import { colisaoEscala, centralizarNoCursor, estiloOverlay } from "./colisaoEscala";
 import {
   DndContext,
   DragEndEvent,
@@ -10,7 +11,6 @@ import {
   useDraggable,
   useDroppable,
 } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 import {
   EscalaAtribuicao,
   EscalaEventoCompleto,
@@ -79,16 +79,13 @@ function PessoaChip({
   onEditar: () => void;
   onRemover: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `attr-${att.id_escala_atribuicao}`,
     data: { atribuicao: att },
     disabled,
   });
 
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.4 : 1,
-  };
+  const style = { opacity: isDragging ? 0.4 : 1 };
 
   return (
     <li
@@ -235,11 +232,12 @@ const EscalaGradeDnd: React.FC<EscalaGradeDndProps> = ({
           </AreaDropZone>
         ))}
       </div>
-      <DragOverlay>
-        {activeAtt ? (
-          <div className="dnd-overlay-chip">{activeAtt.usuario_nome}</div>
-        ) : null}
-      </DragOverlay>
+      {createPortal(
+        <DragOverlay dropAnimation={null} modifiers={[centralizarNoCursor]} style={estiloOverlay}>
+          {activeAtt ? <div className="dnd-overlay-chip">{activeAtt.usuario_nome}</div> : null}
+        </DragOverlay>,
+        document.body
+      )}
     </DndContext>
   );
 };

@@ -1,0 +1,627 @@
+/**
+ * Página inicial — painéis arredondados sobre fundo preto (estrutura inspirada na Central),
+ * com a linguagem visual dos posts da Casa: títulos condensados (Anton) em creme, palavras de
+ * destaque em âmbar, etiquetas pequenas espaçadas nos cantos e fotografia documental quente.
+ */
+.hm {
+  --hm-preto: #000;
+  --hm-painel: #0c0f10;
+  --hm-creme: #f3ede2;
+  --hm-creme-suave: rgba(243, 237, 226, 0.78);
+  /* Dourado champanhe: o amarelo da marca suavizado para um tom pastel, mais sóbrio sobre o preto */
+  --hm-ouro: #e4c88f;
+  --hm-ouro-claro: #eed9ad;
+  --hm-raio: 28px;
+  --hm-vao: clamp(8px, 1vw, 14px);
+  --hm-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+  --hm-texto: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
+
+  min-height: 100vh;
+  background: var(--hm-preto);
+  color: var(--hm-creme);
+  font-family: var(--hm-texto);
+}
+
+.hm .cd-footer {
+  background: var(--hm-preto);
+}
+
+.hm-paineis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hm-vao);
+  padding: var(--hm-vao);
+  outline: none;
+}
+
+/* ---------- Painel base ---------- */
+.hm-painel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(460px, 72vh, 720px);
+  padding: clamp(4.5rem, 9vw, 7rem) clamp(1.25rem, 5vw, 4rem);
+  border-radius: var(--hm-raio);
+  background: var(--hm-painel);
+  text-align: center;
+}
+
+.hm-painel__foto {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.02);
+  transition: transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.hm-painel:hover .hm-painel__foto {
+  transform: scale(1.06);
+}
+
+.hm-painel__veu {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.75) 75%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+}
+
+.hm-painel__veu--forte {
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.8) 80%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.15) 40%, rgba(0, 0, 0, 0.85) 100%);
+}
+
+.hm-painel__conteudo {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* Etiquetas dos cantos, como nos posts do Instagram */
+.hm-cantos {
+  position: absolute;
+  top: clamp(1.1rem, 2.4vw, 1.75rem);
+  left: clamp(1.25rem, 3vw, 2.25rem);
+  right: clamp(1.25rem, 3vw, 2.25rem);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--hm-creme-suave);
+  pointer-events: none;
+}
+
+/* Na abertura as etiquetas ficam embaixo, deixando espaço para o botão flutuante de acessibilidade */
+.hm-painel--hero .hm-cantos {
+  top: auto;
+  bottom: clamp(1.1rem, 2.4vw, 1.75rem);
+  right: 5.5rem;
+}
+
+/* ---------- Tipografia ---------- */
+.hm-display {
+  margin: 0;
+  font-family: var(--hm-display);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 6.4vw, 5.4rem);
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: var(--hm-creme);
+  text-wrap: balance;
+}
+
+.hm-display em {
+  font-style: normal;
+  color: var(--hm-ouro);
+}
+
+.hm-display--gigante {
+  font-size: clamp(3.4rem, 10vw, 9rem);
+  line-height: 0.88;
+}
+
+.hm-display--medio {
+  font-size: clamp(2.3rem, 4.6vw, 3.9rem);
+}
+
+.hm-display--escuro {
+  color: #1b1712;
+}
+
+.hm-display--escuro em {
+  color: #7d5b2a;
+}
+
+.hm-pre {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--hm-ouro);
+}
+
+.hm-frase {
+  margin: 0;
+  max-width: 560px;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--hm-creme);
+}
+
+.hm-frase--suave {
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  font-weight: 400;
+  color: var(--hm-creme-suave);
+}
+
+/* ---------- Botões em pílula ---------- */
+.hm-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.hm-pilula {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 1.75rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(243, 237, 226, 0.85);
+  background: transparent;
+  color: var(--hm-creme);
+  font-family: var(--hm-texto);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.hm-pilula:hover {
+  background: var(--hm-creme);
+  border-color: var(--hm-creme);
+  color: #0d0d0d;
+  transform: translateY(-1px);
+}
+
+.hm-pilula:focus-visible {
+  outline: 2px solid var(--hm-ouro);
+  outline-offset: 3px;
+}
+
+.hm-pilula--ouro {
+  background: var(--hm-ouro);
+  border-color: var(--hm-ouro);
+  color: #0d0d0d;
+}
+
+.hm-pilula--ouro:hover {
+  background: var(--hm-ouro-claro);
+  border-color: var(--hm-ouro-claro);
+}
+
+.hm-pilula--pequena {
+  min-height: 42px;
+  padding: 0 1.25rem;
+  font-size: 0.72rem;
+}
+
+/* ---------- Abertura ---------- */
+.hm-painel--hero {
+  min-height: calc(100vh - 2 * var(--hm-vao));
+  min-height: calc(100svh - 2 * var(--hm-vao));
+  padding-top: 7rem;
+}
+
+.hm-painel--hero .hm-painel__foto {
+  background-position: center 35%;
+  animation: hm-aproxima 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.hm-painel--hero .hm-painel__conteudo > * {
+  animation: hm-sobe 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.hm-painel--hero .hm-painel__conteudo > :nth-child(2) { animation-delay: 0.08s; }
+.hm-painel--hero .hm-painel__conteudo > :nth-child(3) { animation-delay: 0.16s; }
+.hm-painel--hero .hm-painel__conteudo > :nth-child(4) { animation-delay: 0.24s; }
+
+@keyframes hm-aproxima {
+  from { transform: scale(1.12); opacity: 0.4; }
+  to { transform: scale(1.02); opacity: 1; }
+}
+
+@keyframes hm-sobe {
+  from { transform: translateY(18px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ---------- Programação ---------- */
+.hm-painel--programacao {
+  min-height: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 85% 0%, rgba(228, 200, 143, 0.14), transparent 70%),
+    radial-gradient(ellipse 70% 70% at 0% 100%, rgba(122, 170, 172, 0.3), transparent 70%),
+    linear-gradient(135deg, #142628 0%, #0a0d0d 55%, #110f0b 100%);
+}
+
+.hm-painel--programacao .hm-painel__conteudo {
+  max-width: 1080px;
+}
+
+.hm-agenda {
+  list-style: none;
+  width: 100%;
+  margin: 1.5rem 0 0.5rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid rgba(243, 237, 226, 0.18);
+}
+
+.hm-agenda li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.75rem 0.75rem;
+  border-bottom: 1px solid rgba(243, 237, 226, 0.18);
+}
+
+.hm-agenda li + li {
+  border-left: 1px solid rgba(243, 237, 226, 0.18);
+}
+
+.hm-agenda li:first-child .hm-agenda__hora {
+  color: var(--hm-ouro);
+}
+
+.hm-agenda__dia {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--hm-creme-suave);
+}
+
+.hm-agenda__hora {
+  font-family: var(--hm-display);
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  line-height: 1;
+  color: var(--hm-creme);
+}
+
+.hm-agenda__atividade {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--hm-creme);
+}
+
+.hm-endereco {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0;
+  max-width: 620px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--hm-creme-suave);
+}
+
+.hm-endereco svg {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--hm-ouro);
+}
+
+/* ---------- Pares de painéis ---------- */
+.hm-duplo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hm-vao);
+}
+
+.hm-painel--metade {
+  min-height: clamp(440px, 64vh, 620px);
+}
+
+.hm-painel--metade .hm-painel__conteudo {
+  max-width: 480px;
+}
+
+/* ---------- Campanha Nova Sede ---------- */
+.hm-painel--campanha {
+  min-height: 0;
+  text-align: left;
+  color: #0d0d0d;
+  background:
+    radial-gradient(ellipse 50% 70% at 100% 0%, rgba(255, 255, 255, 0.4), transparent 70%),
+    linear-gradient(135deg, #f1e5cc 0%, #e6d1a8 55%, #d9bd8d 100%);
+}
+
+.hm-painel--campanha .hm-cantos {
+  color: rgba(42, 36, 25, 0.75);
+}
+
+.hm-campanha {
+  width: 100%;
+  max-width: 1120px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+}
+
+.hm-campanha__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.hm-campanha__texto .hm-display {
+  font-size: clamp(2.5rem, 5.2vw, 4.6rem);
+}
+
+.hm-campanha__texto p {
+  margin: 0;
+  max-width: 520px;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  font-weight: 500;
+  color: #2a2419;
+}
+
+.hm-campanha__texto .hm-campanha__convite {
+  font-weight: 800;
+}
+
+.hm-oferta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border-radius: 22px;
+  background: #0d0d0d;
+  color: var(--hm-creme);
+  background: #15130f;
+  box-shadow: 0 30px 60px rgba(90, 65, 25, 0.28);
+}
+
+.hm-oferta__pix {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.hm-oferta__qr {
+  flex: none;
+  width: 140px;
+  height: 140px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.hm-oferta__chave {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.hm-oferta__chave strong {
+  font-family: var(--hm-display);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  letter-spacing: 0.02em;
+  color: var(--hm-ouro);
+  overflow-wrap: anywhere;
+}
+
+.hm-oferta__rotulo,
+.hm-oferta__conta dt {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(243, 237, 226, 0.66);
+}
+
+.hm-oferta .hm-pilula {
+  margin-top: 0.35rem;
+}
+
+.hm-oferta__conta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 1.25rem;
+  margin: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(243, 237, 226, 0.14);
+}
+
+.hm-oferta__conta dd {
+  margin: 0.2rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.hm-oferta__inteiro {
+  grid-column: 1 / -1;
+}
+
+/* ---------- Eventos ---------- */
+.hm-painel--eventos {
+  min-height: 0;
+  background: linear-gradient(180deg, #0d1314, #070909);
+}
+
+.hm-painel--eventos .hm-painel__conteudo {
+  max-width: 1080px;
+}
+
+.hm-eventos {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.hm-eventos .carousel-container {
+  width: 100%;
+  max-width: none;
+}
+
+.hm-eventos .carousel-wrapper {
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+}
+
+.hm-eventos .carousel-indicator {
+  background: rgba(243, 237, 226, 0.3);
+}
+
+.hm-eventos .carousel-indicator:hover {
+  background: rgba(243, 237, 226, 0.6);
+}
+
+.hm-eventos .carousel-indicator.active {
+  width: 28px;
+  border-radius: 999px;
+  background: var(--hm-ouro);
+  transform: none;
+}
+
+.hm-eventos .carousel-indicator:focus-visible {
+  outline: 2px solid var(--hm-ouro);
+  outline-offset: 3px;
+}
+
+/* ---------- Assinatura ---------- */
+.hm-assinatura {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(3.5rem, 8vw, 6rem) 1.5rem clamp(2.5rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.hm-assinatura__logo {
+  width: 96px;
+  height: auto;
+  mix-blend-mode: lighten;
+}
+
+.hm-assinatura p {
+  margin: 0;
+  max-width: 480px;
+  font-family: var(--hm-display);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: var(--hm-creme);
+}
+
+/* ---------- Telas menores ---------- */
+@media (max-width: 960px) {
+  .hm-agenda {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hm-agenda li:nth-child(3) {
+    border-left: 0;
+  }
+
+  .hm-campanha {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .hm {
+    --hm-raio: 22px;
+  }
+
+  .hm-duplo {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-painel {
+    padding: 4.5rem 1.25rem 3.5rem;
+  }
+
+  .hm-painel--hero {
+    padding-top: 6rem;
+  }
+
+  .hm-cantos {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+  }
+
+  .hm-acoes {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  .hm-oferta__pix {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .hm-oferta__chave {
+    align-items: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .hm-agenda li {
+    padding: 1.25rem 0.4rem;
+  }
+
+  .hm-oferta__conta {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-painel__foto,
+  .hm-painel--hero .hm-painel__foto,
+  .hm-painel--hero .hm-painel__conteudo > * {
+    animation: none;
+    transition: none;
+  }
+
+  .hm-painel:hover .hm-painel__foto {
+    transform: scale(1.02);
+  }
+}

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import logoCasa from "../../assets/logo_mark.png";
 import "../../style/layout.css";
+import "../../style/cabecalhoPublico.css";
 import Icone from "../../components/ui/Icone";
 
 /**
@@ -15,6 +16,14 @@ const HeaderHome: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated, isAdmin } = useAuth();
   const [menuAberto, setMenuAberto] = useState(false);
+  // Transparente sobre a foto de abertura; ganha fundo ao rolar
+  const [rolado, setRolado] = useState(false);
+  useEffect(() => {
+    const aoRolar = () => setRolado(window.scrollY > 40);
+    aoRolar();
+    window.addEventListener("scroll", aoRolar, { passive: true });
+    return () => window.removeEventListener("scroll", aoRolar);
+  }, []);
 
   // Fecha o menu ao trocar de página e com Esc
   useEffect(() => setMenuAberto(false), [location.pathname, location.hash]);
@@ -34,20 +43,24 @@ const HeaderHome: React.FC = () => {
   };
 
   return (
-    <header className={`header-home${menuAberto ? " header-home--aberto" : ""}`}>
-      <Link to="/" className="header-home__logo">
-        <img src={logoCasa} alt="Casa dos Discípulos" />
+    <header className={`header-home${menuAberto ? " header-home--aberto" : ""}${rolado ? " header-home--rolado" : ""}`}>
+      <Link to="/" className="header-home__marca" aria-label="Casa dos Discípulos, página inicial">
+        <span className="header-home__logo"><img src={logoCasa} alt="" /></span>
+        <span className="header-home__nome" aria-hidden>
+          <span>Casa dos</span>
+          <span>Discípulos</span>
+        </span>
       </Link>
       <nav id="menu-principal" className="header-home__nav" aria-label="Menu principal">
-        <Link to="/" className="header-home__link">
-          Home
-        </Link>
-        <Link to="/sobre-nos" className="header-home__link">
+        <NavLink to="/" end className={({ isActive }) => `header-home__link${isActive ? " header-home__link--ativo" : ""}`}>
+          Início
+        </NavLink>
+        <NavLink to="/sobre-nos" end className={({ isActive }) => `header-home__link${isActive ? " header-home__link--ativo" : ""}`}>
           A Casa
-        </Link>
-        <Link to="/celulas" className="header-home__link">
+        </NavLink>
+        <NavLink to="/celulas" end className={({ isActive }) => `header-home__link${isActive ? " header-home__link--ativo" : ""}`}>
           Células
-        </Link>
+        </NavLink>
         <Link to="/#campanha-nova-sede" className="header-home__link" onClick={() => setMenuAberto(false)}>
           Campanha Nova Sede
         </Link>

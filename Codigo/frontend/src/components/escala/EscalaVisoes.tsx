@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { colisaoEscala } from "./colisaoEscala";
+import { createPortal } from "react-dom";
+import { colisaoEscala, centralizarNoCursor, estiloOverlay } from "./colisaoEscala";
 import {
   DndContext,
   DragEndEvent,
@@ -313,9 +314,12 @@ export const EscalaVisaoSemana: React.FC<
         </div>
         </section>
         ))}
-        <DragOverlay>
-          {active ? <div className="dnd-overlay-chip">{active.usuario.nome}</div> : null}
-        </DragOverlay>
+        {createPortal(
+          <DragOverlay dropAnimation={null} modifiers={[centralizarNoCursor]} style={estiloOverlay}>
+            {active ? <div className="dnd-overlay-chip">{active.usuario.nome}</div> : null}
+          </DragOverlay>,
+          document.body
+        )}
       </DndContext>
     </section>
   );

@@ -240,6 +240,13 @@ export interface VisualizacaoMes {
   estatisticas: EstatisticasEscala;
 }
 
+export interface VisualizacaoPeriodo {
+  inicio: string;
+  fim: string;
+  eventos: EventoUnificado[];
+  estatisticas: EstatisticasEscala;
+}
+
 export interface MoverMembroPayload {
   membroEscalaOrigemId: number;
   escalaDestinoId: number;
@@ -506,6 +513,17 @@ const escalaService = {
 
   async getVisualizacaoSemana(dataInicio: string, ministerios?: number[]): Promise<VisualizacaoSemana> {
     const response = await apiClient.get(`/escala/visualizacao/semana/${dataInicio}${qsMinisterios(ministerios)}`);
+    return response.data.dados ?? response.data;
+  },
+
+  /** Intervalo livre (até 6 meses): eventos completos + estatísticas. Planilha e relatório. */
+  async getVisualizacaoPeriodo(
+    inicio: string,
+    fim: string,
+    ministerios?: number[]
+  ): Promise<VisualizacaoPeriodo> {
+    const filtro = ministerios?.length ? `&ministerios=${ministerios.join(",")}` : "";
+    const response = await apiClient.get(`/escala/visualizacao/periodo?inicio=${inicio}&fim=${fim}${filtro}`);
     return response.data.dados ?? response.data;
   },
 

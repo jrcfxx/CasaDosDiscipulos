@@ -23,6 +23,9 @@ import escalaService, {
   MoverMembroPayload,
   EventoUnificado,
   UsuarioParaEscalar,
+  VisualizacaoPeriodo,
+  EstatisticasEscala,
+  SlotMembro,
 } from "../services/escalaService";
 import ministerioService from "../services/ministerioService";
 import usuarioService from "../services/usuarioService";
@@ -39,6 +42,7 @@ import { exportarEscala } from "../utils/exportacoes";
 import { exportarPdf } from "../utils/exportarPdf";
 import EscalaGradeDnd from "../components/escala/EscalaGradeDnd";
 import EscalaQuadroUnificado from "../components/escala/EscalaQuadroUnificado";
+import EscalaPlanilha from "../components/escala/EscalaPlanilha";
 import ModalConflitos from "../components/escala/ModalConflitos";
 import ModalBuscaPessoa from "../components/escala/ModalBuscaPessoa";
 import ModalHistorico from "../components/escala/ModalHistorico";
@@ -72,6 +76,14 @@ const MESES = [
 
 /** Máximo de semanas carregadas de uma vez na visão Semana */
 const MAX_SEMANAS = 12;
+/** Máximo de meses na Planilha */
+const MAX_MESES = 6;
+
+/** Último dia do mês (1–12), com virada de ano */
+function fimDoMes(ano: number, mes: number) {
+  const d = new Date(ano, mes, 0);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 const MESES_CURTOS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 
@@ -133,21 +145,23 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
   const { isAdmin, isLiderMinisterio, user } = useAuth();
   const podeEditar = isAdmin || isLiderMinisterio;
 
-  // Visão lembrada neste navegador; no celular começa pela Agenda (lista), no computador pelo Mês
+  // Visão lembrada neste navegador. Liderança começa pela Planilha (montar a escala como no Excel);
+  // quem só serve começa pela Agenda (celular) ou pelo Mês (computador).
   const [visao, setVisaoEstado] = useState<EscalaVisaoTipo>(() => {
     try {
-      const v = localStorage.getItem("escala_visao");
-      if (v === "agenda" || v === "semana" || v === "mes") return v;
+      const v = localStorage.getItem("escala_visao_v2");
+      if (v === "planilha" || v === "agenda" || v === "semana" || v === "mes") return v;
     } catch {
       /* sem armazenamento */
     }
+    if (podeEditar) return "planilha";
     return typeof window !== "undefined" && window.innerWidth < 720 ? "agenda" : "mes";
   });
   const setVisao = useCallback((v: EscalaVisaoTipo) => {
     setVisaoEstado(v);
-    if (v === "agenda" || v === "semana" || v === "mes") {
+    if (v === "planilha" || v === "agenda" || v === "semana" || v === "mes") {
       try {
-        localStorage.setItem("escala_visao", v);
+        localStorage.setItem("escala_visao_v2", v);
       } catch {
         /* sem armazenamento */
       }
@@ -179,6 +193,41 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
   const [qtdSemanas, setQtdSemanas] = useState(4);
   const [semanaOrigemCopia, setSemanaOrigemCopia] = useState<string | null>(null);
   const [visaoMesUnificada, setVisaoMesUnificada] = useState<VisualizacaoMes | null>(null);
+  // Planilha: vários meses de uma vez (padrão 2), a partir de ano/mes
+  const [qtdMeses, setQtdMeses] = useState(() => {
+    const n = Number(localStorage.getItem("escala_planilha_meses"));
+    return n >= 1 && n <= MAX_MESES ? n : 2;
+  });
+  const [planilha, setPlanilha] = useState<VisualizacaoPeriodo | null>(null);
+  const [planilhaArea, setPlanilhaAreaEstado] = useState(() => localStorage.getItem("escala_planilha_area") || "");
+  const [planilhaEvento, setPlanilhaEventoEstado] = useState(() => localStorage.getItem("escala_planilha_evento") || "");
+  const setPlanilhaArea = (a: string) => {
+    setPlanilhaAreaEstado(a);
+    try {
+      localStorage.setItem("escala_planilha_area", a);
+    } catch {
+      /* ignore */
+    }
+  };
+  const setPlanilhaEvento = (t: string) => {
+    setPlanilhaEventoEstado(t);
+    try {
+      localStorage.setItem("escala_planilha_evento", t);
+    } catch {
+      /* ignore */
+    }
+  };
+  const mudarQtdMeses = (n: number) => {
+    const v = Math.min(MAX_MESES, Math.max(1, n));
+    setQtdMeses(v);
+    try {
+      localStorage.setItem("escala_planilha_meses", String(v));
+    } catch {
+      /* ignore */
+    }
+  };
+  // Relatório: estatísticas do período da tela, buscadas ao abrir
+  const [relatorio, setRelatorio] = useState<EstatisticasEscala | null>(null);
   const [showBuscaPessoa, setShowBuscaPessoa] = useState(false);
   const [usuariosBusca, setUsuariosBusca] = useState<{ id_usuario: number; nome: string }[]>([]);
   const [eventoSelecionado, setEventoSelecionado] = useState<EscalaEventoCompleto | null>(null);
@@ -284,7 +333,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
 
   useEffect(() => {
     conteudoCarregadoRef.current = false;
-  }, [visao, ano, mes, dataDia, dataSemana, qtdSemanas]);
+  }, [visao, ano, mes, dataDia, dataSemana, qtdSemanas, qtdMeses]);
 
   const fetchEventos = useCallback(async () => {
     // "Meus ministérios": não mostra a igreja inteira enquanto os ministérios carregam
@@ -302,7 +351,14 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
     try {
       if (!conteudoCarregadoRef.current) setLoading(true);
-      if (visao === "mes") {
+      if (visao === "planilha") {
+        const data = await escalaService.getVisualizacaoPeriodo(
+          `${ano}-${pad(mes)}-01`,
+          fimDoMes(ano, mes + qtdMeses - 1),
+          filtro
+        );
+        setPlanilha(data);
+      } else if (visao === "mes") {
         const data = await escalaService.getVisualizacaoMes(ano, mes, "compacto", filtro);
         setVisaoMesUnificada(data);
         setVisaoAno(null);
@@ -329,7 +385,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     }
     // filtroKey: refaz a busca quando a seleção de ministérios muda
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ano, mes, visao, dataDia, dataSemana, qtdSemanas, showToast, modoMeus, ministeriosCarregados, filtroKey, mostrarCalendario]);
+  }, [ano, mes, visao, dataDia, dataSemana, qtdSemanas, qtdMeses, showToast, modoMeus, ministeriosCarregados, filtroKey, mostrarCalendario]);
 
   useEffect(() => {
     fetchEventos();
@@ -593,22 +649,22 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
   const handleAdicionarAtribuicao = () => adicionarAtribuicao(false);
 
   // Remover pede confirmação: em escala publicada a pessoa é avisada na hora
-  const [aRemover, setARemover] = useState<{ att: EscalaAtribuicao; nome: string; publicada: boolean } | null>(null);
+  const [aRemover, setARemover] = useState<{ atts: EscalaAtribuicao[]; nome: string; publicada: boolean } | null>(null);
 
   const handleRemoverAtribuicao = (a: EscalaAtribuicao, nome?: string) => {
     setARemover({
-      att: a,
+      atts: [a],
       nome: nome || a.usuario_nome || "esta pessoa",
       publicada: eventoSelecionado?.status === "publicada",
     });
   };
 
-  const executarRemocao = async (a: EscalaAtribuicao) => {
+  const executarRemocao = async (lista: EscalaAtribuicao[]) => {
     try {
-      await escalaService.removeAtribuicao(a.id_escala_atribuicao);
-      showToast("Removido da escala", "success");
+      for (const a of lista) await escalaService.removeAtribuicao(a.id_escala_atribuicao);
+      showToast(lista.length > 1 ? `${lista.length} pessoas removidas da escala` : "Removido da escala", "success");
       marcarAlteracao();
-      fetchEventos();
+      await fetchEventos();
       if (eventoSelecionado) {
         const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
         setEventoSelecionado(ev);
@@ -659,7 +715,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
     showToast(result.mensagem || "Pessoa movida", "success");
     marcarAlteracao();
     fecharConflitos();
-    fetchEventos();
+    await fetchEventos();
     if (eventoSelecionado) {
       const ev = await escalaService.getEventoCompleto(eventoSelecionado.id_escala_evento);
       setEventoSelecionado(ev);
@@ -707,6 +763,71 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
       }
       showToast(getErrorMessage(err, "Não foi possível mover — conflito na escala"), "error");
     }
+  };
+
+  // ----- Planilha -----
+  const carregarCandidatos = useCallback(
+    (idEvento: number, nomeArea: string) => escalaService.getUsuariosParaEscalar(idEvento, nomeArea),
+    []
+  );
+
+  /** Escala direto de uma célula da planilha (mesmas validações e exceções do modal) */
+  const escalarNaCelula = async (
+    idEvento: number,
+    slot: SlotInstrumento,
+    idUsuario: number,
+    confirmar = false
+  ): Promise<boolean> => {
+    const detalhes: Record<string, string | null> = {};
+    if (slot.chaveDetalhe && slot.tipo !== "_geral") detalhes[slot.chaveDetalhe] = slot.tipo;
+    const repetir = async () => {
+      await escalarNaCelula(idEvento, slot, idUsuario, true);
+    };
+    try {
+      if (!confirmar) {
+        const v = await escalaService.validarAtribuicao(idEvento, {
+          id_escala_area: slot.id_escala_area,
+          id_usuario: idUsuario,
+          detalhes,
+        });
+        if (!v.sucesso) {
+          abrirConflitos(v.conflitos, v.confirmavel ? repetir : null);
+          return false;
+        }
+      }
+      await escalaService.addAtribuicao(slot.id_escala_area, idUsuario, detalhes, confirmar);
+      fecharConflitos();
+      marcarAlteracao();
+      await fetchEventos();
+      return true;
+    } catch (err) {
+      const data = dadosDoErro(err);
+      if (data?.conflitos?.length) {
+        abrirConflitos(data.conflitos, data.confirmavel && !confirmar ? repetir : null);
+        return false;
+      }
+      showToast(getErrorMessage(err, "Não foi possível escalar."), "error");
+      return false;
+    }
+  };
+
+  /** Tirar da planilha: rascunho sai na hora; publicada pede confirmação (a pessoa é avisada) */
+  const removerDaCelula = async (ev: EventoUnificado, membros: SlotMembro[]) => {
+    const atts: EscalaAtribuicao[] = membros.map((m) => ({
+      id_escala_atribuicao: m.membroEscalaId,
+      id_escala_area: m.id_escala_area,
+      id_usuario: m.usuario.id,
+      usuario_nome: m.usuario.nome,
+    }));
+    if (ev.status === "publicada") {
+      setARemover({
+        atts,
+        nome: membros.length === 1 ? membros[0].usuario.nome : `${membros.length} pessoas`,
+        publicada: true,
+      });
+      return;
+    }
+    await executarRemocao(atts);
   };
 
   const handleCopiarDia = () => {
@@ -858,7 +979,10 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
       showToast("Gerando a planilha…", "info");
       let eventos: EventoUnificado[] = [];
       let est = estatisticasAtuais;
-      if (visao === "semana") {
+      if (visao === "planilha") {
+        eventos = planilha?.eventos || [];
+        est = planilha?.estatisticas;
+      } else if (visao === "semana") {
         eventos = (visaoSemanas || []).flatMap((s) => s.dias.flatMap((d) => d.eventos));
       } else if (visao === "dia") {
         eventos = visaoDiaUnificada?.eventos || [];
@@ -904,7 +1028,9 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
   };
 
   const estatisticasAtuais =
-    visao === "semana"
+    visao === "planilha"
+      ? planilha?.estatisticas
+      : visao === "semana"
       ? visaoSemanas?.length === 1
         ? visaoSemanas[0].estatisticas
         : undefined
@@ -913,15 +1039,37 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
         : visao === "ano"
           ? undefined
           : visaoMesUnificada?.estatisticas;
-  const tituloRelatorio =
-    visao === "semana"
-      ? `Semana de ${tituloSemana(dataSemana)}`
-      : visao === "dia"
-        ? tituloDia(dataDia)
-        : `${MESES[mes - 1]} ${ano}`;
+  /** Início e fim (AAAA-MM-DD) do que está na tela, para o relatório */
+  const periodoAtual = (): [string, string] => {
+    if (visao === "planilha") return [`${ano}-${pad(mes)}-01`, fimDoMes(ano, mes + qtdMeses - 1)];
+    if (visao === "semana") return [dataSemana, somarDias(dataSemana, 7 * qtdSemanas - 1)];
+    if (visao === "dia") return [dataDia, dataDia];
+    if (visao === "ano") return [`${ano}-01-01`, `${ano}-12-31`];
+    return [`${ano}-${pad(mes)}-01`, fimDoMes(ano, mes)];
+  };
 
+  const abrirRelatorio = async () => {
+    setRelatorio(null);
+    setShowRelatorio(true);
+    try {
+      const [ini, fim] = periodoAtual();
+      const dados = await escalaService.getVisualizacaoPeriodo(ini, fim, idsFiltro);
+      setRelatorio(dados.estatisticas);
+    } catch (err) {
+      setShowRelatorio(false);
+      showToast(getErrorMessage(err, "Não foi possível gerar o relatório."), "error");
+    }
+  };
+
+  const fimPlanilha = new Date(ano, mes - 1 + qtdMeses - 1, 1);
   const navLabel =
-    visao === "dia"
+    visao === "planilha"
+      ? qtdMeses === 1
+        ? `${MESES[mes - 1]} ${ano}`
+        : `${MESES_CURTOS[mes - 1]}${fimPlanilha.getFullYear() !== ano ? ` ${ano}` : ""} – ${
+            MESES_CURTOS[fimPlanilha.getMonth()]
+          } ${fimPlanilha.getFullYear()}`
+      : visao === "dia"
       ? tituloDia(dataDia)
       : visao === "semana"
         ? qtdSemanas === 1
@@ -944,7 +1092,10 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
   }, []);
 
   const navegar = (passo: 1 | -1) => {
-    if (visao === "mes" || visao === "agenda") {
+    if (visao === "planilha") {
+      const alvo = new Date(ano, mes - 1 + passo * qtdMeses, 1);
+      irPara(dataDoMes(alvo.getFullYear(), alvo.getMonth() + 1));
+    } else if (visao === "mes" || visao === "agenda") {
       const alvo = new Date(ano, mes - 1 + passo, 1);
       irPara(dataDoMes(alvo.getFullYear(), alvo.getMonth() + 1));
     } else if (visao === "dia") {
@@ -1044,11 +1195,14 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
               <EscalaVisaoSeletor visao={visao} onChange={setVisao} />
 
               <div className="esc-acoes">
+                {podeEditar && (
+                  <button type="button" className="esc-btn esc-btn--fantasma" onClick={abrirRelatorio}>
+                    Relatório
+                  </button>
+                )}
                 <MenuAcoes
                   itens={[
-                    ...(podeEditar && estatisticasAtuais
-                      ? [{ rotulo: "Relatório do período", onSelecionar: () => setShowRelatorio(true) }]
-                      : []),
+                    ...(podeEditar ? [{ rotulo: "Relatório do período", onSelecionar: abrirRelatorio }] : []),
                     { rotulo: "Buscar pessoa", onSelecionar: abrirBuscaPessoa },
                     { rotulo: "Visão do ano", onSelecionar: () => setVisao("ano") },
                     { rotulo: "Exportar Excel", onSelecionar: exportarExcelEscala, separar: true },
@@ -1060,6 +1214,45 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
                 />
               </div>
             </div>
+
+            {visao === "planilha" && (
+              <div className="esc-intervalo" role="group" aria-label="Meses da planilha">
+                <label>
+                  De
+                  <input
+                    type="month"
+                    value={`${ano}-${pad(mes)}`}
+                    onChange={(e) => e.target.value && irPara(`${e.target.value}-01`)}
+                  />
+                </label>
+                <label>
+                  Até
+                  <input
+                    type="month"
+                    value={`${fimPlanilha.getFullYear()}-${pad(fimPlanilha.getMonth() + 1)}`}
+                    min={`${ano}-${pad(mes)}`}
+                    onChange={(e) => {
+                      if (!e.target.value) return;
+                      const [a, m] = e.target.value.split("-").map(Number);
+                      mudarQtdMeses((a - ano) * 12 + (m - mes) + 1);
+                    }}
+                  />
+                </label>
+                <div className="esc-intervalo__atalhos" aria-label="Atalhos">
+                  {[1, 2, 3].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      className={`esc-btn esc-btn--fantasma${qtdMeses === n ? " ativo" : ""}`}
+                      aria-pressed={qtdMeses === n}
+                      onClick={() => mudarQtdMeses(n)}
+                    >
+                      {n === 1 ? "1 mês" : `${n} meses`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {visao === "semana" && (
               <div className="esc-intervalo" role="group" aria-label="Intervalo de semanas">
@@ -1159,6 +1352,23 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
               </div>
             ) : (
               <div className="escala-layout">
+                {visao === "planilha" && planilha && (
+                  <EscalaPlanilha
+                    eventos={planilha.eventos}
+                    podeEditar={podeEditar}
+                    area={planilhaArea}
+                    onArea={setPlanilhaArea}
+                    filtroEvento={planilhaEvento}
+                    onFiltroEvento={setPlanilhaEvento}
+                    carregarCandidatos={carregarCandidatos}
+                    onAdicionar={escalarNaCelula}
+                    onRemover={removerDaCelula}
+                    onMover={handleMoverUnificado}
+                    onAbrirEvento={abrirEvento}
+                    onAviso={showToast}
+                  />
+                )}
+
                 {visao === "mes" && visaoMesUnificada && (
                   <EscalaVisaoMesCalendario
                     visao={visaoMesUnificada}
@@ -1240,7 +1450,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
           </>
         )}
 
-      {showRelatorio && estatisticasAtuais && (
+      {showRelatorio && (
         <div className="esc-gaveta-raiz">
           <button
             type="button"
@@ -1257,10 +1467,17 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
             }}
           >
             <div className="esc-gaveta" role="dialog" aria-modal="true" aria-label="Relatório da escala" tabIndex={-1}>
+              {!relatorio && (
+                <div className="esc-carregando" aria-busy="true" aria-label="Gerando o relatório">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              )}
               <EscalaRelatorio
-                titulo={tituloRelatorio}
+                titulo={navLabel}
                 subtitulo={modoMeus ? "Só os ministérios selecionados" : "Visão geral para liderança e secretaria"}
-                estatisticas={estatisticasAtuais}
+                estatisticas={relatorio}
                 onFechar={() => setShowRelatorio(false)}
                 onAbrirEvento={(id) => {
                   setShowRelatorio(false);
@@ -1569,7 +1786,7 @@ const EscalaUser: React.FC<{ modo?: "geral" | "meus" }> = ({ modo = "geral" }) =
         variant="danger"
         textoCarregando="Removendo…"
         onConfirm={async () => {
-          if (aRemover) await executarRemocao(aRemover.att);
+          if (aRemover) await executarRemocao(aRemover.atts);
           setARemover(null);
         }}
         onCancel={() => setARemover(null)}

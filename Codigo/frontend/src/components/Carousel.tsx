@@ -3,7 +3,7 @@ import "./Carousel.css";
 import { urlImagemEvento } from "../services/eventoService";
 import Icone from "./ui/Icone";
 
-interface CarouselItem {
+export interface CarouselItem {
   id_evento: number;
   titulo: string;
   descricao?: string;

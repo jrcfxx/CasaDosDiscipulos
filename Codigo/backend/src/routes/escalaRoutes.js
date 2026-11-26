@@ -31,6 +31,7 @@ router.use(verificarToken);
 router.get("/visualizacao/dia/:data", authenticatedOnly, EscalaController.getVisualizacaoDia);
 router.get("/visualizacao/semana/:dataInicio", authenticatedOnly, EscalaController.getVisualizacaoSemana);
 router.get("/visualizacao/mes/:ano/:mes", authenticatedOnly, EscalaController.getVisualizacaoMes);
+router.get("/visualizacao/periodo", authenticatedOnly, EscalaController.getVisualizacaoPeriodo);
 router.get("/visualizacao/ano/:ano", authenticatedOnly, EscalaController.getVisualizacaoAno);
 router.get("/minhas", authenticatedOnly, EscalaController.getMinhasEscalas);
 router.get("/pessoa/:usuarioId/periodo", authenticatedOnly, EscalaController.getEscalasDaPessoa);

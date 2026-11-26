@@ -822,6 +822,38 @@ class EscalaService {
     };
   }
 
+  /**
+   * Intervalo livre de datas (até 1 ano): eventos completos + estatísticas do período.
+   * Usado pela Planilha (vários meses de uma vez) e pelo relatório de qualquer visão.
+   */
+  async getVisualizacaoPeriodo(inicio, fim, idUsuario = null, tipoUsuario = null, idsMinisterios = null) {
+    exigirDataIso(inicio);
+    exigirDataIso(fim);
+    if (String(fim) < String(inicio)) throw new ValidationError("A data final deve ser depois da inicial");
+    const dias = (new Date(`${fim}T12:00:00`) - new Date(`${inicio}T12:00:00`)) / 86400000;
+    if (dias > 370) throw new ValidationError("Escolha um período de até 1 ano");
+    const eventos = await EscalaRepository.listarEventosCompletosNoIntervalo(inicioDoDia(inicio), fimDoDia(fim));
+    const filtrados = this._filtrarPorMinisterios(this._filtrarRascunhosSeMembro(eventos, tipoUsuario), idsMinisterios);
+    const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);
+    const unificados = this._formatarEventosComPermissao(filtrados, idsLider, tipoUsuario).sort((a, b) =>
+      `${a.data} ${a.horaInicio || ""}`.localeCompare(`${b.data} ${b.horaInicio || ""}`)
+    );
+    const datas = new Set(unificados.map((e) => e.data));
+    return {
+      sucesso: true,
+      dados: {
+        inicio: String(inicio).slice(0, 10),
+        fim: String(fim).slice(0, 10),
+        eventos: unificados,
+        estatisticas: {
+          ...estatisticasEventos(unificados),
+          diasComEventos: datas.size,
+          diasVazios: Math.max(0, Math.round(dias) + 1 - datas.size),
+        },
+      },
+    };
+  }
+
   async getVisualizacaoMes(ano, mes, modo = "compacto", idUsuario = null, tipoUsuario = null, idsMinisterios = null) {
     const eventos = await this.getVisaoMes(ano, mes, tipoUsuario, idsMinisterios);
     const idsLider = await this._idsMinisteriosLider(idUsuario, tipoUsuario);

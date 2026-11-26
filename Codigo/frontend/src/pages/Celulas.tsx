@@ -37,7 +37,7 @@ function CelulaCard({ celula }: { celula: Celula }) {
   const local =
     celula.modalidade === "online"
       ? "Online"
-      : celula.endereco || "Belo Horizonte/MG";
+      : celula.endereco || "Belo Horizonte, Minas Gerais";
   const categoriaCurta = (celula.categoria || "Célula")
     .replace(/^Célula de\s+/i, "")
     .trim();

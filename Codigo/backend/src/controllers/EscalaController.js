@@ -243,6 +243,22 @@ class EscalaController {
     }
   }
 
+  async getVisualizacaoPeriodo(req, res, next) {
+    try {
+      res.json(
+        await EscalaService.getVisualizacaoPeriodo(
+          req.query.inicio,
+          req.query.fim,
+          req.usuario?.id_usuario,
+          req.usuario?.tipo,
+          idsMinisteriosDaQuery(req)
+        )
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getVisualizacaoMes(req, res, next) {
     try {
       res.json(

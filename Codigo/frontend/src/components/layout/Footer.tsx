@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
           </Link>
           <div className="footer-info">
             <p className="footer-text footer-name">COMUNIDADE CRISTÃ CASA DOS DISCÍPULOS</p>
-            <p className="footer-text">Rua Albertino Teixeira Dias, 381 – Tx. Dias – Belo Horizonte/MG</p>
+            <p className="footer-text">Rua Albertino Teixeira Dias, 381 – Teixeira Dias – Belo Horizonte, Minas Gerais</p>
             <p className="footer-text footer-cnpj">CNPJ: 34.455.752/0001-69</p>
           </div>
         </div>
@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
         <div className="footer-contribua">
           <h2 className="footer-col-title">Campanha Nova Sede</h2>
           <p className="footer-text">PIX: 34.455.752/0001-69</p>
-          <p className="footer-text footer-contribua-sub">Banco Stone (197) · Ag. 0001 · CC 574293-7</p>
+          <p className="footer-text footer-contribua-sub">Banco Stone (197) · Agência 0001 · Conta corrente 574293-7</p>
           <Link to="/#campanha-nova-sede" className="footer-contribua-link">Saiba mais</Link>
         </div>
 
