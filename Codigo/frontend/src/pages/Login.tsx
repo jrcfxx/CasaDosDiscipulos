@@ -23,7 +23,11 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   // Motivo de ter caído no login (ex.: sessão expirada), lido uma única vez
-  const [aviso] = useState(() => authService.consumirAviso());
+  // Lido ao desenhar e apagado depois de mostrado (ler e apagar de uma vez falha no modo estrito do React)
+  const [aviso] = useState(() => authService.verAviso());
+  useEffect(() => {
+    authService.limparAviso();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

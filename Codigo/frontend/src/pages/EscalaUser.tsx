@@ -164,12 +164,7 @@ const EscalaUser: React.FC = () => {
   // ----- Dados -----
   const [planilha, setPlanilha] = useState<VisualizacaoPeriodo | null>(null);
   const [agenda, setAgenda] = useState<VisualizacaoMes | null>(null);
-  const [planilhaArea, setPlanilhaAreaEstado] = useState(() => lerLocal("escala_planilha_area") || "");
   const [planilhaEvento, setPlanilhaEventoEstado] = useState(() => lerLocal("escala_planilha_evento") || "");
-  const setPlanilhaArea = (a: string) => {
-    setPlanilhaAreaEstado(a);
-    gravarLocal("escala_planilha_area", a);
-  };
   const setPlanilhaEvento = (t: string) => {
     setPlanilhaEventoEstado(t);
     gravarLocal("escala_planilha_evento", t);
@@ -888,8 +883,7 @@ const EscalaUser: React.FC = () => {
                 <EscalaPlanilha
                   eventos={planilha.eventos}
                   podeEditar={podeEditar}
-                  area={planilhaArea}
-                  onArea={setPlanilhaArea}
+                  areasVisiveis={ministeriosFiltraveis.filter((m) => idsFiltro?.includes(m.id_ministerio)).map((m) => m.nome)}
                   filtroEvento={planilhaEvento}
                   onFiltroEvento={setPlanilhaEvento}
                   carregarCandidatos={carregarCandidatos}

@@ -205,7 +205,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--sc-suave);
-  background: var(--sc-fundo-claro);
+  background: #151a1b;
 }
 
 .sa-tabela code {

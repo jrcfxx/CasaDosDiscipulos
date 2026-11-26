@@ -183,8 +183,11 @@
 
 .es .modal-escala-dashboard {
   padding: 0;
-  overflow: hidden;
-  background: var(--sc-fundo-claro);
+  /* Rola por dentro; cabeçalho e rodapé ficam presos */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #0f1314;
   border: none;
   border-radius: 20px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
@@ -192,7 +195,14 @@
   flex-direction: column;
 }
 
+.es .modal-escala-dashboard > * {
+  flex-shrink: 0;
+}
+
 .es .escala-dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   margin: 0;
   padding: 1.25rem 1.5rem 1.1rem;
   background: radial-gradient(circle at 100% -40%, rgba(228, 200, 143, 0.18), transparent 60%),
@@ -321,6 +331,9 @@
 }
 
 .es .esc-modal-rodape {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
   margin-top: 1.25rem;
   padding: 0.9rem 1.5rem;
   background: #0f1314;

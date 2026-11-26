@@ -875,7 +875,7 @@
     z-index: 5;
     margin: 0 -1.25rem;
     padding: 0.6rem 1.25rem;
-    background: var(--sc-fundo-claro);
+    background: #0c0f10;
     border-bottom: 1px solid var(--sc-borda);
   }
 

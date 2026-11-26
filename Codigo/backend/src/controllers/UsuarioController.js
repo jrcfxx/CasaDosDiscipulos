@@ -192,7 +192,14 @@ const UsuarioController = {
       if (body.nome !== undefined) dadosPermitidos.nome = body.nome;
       if (body.email !== undefined) dadosPermitidos.email = body.email;
       if (body.telefone !== undefined) dadosPermitidos.telefone = body.telefone;
-      if (body.foto !== undefined) dadosPermitidos.foto = body.foto;
+      // Foto: só imagem enviada ao próprio site (ou remover); nada de endereço externo ou outro esquema
+      if (body.foto !== undefined) {
+        const foto = body.foto === null ? null : String(body.foto).trim();
+        if (foto && !/^\/uploads\/perfil\/[\w.-]+$/.test(foto)) {
+          throw new ValidationError("Foto inválida. Envie a imagem pelo botão de trocar foto.");
+        }
+        dadosPermitidos.foto = foto || null;
+      }
 
       // Mudar o e-mail (que é o login) exige a senha atual
       const atual = await knex("usuario").where({ id_usuario: usuarioId }).select("email", "senha").first();

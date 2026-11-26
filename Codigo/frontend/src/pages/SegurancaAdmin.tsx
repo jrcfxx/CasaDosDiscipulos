@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PaginaSecretaria from "../components/secretaria/PaginaSecretaria";
 import Toast from "../components/ui/Toast";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import Icone from "../components/ui/Icone";
 import segurancaService, {
   FiltrosEventos, PaginaEventos, ResumoSeguranca, SessaoAberta,
@@ -241,7 +242,7 @@ function Alertas({
         <ul className="sa-regras">
           <li><strong>Bloqueio por tentativas:</strong> 5 senhas erradas pausam a conta por 15 minutos (1 hora se repetir).</li>
           <li><strong>Sessão no servidor:</strong> cada aparelho pode ser desconectado na hora, por aqui ou pela própria pessoa.</li>
-          <li><strong>Saída automática:</strong> admins após 8 horas sem uso; demais após 7 dias sem uso (máximo de 30 dias).</li>
+          <li><strong>Saída automática:</strong> todos saem após 1 hora sem uso. Mesmo em uso, a sessão vale no máximo 7 dias para administradores e 30 dias para os demais.</li>
           <li><strong>Senhas:</strong> mínimo de 8 caracteres, sem senhas óbvias (“jesus123”, telefone, e-mail) e guardadas com bcrypt.</li>
           <li><strong>Avisos à pessoa:</strong> entrada por aparelho novo, acesso pausado, e-mail alterado.</li>
           <li><strong>Verificação em duas etapas</strong> opcional para todos, com códigos de recuperação.</li>
@@ -413,8 +414,10 @@ function Aparelhos({
     return t ? sessoes.filter((s) => `${s.nome} ${s.email} ${s.ip} ${s.dispositivo}`.toLowerCase().includes(t)) : sessoes;
   }, [sessoes, busca]);
 
+  // Confirmação no próprio site (nunca a caixa do navegador)
+  const [aConfirmar, setAConfirmar] = useState<{ titulo: string; mensagem: string; acao: () => Promise<void> } | null>(null);
+
   const encerrar = async (s: SessaoAberta) => {
-    if (!window.confirm(`Desconectar ${s.nome} do aparelho ${s.dispositivo || ""}?`)) return;
     try {
       await segurancaService.encerrarSessao(s.referencia);
       avisar("Aparelho desconectado", "success");
@@ -425,7 +428,7 @@ function Aparelhos({
   };
 
   const encerrarTodos = async (s: SessaoAberta) => {
-    if (!s.id_usuario || !window.confirm(`Desconectar ${s.nome} de todos os aparelhos?`)) return;
+    if (!s.id_usuario) return;
     try {
       const r = await segurancaService.encerrarSessoesDoUsuario(s.id_usuario);
       avisar(r.message, "success");
@@ -473,11 +476,25 @@ function Aparelhos({
                 <td className="sa-nowrap">{tempoRelativo(s.ultimo_uso)}</td>
                 <td className="sa-nowrap">{formatarDataHora(s.criada_em)}</td>
                 <td className="sa-acoes">
-                  <button type="button" className="sc-btn sc-btn--contorno" onClick={() => encerrar(s)}
+                  <button type="button" className="sc-btn sc-btn--contorno"
+                    onClick={() =>
+                      setAConfirmar({
+                        titulo: `Desconectar ${s.nome}?`,
+                        mensagem: `Sai na hora do aparelho ${s.dispositivo || ""} e precisa entrar de novo com a senha.`,
+                        acao: () => encerrar(s),
+                      })
+                    }
                     aria-label={`Desconectar ${s.nome} de ${s.dispositivo || "aparelho"}`}>
                     Desconectar
                   </button>
-                  <button type="button" className="sa-link" onClick={() => encerrarTodos(s)}
+                  <button type="button" className="sa-link"
+                    onClick={() =>
+                      setAConfirmar({
+                        titulo: `Desconectar ${s.nome} de todos os aparelhos?`,
+                        mensagem: "Sai na hora em todos os aparelhos e precisa entrar de novo com a senha.",
+                        acao: () => encerrarTodos(s),
+                      })
+                    }
                     aria-label={`Desconectar ${s.nome} de todos os aparelhos`}>
                     Todos dessa pessoa
                   </button>
@@ -490,6 +507,21 @@ function Aparelhos({
           </tbody>
         </table>
       </div>
+      <ConfirmModal
+        open={!!aConfirmar}
+        title={aConfirmar?.titulo ?? ""}
+        message={aConfirmar?.mensagem ?? ""}
+        confirmLabel="Desconectar"
+        cancelLabel="Cancelar"
+        variant="danger"
+        textoCarregando="Desconectando…"
+        onConfirm={async () => {
+          const pedido = aConfirmar;
+          if (pedido) await pedido.acao();
+          setAConfirmar(null);
+        }}
+        onCancel={() => setAConfirmar(null)}
+      />
     </section>
   );
 }

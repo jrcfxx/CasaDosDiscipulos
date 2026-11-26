@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import segurancaService, { SituacaoUsuario } from "../../services/segurancaService";
 import { getErrorMessage } from "../../utils/errorUtils";
 import { formatarDataHora } from "../../utils/eventosSeguranca";
+import ConfirmModal from "../ui/ConfirmModal";
+
+type Pedido = { titulo: string; mensagem: string; botao: string; perigo?: boolean; acao: () => Promise<unknown> };
 
 /**
  * Gerenciamento → painel do usuário: situação de segurança da pessoa e o que o admin pode fazer
@@ -12,6 +15,8 @@ const SegurancaUsuario: React.FC<{ idUsuario: number }> = ({ idUsuario }) => {
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
   const [ocupado, setOcupado] = useState(false);
+  // Confirmação no próprio site (nunca a caixa do navegador)
+  const [pedido, setPedido] = useState<Pedido | null>(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -25,8 +30,7 @@ const SegurancaUsuario: React.FC<{ idUsuario: number }> = ({ idUsuario }) => {
     carregar();
   }, [carregar]);
 
-  const agir = async (acao: () => Promise<unknown>, confirmacao?: string) => {
-    if (confirmacao && !window.confirm(confirmacao)) return;
+  const agir = async (acao: () => Promise<unknown>) => {
     setOcupado(true);
     setErro("");
     setMensagem("");
@@ -77,14 +81,28 @@ const SegurancaUsuario: React.FC<{ idUsuario: number }> = ({ idUsuario }) => {
           )}
           {sit.sessoes_ativas > 0 && (
             <button type="button" className="sc-btn sc-btn--contorno" disabled={ocupado}
-              onClick={() => agir(() => segurancaService.encerrarSessoesDoUsuario(idUsuario), "Desconectar essa pessoa de todos os aparelhos?")}>
+              onClick={() =>
+                setPedido({
+                  titulo: "Desconectar de todos os aparelhos?",
+                  mensagem: "A pessoa sai na hora em todos os aparelhos e precisa entrar de novo com a senha.",
+                  botao: "Desconectar",
+                  acao: () => segurancaService.encerrarSessoesDoUsuario(idUsuario),
+                })
+              }>
               Desconectar aparelhos
             </button>
           )}
           {sit.totp_ativo && (
             <button type="button" className="sc-btn sc-btn--perigo" disabled={ocupado}
-              onClick={() => agir(() => segurancaService.removerDoisFatores(idUsuario),
-                "Remover a verificação em duas etapas? Só faça isso se a própria pessoa pediu (perdeu o celular e os códigos).")}>
+              onClick={() =>
+                setPedido({
+                  titulo: "Remover a verificação em duas etapas?",
+                  mensagem: "Só faça isso se a própria pessoa pediu (perdeu o celular e os códigos). Ela poderá ativar de novo no Perfil.",
+                  botao: "Remover",
+                  perigo: true,
+                  acao: () => segurancaService.removerDoisFatores(idUsuario),
+                })
+              }>
               Remover duas etapas
             </button>
           )}
@@ -92,6 +110,20 @@ const SegurancaUsuario: React.FC<{ idUsuario: number }> = ({ idUsuario }) => {
       )}
       {mensagem && <p className="gr-dica" role="status">{mensagem}</p>}
       {erro && <p className="gr-erro" role="alert">{erro}</p>}
+      <ConfirmModal
+        open={!!pedido}
+        title={pedido?.titulo ?? ""}
+        message={pedido?.mensagem ?? ""}
+        confirmLabel={pedido?.botao}
+        cancelLabel="Cancelar"
+        variant={pedido?.perigo ? "danger" : "default"}
+        onConfirm={async () => {
+          const p = pedido;
+          setPedido(null);
+          if (p) await agir(p.acao);
+        }}
+        onCancel={() => setPedido(null)}
+      />
     </div>
   );
 };

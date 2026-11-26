@@ -9,13 +9,13 @@ import { ipDaRequisicao, userAgentDaRequisicao, descreverDispositivo } from "./R
  * Assim dá para derrubar um aparelho na hora (perdeu o celular, saiu da liderança...).
  *
  * Prazos (admin tem acesso aos dados de todos os membros, então a sessão dele dura menos):
- *  - membro/líder: encerra após 7 dias sem uso, ou 30 dias no máximo;
- *  - administrador: encerra após 8 horas sem uso, ou 7 dias no máximo.
+ *  - todos: encerra após 1 hora sem uso (checagens automáticas da tela não contam como uso);
+ *  - prazo máximo: membro/líder 30 dias, administrador 7 dias.
  */
 const HORA = 60 * 60;
 export const PRAZOS_SESSAO = Object.freeze({
-  padrao: { ociosaSeg: 7 * 24 * HORA, maximaSeg: 30 * 24 * HORA },
-  administrador: { ociosaSeg: 8 * HORA, maximaSeg: 7 * 24 * HORA },
+  padrao: { ociosaSeg: HORA, maximaSeg: 30 * 24 * HORA },
+  administrador: { ociosaSeg: HORA, maximaSeg: 7 * 24 * HORA },
 });
 /** Aparelhos conectados ao mesmo tempo por pessoa; o mais antigo sai quando passa disso */
 export const MAX_SESSOES_POR_USUARIO = 10;

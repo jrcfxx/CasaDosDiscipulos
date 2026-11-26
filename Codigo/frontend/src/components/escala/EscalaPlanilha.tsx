@@ -34,9 +34,8 @@ import "../../style/escalaPlanilha.css";
 export interface PlanilhaProps {
   eventos: EventoUnificado[];
   podeEditar: boolean;
-  /** Área (ministério) mostrada; "" = todas */
-  area: string;
-  onArea: (area: string) => void;
+  /** Ministérios escolhidos no filtro da barra (nomes das áreas); vazio = todos */
+  areasVisiveis?: string[];
   /** Título de evento mostrado; "" = todos */
   filtroEvento: string;
   onFiltroEvento: (t: string) => void;
@@ -481,8 +480,7 @@ function EditorCelula({
 const EscalaPlanilha: React.FC<PlanilhaProps> = ({
   eventos,
   podeEditar,
-  area,
-  onArea,
+  areasVisiveis = [],
   filtroEvento,
   onFiltroEvento,
   carregarCandidatos,
@@ -494,38 +492,28 @@ const EscalaPlanilha: React.FC<PlanilhaProps> = ({
 }) => {
   const hoje = hojeIso();
 
-  // Áreas (ministérios) presentes no período, para as "abas"
-  const areas = useMemo(() => {
-    const vistas = new Map<string, { nome: string; minha: boolean }>();
-    for (const ev of eventos)
-      for (const s of Object.values(ev.instrumentos || {})) {
-        const k = s.areaNome.trim();
-        const atual = vistas.get(k.toLowerCase());
-        vistas.set(k.toLowerCase(), { nome: k, minha: (atual?.minha ?? false) || s.podeGerenciar });
-      }
-    return [...vistas.values()];
-  }, [eventos]);
-
   const titulos = useMemo(() => {
     const cont = new Map<string, number>();
     for (const ev of eventos) cont.set(ev.nome, (cont.get(ev.nome) || 0) + 1);
     return [...cont.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t);
   }, [eventos]);
 
-  const areaValida = area && areas.some((a) => a.nome.toLowerCase() === area.toLowerCase()) ? area : "";
+  // Colunas só dos ministérios escolhidos no filtro da barra (vazio = todas)
+  const filtroAreas = useMemo(() => new Set(areasVisiveis.map((a) => a.trim().toLowerCase())), [areasVisiveis]);
+  const filtrandoAreas = filtroAreas.size > 0;
 
   const linhas = useMemo(() => {
     return eventos
       .filter((ev) => !filtroEvento || ev.nome === filtroEvento)
       .map((ev) => {
-        if (!areaValida) return ev;
+        if (!filtrandoAreas) return ev;
         const inst: Record<string, SlotInstrumento> = {};
         for (const [k, s] of Object.entries(ev.instrumentos || {}))
-          if (s.areaNome.trim().toLowerCase() === areaValida.toLowerCase()) inst[k] = s;
+          if (filtroAreas.has(s.areaNome.trim().toLowerCase())) inst[k] = s;
         return { ...ev, instrumentos: inst };
       })
-      .filter((ev) => !areaValida || Object.keys(ev.instrumentos).length > 0);
-  }, [eventos, filtroEvento, areaValida]);
+      .filter((ev) => !filtrandoAreas || Object.keys(ev.instrumentos).length > 0);
+  }, [eventos, filtroEvento, filtroAreas, filtrandoAreas]);
 
   const colunas = useMemo(() => montarColunas(linhas), [linhas]);
   const nomes = useMemo(() => apelidos(eventos), [eventos]);
@@ -797,29 +785,6 @@ const EscalaPlanilha: React.FC<PlanilhaProps> = ({
   return (
     <section className="pl" aria-label="Escala em planilha">
       <div className="pl-filtros">
-        <div className="pl-abas" role="tablist" aria-label="Ministério">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={!areaValida}
-            className={!areaValida ? "ativo" : ""}
-            onClick={() => onArea("")}
-          >
-            Todos
-          </button>
-          {areas.map((a) => (
-            <button
-              key={a.nome}
-              type="button"
-              role="tab"
-              aria-selected={areaValida.toLowerCase() === a.nome.toLowerCase()}
-              className={areaValida.toLowerCase() === a.nome.toLowerCase() ? "ativo" : ""}
-              onClick={() => onArea(a.nome)}
-            >
-              {a.nome}
-            </button>
-          ))}
-        </div>
         {titulos.length > 1 && (
           <label className="pl-filtro-evento">
             <span>Eventos</span>

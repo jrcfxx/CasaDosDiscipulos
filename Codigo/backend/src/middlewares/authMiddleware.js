@@ -113,7 +113,9 @@ const verificarToken = async (req, res, next) => {
       }
     }
 
-    SessaoService.tocar(sessao.id_sessao, sessao.ociosaSeg);
+    // Checagens automáticas da tela (ex.: contador de notificações) não contam como uso:
+    // senão a sessão nunca ficaria ociosa enquanto a aba estivesse aberta.
+    if (req.headers["x-atividade"] !== "fundo") SessaoService.tocar(sessao.id_sessao, sessao.ociosaSeg);
     req.usuario = { id_usuario: usuario.id_usuario, tipo: usuario.tipo };
     req.sessao = { id_sessao: sessao.id_sessao, id_usuario: usuario.id_usuario };
     next();

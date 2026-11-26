@@ -50,7 +50,10 @@ app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || true,
+    // Sem CORS_ORIGIN: em produção nenhum outro site é aceito; no desenvolvimento, qualquer origem
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim()).filter(Boolean)
+      : process.env.NODE_ENV !== "production",
     credentials: true,
   })
 );

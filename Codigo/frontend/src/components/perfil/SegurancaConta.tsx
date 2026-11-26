@@ -369,7 +369,7 @@ const SegurancaConta: React.FC<Props> = ({ avisar }) => {
         {topo(
           "celular",
           "Aparelhos conectados",
-          "Onde sua conta está aberta. Por segurança, ela sai sozinha após alguns dias sem uso.",
+          "Onde sua conta está aberta. Por segurança, ela sai sozinha após 1 hora sem uso.",
           `${idBase}-aparelhos`
         )}
         {!carregando && (

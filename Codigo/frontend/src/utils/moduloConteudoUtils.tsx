@@ -109,6 +109,8 @@ function renderVideoPreview(url: string): React.ReactNode {
 
   const embedUrl = convertToEmbedUrl(url);
   if (!embedUrl) {
+    // Só vira link endereço http(s): um texto como "javascript:..." fica como texto
+    if (!/^https?:\/\//i.test(url.trim())) return <span>{url}</span>;
     return (
       <a href={url} target="_blank" rel="noopener noreferrer">
         {url}

@@ -295,8 +295,18 @@ export function NotificationsBell({
       }
     };
     fetchCount();
-    const interval = setInterval(fetchCount, 60000);
-    return () => clearInterval(interval);
+    // Com a aba escondida não consulta; ao voltar para a aba, atualiza na hora
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchCount();
+    }, 60000);
+    const aoVoltar = () => {
+      if (!document.hidden) fetchCount();
+    };
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", aoVoltar);
+    };
   }, [refreshTrigger]);
   return (
     <button

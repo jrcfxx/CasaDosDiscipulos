@@ -62,7 +62,8 @@ const CelulaModel = {
       .first();
     if (!row) return null;
     const lideresRows = await knex("celula_lider")
-      .select("usuario.id_usuario", "usuario.nome", "usuario.email", "celula_lider.principal")
+      // Sem e-mail: qualquer membro logado consulta a célula (dado pessoal só para quem precisa)
+      .select("usuario.id_usuario", "usuario.nome", "celula_lider.principal")
       .join("usuario", "celula_lider.id_usuario", "usuario.id_usuario")
       .where({ "celula_lider.id_celula": id_celula })
       .orderBy("celula_lider.principal", "desc")
@@ -70,7 +71,6 @@ const CelulaModel = {
     const lideres = lideresRows.map((l) => ({
       id_usuario: l.id_usuario,
       nome: l.nome,
-      email: l.email,
       principal: Boolean(l.principal),
     }));
     return this._parseLideres({ ...row, lideres });

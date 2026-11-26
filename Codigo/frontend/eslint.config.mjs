@@ -24,6 +24,9 @@ export default tseslint.config(
       // Hooks fora de ordem quebram o React: erro
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+      // Caixas do navegador (alert/confirm/prompt) nunca: use ConfirmModal, Toast ou um modal do site
+      "no-alert": "error",
+      "no-restricted-globals": ["error", "alert", "confirm", "prompt"],
       // Variáveis não usadas: aviso (prefixo _ = intencional)
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" }],
       "no-unused-vars": "off",

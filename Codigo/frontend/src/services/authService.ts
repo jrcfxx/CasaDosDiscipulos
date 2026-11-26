@@ -144,13 +144,20 @@ class AuthService {
     }
   }
 
-  consumirAviso(): string | null {
+  /** Lê o aviso sem apagar (a tela apaga depois de mostrar, com limparAviso) */
+  verAviso(): string | null {
     try {
-      const msg = sessionStorage.getItem(AVISO_KEY);
-      sessionStorage.removeItem(AVISO_KEY);
-      return msg;
+      return sessionStorage.getItem(AVISO_KEY);
     } catch {
       return null;
+    }
+  }
+
+  limparAviso(): void {
+    try {
+      sessionStorage.removeItem(AVISO_KEY);
+    } catch {
+      /* ignore */
     }
   }
 

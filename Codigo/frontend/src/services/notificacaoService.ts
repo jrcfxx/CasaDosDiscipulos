@@ -23,7 +23,8 @@ const notificacaoService = {
   },
 
   async getCountNaoLidas(): Promise<number> {
-    const response = await apiClient.get("/notificacoes/count");
+    // Checagem automática: o servidor não conta como uso (o logout por inatividade continua valendo)
+    const response = await apiClient.get("/notificacoes/count", { headers: { "X-Atividade": "fundo" } });
     return response.data.count ?? 0;
   },
 
