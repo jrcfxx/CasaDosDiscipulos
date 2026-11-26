@@ -29,11 +29,12 @@ function gruposPortal(admin: boolean, liderCelula: boolean, liderMinisterio: boo
     {
       titulo: "Na Casa",
       itens: [
-        { to: "/usuario/escala", nome: "Escala", descricao: "Calendário e onde você serve", icone: "calendario" },
-        ...(admin || liderMinisterio
-          ? [{ to: "/usuario/escala/meus-ministerios", nome: "Meus ministérios", descricao: "Monte a escala da sua equipe", icone: "equipe" as NomeIcone }]
-          : []),
-        { to: "/usuario/escala/mapa", nome: "Mapa da Escala", descricao: "Visão geral dos eventos", icone: "mapa" },
+        {
+          to: "/usuario/escala",
+          nome: "Escala",
+          descricao: admin || liderMinisterio ? "Monte a escala e veja onde você serve" : "Onde você serve e quem serve junto",
+          icone: "calendario",
+        },
         { to: "/usuario/fala-ai", nome: "Fala Aí, Discípulo", descricao: "Devocional e palavra do dia", icone: "conversa" },
       ],
     },

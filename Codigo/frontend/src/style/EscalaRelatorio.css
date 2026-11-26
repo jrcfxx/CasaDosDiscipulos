@@ -1,8 +1,8 @@
 .escala-relatorio {
   margin-top: 1.75rem;
   border-radius: 14px;
-  border: 1px solid rgba(2, 122, 143, 0.35);
-  background: linear-gradient(160deg, rgba(2, 134, 155, 0.115), rgba(255, 255, 255, 0.96));
+  border: 1px solid rgba(243, 237, 226, 0.14);
+  background: #0b0e0f;
   overflow: hidden;
   font-family: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
 }
@@ -13,7 +13,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1.1rem 1.25rem;
-  border-bottom: 1px solid rgba(18, 50, 58, 0.12);
+  border-bottom: 1px solid rgba(243, 237, 226, 0.1);
 }
 
 .escala-relatorio__eyebrow {
@@ -22,29 +22,29 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .escala-relatorio__titulo {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .escala-relatorio__subtitulo {
   margin: 0.35rem 0 0;
   font-size: 0.85rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.72);
 }
 
 .escala-relatorio__toggle {
   flex-shrink: 0;
   padding: 0.4rem 0.85rem;
   border-radius: 8px;
-  border: 1px solid rgba(2, 122, 143, 0.45);
-  background: rgba(2, 134, 155, 0.16);
-  color: #00626f;
+  border: 1px solid rgba(243, 237, 226, 0.14);
+  background: rgba(228, 200, 143, 0.12);
+  color: #e4c88f;
   font-family: inherit;
   font-size: 0.8rem;
   font-weight: 600;
@@ -52,8 +52,8 @@
 }
 
 .escala-relatorio__toggle:hover {
-  background: rgba(2, 134, 155, 0.16);
-  color: #12323a;
+  background: rgba(228, 200, 143, 0.12);
+  color: #f3ede2;
 }
 
 .escala-relatorio__body {
@@ -71,9 +71,9 @@
   margin: 0;
   padding: 0.55rem 0.75rem;
   border-radius: 8px;
-  background: rgba(244, 176, 2, 0.156);
-  border: 1px solid rgba(244, 176, 2, 0.35);
-  color: #00626f;
+  background: rgba(228, 200, 143, 0.1);
+  border: 1px solid rgba(228, 200, 143, 0.4);
+  color: #e4c88f;
   font-size: 0.85rem;
   font-weight: 600;
 }
@@ -86,10 +86,11 @@
 }
 
 .escala-relatorio__kpi {
-  padding: 0.75rem 0.65rem;
+  padding: 0.75rem 0.4rem;
+  min-width: 0;
   border-radius: 10px;
-  background: rgba(18, 50, 58, 0.04);
-  border: 1px solid rgba(18, 50, 58, 0.12);
+  background: rgba(243, 237, 226, 0.05);
+  border: 1px solid rgba(243, 237, 226, 0.1);
   text-align: center;
 }
 
@@ -97,18 +98,18 @@
   display: block;
   font-size: 1.35rem;
   font-weight: 800;
-  color: #7a4f00;
+  color: #eed9ad;
   line-height: 1.1;
 }
 
 .escala-relatorio__kpi-label {
   display: block;
   margin-top: 0.35rem;
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   font-weight: 600;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.72);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .escala-relatorio__grid {
@@ -120,8 +121,8 @@
 .escala-relatorio__card {
   padding: 0.95rem 1rem;
   border-radius: 12px;
-  background: rgba(18, 50, 58, 0.033);
-  border: 1px solid rgba(18, 50, 58, 0.12);
+  background: rgba(243, 237, 226, 0.05);
+  border: 1px solid rgba(243, 237, 226, 0.1);
   min-width: 0;
 }
 
@@ -133,27 +134,27 @@
   margin: 0 0 0.65rem;
   font-size: 0.92rem;
   font-weight: 700;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .escala-relatorio__card h4 {
   margin: 0 0 0.45rem;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #00626f;
+  color: #e4c88f;
 }
 
 .escala-relatorio__hint {
   margin: -0.25rem 0 0.65rem;
   font-size: 0.78rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.72);
   line-height: 1.4;
 }
 
 .escala-relatorio__vazio {
   margin: 0;
   font-size: 0.85rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.72);
 }
 
 .escala-relatorio__lista {
@@ -163,11 +164,11 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.86rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.72);
 }
 
 .escala-relatorio__lista strong {
-  color: #12323a;
+  color: #f3ede2;
   font-weight: 700;
 }
 
@@ -183,23 +184,23 @@
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 700;
-  background: rgba(2, 134, 155, 0.16);
-  color: #00626f;
+  background: rgba(228, 200, 143, 0.12);
+  color: #e4c88f;
 }
 
 .escala-relatorio__chip.status-rascunho {
-  background: rgba(18, 50, 58, 0.12);
-  color: #3c4142;
+  background: rgba(243, 237, 226, 0.1);
+  color: rgba(243, 237, 226, 0.72);
 }
 
 .escala-relatorio__chip.status-publicada {
-  background: rgba(2, 134, 155, 0.16);
-  color: #00626f;
+  background: rgba(228, 200, 143, 0.12);
+  color: #e4c88f;
 }
 
 .escala-relatorio__chip.status-concluida {
-  background: rgba(2, 134, 155, 0.16);
-  color: #00626f;
+  background: rgba(228, 200, 143, 0.12);
+  color: #e4c88f;
 }
 
 .escala-relatorio__ranking {
@@ -217,14 +218,14 @@
   align-items: flex-start;
   padding: 0.4rem 0.5rem;
   border-radius: 8px;
-  background: rgba(2, 134, 155, 0.092);
+  background: rgba(228, 200, 143, 0.12);
 }
 
 .escala-relatorio__pos {
   flex-shrink: 0;
   min-width: 1.6rem;
   font-weight: 800;
-  color: #7a4f00;
+  color: #eed9ad;
   font-size: 0.85rem;
 }
 
@@ -237,12 +238,12 @@
 
 .escala-relatorio__pessoa strong {
   font-size: 0.88rem;
-  color: #12323a;
+  color: #f3ede2;
 }
 
 .escala-relatorio__pessoa span {
   font-size: 0.75rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.72);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -262,14 +263,14 @@
   justify-content: space-between;
   gap: 0.5rem;
   font-size: 0.82rem;
-  color: #3c4142;
+  color: rgba(243, 237, 226, 0.72);
   margin-bottom: 0.2rem;
 }
 
 .escala-relatorio__barra {
   height: 6px;
   border-radius: 999px;
-  background: rgba(18, 50, 58, 0.088);
+  background: rgba(243, 237, 226, 0.05);
   overflow: hidden;
 }
 
@@ -281,11 +282,11 @@
 }
 
 .escala-relatorio__barra-fill--teal {
-  background: linear-gradient(90deg, #027a8f, #00b5d2);
+  background: linear-gradient(90deg, #b89a5e, #e4c88f);
 }
 
 .escala-relatorio__barra-fill--gold {
-  background: linear-gradient(90deg, #b8860b, #f4b002);
+  background: linear-gradient(90deg, rgba(243, 237, 226, 0.45), #f3ede2);
 }
 
 .escala-relatorio__barra-fill--warn {
@@ -312,8 +313,8 @@
   width: 100%;
   text-align: left;
   border: none;
-  background: rgba(18, 50, 58, 0.04);
-  color: #12323a;
+  background: rgba(243, 237, 226, 0.05);
+  color: #f3ede2;
   border-radius: 8px;
   padding: 0.45rem 0.55rem;
   font-family: inherit;
@@ -322,8 +323,8 @@
 }
 
 .escala-relatorio__link-ev:hover {
-  background: rgba(2, 134, 155, 0.16);
-  color: #12323a;
+  background: rgba(228, 200, 143, 0.12);
+  color: #f3ede2;
 }
 
 .escala-relatorio__slots-faltando {
@@ -331,7 +332,7 @@
   margin-top: 0.2rem;
   padding-left: 0.35rem;
   font-size: 0.72rem;
-  color: #7a4f00;
+  color: #eed9ad;
 }
 
 @media (max-width: 960px) {

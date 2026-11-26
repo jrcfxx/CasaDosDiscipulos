@@ -5,11 +5,6 @@
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const MESES_LONGOS = [
-  "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-  "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
-];
-
 /** Date → "AAAA-MM-DD" (data local) */
 export function toIsoDate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -58,31 +53,6 @@ export function referenciaDe(data: string): ReferenciaEscala {
 export function dataDoMes(ano: number, mes: number, hoje: Date = new Date()): string {
   if (hoje.getFullYear() === ano && hoje.getMonth() + 1 === mes) return toIsoDate(hoje);
   return `${ano}-${pad(mes)}-01`;
-}
-
-/** "8 – 14 de novembro de 2026", "29 de novembro – 5 de dezembro de 2026", "28 de dezembro de 2026 – 3 de janeiro de 2027" */
-export function tituloSemana(dataInicio: string): string {
-  const ini = deIso(dataInicio);
-  const fim = deIso(somarDias(dataInicio, 6));
-  const mIni = MESES_LONGOS[ini.getMonth()];
-  const mFim = MESES_LONGOS[fim.getMonth()];
-  if (ini.getFullYear() !== fim.getFullYear()) {
-    return `${ini.getDate()} de ${mIni} de ${ini.getFullYear()} – ${fim.getDate()} de ${mFim} de ${fim.getFullYear()}`;
-  }
-  if (ini.getMonth() !== fim.getMonth()) {
-    return `${ini.getDate()} de ${mIni} – ${fim.getDate()} de ${mFim} de ${fim.getFullYear()}`;
-  }
-  return `${ini.getDate()} – ${fim.getDate()} de ${mFim} de ${fim.getFullYear()}`;
-}
-
-/** "quarta-feira, 25 de novembro de 2026" */
-export function tituloDia(data: string): string {
-  return deIso(data).toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 }
 
 const STATUS: Record<string, string> = {

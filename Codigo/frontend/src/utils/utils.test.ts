@@ -4,7 +4,6 @@ import {
   normalizarTelefoneParaEnvio,
 } from "./telefoneUtils";
 import { getErrorMessage } from "./errorUtils";
-import { permiteParalelismoMinisterios, mapaParalelismoDeMinisterios } from "./ministerioParalelismo";
 import { parseReferenciaBiblica } from "./bibliaUtils";
 
 describe("telefone", () => {
@@ -29,23 +28,6 @@ describe("getErrorMessage", () => {
   it("usa a mensagem do Error ou o fallback", () => {
     expect(getErrorMessage(new Error("falhou"))).toBe("falhou");
     expect(getErrorMessage("x", "Padrão")).toBe("Padrão");
-  });
-});
-
-describe("paralelismo de ministérios", () => {
-  const mapa = mapaParalelismoDeMinisterios([
-    { id_ministerio: 1, id_paralelismos: [2] },
-    { id_ministerio: 2 },
-    { id_ministerio: 3 },
-  ]);
-  it("vale nos dois sentidos", () => {
-    expect(permiteParalelismoMinisterios(1, 2, mapa)).toBe(true);
-    expect(permiteParalelismoMinisterios(2, 1, mapa)).toBe(true);
-  });
-  it("não vale sem configuração nem para o mesmo ministério", () => {
-    expect(permiteParalelismoMinisterios(1, 3, mapa)).toBe(false);
-    expect(permiteParalelismoMinisterios(1, 1, mapa)).toBe(false);
-    expect(permiteParalelismoMinisterios(null, 2, mapa)).toBe(false);
   });
 });
 

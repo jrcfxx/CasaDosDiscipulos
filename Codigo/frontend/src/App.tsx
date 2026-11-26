@@ -38,7 +38,6 @@ import PreencherModulosEscolaDiscipulosUser from "./pages/PreencherModulosEscola
 import LicaoSecretariaCelulaUser from "./pages/LicaoSecretariaCelulaUser";
 import FormulariosSecretariaCelulasLeader from "./pages/FormulariosSecretariaCelulasLeader";
 import EscalaUser from "./pages/EscalaUser";
-import EscalaMapa from "./pages/EscalaMapa";
 import FalaAiDiscipulo from "./pages/FalaAiDiscipulo";
 import FalaAiDiscipuloAdmin from "./pages/FalaAiDiscipuloAdmin";
 
@@ -310,22 +309,9 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/usuario/escala/meus-ministerios"
-        element={
-          <ProtectedRoute requireLiderMinisterio>
-            <EscalaUser key="meus-ministerios" modo="meus" />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/usuario/escala/mapa"
-        element={
-          <ProtectedRoute>
-            <EscalaMapa />
-          </ProtectedRoute>
-        }
-      />
+      {/* Antigas abas "Meus ministérios" e "Mapa": agora são a aba Escala da Casa (com filtro de ministérios) */}
+      <Route path="/usuario/escala/meus-ministerios" element={<Navigate to="/usuario/escala?ver=calendario" replace />} />
+      <Route path="/usuario/escala/mapa" element={<Navigate to="/usuario/escala?ver=calendario" replace />} />
 
       {/* Fala Aí Discípulo - Devocional e Palavra do dia */}
       <Route

@@ -875,8 +875,8 @@ export default function GerenciarUsuarios() {
                             <span className={`gr-selo gr-selo--${ativo ? u.tipo : "cinza"}`}>
                               {ativo ? tipoLabels[u.tipo] : "Inativo"}
                             </span>
-                            {ativo && u.tipo === "lider" && u.lider_celula && <span className="gr-selo gr-selo--leve">Célula</span>}
-                            {ativo && u.tipo === "lider" && u.lider_ministerio && <span className="gr-selo gr-selo--leve">Ministério</span>}
+                            {ativo && u.tipo === "lider" && !!u.lider_celula && <span className="gr-selo gr-selo--leve">Célula</span>}
+                            {ativo && u.tipo === "lider" && !!u.lider_ministerio && <span className="gr-selo gr-selo--leve">Ministério</span>}
                           </div>
                           <span className="gr-pessoa__nivel">
                             <span className="gr-pessoa__rotulo">Nível</span>

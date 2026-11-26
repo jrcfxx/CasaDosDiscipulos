@@ -21,8 +21,6 @@ const ROUTE_TITLES: Record<string, string> = {
   "/usuario/licoes": "Casa dos Discípulos – Lições",
   "/usuario/formularios": "Casa dos Discípulos – Formulários",
   "/usuario/escala": "Casa dos Discípulos – Escala",
-  "/usuario/escala/mapa": "Casa dos Discípulos – Mapa da escala",
-  "/usuario/escala/meus-ministerios": "Casa dos Discípulos – Meus ministérios",
   "/usuario/fala-ai": "Casa dos Discípulos – Fala Aí, Discípulo",
   "/perfil": "Casa dos Discípulos – Meu perfil",
   "/usuario/staff": "Casa dos Discípulos – Staff e Estrutura",

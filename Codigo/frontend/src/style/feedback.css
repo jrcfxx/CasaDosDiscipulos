@@ -1,6 +1,6 @@
 /*
  * Feedback de ações demoradas (salvar, enviar, excluir...)
- * Usado por BotaoCarregando, ConfirmModal, InputModal e telas que mostram progresso.
+ * Usado por BotaoCarregando, ConfirmModal e telas que mostram progresso.
  */
 
 .btn-spinner {

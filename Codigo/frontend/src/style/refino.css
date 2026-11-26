@@ -33,10 +33,6 @@ body {
 }
 
 /* Funções da escala (microfone, violão, teclado...): teal claro da marca */
-body:not(#_) .quadro-slot-header .icone {
-  color: #e4c88f;
-  margin-right: 0.15rem;
-}
 
 /* Ícone no cabeçalho dos modais (usuário, nível, ministério, célula): teal da marca */
 body:not(#_) .cd-modal-icon{
@@ -155,9 +151,7 @@ body:not(#_) :is(
   .cf-save,
   .btn-evento-salvar,
   .notif-modal-btn-primary,
-  .staff-btn--primario,
-  .btn-tpl-pri-sm,
-  .btn-tpl-novo
+  .staff-btn--primario
 ) {
   background: #e4c88f;
   color: #15130f;
@@ -177,9 +171,7 @@ body:not(#_) :is(
   .cf-save,
   .btn-evento-salvar,
   .notif-modal-btn-primary,
-  .staff-btn--primario,
-  .btn-tpl-pri-sm,
-  .btn-tpl-novo
+  .staff-btn--primario
 ):hover:not(:disabled) {
   background: #eed9ad;
   border-color: #eed9ad;
@@ -189,8 +181,6 @@ body:not(#_) :is(
 body:not(#_) :is(
   .btn-evento-cancelar,
   .notif-modal-btn-secondary,
-  .btn-tpl-sec,
-  .btn-tpl-cancelar,
   .btn-busca-cancelar,
   .btn-edit,
   .btn-toggle
@@ -208,8 +198,6 @@ body:not(#_) :is(
 body:not(#_) :is(
   .btn-evento-cancelar,
   .notif-modal-btn-secondary,
-  .btn-tpl-sec,
-  .btn-tpl-cancelar,
   .btn-busca-cancelar,
   .btn-edit,
   .btn-toggle

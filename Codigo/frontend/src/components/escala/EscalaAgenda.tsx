@@ -24,12 +24,11 @@ export function resumoAreas(ev: EventoUnificado) {
 interface Props {
   visao: VisualizacaoMes;
   onAbrirEvento: (id: number) => void;
-  onAbrirDia: (data: string) => void;
   podeEditar: boolean;
 }
 
 /** Agenda: lista cronológica dos eventos do mês, com a equipe de cada um */
-const EscalaAgenda: React.FC<Props> = ({ visao, onAbrirEvento, onAbrirDia, podeEditar }) => {
+const EscalaAgenda: React.FC<Props> = ({ visao, onAbrirEvento, podeEditar }) => {
   const hoje = toIsoDate(new Date());
   const dias = (visao.dias || []).filter((d) => d.eventos.length > 0);
 
@@ -49,17 +48,11 @@ const EscalaAgenda: React.FC<Props> = ({ visao, onAbrirEvento, onAbrirDia, podeE
         const classeDia = dia.data === hoje ? " agenda-dia--hoje" : dia.data < hoje ? " agenda-dia--passado" : "";
         return (
           <li key={dia.data} className={`agenda-dia${classeDia}`}>
-            <button
-              type="button"
-              className="agenda-dia__data"
-              onClick={() => onAbrirDia(dia.data)}
-              title="Abrir o dia"
-              aria-label={`Abrir ${dia.diaDaSemana}, ${dia.diaNumero}`}
-            >
+            <h3 className="agenda-dia__data" aria-label={`${dia.diaDaSemana}, ${dia.diaNumero} de ${MESES_CURTOS[d.getMonth()]}`}>
               <span className="agenda-dia__semana">{dia.diaDaSemana.slice(0, 3)}</span>
               <span className="agenda-dia__numero">{dia.diaNumero}</span>
               <span className="agenda-dia__mes">{MESES_CURTOS[d.getMonth()]}</span>
-            </button>
+            </h3>
             <div className="agenda-dia__eventos">
               {dia.eventos.map((ev) => {
                 const areas = resumoAreas(ev);

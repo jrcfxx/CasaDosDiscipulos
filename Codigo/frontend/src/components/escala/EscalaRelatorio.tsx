@@ -129,7 +129,7 @@ const EscalaRelatorio: React.FC<Props> = ({ titulo, subtitulo, estatisticas, onA
             </article>
             <article className="escala-relatorio__kpi">
               <span className="escala-relatorio__kpi-valor">{s.taxaPreenchimento ?? 0}%</span>
-              <span className="escala-relatorio__kpi-label">Preenchimento</span>
+              <span className="escala-relatorio__kpi-label">Preenchido</span>
             </article>
             <article className="escala-relatorio__kpi">
               <span className="escala-relatorio__kpi-valor">{s.mediaPessoasPorEvento ?? 0}</span>

@@ -2,7 +2,8 @@
  * Escala no visual escuro da Casa: moldura sc- (topo em painel) e corpo escuro com creme e dourado champanhe.
  * Redefine os tokens --esc-* (EscalaUser.css / EscalaNova.css) e --sc-* (moldura) para o tema escuro. Prefixo es-.
  */
-.sc-pagina.es.escala-page {
+.sc-pagina.es.escala-page,
+.esc-gaveta-raiz.sc-tema-escuro {
   color-scheme: dark;
   --esc-sup: #0f1314;
   --esc-sup-2: #151a1b;
@@ -117,14 +118,7 @@
 }
 
 /* Intervalo de semanas e filtro de ministérios: cartões claros */
-.es .esc-intervalo,
-.es .filtro-ministerios {
-  margin: 0;
-  padding: 0.75rem 0.9rem;
-  background: #0f1314;
-  border: 1px solid var(--sc-borda);
-  border-radius: 14px;
-}
+
 
 /* Calendário/lista ocupam a largura do corpo */
 .es .escala-layout {
@@ -157,264 +151,29 @@
   }
 }
 
-/* ==================== Mês (calendário) ==================== */
-.es .escala-calendario {
-  padding: 0;
-  overflow: hidden;
-  background: #0f1314;
-  border: 1px solid var(--sc-borda);
-  border-radius: 18px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 10px 28px rgba(0, 0, 0, 0.18);
-}
 
-.es .calendario-dias-semana {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  background: #1c2122;
-}
 
-.es .calendario-dias-semana .dia-semana {
-  padding: 0.7rem 0.5rem;
-  color: rgba(235, 235, 235, 0.85);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-align: center;
-}
 
-.es .calendario-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0;
-  background: #0f1314;
-}
 
-.es .calendario-celula {
-  box-shadow: inset -1px -1px 0 #e6e9e9;
-  position: relative;
-  min-height: 112px;
-  padding: 0.45rem;
-  border: none;
-  border-radius: 0;
-  background: #0f1314;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  transition: background 0.12s;
-}
 
-.es .calendario-celula.vazio {
-  background: #0f1314;
-}
 
-.es .calendario-celula.clicavel {
-  cursor: pointer;
-}
 
-.es .calendario-celula.clicavel:hover {
-  background: #0f1314;
-}
 
-.es .calendario-celula.passado,
-.es .calendario-celula.passado:not(.hoje) {
-  background: #0f1314;
-  opacity: 1;
-}
-
-.es .calendario-celula.passado .dia-evento-nome {
-  color: rgba(243, 237, 226, 0.84);
-}
-
-.es .calendario-celula .dia-numero {
-  align-self: flex-start;
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--sc-escuro);
-  font: inherit;
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.es .calendario-celula.passado .dia-numero {
-  color: rgba(243, 237, 226, 0.64);
-  font-weight: 600;
-}
-
-.es .calendario-celula .dia-numero:hover {
-  background: #151a1b;
-}
-
-.es .calendario-celula .dia-numero:focus-visible {
-  outline: 2px solid var(--sc-teal);
-  outline-offset: 1px;
-}
-
-.es .calendario-celula.hoje {
-  background: rgba(228, 200, 143, 0.13);
-  box-shadow: inset 0 0 0 2px var(--sc-dourado);
-  z-index: 1;
-}
-
-.es .calendario-celula.hoje .dia-numero {
-  background: var(--sc-dourado);
-  color: #15130f;
-  font-weight: 800;
-}
-
-.es .calendario-celula .dia-contagem {
-  display: none;
-}
-
-.es .dia-eventos {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.es .dia-evento-nome {
-  display: block;
-  width: 100%;
-  padding: 0.3rem 0.45rem;
-  border: none;
-  border-left: 3px solid var(--sc-teal);
-  border-radius: 6px;
-  background: #151a1b;
-  color: var(--sc-escuro);
-  font: inherit;
-  font-size: 0.76rem;
-  font-weight: 600;
-  line-height: 1.3;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  transition: background 0.12s, transform 0.12s;
-}
-
-.es .dia-evento-nome:hover {
-  background: rgba(228, 200, 143, 0.13);
-}
-
-.es .dia-evento-nome:focus-visible {
-  outline: 2px solid var(--sc-teal);
-  outline-offset: 1px;
-}
-
-.es .dia-evento-nome.status-rascunho {
-  border-left-color: var(--sc-dourado);
-  background: rgba(228, 200, 143, 0.13);
-}
-
-.es .dia-evento-nome.status-concluida {
-  border-left-color: rgba(243, 237, 226, 0.14);
-  background: #151a1b;
-  color: rgba(243, 237, 226, 0.84);
-}
-
-.es .dia-evento-mais {
-  padding-left: 0.3rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--sc-teal-escuro);
-}
-
-.es .calendario-resumo {
-  margin: 0;
-  padding: 0.7rem 1rem;
-  border-top: 1px solid rgba(243, 237, 226, 0.14);
-  background: #0f1314;
-  color: var(--sc-suave);
-  font-size: 0.82rem;
-  text-align: right;
-}
 
 /* Legenda dos estados */
-.es-legenda {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 1rem;
-  margin: 0;
-  padding: 0 0.25rem;
-  list-style: none;
-  font-size: 0.8rem;
-  color: var(--sc-suave);
-}
 
-.es-legenda li {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
 
-.es-legenda__marca {
-  display: inline-block;
-  box-sizing: border-box;
-  width: 16px;
-  height: 10px;
-  border-radius: 3px;
-  border-left: 3px solid var(--sc-teal);
-  background: #151a1b;
-}
 
-.es-legenda__marca--rascunho {
-  border-left-color: var(--sc-dourado);
-  background: rgba(228, 200, 143, 0.13);
-}
 
-.es-legenda__marca--concluida {
-  border-left-color: rgba(243, 237, 226, 0.14);
-  background: #151a1b;
-}
 
-.es-legenda__marca--hoje {
-  width: 12px;
-  height: 12px;
-  border: none;
-  border-radius: 50%;
-  background: var(--sc-dourado);
-}
 
-@media (max-width: 760px) {
-  .es .calendario-celula {
-    min-height: 64px;
-    padding: 0.3rem;
-    align-items: center;
-  }
 
-  .es .calendario-celula .dia-numero {
-    align-self: center;
-  }
 
-  .es .dia-eventos {
-    display: none;
-  }
 
-  .es .calendario-celula.tem-evento::after {
-    content: "";
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--sc-teal);
-  }
 
-  .es .calendario-dias-semana .dia-semana {
-    font-size: 0.62rem;
-    letter-spacing: 0.04em;
-    padding: 0.55rem 0.1rem;
-  }
-}
+
+
+
 
 /* ==================== Janela do evento ==================== */
 .es .modal-escala-overlay {
@@ -569,14 +328,9 @@
 }
 
 /* ==================== Semana(s) ==================== */
-.es .quadro-toolbar {
-  padding: 0 0.25rem;
-}
 
-.es .quadro-stats {
-  color: var(--sc-suave);
-  opacity: 1;
-}
+
+
 
 .es .semana-bloco {
   padding: 1rem;
@@ -586,64 +340,29 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
-.es .semana-bloco__topo {
-  border-bottom: none;
-  padding-bottom: 0;
-}
 
-.es .semana-bloco__titulo {
-  color: var(--sc-escuro);
-  font-weight: 800;
-}
 
-.es .semana-coluna {
-  background: #0f1314;
-  border: 1px solid rgba(243, 237, 226, 0.14);
-  border-radius: 12px;
-  opacity: 1;
-}
 
-.es .semana-coluna.passado {
-  background: #0f1314;
-  opacity: 1;
-}
 
-.es .semana-coluna.passado .semana-dia-header {
-  opacity: 0.7;
-}
 
-.es .semana-coluna.hoje {
-  background: rgba(228, 200, 143, 0.13);
-  border-color: var(--sc-dourado);
-  box-shadow: inset 0 0 0 1px var(--sc-dourado);
-}
+
+
+
+
+
+
 
 .es .semana-dia-header {
   border-bottom: 1px solid rgba(243, 237, 226, 0.14);
 }
 
-.es .semana-dia-nome {
-  color: var(--sc-suave);
-  text-transform: uppercase;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  opacity: 1;
-}
 
-.es .semana-dia-numero {
-  color: var(--sc-escuro);
-  font-weight: 800;
-}
 
-.es .semana-coluna.hoje .semana-dia-numero {
-  color: #e4c88f;
-}
 
-.es .semana-vazio {
-  color: rgba(243, 237, 226, 0.64);
-  opacity: 1;
-}
+
+
+
+
 
 .es .semana-evento {
   background: #0f1314;
@@ -662,25 +381,13 @@
   border-left-color: rgba(243, 237, 226, 0.14);
 }
 
-.es .semana-evento-titulo {
-  color: var(--sc-escuro);
-  font-weight: 700;
-}
 
-.es .semana-evento-preview {
-  color: var(--sc-suave);
-  opacity: 1;
-}
 
-.es .semana-btn-expandir {
-  background: #151a1b;
-  color: var(--sc-teal-escuro);
-  border-radius: 8px;
-}
 
-.es .semana-btn-expandir:hover {
-  background: rgba(228, 200, 143, 0.13);
-}
+
+
+
+
 
 /* Quadro (áreas, funções e pessoas) — usado na semana e no dia */
 .es .quadro-area {
@@ -690,9 +397,7 @@
   border-radius: 10px;
 }
 
-.es .quadro-area__total {
-  color: var(--sc-suave);
-}
+
 
 .es .quadro-slot {
   background: #0f1314;
@@ -700,211 +405,71 @@
   border-radius: 8px;
 }
 
-.es .quadro-slot-header {
-  color: var(--sc-escuro);
-  font-weight: 700;
-}
 
-.es .quadro-chip {
-  background: #0f1314;
-  border: 1px solid rgba(243, 237, 226, 0.14);
-  border-radius: 999px;
-  color: var(--sc-escuro);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
-}
 
-.es .quadro-chip:hover {
-  border-color: var(--sc-teal);
-}
 
-.es .quadro-chip-nome {
-  color: var(--sc-escuro);
-  font-weight: 600;
-}
 
-.es .quadro-chip-avatar {
-  background: linear-gradient(145deg, #2a2419, #15130f);
-  color: var(--sc-dourado);
-}
 
-.es .quadro-add {
-  border: 1.5px dashed rgba(228, 200, 143, 0.45);
-  background: #0f1314;
-  color: var(--sc-teal-escuro);
-  border-radius: 8px;
-}
 
-.es .quadro-add:hover {
-  background: #151a1b;
-  border-color: var(--sc-teal);
-}
+
+
+
+
+
+
+
 
 /* ==================== Filtro de ministérios (Meus ministérios) ==================== */
-.es .filtro-ministerios {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-}
 
-.es .filtro-ministerios__rotulo {
-  flex: none;
-  padding-top: 0.45rem;
-  color: var(--sc-suave);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
 
-.es .filtro-ministerios__lista {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
 
-.es .filtro-ministerio {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  min-height: 34px;
-  padding: 0.25rem 0.8rem;
-  border: 1px solid rgba(243, 237, 226, 0.14);
-  border-radius: 999px;
-  background: #0f1314;
-  color: var(--sc-texto);
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: none;
-}
 
-.es .filtro-ministerio:hover {
-  border-color: var(--sc-teal);
-}
 
-.es .filtro-ministerio.ativo {
-  border-color: var(--sc-teal);
-  background: #151a1b;
-  color: var(--sc-teal-escuro);
-}
 
-.es .filtro-ministerio:focus-visible,
-.es .filtro-ministerio-todos:focus-visible {
-  outline: 2px solid var(--sc-teal);
-  outline-offset: 2px;
-}
 
-.es .filtro-ministerio-todos {
-  min-height: 34px;
-  padding: 0.25rem 0.6rem;
-  border: none;
-  background: none;
-  color: var(--sc-teal-escuro);
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
+
+
+
+
+
+
 
 /* ==================== Mapa ==================== */
-.es .es-mapa {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 0;
-  margin: 0;
-  min-height: 0;
-  background: none;
-}
 
-.es .es-mapa .mapa-topo-acoes {
-  align-self: flex-end;
-}
 
-.es .mapa-navegacao {
-  margin: 0;
-  background: #0f1314;
-  border: 1px solid var(--sc-borda);
-  border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-}
 
-.es .mapa-evento-chip {
-  background: #0f1314;
-  border: 1px solid var(--sc-borda);
-  color: var(--sc-escuro);
-}
 
-.es .mapa-evento-chip:hover {
-  border-color: var(--sc-teal);
-}
 
-.es .mapa-evento-chip.is-ativo {
-  background: var(--sc-ouro);
-  border-color: var(--sc-ouro);
-  color: #15130f;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
-}
 
-.es .mapa-evento-chip.is-ativo .chip-titulo {
-  color: #15130f;
-}
 
-.es .mapa-evento-chip.is-ativo .chip-hora {
-  color: #3d3424;
-}
 
-.es .mapa-evento-chip.is-ativo .chip-data {
-  background: #15130f;
-  color: #e4c88f;
-}
 
-.es .mapa-evento-destaque {
-  background: radial-gradient(circle at 100% 0%, rgba(228, 200, 143, 0.18), transparent 55%),
-    linear-gradient(160deg, #0b1214 0%, #1c2122 100%);
-  border: none;
-  color: #ffffff;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
-}
 
-.es .mapa-evento-destaque .destaque-rotulo {
-  color: var(--sc-dourado);
-}
 
-.es .mapa-evento-destaque .destaque-titulo {
-  color: #ffffff;
-}
 
-.es .mapa-evento-destaque .destaque-quando,
-.es .mapa-evento-destaque .destaque-dia-extenso,
-.es .mapa-evento-destaque .destaque-desc {
-  color: rgba(235, 235, 235, 0.88);
-}
 
-.es .mapa-evento-destaque .destaque-hora {
-  background: rgba(12, 15, 16, 0.08);
-  color: #ffffff;
-}
 
-.es .mapa-evento-destaque .destaque-numeros > div {
-  background: rgba(12, 15, 16, 0.06);
-  border: 1px solid rgba(243, 237, 226, 0.14);
-}
 
-.es .mapa-evento-destaque .destaque-numeros dt {
-  color: rgba(235, 235, 235, 0.7);
-}
 
-.es .mapa-evento-destaque .destaque-numeros dd {
-  color: #ffffff;
-}
 
-.es .mapa-evento-destaque .destaque-numeros .is-alerta dd {
-  color: var(--sc-dourado);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* ==================== Campos de formulário (todas as janelas da Escala) ==================== */
 .es input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
@@ -942,9 +507,10 @@
 }
 
 /* ==================== Relatório (painel lateral) ==================== */
+/* Painel opaco (antes usava --sc-fundo-claro, 5% de opacidade: a página aparecia por trás) */
 .es .esc-gaveta,
 .es .esc-gaveta .escala-relatorio {
-  background: var(--sc-fundo-claro);
+  background: #0b0e0f;
 }
 
 .es .escala-relatorio__kpi,
@@ -965,12 +531,9 @@
 }
 
 /* Acessibilidade: contraste no tema claro */
-.es .calendario-celula.passado .dia-numero {
-  color: rgba(243, 237, 226, 0.84);
-}
 
-.es .detalhes-resumo-item,
-.es .mapa-pessoa .detalhes-resumo-item {
+
+.es .detalhes-resumo-item{
   background: rgba(228, 200, 143, 0.13);
   color: #e4c88f;
 }
@@ -1103,4 +666,141 @@
 .es .modal-atribuicao .btn-salvar:focus-visible {
   outline: 2px solid var(--sc-teal);
   outline-offset: 2px;
+}
+
+/* ==================== Barra: meses da planilha e filtro de ministérios ==================== */
+.es .esc-meses select {
+  min-height: 38px;
+  padding: 0 2rem 0 0.85rem;
+  border: 1px solid var(--esc-borda-forte);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sc-creme);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.es .esc-meses select:focus-visible {
+  outline: 2px solid var(--sc-ouro);
+  outline-offset: 2px;
+}
+
+.es .esc-meses option {
+  background: #151a1b;
+  color: var(--sc-creme);
+}
+
+.es .esc-filtro-min {
+  position: relative;
+}
+
+.es .esc-filtro-min__botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.es .esc-filtro-min__botao.ativo {
+  border-color: var(--sc-ouro);
+  color: var(--sc-ouro);
+}
+
+.es .esc-filtro-min__painel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(320px, 86vw);
+  max-height: min(420px, 60vh);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(243, 237, 226, 0.1);
+  border-radius: 18px;
+  background: #101415;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.es .esc-filtro-min__lista {
+  overflow-y: auto;
+  padding: 0.35rem;
+}
+
+.es .esc-filtro-min__opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  color: var(--sc-texto);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.es .esc-filtro-min__opcao:hover {
+  background: rgba(243, 237, 226, 0.06);
+}
+
+.es .esc-filtro-min__opcao input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sc-ouro);
+}
+
+.es .esc-filtro-min__opcao--todos {
+  margin: 0.35rem 0.35rem 0;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(243, 237, 226, 0.1);
+  border-radius: 10px 10px 0 0;
+  color: var(--sc-creme);
+  font-weight: 700;
+}
+
+/* Data da agenda: só informação (não abre mais a visão Dia) */
+.escala-page h3.agenda-dia__data {
+  margin: 0;
+  font: inherit;
+  cursor: default;
+}
+
+.escala-page h3.agenda-dia__data:hover {
+  border-color: var(--esc-borda);
+}
+
+@media (max-width: 640px) {
+  .es .esc-periodo {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .es .esc-meses,
+  .es .esc-meses select {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
+  .es .esc-filtro-min__painel {
+    left: 0;
+    right: auto;
+  }
+
+  .es .esc-acoes {
+    flex-wrap: wrap;
+  }
+
+  .es .esc-filtro-min {
+    flex: 1 1 100%;
+  }
+
+  .es .esc-filtro-min__botao {
+    width: 100%;
+    max-width: none;
+    justify-content: space-between;
+  }
 }

@@ -55,37 +55,6 @@ export interface EscalaConflito {
   skip?: boolean;
 }
 
-export interface EscalaTemplateSlot {
-  id_usuario: number;
-  detalhes?: Record<string, string | number | null> | null;
-}
-
-export interface EscalaTemplateArea {
-  nome: string;
-  ordem?: number;
-  id_ministerio?: number | null;
-  slots?: EscalaTemplateSlot[];
-}
-
-export interface EscalaTemplatePayload {
-  titulo?: string;
-  descricao?: string | null;
-  id_ministerios?: number[];
-  areas?: EscalaTemplateArea[];
-}
-
-export interface EscalaTemplate {
-  id_escala_template: number;
-  nome: string;
-  payload?: EscalaTemplatePayload | null;
-  criador_nome?: string;
-}
-
-export interface VisaoAno {
-  ano: number;
-  meses: { mes: number; total_eventos: number; eventos: EscalaEvento[] }[];
-}
-
 export interface MinhaEscala {
   id: number;
   evento: { id: number; nome: string; status: string };
@@ -209,20 +178,6 @@ export interface EstatisticasEscala {
   diasVazios?: number;
 }
 
-export interface VisualizacaoDia {
-  data: string;
-  diaDaSemana: string;
-  eventos: EventoUnificado[];
-  estatisticas: EstatisticasEscala;
-}
-
-export interface VisualizacaoSemana {
-  dataInicio: string;
-  dataFim: string;
-  dias: { data: string; diaDaSemana: string; diaNumero: number; eventos: EventoUnificado[] }[];
-  estatisticas: EstatisticasEscala;
-}
-
 export interface VisualizacaoMes {
   ano: number;
   mes: number;
@@ -285,11 +240,6 @@ export interface EscalasPessoa {
   };
 }
 
-/** "?ministerios=1,3" para o cronograma "Meus ministérios" (vazio = todos) */
-function qsMinisterios(ministerios?: number[]): string {
-  return ministerios?.length ? `?ministerios=${ministerios.join(",")}` : "";
-}
-
 const escalaService = {
   async getEventos(params?: {
     ano?: number;
@@ -325,11 +275,6 @@ const escalaService = {
   /** Próximas datas em que a pessoa logada serve, com a equipe de cada evento */
   async getMinhasEscalas(dias = 120): Promise<MinhaEscala[]> {
     const response = await apiClient.get(`/escala/minhas?dias=${dias}`);
-    return response.data;
-  },
-
-  async getVisaoAno(ano: number, ministerios?: number[]): Promise<VisaoAno> {
-    const response = await apiClient.get(`/escala/visao/ano/${ano}${qsMinisterios(ministerios)}`);
     return response.data;
   },
 
@@ -451,69 +396,9 @@ const escalaService = {
     return response.data;
   },
 
-  async copiarEvento(
-    id: number,
-    data: { data_hora: string; data_hora_fim?: string | null; titulo?: string }
-  ): Promise<{ sucesso: boolean; dados: EscalaEventoCompleto; warnings: unknown[] }> {
-    const response = await apiClient.post(`/escala/eventos/${id}/copiar`, data);
-    return response.data;
-  },
-
-  async copiarSemana(data: {
-    data_inicio_origem: string;
-    data_inicio_destino: string;
-  }): Promise<{ sucesso: boolean; dados: EscalaEventoCompleto[]; warnings: unknown[] }> {
-    const response = await apiClient.post("/escala/eventos/copiar-semana", data);
-    return response.data;
-  },
-
-  async listarTemplates(): Promise<EscalaTemplate[]> {
-    const response = await apiClient.get("/escala/templates");
-    return response.data;
-  },
-
-  async criarTemplate(data: {
-    nome: string;
-    id_escala_evento?: number;
-    payload?: EscalaTemplatePayload;
-  }): Promise<EscalaTemplate> {
-    const response = await apiClient.post("/escala/templates", data);
-    return response.data;
-  },
-
-  async atualizarTemplate(
-    id: number,
-    data: { nome?: string; id_escala_evento?: number; payload?: EscalaTemplatePayload }
-  ): Promise<EscalaTemplate> {
-    const response = await apiClient.put(`/escala/templates/${id}`, data);
-    return response.data;
-  },
-
-  async aplicarTemplate(
-    id: number,
-    data: { data_hora: string; data_hora_fim?: string | null; titulo?: string }
-  ): Promise<{ sucesso: boolean; dados: EscalaEventoCompleto; warnings: unknown[] }> {
-    const response = await apiClient.post(`/escala/templates/${id}/aplicar`, data);
-    return response.data;
-  },
-
-  async excluirTemplate(id: number): Promise<void> {
-    await apiClient.delete(`/escala/templates/${id}`);
-  },
-
   async desfazer(idEvento: number): Promise<EscalaEventoCompleto> {
     const response = await apiClient.post(`/escala/eventos/${idEvento}/desfazer`);
     return response.data;
-  },
-
-  async getVisualizacaoDia(data: string, ministerios?: number[]): Promise<VisualizacaoDia> {
-    const response = await apiClient.get(`/escala/visualizacao/dia/${data}${qsMinisterios(ministerios)}`);
-    return response.data.dados ?? response.data;
-  },
-
-  async getVisualizacaoSemana(dataInicio: string, ministerios?: number[]): Promise<VisualizacaoSemana> {
-    const response = await apiClient.get(`/escala/visualizacao/semana/${dataInicio}${qsMinisterios(ministerios)}`);
-    return response.data.dados ?? response.data;
   },
 
   /** Intervalo livre (até 6 meses): eventos completos + estatísticas. Planilha e relatório. */
@@ -559,13 +444,6 @@ const escalaService = {
     return response.data.dados ?? response.data;
   },
 
-  async copiarDia(data_origem: string, data_destino: string) {
-    const response = await apiClient.post("/escala/eventos/copiar-dia", {
-      data_origem,
-      data_destino,
-    });
-    return response.data;
-  },
 };
 
 export default escalaService;

@@ -1,7 +1,6 @@
 import React from "react";
 import PortalInicio, { type GrupoPortal } from "../components/portal/PortalInicio";
 import imgEscala from "../assets/DSC00436.jpg";
-import imgMapa from "../assets/DSC00309.jpg";
 import imgFalaAi from "../assets/oracao-cabeca-baixa.jpg";
 import imgCelulas from "../assets/DSC00719.jpg";
 import imgLicoes from "../assets/IMG_5684.jpg";
@@ -17,8 +16,7 @@ const GRUPOS: GrupoPortal[] = [
   {
     titulo: "Na Casa",
     atalhos: [
-      { to: "/usuario/escala", titulo: "Escala", descricao: "Calendário e ministérios", foto: imgEscala },
-      { to: "/usuario/escala/mapa", titulo: "Mapa da Escala", descricao: "Visão geral dos eventos", foto: imgMapa },
+      { to: "/usuario/escala", titulo: "Escala", descricao: "Monte a escala e confira cada culto", foto: imgEscala },
       { to: "/usuario/fala-ai", titulo: "Fala Aí, Discípulo", descricao: "Devocional e palavra do dia", foto: imgFalaAi },
       { to: "/admin/staff", titulo: "Staff e Estrutura", descricao: "Editar o organograma da Casa", foto: imgStaff },
     ],

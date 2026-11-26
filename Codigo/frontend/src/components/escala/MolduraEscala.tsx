@@ -3,11 +3,10 @@ import { Link } from "react-router-dom";
 import Header from "../layout/Header";
 import Footer from "../layout/Footer";
 import Icone, { type NomeIcone } from "../ui/Icone";
-import { useAuth } from "../../contexts/AuthContext";
 import "../../style/secretaria.css";
 import "../../style/escalaModerna.css";
 
-export type AbaEscala = "minhas" | "calendario" | "meus" | "mapa";
+export type AbaEscala = "minhas" | "calendario";
 
 interface Numero {
   valor: number | string;
@@ -15,8 +14,8 @@ interface Numero {
 }
 
 /**
- * Moldura das telas da Escala (Minhas escalas, Calendário, Meus ministérios, Mapa):
- * topo escuro da Casa com explicação e números do período, abas sempre visíveis e corpo claro.
+ * Moldura das telas da Escala: topo da Casa com explicação e números do período, e duas abas
+ * (Minhas escalas / Escala da Casa).
  */
 export default function MolduraEscala({
   aba,
@@ -31,18 +30,11 @@ export default function MolduraEscala({
   acao?: { rotulo: string; onClick: () => void };
   children: React.ReactNode;
 }) {
-  const { isAdmin, isLiderMinisterio } = useAuth();
-  const lidera = isAdmin || isLiderMinisterio;
-
-  const abas: Array<{ id: AbaEscala; to: string; nome: string; icone: NomeIcone; dica: string }> = [
-    { id: "minhas", to: "/usuario/escala?ver=minhas", nome: "Minhas escalas", icone: "pessoa", dica: "Quando eu sirvo" },
-    { id: "calendario", to: "/usuario/escala?ver=calendario", nome: "Calendário", icone: "calendario", dica: "Todos os eventos" },
-    ...(lidera
-      ? [{ id: "meus" as AbaEscala, to: "/usuario/escala/meus-ministerios", nome: "Meus ministérios", icone: "equipe" as NomeIcone, dica: "Montar a escala" }]
-      : []),
-    { id: "mapa", to: "/usuario/escala/mapa", nome: "Mapa", icone: "mapa", dica: "Quem serve em cada culto" },
+  const abas: Array<{ id: AbaEscala; to: string; nome: string; icone: NomeIcone }> = [
+    { id: "minhas", to: "/usuario/escala?ver=minhas", nome: "Minhas escalas", icone: "pessoa" },
+    { id: "calendario", to: "/usuario/escala?ver=calendario", nome: "Escala da Casa", icone: "calendario" },
   ];
-  const titulo = aba === "meus" ? "Meus ministérios" : aba === "mapa" ? "Mapa da Escala" : "Escala";
+  const titulo = "Escala";
 
   return (
     <div className="sc-pagina es page-with-fixed-header escala-page">
@@ -75,7 +67,6 @@ export default function MolduraEscala({
                 to={a.to}
                 className={`sc-aba${aba === a.id ? " sc-aba--ativa" : ""}`}
                 aria-current={aba === a.id ? "page" : undefined}
-                title={a.dica}
               >
                 <Icone nome={a.icone} tamanho={15} /> {a.nome}
               </Link>

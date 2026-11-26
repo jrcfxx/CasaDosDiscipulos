@@ -3,7 +3,6 @@ import { useAuth } from "../hooks/useAuth";
 import PortalInicio, { type GrupoPortal } from "../components/portal/PortalInicio";
 import InicioPersonalizado from "../components/portal/InicioPersonalizado";
 import imgEscala from "../assets/DSC00436.jpg";
-import imgMapa from "../assets/DSC00309.jpg";
 import imgFalaAi from "../assets/oracao-cabeca-baixa.jpg";
 import imgLicoes from "../assets/IMG_5684.jpg";
 import imgFormularios from "../assets/DSC00438.jpg";
@@ -17,11 +16,7 @@ const PortalDoDiscipuloUser: React.FC = () => {
     {
       titulo: "Na Casa",
       atalhos: [
-        { to: "/usuario/escala", titulo: "Escala", descricao: "Calendário e ministérios", foto: imgEscala },
-        ...(isLiderMinisterio
-          ? [{ to: "/usuario/escala/meus-ministerios", titulo: "Meus ministérios", descricao: "Cronograma dos ministérios que você lidera", foto: imgEscala }]
-          : []),
-        { to: "/usuario/escala/mapa", titulo: "Mapa da Escala", descricao: "Visão geral dos eventos", foto: imgMapa },
+        { to: "/usuario/escala", titulo: "Escala", descricao: isLiderMinisterio ? "Monte a escala e veja onde você serve" : "Onde você serve e quem serve junto", foto: imgEscala },
         { to: "/usuario/fala-ai", titulo: "Fala Aí, Discípulo", descricao: "Devocional e palavra do dia", foto: imgFalaAi },
         { to: "/usuario/staff", titulo: "Staff e Estrutura", descricao: "Quem serve em cada área", foto: imgStaff },
       ],

@@ -8,7 +8,6 @@ import {
   referenciaDe,
   rotuloStatus,
   somarDias,
-  tituloSemana,
 } from "./escalaDatas";
 
 describe("datas da escala", () => {
@@ -32,12 +31,6 @@ describe("datas da escala", () => {
   it("somar dias atravessa mês e ano", () => {
     expect(somarDias("2026-12-27", 7)).toBe("2027-01-03");
     expect(somarDias("2026-03-01", -1)).toBe("2026-02-28");
-  });
-
-  it("título da semana mostra o intervalo", () => {
-    expect(tituloSemana("2026-11-08")).toBe("8 – 14 de novembro de 2026");
-    expect(tituloSemana("2026-11-29")).toBe("29 de novembro – 5 de dezembro de 2026");
-    expect(tituloSemana("2026-12-27")).toBe("27 de dezembro de 2026 – 2 de janeiro de 2027");
   });
 
   it("textos amigáveis", () => {

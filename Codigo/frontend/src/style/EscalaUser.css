@@ -16,188 +16,14 @@
 .escala-page .modal-evento-overlay,
 .escala-page .modal-escala-evento,
 .escala-page .modal-busca-overlay,
-.escala-page .modal-busca-pessoa,
-.escala-page .modal-tpl-overlay,
-.escala-page .modal-tpl {
+.escala-page .modal-busca-pessoa{
   font-family: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
-}
-
-.btn-mapa {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
-  color: #e4c88f;
-  background: rgba(228, 200, 143, 0.16);
-  border: 1px solid rgba(228, 200, 143, 0.45);
-  border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.btn-mapa:hover {
-  background: rgba(228, 200, 143, 0.16);
-  border-color: #e4c88f;
-  color: #e4c88f;
 }
 
 .escala-layout {
   display: block;
   width: 100%;
   min-width: 0;
-}
-
-.escala-calendario {
-  background: #0f1314;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.27);
-}
-
-.calendario-dias-semana {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
-  margin-bottom: 0.5rem;
-}
-
-.dia-semana {
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #e4c88f;
-}
-
-.calendario-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
-}
-
-.calendario-celula {
-  min-height: 88px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 0.35rem;
-  border-radius: 8px;
-  cursor: default;
-  position: relative;
-  background: #0f1314;
-  transition: background 0.2s;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.calendario-celula.vazio {
-  background: transparent;
-  cursor: default;
-}
-
-.calendario-celula.clicavel {
-  cursor: pointer;
-}
-
-.calendario-celula.tem-evento {
-  cursor: pointer;
-  background: rgba(228, 200, 143, 0.16);
-  justify-content: flex-start;
-  padding-top: 4px;
-}
-
-.calendario-celula.tem-evento:hover {
-  background: rgba(228, 200, 143, 0.16);
-}
-
-.calendario-celula.hoje {
-  outline: 1px solid rgba(228, 200, 143, 0.65);
-  outline-offset: -1px;
-}
-
-.calendario-celula.hoje .dia-numero {
-  color: #e4c88f;
-}
-
-.calendario-resumo {
-  margin: 0.85rem 0 0;
-  text-align: center;
-  font-size: 0.85rem;
-  color: rgba(243, 237, 226, 0.84);
-  font-family: var(--font-primary, "Montserrat", sans-serif);
-}
-
-/* Número do dia: é o botão que abre o dia (teclado e leitor de tela) */
-.dia-numero {
-  font-size: 0.85rem;
-  color: #f3ede2;
-  flex-shrink: 0;
-  font-weight: 700;
-  font-family: inherit;
-  min-width: 24px;
-  min-height: 24px;
-  padding: 0 0.3rem;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-  align-self: flex-start;
-}
-
-.dia-numero:hover {
-  background: rgba(243, 237, 226, 0.088);
-}
-
-.dia-numero:focus-visible {
-  outline: 2px solid #e4c88f;
-  outline-offset: 1px;
-}
-
-.dia-eventos {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
-  margin-top: 0.2rem;
-  overflow: hidden;
-  width: 100%;
-  min-width: 0;
-}
-
-.dia-evento-nome {
-  font-size: clamp(0.62rem, 2vw, 0.82rem);
-  color: #f3ede2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  width: 100%;
-  text-align: center;
-  line-height: 1.2;
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  padding: 0 1px;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.dia-evento-nome:hover {
-  color: #e4c88f;
-  text-decoration: underline;
-}
-
-.dia-evento-mais {
-  font-size: clamp(0.5rem, 1.6vw, 0.68rem);
-  color: #e4c88f;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.escala-vazio {
-  color: rgba(243, 237, 226, 0.84);
-  font-size: 0.9rem;
-  margin: 0;
 }
 
 .ev-titulo {
@@ -825,21 +651,6 @@
 }
 
 @media (max-width: 600px) {
-  
-
-  
-
-  .calendario-celula {
-    font-size: 0.8rem;
-  }
-
-  .dia-evento-nome {
-    font-size: 0.6rem;
-  }
-
-  .dia-evento-mais {
-    font-size: 0.5rem;
-  }
 
   .modal-escala-overlay {
     padding: 1rem;
@@ -880,31 +691,6 @@
 
 /* --- Visões avançadas / DnD / templates --- */
 
-.escala-visao-semana,
-.escala-quadro {
-  width: 100%;
-  min-width: 0;
-}
-
-.semana-grade {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.5rem;
-  width: 100%;
-  min-width: 0;
-}
-
-.semana-coluna {
-  background: rgba(243, 237, 226, 0.044);
-  border: 1px solid rgba(243, 237, 226, 0.12);
-  border-radius: 8px;
-  min-height: 140px;
-  min-width: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
 .semana-dia-header {
   padding: 0.5rem;
   font-size: 0.75rem;
@@ -912,14 +698,6 @@
   text-align: center;
   border-bottom: 1px solid rgba(243, 237, 226, 0.12);
   flex-shrink: 0;
-}
-
-.semana-dia-body {
-  padding: 0.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  min-width: 0;
 }
 
 .semana-evento {
@@ -950,142 +728,9 @@
   box-sizing: border-box;
 }
 
-.semana-evento .quadro-slot-header {
-  font-size: 0.65rem;
-  margin-bottom: 0.25rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.semana-evento .quadro-slot-membros {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.semana-evento .quadro-chip,
-.semana-evento .quadro-chip.compacto {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.semana-evento .quadro-chip-avatar {
-  width: 22px;
-  height: 22px;
-  font-size: 0.55rem;
-}
-
-.semana-evento .quadro-chip-nome {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.68rem;
-}
-
-.semana-evento .quadro-add,
-.semana-evento .quadro-add.compacto {
-  width: 100%;
-  padding: 0.15rem;
-  font-size: 0.65rem;
-}
-
-.semana-evento-topo {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.3rem;
-  min-width: 0;
-}
-
-.semana-btn-expandir {
-  flex-shrink: 0;
-  border: 1px solid rgba(228, 200, 143, 0.45);
-  background: rgba(228, 200, 143, 0.16);
-  color: #e4c88f;
-  border-radius: 6px;
-  padding: 0.15rem 0.35rem;
-  font-size: 0.62rem;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  line-height: 1.2;
-}
-
-.semana-btn-expandir:hover {
-  background: rgba(228, 200, 143, 0.16);
-  color: #e4c88f;
-}
-
-.semana-evento-preview {
-  margin: 0;
-  font-size: 0.65rem;
-  opacity: 0.8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .semana-evento.drop-over {
   outline: 2px solid #2f9e6e;
   background: rgba(47, 158, 110, 0.18);
-}
-
-.semana-vazio {
-  opacity: 0.4;
-  text-align: center;
-  font-size: 0.8rem;
-}
-
-.ano-grade {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.ano-mes-card {
-  text-align: left;
-  padding: 1rem;
-  border-radius: 10px;
-  border: 1px solid rgba(243, 237, 226, 0.12);
-  background: rgba(243, 237, 226, 0.044);
-  color: inherit;
-  cursor: pointer;
-}
-
-.ano-mes-card.tem-eventos {
-  border-color: rgba(228, 200, 143, 0.45);
-}
-
-.ano-mes-nome {
-  display: block;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.ano-mes-total {
-  font-size: 0.8rem;
-  opacity: 0.75;
-}
-
-.ano-mes-lista {
-  list-style: none;
-  margin: 0.5rem 0 0;
-  padding: 0;
-  font-size: 0.7rem;
-}
-
-.ano-mes-lista button {
-  background: none;
-  border: none;
-  color: #e4c88f;
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
 }
 
 .escala-area-card {
@@ -1356,89 +1001,6 @@
   background: rgba(243, 237, 226, 0.1);
 }
 
-.quadro-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.quadro-stats {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.85;
-}
-
-.quadro-toolbar-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.quadro-eventos {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  align-items: start;
-  width: 100%;
-}
-
-.quadro-evento {
-  background: rgba(243, 237, 226, 0.044);
-  border: 1px solid rgba(228, 200, 143, 0.45);
-  border-radius: 12px;
-  padding: 1rem 1.1rem;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.quadro-evento.tipo-culto {
-  border-color: rgba(240, 130, 120, 0.55);
-}
-
-.quadro-evento.tipo-ensaio {
-  border-color: rgba(47, 158, 110, 0.55);
-}
-
-.quadro-evento.tipo-celula {
-  border-color: rgba(228, 200, 143, 0.55);
-}
-
-.quadro-evento-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-}
-
-.quadro-evento-header h3 {
-  margin: 0;
-}
-
-.link-evento {
-  background: none;
-  border: none;
-  color: #e4c88f;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
-}
-
-.link-evento:hover {
-  text-decoration: underline;
-}
-
-.quadro-horario,
-.quadro-totais {
-  display: block;
-  font-size: 0.8rem;
-  opacity: 0.75;
-}
-
 .quadro-slot {
   margin-top: 0.65rem;
   padding: 0.6rem;
@@ -1453,215 +1015,23 @@
   background: rgba(47, 158, 110, 0.16);
 }
 
-.quadro-slot.drop-invalido {
-  border-color: #f08278;
-  background: rgba(240, 130, 120, 0.1);
-}
-
 .quadro-slot.compacto {
   padding: 0.35rem;
   margin-top: 0.35rem;
 }
 
-.quadro-slot-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin-bottom: 0.4rem;
-}
+/* ==================== Refino das visões (dia,
+semana,
+mês,
+ano) ==================== */
 
-.drop-hint {
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.drop-hint.ok {
-  color: #9fd3b8;
-}
-
-.drop-hint.erro {
-  color: #e4c88f;
-}
-
-.quadro-slot-membros {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-  min-width: 0;
-}
-
-.quadro-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: 8px;
-  background: rgba(228, 200, 143, 0.16);
-  min-width: 0;
-  max-width: 100%;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.quadro-chip.arrastavel {
-  cursor: grab;
-}
-
-.quadro-chip.compacto {
-  min-width: 0;
-  padding: 0.2rem 0.4rem;
-}
-
-.quadro-chip-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 0.65rem;
-  font-weight: 700;
-  background: #e4c88f;
-  color: #2b2f30;
-  flex-shrink: 0;
-}
-
-.quadro-chip-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-
-.quadro-chip-nome {
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.quadro-chip-tel {
-  font-size: 0.68rem;
-  opacity: 0.7;
-}
-
-.quadro-chip-acoes {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  flex-shrink: 0;
-}
-
-.chip-acao {
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 7px;
-  background: rgba(243, 237, 226, 0.088);
-  color: rgba(243, 237, 226, 0.84);
-  cursor: pointer;
-  padding: 0;
-  opacity: 1;
-  transition: background 0.15s, color 0.15s;
-}
-
-.chip-acao:hover {
-  background: rgba(228, 200, 143, 0.16);
-  color: #e4c88f;
-}
-
-.chip-acao.perigo:hover {
-  background: rgba(240, 130, 120, 0.1);
-  color: #f2a69c;
-}
-
-.quadro-add {
-  border: 1px dashed rgba(228, 200, 143, 0.55);
-  background: transparent;
-  color: #e4c88f;
-  border-radius: 8px;
-  padding: 0.35rem 0.6rem;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.78rem;
-}
-
-.semana-evento-titulo {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.1rem;
-  width: 100%;
-  min-width: 0;
-  border: none;
-  background: none;
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-  padding: 0;
-  font: inherit;
-  font-size: 0.7rem;
-}
-
-.semana-evento-titulo strong {
-  display: block;
-  width: 100%;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: unset;
-  word-break: break-word;
-  line-height: 1.3;
-  font-weight: 700;
-}
-
-@media (max-width: 1100px) {
-  .semana-grade {
-    grid-template-columns: repeat(7, minmax(150px, 1fr));
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-  }
-
-  .semana-coluna {
-    min-width: 150px;
-  }
-
-  .quadro-eventos {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px) {
-  .semana-grade {
-    grid-template-columns: 1fr;
-  }
-
-  .quadro-eventos {
-    grid-template-columns: 1fr;
-  }
-
-  .quadro-chip {
-    min-width: 0;
-    width: 100%;
-  }
-}
-
-/* ==================== Refino das visões (dia, semana, mês, ano) ==================== */
-
-/* Eventos no calendário: alinhados à esquerda (antes centralizados, desalinhavam nomes curtos) */
-.dia-evento-nome {
+/* Eventos no calendário: alinhados à esquerda (antes centralizados {
   text-align: left;
   border-radius: 4px;
   padding: 1px 4px;
 }
 
-/* Rascunho: borda tracejada e itálico, para diferenciar do publicado */
-.dia-evento-nome.status-rascunho {
+/* Rascunho: borda tracejada e itálico {
   font-style: italic;
   opacity: 0.8;
   outline: 1px dashed rgba(228, 200, 143, 0.55);
@@ -1669,85 +1039,15 @@
 }
 
 /* Dias passados mais discretos; hoje continua em destaque */
-.calendario-celula.passado:not(.hoje) {
-  opacity: 0.55;
-}
-.calendario-celula.passado:not(.hoje):hover {
-  opacity: 0.85;
-}
 
-/* Contagem de eventos: só aparece no celular, onde os nomes não cabem */
-.dia-contagem {
+/* Contagem de eventos: só aparece no celular {
   display: none;
 }
 
-@media (max-width: 640px) {
-  .calendario-celula .dia-eventos,
-  .calendario-celula .dia-evento-mais {
-    display: none;
-  }
-
-  .calendario-celula .dia-contagem {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.35rem;
-    height: 1.35rem;
-    margin-top: 0.3rem;
-    padding: 0 0.3rem;
-    border-radius: 999px;
-    background: #e4c88f;
-    color: #15130f;
-    font-size: 0.72rem;
-    font-weight: 700;
-  }
-
-  /* Botões do topo lado a lado (antes empilhavam e ocupavam meia tela) */
-  
-}
-
 /* Semana: cabeçalho do dia em duas linhas, hoje destacado, passado discreto */
-.semana-dia-header .link-evento {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-  text-transform: capitalize;
-}
-.semana-dia-nome {
-  font-size: 0.72rem;
-  font-weight: 600;
-  opacity: 1;
-}
-.semana-dia-numero {
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-.semana-coluna.hoje {
-  border-color: rgba(228, 200, 143, 0.6);
-}
-.semana-coluna.hoje .semana-dia-numero {
-  color: #e4c88f;
-}
-.semana-coluna.passado {
-  opacity: 0.82;
-}
-.semana-coluna.passado:hover {
-  opacity: 0.9;
-}
 
 /* Selo de rascunho nos cards (semana) */
-.evento-rascunho-tag {
-  display: inline-block;
-  margin-top: 0.2rem;
-  padding: 0.05rem 0.45rem;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-style: normal;
-  font-weight: 600;
-  color: #e4c88f;
-  border: 1px dashed rgba(228, 200, 143, 0.6);
-}
+
 .semana-evento.status-rascunho {
   border: 1px dashed rgba(228, 200, 143, 0.55);
 }
@@ -1755,128 +1055,10 @@
 /* Mês detalhado: hoje e passado */
 
 /* Ano: o card virou contêiner (sem botão dentro de botão) */
-.ano-mes-card {
-  display: flex;
-  flex-direction: column;
-  cursor: default;
-}
-.ano-mes-card.atual {
-  border-color: rgba(228, 200, 143, 0.6);
-}
-.ano-mes-abrir {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  width: 100%;
-  padding: 0;
-  background: none;
-  border: none;
-  color: inherit;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.ano-mes-abrir:hover .ano-mes-nome {
-  color: #e4c88f;
-}
-.ano-mes-lista li + li {
-  margin-top: 0.2rem;
-}
-.ano-mes-lista button {
-  font-family: inherit;
-  line-height: 1.35;
-}
-.ano-mes-lista .ano-mes-mais {
-  color: #e4c88f;
-  font-weight: 600;
-}
 
 /* Semana: número do dia neutro; o amarelo fica só para hoje */
-.semana-dia-header .link-evento {
-  color: #f3ede2;
-}
-.semana-coluna.hoje .semana-dia-header .link-evento {
-  color: #e4c88f;
-}
-
-@media (max-width: 900px) {
-  /* Dias sem evento ficam numa linha só, em vez de uma caixa alta com "—" */
-  .semana-coluna:not(:has(.semana-evento)) {
-    min-height: 0;
-    flex-direction: row;
-    align-items: center;
-  }
-  .semana-coluna:not(:has(.semana-evento)) .semana-dia-header {
-    border-bottom: none;
-    padding: 0.35rem 0.75rem;
-  }
-  .semana-coluna:not(:has(.semana-evento)) .semana-dia-header .link-evento {
-    flex-direction: row;
-    gap: 0.4rem;
-  }
-  .semana-coluna:not(:has(.semana-evento)) .semana-dia-body {
-    padding: 0.35rem 0.75rem;
-  }
-  .semana-coluna:not(:has(.semana-evento)) .semana-vazio::after {
-    content: " sem eventos";
-  }
-  .semana-coluna:not(:has(.semana-evento)) .semana-vazio {
-    font-size: 0.75rem;
-  }
-}
 
 /* ==================== "Meus ministérios": seleção de ministérios ==================== */
-.filtro-ministerios {
-  margin: 0 auto 1.25rem;
-  max-width: 900px;
-  padding: 0.9rem 1rem;
-  border: 1px solid rgba(228, 200, 143, 0.45);
-  border-radius: 12px;
-  background: rgba(228, 200, 143, 0.092);
-  text-align: center;
-}
-.filtro-ministerios__rotulo,
-.filtro-ministerios__vazio {
-  margin: 0 0 0.6rem;
-  font-size: 0.85rem;
-  color: rgba(243, 237, 226, 0.84);
-}
-.filtro-ministerios__vazio {
-  margin: 0;
-}
-.filtro-ministerios__lista {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.filtro-ministerio,
-.filtro-ministerio-todos {
-  padding: 0.4rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgba(243, 237, 226, 0.264);
-  background: transparent;
-  color: #f3ede2;
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
-}
-.filtro-ministerio:hover {
-  border-color: #e4c88f;
-}
-.filtro-ministerio.ativo {
-  background: #e4c88f;
-  border-color: #e4c88f;
-  color: #15130f;
-}
-.filtro-ministerio-todos {
-  border-style: dashed;
-  color: #e4c88f;
-  border-color: rgba(228, 200, 143, 0.5);
-}
 
 /* ==================== Áreas da escala (um cartão por ministério) ====================
    Sem cores novas: o mesmo teal discreto da marca para todos. A separação vem do cartão
@@ -1896,95 +1078,3 @@
   padding: 0.3rem 0.3rem 0.35rem;
 }
 
-/* Ministério com uma função só: o próprio cartão faz o papel do bloco */
-.quadro-area--simples {
-  padding: 0;
-  border: none;
-  background: none;
-}
-
-.quadro-area.quadro-area--simples > .quadro-slot {
-  margin-top: 0;
-  border: 1px solid rgba(243, 237, 226, 0.12);
-  border-left: 3px solid rgba(228, 200, 143, 0.55);
-  background: rgba(243, 237, 226, 0.04);
-}
-
-.semana-evento .quadro-area--simples {
-  margin-top: 0.45rem;
-}
-
-.quadro-area__titulo {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid rgba(243, 237, 226, 0.12);
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #f3ede2;
-  min-width: 0;
-}
-
-.quadro-area.compacto .quadro-area__titulo {
-  font-size: 0.66rem;
-  padding-bottom: 0.25rem;
-}
-
-.quadro-area__titulo .icone {
-  color: #e4c88f;
-  flex-shrink: 0;
-}
-
-.quadro-area__nome {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.quadro-area__total {
-  font-variant-numeric: tabular-nums;
-  color: rgba(243, 237, 226, 0.84);
-  flex-shrink: 0;
-}
-
-.quadro-area__funcoes {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-top: 0.4rem;
-  margin-left: 0.2rem;
-  padding-left: 0.45rem;
-  border-left: 1px solid rgba(228, 200, 143, 0.45);
-  min-width: 0;
-}
-
-.quadro-area .quadro-slot--sub {
-  margin-top: 0;
-  padding: 0.35rem 0.45rem;
-  background: rgba(243, 237, 226, 0.04);
-  border: 1px dashed rgba(243, 237, 226, 0.12);
-}
-
-.quadro-area .quadro-slot--sub .quadro-slot-header {
-  font-size: 0.74rem;
-  font-weight: 600;
-  color: #f3ede2;
-  margin-bottom: 0.3rem;
-}
-
-.semana-evento .quadro-area .quadro-slot--sub .quadro-slot-header {
-  font-size: 0.62rem;
-}
-
-.semana-evento .quadro-area .quadro-area__funcoes {
-  margin-left: 0.1rem;
-  padding-left: 0.25rem;
-}
-
-/* Área de toque mínima (WCAG 2.5.8: 24x24 px) para os eventos dentro do dia */
-.dia-evento-nome {
-  min-height: 24px;
-}
