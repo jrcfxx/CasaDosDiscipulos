@@ -22,11 +22,6 @@
   font-family: var(--font-primary, "Montserrat", "Segoe UI", sans-serif);
 }
 
-.escala-user {
-  padding: 2rem 1.5rem;
-  min-height: calc(100vh - 200px);
-}
-
 .btn-mapa {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
@@ -313,21 +308,6 @@
 
 /* Grid de ministérios */
 
-.pessoa-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0.6rem;
-  background: rgba(243, 237, 226, 0.044);
-  border-radius: 10px;
-  margin-bottom: 0.5rem;
-  transition: background 0.2s;
-}
-
-.pessoa-chip:hover {
-  background: rgba(243, 237, 226, 0.088);
-}
-
 .pessoa-avatar {
   width: 32px;
   height: 32px;
@@ -339,23 +319,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-}
-
-.pessoa-chip-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.pessoa-chip-content .pessoa-nome {
-  display: block;
-  font-size: 0.9rem;
-  color: #f3ede2;
-}
-
-.pessoa-chip-actions {
-  display: flex;
-  gap: 0.3rem;
   flex-shrink: 0;
 }
 

@@ -88,7 +88,15 @@ input::-ms-clear {
 }
 
 /* Foco visível consistente (teclado), no tom da marca */
-body:not(#_) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+body:not(#_) :is(
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  summary,
+  [tabindex]
+):focus-visible {
   outline: 2px solid #e4c88f;
   outline-offset: 2px;
 }
@@ -118,15 +126,9 @@ body:not(#_) :is(a, button, input, select, textarea, summary, [tabindex]):focus-
 body:not(#_) :is(
   .page-title,
   .gerir-title,
-  .licoes-title,
-  .criar-modulo-title,
-  .editar-modulo-title,
   .cf-title,
   .fala-ai-title,
-  .fala-ai-admin-title,
-  .perfil-title,
-  .pfu-title,
-  .escala-mapa-titulo
+  .fala-ai-admin-title
 ) {
   font-family: "Anton", "Impact", "Arial Narrow", sans-serif;
   font-size: clamp(2.4rem, 5vw, 4rem);
@@ -138,7 +140,7 @@ body:not(#_) :is(
 }
 
 /* Filete sob o título em dourado champanhe */
-body:not(#_) :is(.page-title, .gerir-title, .licoes-title)::after {
+body:not(#_) :is(.page-title, .gerir-title)::after {
   width: 56px;
   height: 3px;
   border-radius: 999px;
@@ -148,16 +150,10 @@ body:not(#_) :is(.page-title, .gerir-title, .licoes-title)::after {
 /* ==================== Botões ==================== */
 /* Ação principal: pílula dourado champanhe (linguagem escura da Casa; funciona também em fundo claro) */
 body:not(#_) :is(
-  .save-btn,
   .btn-salvar,
-  .btn-create,
-  .btn-criar,
   .btn-add,
   .cf-save,
-  .pfu-save,
-  .pfu-btn-enviar,
   .btn-evento-salvar,
-  .modal-ministerio-btn-save,
   .notif-modal-btn-primary,
   .staff-btn--primario,
   .btn-tpl-pri-sm,
@@ -176,16 +172,10 @@ body:not(#_) :is(
 }
 
 body:not(#_) :is(
-  .save-btn,
   .btn-salvar,
-  .btn-create,
-  .btn-criar,
   .btn-add,
   .cf-save,
-  .pfu-save,
-  .pfu-btn-enviar,
   .btn-evento-salvar,
-  .modal-ministerio-btn-save,
   .notif-modal-btn-primary,
   .staff-btn--primario,
   .btn-tpl-pri-sm,
@@ -197,19 +187,12 @@ body:not(#_) :is(
 
 /* Ação secundária: contorno que se adapta ao fundo (claro ou escuro) */
 body:not(#_) :is(
-  .cancel-btn,
-  .btn-cancel,
-  .btn-cancelar,
   .btn-evento-cancelar,
-  .modal-ministerio-btn-cancel,
   .notif-modal-btn-secondary,
   .btn-tpl-sec,
   .btn-tpl-cancelar,
   .btn-busca-cancelar,
   .btn-edit,
-  .btn-editar-evento,
-  .btn-reativar,
-  .btn-editar,
   .btn-toggle
 ) {
   background: transparent;
@@ -223,19 +206,12 @@ body:not(#_) :is(
 }
 
 body:not(#_) :is(
-  .cancel-btn,
-  .btn-cancel,
-  .btn-cancelar,
   .btn-evento-cancelar,
-  .modal-ministerio-btn-cancel,
   .notif-modal-btn-secondary,
   .btn-tpl-sec,
   .btn-tpl-cancelar,
   .btn-busca-cancelar,
   .btn-edit,
-  .btn-editar-evento,
-  .btn-reativar,
-  .btn-editar,
   .btn-toggle
 ):hover:not(:disabled) {
   background: color-mix(in srgb, currentColor 8%, transparent);
@@ -243,7 +219,7 @@ body:not(#_) :is(
 }
 
 /* Ação destrutiva: discreta até o hover */
-body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel) {
+body:not(#_) :is(.btn-delete) {
   background: transparent;
   color: #f2a69c;
   border: 1px solid color-mix(in srgb, #f08278 45%, transparent);
@@ -254,7 +230,7 @@ body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel) {
   transition: background-color var(--transition-base), color var(--transition-base);
 }
 
-body:not(#_) :is(.btn-delete, .btn-deletar, .btn-excluir-nivel):hover:not(:disabled) {
+body:not(#_) :is(.btn-delete):hover:not(:disabled) {
   background: #c0392b;
   border-color: #f08278;
   color: #fff;
@@ -265,20 +241,28 @@ body:not(#_) :is(button, [role="button"]):disabled {
 }
 
 /* ==================== Selos de status ==================== */
-body:not(#_) :is(.badge, .badge-status, .status-badge, .btn-status, .evento-status) {
+body:not(#_) :is(
+  .badge,
+  .badge-status,
+  .status-badge
+) {
   border-radius: 999px;
   font-family: var(--font-primary);
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.02em;
 }
 
-body:not(#_) :is(.badge-active, .btn-status.active, .status-badge.status-publicada) {
+body:not(#_) :is(.badge-active, .status-badge.status-publicada) {
   background: #151a1b;
   color: #e4c88f;
   border-color: rgba(228, 200, 143, 0.35);
 }
 
-body:not(#_) :is(.badge-inactive, .badge-inativo, .btn-status.inactive, .status-badge.status-concluida) {
+body:not(#_) :is(
+  .badge-inactive,
+  .badge-inativo,
+  .status-badge.status-concluida
+) {
   background: #151a1b;
   color: rgba(243, 237, 226, 0.84);
   border-color: rgba(243, 237, 226, 0.14);
@@ -291,11 +275,19 @@ body:not(#_) .status-badge.status-rascunho {
 }
 
 /* ==================== Campos ==================== */
-body:not(#_) :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+body:not(#_) :is(
+  input,
+  select,
+  textarea
+):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
   font-family: var(--font-primary);
 }
 
-body:not(#_) :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus {
+body:not(#_) :is(
+  input,
+  select,
+  textarea
+):not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus {
   border-color: #e4c88f;
   box-shadow: var(--focus-ring);
   outline: none;
@@ -311,7 +303,7 @@ body:not(#_) ::placeholder {
 }
 
 /* ==================== Tabelas ==================== */
-body:not(#_) :is(.niveis-table, .celulas-table) th {
+body:not(#_) :is(.celulas-table) th {
   font-size: 0.72rem;
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.08em;
@@ -319,7 +311,7 @@ body:not(#_) :is(.niveis-table, .celulas-table) th {
 }
 
 /* ==================== Modais ==================== */
-body:not(#_) :is(.modal-fundo, .modal-overlay, .cd-modal-overlay) {
+body:not(#_) :is(.modal-fundo, .modal-overlay) {
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
 }

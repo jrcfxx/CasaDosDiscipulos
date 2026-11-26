@@ -35,8 +35,7 @@ html[data-high-contrast="true"] {
   --color-border: #000;
 }
 
-html[data-high-contrast="true"] body,
-html[data-high-contrast="true"] .home-page {
+html[data-high-contrast="true"] body{
   background: #fff !important;
   color: #000 !important;
 }
