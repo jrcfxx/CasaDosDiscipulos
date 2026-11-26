@@ -4,6 +4,7 @@ import HeaderHome from "../components/layout/HeaderHome";
 import Footer from "../components/layout/Footer";
 import Carousel, { type CarouselItem } from "../components/Carousel";
 import Icone from "../components/ui/Icone";
+import CartaoPix from "../components/layout/CartaoPix";
 import "../style/homeModerna.css";
 import { getEventosAtivos } from "../services/eventoService";
 
@@ -17,7 +18,6 @@ import imagemPortal from "../assets/DSC00436.jpg";
 const ENDERECO = "Rua Albertino Teixeira Dias, 381 – Teixeira Dias – Belo Horizonte, Minas Gerais";
 const MAPA = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Rua Albertino Teixeira Dias, 381, Belo Horizonte, Minas Gerais")}`;
 const INSTAGRAM = "https://www.instagram.com/casadosdiscipulos/";
-const CHAVE_PIX = "34.455.752/0001-69";
 const FORMULARIO_ESCOLA =
   "https://docs.google.com/forms/d/e/1FAIpQLSfk4IIu8u5k6bHX0q3QmtAHnNiEYciE8Zm000_jowTllXIhUQ/viewform";
 
@@ -35,7 +35,6 @@ const PROGRAMACAO = [
 const HomePage: React.FC = () => {
   const location = useLocation();
   const [eventos, setEventos] = useState<CarouselItem[]>([]);
-  const [pixCopiado, setPixCopiado] = useState(false);
 
   useEffect(() => {
     getEventosAtivos().then((d) => setEventos(Array.isArray(d) ? d : [])).catch(() => setEventos([]));
@@ -46,16 +45,6 @@ const HomePage: React.FC = () => {
       document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [location.hash]);
-
-  const copiarPix = async () => {
-    try {
-      await navigator.clipboard.writeText(CHAVE_PIX);
-      setPixCopiado(true);
-      window.setTimeout(() => setPixCopiado(false), 2500);
-    } catch {
-      /* sem permissão: a chave continua visível para copiar à mão */
-    }
-  };
 
   return (
     <div className="hm">
@@ -164,32 +153,7 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="hm-oferta" aria-label="Como contribuir">
-              <div className="hm-oferta__pix">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=0&data=${encodeURIComponent(CHAVE_PIX)}`}
-                  alt={`QR Code do PIX, chave ${CHAVE_PIX}`}
-                  className="hm-oferta__qr"
-                  width={140}
-                  height={140}
-                />
-                <div className="hm-oferta__chave">
-                  <span className="hm-oferta__rotulo">Chave PIX (CNPJ)</span>
-                  <strong>{CHAVE_PIX}</strong>
-                  <button type="button" className="hm-pilula hm-pilula--pequena" onClick={copiarPix}>
-                    {pixCopiado ? "Chave copiada" : "Copiar chave"}
-                  </button>
-                  <span className="sr-only" role="status" aria-live="polite">{pixCopiado ? "Chave PIX copiada" : ""}</span>
-                </div>
-              </div>
-              <dl className="hm-oferta__conta">
-                <div><dt>Banco</dt><dd>Stone (197)</dd></div>
-                <div><dt>Agência</dt><dd>0001</dd></div>
-                <div><dt>Conta corrente</dt><dd>574293-7</dd></div>
-                <div><dt>CNPJ</dt><dd>{CHAVE_PIX}</dd></div>
-                <div className="hm-oferta__inteiro"><dt>Favorecido</dt><dd>Comunidade Cristã Casa dos Discípulos</dd></div>
-              </dl>
-            </div>
+            <CartaoPix />
           </div>
         </section>
 

@@ -17,12 +17,11 @@
     background: var(--color-bg, #020202) !important;
   }
 
-  /* Cabeçalho, rodapé, mascote, acessibilidade, avisos e "pular para o conteúdo" */
+  /* Cabeçalho, rodapé, acessibilidade, avisos e "pular para o conteúdo" */
   .top-bar-wrapper,
   .cd-header,
   .header-home,
   .cd-footer,
-  .mini-jesus-layer,
   .a11y-bar,
   .skip-link,
   .toast-toast,

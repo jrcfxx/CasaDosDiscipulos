@@ -14,7 +14,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { AccessibilityProvider } from "./contexts/AccessibilityContext";
 import SkipLink from "./components/accessibility/SkipLink";
 import AccessibilityBar from "./components/accessibility/AccessibilityBar";
-import MiniJesus from "./components/MiniJesus";
 
 // Links antigos "/#/caminho" → "/caminho" (antes de o roteador ler a URL)
 migrarLinkHash();
@@ -35,7 +34,6 @@ root.render(
         <AccessibilityProvider>
           <SkipLink />
           <App />
-          <MiniJesus />
           <AccessibilityBar />
         </AccessibilityProvider>
       </AuthProvider>

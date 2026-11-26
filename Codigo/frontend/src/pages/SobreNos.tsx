@@ -2,149 +2,171 @@ import React from "react";
 import { Link } from "react-router-dom";
 import HeaderHome from "../components/layout/HeaderHome";
 import Footer from "../components/layout/Footer";
-import "../style/SobreNos.css";
+import CartaoPix from "../components/layout/CartaoPix";
+import "../style/homeModerna.css";
 
-import imagem01 from "../assets/equipe_casa.jpg";
-import imagem02 from "../assets/casal_leitura.jpeg";
-import imagem03 from "../assets/tres_mulheres.jpeg";
+import logoCasa from "../assets/logo_casa.png";
+import imagemHero from "../assets/equipe_casa.jpg";
+import imagemMissao from "../assets/casal_leitura.jpeg";
+import imagemVisao from "../assets/tres_mulheres.jpeg";
+import imagemProgramacao from "../assets/DSC00719.jpg";
+import imagemCelulas from "../assets/celulas/hero-celulas.jpg";
 
-const INSTAGRAM_REEL = "https://www.instagram.com/reel/DPJpTVdESov/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==";
-const INSTAGRAM_PERFIL = "https://www.instagram.com/casadosdiscipulos?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
+const INSTAGRAM_REEL = "https://www.instagram.com/reel/DPJpTVdESov/";
+const INSTAGRAM = "https://www.instagram.com/casadosdiscipulos/";
+
+/** Os cinco pilares citados na missão da Casa. */
+const PILARES = ["Comunhão", "Celebração", "Discipulado", "Serviço", "Testemunho"];
 
 /**
- * SobreNos - Página sobre a Casa dos Discípulos (layout moderno, branding Casa)
+ * A Casa (/sobre-nos) — mesma linguagem da página inicial: painéis arredondados sobre fundo preto,
+ * títulos condensados em creme com destaque em dourado champanhe e etiquetas nos cantos.
  */
-const SobreNos: React.FC = () => {
-  return (
-    <div className="sobre-nos-page">
-      <HeaderHome />
+const SobreNos: React.FC = () => (
+  <div className="hm">
+    <HeaderHome />
 
-      <main id="main-content" className="sobre-nos-content" tabIndex={-1}>
-        {/* Hero - mantido */}
-        <section className="sobre-nos-hero">
-          <div
-            className="sobre-nos-hero__bg"
-            style={{ backgroundImage: `url(${imagem01})` }}
-          />
-          <div className="sobre-nos-hero__overlay" />
-          <div className="sobre-nos-hero__texto">
-            <h1 className="sobre-nos-hero__titulo">
-              Conheça <span>a Casa</span>
-            </h1>
-            <p className="sobre-nos-hero__subtitulo">
-              Uma comunidade que compartilha o amor de Cristo
+    <main id="main-content" tabIndex={-1} className="hm-paineis">
+      {/* ---------- Abertura ---------- */}
+      <section className="hm-painel hm-painel--hero hm-painel--hero-curto" aria-labelledby="sn-titulo">
+        <div className="hm-painel__foto" style={{ backgroundImage: `url(${imagemHero})` }} aria-hidden />
+        <div className="hm-painel__veu hm-painel__veu--forte" aria-hidden />
+        <p className="hm-cantos" aria-hidden>
+          <span>Missão e visão</span>
+          <span>Belo Horizonte</span>
+        </p>
+        <div className="hm-painel__conteudo">
+          <p className="hm-pre">Casa dos Discípulos</p>
+          <h1 id="sn-titulo" className="hm-display hm-display--gigante">
+            Conheça <em>a Casa.</em>
+          </h1>
+          <p className="hm-frase">Uma comunidade que compartilha o amor de Cristo.</p>
+        </div>
+      </section>
+
+      {/* ---------- Nossa história ---------- */}
+      <section className="hm-painel hm-painel--programacao" aria-labelledby="sn-historia">
+        <p className="hm-cantos" aria-hidden>
+          <span>Nossa história</span>
+          <span>Assista</span>
+        </p>
+        <div className="hm-painel__conteudo">
+          <h2 id="sn-historia" className="hm-display">Uma história de <em>fé e família</em></h2>
+          <p className="hm-frase hm-frase--suave">
+            Assista ao vídeo que conta a trajetória da Casa dos Discípulos e acompanhe o dia a dia da igreja
+            no nosso Instagram.
+          </p>
+          <div className="hm-acoes">
+            <a href={INSTAGRAM_REEL} target="_blank" rel="noopener noreferrer" className="hm-pilula hm-pilula--ouro">
+              Assistir ao vídeo <span className="sr-only">no Instagram (abre em nova aba)</span>
+            </a>
+            <a href={INSTAGRAM} target="_blank" rel="noopener noreferrer" className="hm-pilula">
+              @casadosdiscipulos <span className="sr-only">no Instagram (abre em nova aba)</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- Missão e Visão ---------- */}
+      <div className="hm-duplo">
+        <section className="hm-painel hm-painel--metade" aria-labelledby="sn-missao">
+          <div className="hm-painel__foto" style={{ backgroundImage: `url(${imagemMissao})` }} aria-hidden />
+          <div className="hm-painel__veu hm-painel__veu--forte" aria-hidden />
+          <p className="hm-cantos" aria-hidden><span>Por que existimos</span><span>01</span></p>
+          <div className="hm-painel__conteudo">
+            <h2 id="sn-missao" className="hm-display hm-display--medio">Nossa <em>missão</em></h2>
+            <p className="hm-frase">
+              Compartilhar do amor de Deus em Cristo e glorificá-Lo com uma vida de comunhão, celebração,
+              discipulado, serviço e testemunho no poder do Espírito Santo.
             </p>
           </div>
         </section>
 
-        {/* Instagram - Nossa História */}
-        <section className="sobre-nos-instagram">
-          <p className="sobre-nos-instagram__label">— Conecte-se</p>
-          <h2 className="sobre-nos-instagram__titulo">Nossa história</h2>
-          <p className="sobre-nos-instagram__texto">
-            Assista ao Reel que conta a trajetória da Casa dos Discípulos.
-          </p>
-          <div className="sobre-nos-instagram__links">
-            <a
-              href={INSTAGRAM_REEL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sobre-nos-instagram__btn"
-              aria-label="Ver Reel no Instagram"
-            >
-              Assistir Reel
-            </a>
-            <a
-              href={INSTAGRAM_PERFIL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sobre-nos-instagram__btn sobre-nos-instagram__btn--outline"
-              aria-label="Visitar perfil no Instagram"
-            >
-              @casadosdiscipulos
-            </a>
+        <section className="hm-painel hm-painel--metade" aria-labelledby="sn-visao">
+          <div className="hm-painel__foto" style={{ backgroundImage: `url(${imagemVisao})` }} aria-hidden />
+          <div className="hm-painel__veu hm-painel__veu--forte" aria-hidden />
+          <p className="hm-cantos" aria-hidden><span>Quem queremos ser</span><span>02</span></p>
+          <div className="hm-painel__conteudo">
+            <h2 id="sn-visao" className="hm-display hm-display--medio">Nossa <em>visão</em></h2>
+            <p className="hm-frase">
+              A Casa dos Discípulos é uma igreja acolhedora que compartilha o evangelho do Reino com
+              simplicidade, integridade e amor.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      {/* ---------- Pilares ---------- */}
+      <section className="hm-painel hm-painel--eventos" aria-labelledby="sn-pilares">
+        <p className="hm-cantos" aria-hidden><span>Na Casa dos Discípulos</span><span>Todos os dias</span></p>
+        <div className="hm-painel__conteudo">
+          <h2 id="sn-pilares" className="hm-display">Como <em>vivemos</em></h2>
+          <p className="hm-frase hm-frase--suave">Cinco marcas que guiam a nossa caminhada juntos.</p>
+          <ol className="hm-pilares">
+            {PILARES.map((p, i) => (
+              <li key={p}>
+                <span className="hm-pilares__numero" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                <span className="hm-pilares__nome">{p}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ---------- Dízimos e ofertas ---------- */}
+      <section className="hm-painel hm-painel--campanha" aria-labelledby="sn-ofertas">
+        <p className="hm-cantos" aria-hidden><span>Contribua</span><span>Dízimos e ofertas</span></p>
+        <div className="hm-campanha">
+          <div className="hm-campanha__texto">
+            <h2 id="sn-ofertas" className="hm-display hm-display--escuro">
+              Semeie na obra <em>da Casa.</em>
+            </h2>
+            <p>
+              Seus dízimos e ofertas sustentam o cuidado com as pessoas, as células, a Escola de Discípulos e
+              a campanha da nova sede.
+            </p>
+            <p className="hm-campanha__convite">Contribua pelo PIX ou por transferência bancária.</p>
+          </div>
+          <CartaoPix />
+        </div>
+      </section>
+
+      {/* ---------- Próximos passos ---------- */}
+      <div className="hm-duplo">
+        <section className="hm-painel hm-painel--metade" aria-labelledby="sn-programacao">
+          <div className="hm-painel__foto" style={{ backgroundImage: `url(${imagemProgramacao})` }} aria-hidden />
+          <div className="hm-painel__veu" aria-hidden />
+          <p className="hm-cantos" aria-hidden><span>Venha nos visitar</span><span>Domingo · 18h30</span></p>
+          <div className="hm-painel__conteudo">
+            <h2 id="sn-programacao" className="hm-display hm-display--medio">Acompanhe nossa <em>programação</em></h2>
+            <p className="hm-frase hm-frase--suave">Cultos, células, Escola de Discípulos e Sala de Oração.</p>
+            <Link to="/#programacao" className="hm-pilula">Ver dias e horários</Link>
           </div>
         </section>
 
-        {/* Missão */}
-        <section className="sobre-nos-section sobre-nos-section--alt">
-          <div className="sobre-nos-section__grid">
-            <div className="sobre-nos-section__img-wrap">
-              <img
-                src={imagem02}
-                alt="Nossa Missão"
-                className="sobre-nos-section__img"
-                loading="lazy"
-              />
-            </div>
-            <div className="sobre-nos-section__body">
-              <h2 className="sobre-nos-section__titulo">Missão</h2>
-              <p className="sobre-nos-section__texto">
-                Compartilhar do amor de Deus em Cristo e glorificá-Lo com uma
-                vida de comunhão, celebração, discipulado, serviço e testemunho
-                no poder do Espírito Santo.
-              </p>
-            </div>
+        <section className="hm-painel hm-painel--metade" aria-labelledby="sn-celulas">
+          <div className="hm-painel__foto" style={{ backgroundImage: `url(${imagemCelulas})` }} aria-hidden />
+          <div className="hm-painel__veu" aria-hidden />
+          <p className="hm-cantos" aria-hidden><span>Células</span><span>Terça · 20h</span></p>
+          <div className="hm-painel__conteudo">
+            <h2 id="sn-celulas" className="hm-display hm-display--medio">Comunhão <em>perto de você</em></h2>
+            <p className="hm-frase hm-frase--suave">Encontre uma célula perto da sua casa.</p>
+            <Link to="/celulas" className="hm-pilula">Encontre sua célula</Link>
           </div>
         </section>
+      </div>
 
-        {/* Visão */}
-        <section className="sobre-nos-section">
-          <div className="sobre-nos-section__grid sobre-nos-section__grid--reverse">
-            <div className="sobre-nos-section__img-wrap">
-              <img
-                src={imagem03}
-                alt="Nossa Visão"
-                className="sobre-nos-section__img"
-                loading="lazy"
-              />
-            </div>
-            <div className="sobre-nos-section__body">
-              <h2 className="sobre-nos-section__titulo">Visão</h2>
-              <p className="sobre-nos-section__texto">
-                A Casa dos Discípulos é uma igreja acolhedora que compartilha o
-                evangelho do Reino com simplicidade, integridade e amor.
-              </p>
-            </div>
-          </div>
-        </section>
+      {/* ---------- Assinatura ---------- */}
+      <section className="hm-assinatura" aria-labelledby="sn-assinatura">
+        <img src={logoCasa} alt="" className="hm-assinatura__logo" loading="lazy" />
+        <h2 id="sn-assinatura" className="sr-only">Casa dos Discípulos</h2>
+        <p>Aqui é a nossa Casa e juntos estamos construindo algo eterno.</p>
+        <Link to="/" className="hm-pilula hm-pilula--pequena">Voltar para o início</Link>
+      </section>
+    </main>
 
-
-        {/* Dízimos e Ofertas */}
-        <section className="sobre-nos-dizimos">
-          <p className="sobre-nos-dizimos__label">— Contribua</p>
-          <h2 className="sobre-nos-dizimos__titulo">Dízimos e Ofertas</h2>
-          <p className="sobre-nos-dizimos__texto">
-            Contribua com a obra da Casa através do PIX.
-          </p>
-          <div className="sobre-nos-dizimos__box">
-            <div className="sobre-nos-dizimos__qr-wrap">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent("34.455.752/0001-69")}`}
-                alt="QR Code PIX"
-                className="sobre-nos-dizimos__qr"
-                width={160}
-                height={160}
-              />
-            </div>
-            <div className="sobre-nos-dizimos__chave">
-              <p className="sobre-nos-dizimos__chave-label">Chave PIX</p>
-              <p className="sobre-nos-dizimos__chave-valor">34.455.752/0001-69</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Voltar para Home */}
-        <section className="sobre-nos-cta">
-          <Link to="/" className="sobre-nos-cta__link">
-            ← Voltar para Home
-          </Link>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
-  );
-};
+    <Footer />
+  </div>
+);
 
 export default SobreNos;

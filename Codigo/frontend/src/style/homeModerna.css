@@ -119,7 +119,7 @@
   font-family: var(--hm-display);
   font-weight: 400;
   font-size: clamp(2.6rem, 6.4vw, 5.4rem);
-  line-height: 0.95;
+  line-height: 1;
   letter-spacing: 0.005em;
   text-transform: uppercase;
   color: var(--hm-creme);
@@ -133,7 +133,7 @@
 
 .hm-display--gigante {
   font-size: clamp(3.4rem, 10vw, 9rem);
-  line-height: 0.88;
+  line-height: 1; /* espaço para cedilhas e acentos entre as linhas */
 }
 
 .hm-display--medio {
@@ -546,6 +546,66 @@
   line-height: 1.15;
   text-transform: uppercase;
   color: var(--hm-creme);
+}
+
+/* ---------- Páginas internas (A Casa) ---------- */
+.hm-painel--hero-curto {
+  min-height: clamp(520px, 82vh, 820px);
+}
+
+.hm-pilares {
+  list-style: none;
+  width: 100%;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid rgba(243, 237, 226, 0.18);
+}
+
+.hm-pilares li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 2rem 0.5rem;
+  border-bottom: 1px solid rgba(243, 237, 226, 0.18);
+}
+
+.hm-pilares li + li {
+  border-left: 1px solid rgba(243, 237, 226, 0.18);
+}
+
+.hm-pilares__numero {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: var(--hm-ouro);
+}
+
+.hm-pilares__nome {
+  font-family: var(--hm-display);
+  font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--hm-creme);
+}
+
+@media (max-width: 760px) {
+  .hm-pilares {
+    grid-template-columns: 1fr;
+  }
+
+  .hm-pilares li {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.1rem 0.5rem;
+  }
+
+  .hm-pilares li + li {
+    border-left: 0;
+  }
 }
 
 /* ---------- Telas menores ---------- */

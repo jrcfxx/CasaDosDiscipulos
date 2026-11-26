@@ -36,8 +36,7 @@ html[data-high-contrast="true"] {
 }
 
 html[data-high-contrast="true"] body,
-html[data-high-contrast="true"] .home-page,
-html[data-high-contrast="true"] .sobre-nos-content {
+html[data-high-contrast="true"] .home-page {
   background: #fff !important;
   color: #000 !important;
 }
